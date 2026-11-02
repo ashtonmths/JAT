@@ -8,9 +8,8 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4 and 5 are a snapshot (2026-10-30, after PR #115; section 5's i18n list is current), and 4a is the live plan, updated after #184 (2026-11-01);
-refresh them before each
-compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
+Sections 3, 4, 4a and 5 are a snapshot (2026-11-02, after PR #214, main at `e811280`, v1.18.0), and 4a is the live plan;
+refresh them before each compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
 
 ---
@@ -47,9 +46,24 @@ next action.
   or when Kai has said to hold that PR. The auto-mode permission check may still block `gh pr merge`
   and tag/`gh release create`: never work around a refusal; ask, and give the `!` command as a fallback.
 - **What to start.** Kai scopes the work: "stop after merge and release, dont start the next one";
-  "then stop once thats done, dont start the next". So: one i18n area per go-ahead; after merge and
-  release, report and wait. A dev preview (section 6) before merging only when Kai asks for one on
-  that work: "i want to check the dev version before merging".
+  "then stop once thats done, dont start the next". A dev preview (section 6) before merging only when
+  Kai asks for one on that work: "i want to check the dev version before merging".
+- **Up next and Backlog (since 2026-11-02, in `CLAUDE.md`).** Not started is two roadmap statuses:
+  `next` (Up next: work Kai has asked for, queued) and `planned` (Backlog: ideas and things to plan with
+  Kai first). Only `next` work is started; work from Kai's feedback goes on as `next` (or `building` when
+  its own PR adds it). With nothing up next, "Report and wait" (Kai's pick): tell Kai what's in the
+  backlog and wait for Kai to pick. And: "those things youre waiting on me for, leave them on the
+  roadmap. we wont be doing thme this session".
+- **Small PRs, split before building.** "they are big PRs, way over the 1k line target. This time I
+  will allow it" (#196/#197). Since then a feature is split into ~500-line roadmap tasks before any
+  code (API first, then screens, then insights): calls rescheduling and rejection feedback were five
+  PRs each. Dependency updates: "it might be best to do only a couple of version updates per PR in case
+  something breaks"; "be sure to run e2e tests for this as these updates have a high risk of breaking
+  some behaviour".
+- **Don't max out Kai's PC.** "you are maxing out my PC": every heavy test command goes through
+  `flock /tmp/jat-heavy-tests.lock nice -n 19 ionice -c 3`, Vitest `--maxWorkers=3`, Playwright
+  `--workers=3` (in `deps/pm_checks.sh` and every agent brief). A proper repo-level cap is the backlog task
+  `test-resource-limits`.
 - **Plan before building when asked.** "lets plan it firtst and dont start building until i say
   so" (Docker); "dont build yet, just commit the plan"; "noooo noo no no, dont buikld antyhing
   eyt … undo all of that. i want to know what each PR would be". When Kai asks for a plan,
@@ -80,7 +94,7 @@ next action.
   every PR: "most are patch unless its new feature then it would be minor. it should be very
   explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
-  Released: v1.0.0 up to v1.2.43 (section 4a). Kai: "yes add release for each change"
+  Released: v1.0.0 up to v1.18.0 (section 4a). Kai: "yes add release for each change"
   (each i18n PR is its own patch release; the switcher was minor). Only internal planning
   files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `docs/rfc/` plans) and the PM dashboard skip
   the bump.
@@ -102,6 +116,7 @@ next action.
   repo's Website field and the README link ("merge it, setup github pages, update the repo url
   to point to the pages"). **Not given yet:** the description and topics proposed in #96 (see
   section 5). Kai uploads the social preview by hand (Settings → General → Social preview).
+  Kai made a branch ruleset `main` (2026-11-02): block deletion and force pushes only; merges work as before.
 - **English dates are day, month, year.** Kai: "english dates should be 31st October 2026 (day
   month year), american is month day year". Every date goes through the dayjs patterns in
   `utils/format.ts` ("31 Oct 2026", "30 Oct 2026, 19:25"), never the browser's locale.
@@ -153,7 +168,7 @@ next action.
 - **API docs page** `/api/docs` serves Swagger UI from the app (`_api_docs` in `app.py`; the
   build copies `swagger-ui-dist` into `dist/api-docs/`, and Vite serves them in dev), not a CDN
   (#96), so nothing is fetched from the web.
-- **Stack.** Python 3.12, uv, FastAPI, SQLAlchemy 2.1, Alembic (migrations 0001–0014) and
+- **Stack.** Python 3.12, uv, FastAPI, SQLAlchemy 2.1, Alembic (migrations 0001–0017) and
   SQLite in `src/jat`. Frontend `frontend/`: Vite 8, React 19, TypeScript 5.9, Mantine 9,
   TanStack Router/Query, dnd-kit, d3-sankey, react-markdown, openapi-fetch.
 - **Data folder.** `--data-dir` or `JAT_DATA_DIR` (env var or `.env` in the current
@@ -175,7 +190,8 @@ next action.
     background job of this session from the main checkout; restart it if it's gone.
 - **Commands.**
   - Backend: `uv run pytest -q`, `uv run ruff check src tests scripts`, `uv run ruff format -q src tests`.
-  - Frontend: prefix pnpm with `PATH=/home/kai/.nvm/versions/node/v22.23.3/bin:/usr/local/bin:/usr/bin:/bin`;
+  - Frontend: prefix pnpm with `PATH=/home/kai/.nvm/versions/node/v22.23.3/bin:/home/kai/.local/bin:/usr/local/bin:/usr/bin:/bin`
+    (`/home/kai/.local/bin` is where `uv` lives: without it e2e fails 580 tests with `spawnSync uv ENOENT`);
     `pnpm --dir frontend install --frozen-lockfile --silent` (new worktrees), then
     `typecheck | lint | test | build | format | gen:api`. Run `format` before committing.
   - After API changes: `uv run python -m jat.openapi` then `pnpm --dir frontend gen:api`
@@ -195,8 +211,9 @@ next action.
   - Waiting on a PR's checks: a background Bash `until` loop on
     `gh pr view N --json mergeStateStatus` (not CLEAN-only: UNSTABLE while the website build
     runs), never a foreground `sleep`.
-- **Scratch files** in `/home/kai/.claude/jobs/cf5328f4/tmp` (and `tmp/site/` for the website),
-  never `/tmp`.
+- **Scratch files** in `/home/kai/.claude/jobs/cf5328f4/tmp` (and `tmp/site/` for the website).
+  Agents started with `isolation: "worktree"` can't write there: they use their worktree's git-ignored
+  `var/`, or a uniquely named `/tmp/jat-<task>-…` folder they remove afterwards.
 
 ### 3. Product map (what exists, so you can find things)
 
@@ -317,10 +334,38 @@ next action.
   only up to Round 6); a card's round is `current_round` (next booked, else last done). Only
   *No round yet* takes drops (`isRoundColumn`, keys `<stage>#round-<n>`, `stageOfColumn`).
 - **Interviews page** (`pages/InterviewsPage.tsx`, #90): a pencil per row (the round's form)
-  and **Reschedule** for booked rounds (`components/Reschedule.tsx`: new time, optional reason;
-  end moves with it). `interviews.rescheduled_count` / `rescheduled_from` (migration 0014,
-  backfilled count); `PATCH` with a moved booked time counts it and keeps the old time
-  (`reschedule_reason`, max 500, goes on the timeline); a *Rescheduled* badge.
+  and **Reschedule** for booked rounds. `interviews.rescheduled_count` / `rescheduled_from` (migration 0014,
+  backfilled count); a *Rescheduled* badge.
+- **Rescheduling** (#191–#197, v1.3.0–v1.8.0): `components/Reschedule.tsx` asks **Who needed the
+  change?** (required: me, them, mutual, neither) and an optional reason; on the application page, quick
+  view, Today and Interviews. Each move saves `data.reschedule = {from, to, by, reason}` on its event;
+  the API exposes a validated `reschedule` (`from_at`, `to_at`, `by`, `reason`) and the timelines show
+  "Moved from … to …" as one whole sentence per state. Insights' Applications tab has a Rescheduling
+  block (`domain/reschedule_stats.py`, `GET /insights/rescheduling`); rounds show days moved.
+  **A new time isn't agreed yet** (migration 0015: `needs_new_time_since`, `needs_new_time_by`,
+  `rebook_todo_id`): the round keeps its old time, a to-do to book it is made in the same POST (it starts
+  open), *Set new time* books it as one move and ticks the to-do; Undo/*Keep the old time* deletes the
+  to-do only if unchanged. Today has a *Needs a new time* section in Your move.
+- **Calls rescheduling** (#201, #205–#208, v1.9.0–v1.13.0) mirrors rounds: migration 0016 adds the
+  same columns to `meetings` plus a `meeting_moves` table (a call often has no application timeline);
+  `PATCH /meetings/{id}` takes `reschedule_by`/`reschedule_reason`; `POST`/`DELETE
+  /meetings/{id}/needs-new-time`; the rebook to-do goes on the application, else the person;
+  `components/CallReschedule.tsx` on the person page and Today; Insights' Recruiter conversations has a
+  *Calls moved* block, and a waiting call isn't held or booked ahead.
+- **Recruiter on cards** (#202): `RecruiterLine` adds the application's recruiter (grey, underlined when
+  linked, with marks) to Today's round and offer rows, Interviews, Offers, the person page, and direct
+  applications on the board, list and company page. Rounds and offers carry `recruiter_id/name`.
+- **Version in the sidebar** (#200, `components/AppVersion.tsx`): the page's build version (Vite
+  `__APP_VERSION__`) linked to its release; a note if the server is older ("Restart the tracker") or
+  the page is ("Refresh this page").
+- **Rejection feedback** (#209, #211–#214, v1.14.0–v1.18.0): migration 0017 adds
+  `applications.rejection_feedback` (one per application, plain text kept as written, max 10,000).
+  Moving to the stage id `rejected` (board drop, Move to… on the application page and quick view) asks
+  "any feedback?" first (Cancel cancels the move); edit it later under *Rejection feedback*
+  (`PUT /applications/{id}/rejection-feedback`). Insights has a **Rejections** tab
+  (`GET /insights/rejections`, `domain/rejections.py`): every application with feedback, plus a card of
+  which round rejections came after, by kind and number (`GET /insights/rejections/rounds`). Both
+  Sankeys have a **Show interview rounds** switch (`?rounds=true`, localStorage `jat.insights.rounds`).
 - **Insights** (`pages/InsightsPage.tsx`): tabs *The whole picture* (default, #84:
   `GET /insights/whole-flow`, `whole_flow`/`source_of` in `domain/insights.py`: sources
   *Through a recruiter* / *Referred* / *You found it*, roles with no application to
@@ -347,156 +392,115 @@ next action.
   applications (+ `/quick`, `/move`, `/undo`, `/activities`, `/contacts`), interviews, offers,
   notes, links, attachments, documents (+ `cv-files`, `cv-files/adopt`), todos; summaries;
   `role-summaries`, `next-actions`, `timeline`, `meetings`,
-  `insights/{whole-flow,flow,stats,activity,scorecard,conversations,documents}`, `search`, `backup`
-  (+ `/archive`, `/snapshot`, `/push`).
+  `insights/{whole-flow,flow,stats,activity,scorecard,conversations,documents,rescheduling,rejections,rejections/rounds}`,
+  `search`, `workflow`, `backup` (+ `/archive`, `/snapshot`, `/push`); `interviews/{id}/needs-new-time`,
+  `meetings/{id}/needs-new-time`, `applications/{id}/rejection-feedback`.
 
-### 4. Current state (snapshot 2026-10-30, after #115)
+### 4. Current state (snapshot 2026-11-02, after #214)
 
-- **main at `7e9fe8b`** (merge of #114; #115 merged just before), plus this doc's PR until it
-  merges. No other open PRs, worktrees or remote branches. Version **1.2.0**, released as
-  v1.2.0 (tag on `7e9fe8b`).
-- **Merged since the last snapshot (#102):**
-  - #103 roadmap: Docker built locally (`docker-image`) and a published image later
-    (`docker-image-publish`); #104 `docs/rfc/docker.md`, the Docker plan, shelved ("lets
-    shelve this for now, add the extra detail somewhere for when we do dockerize it");
-  - #105–#109 the i18n plan: `docs/rfc/i18n.md` (questions answered, backend never translates,
-    type checking across the API, data impact §4a, no backfill, a release per patch), 14 tasks
-    plus `multi-language` in their own phase **P8**, listed before P7 so they head the backlog;
-  - #110 `i18n-setup` (1.1.1): the layer, helpers, tests, used nowhere;
-  - #111 `i18n-shadow` (1.1.2): shadow mode on real strings, console only;
-  - #112 `i18n-shell` (1.1.3): the frame cut over, lint rule on;
-  - #113 `i18n-today` (1.1.4): Today cut over, dates day-month-year everywhere, the text
-    snapshot scripts, a strict check that every language has every key and plural form;
-  - #114 `i18n-switcher` (1.2.0): the language switch;
-  - #115 roadmap: `tests-reorganise` (P7).
-- **Tests on main:** 351 backend, 285 frontend.
-- **Kai's tracker** runs in Kai's terminal (answered `200` on 2026-10-30). Only frontend changes
-  since #99, so a page refresh is enough.
-- **Kai's messages since #102, in order** (word for word where quoted):
-  - "okay lets dockerize this. but lets plan it firtst and dont start building until i say so"
-    (7 questions answered) → #103; "okay lets shelve this for now, add the extra detail
-    somewhere for when we do dockerize it" → #104.
-  - "lets plan i18n support, we could do the transormatio to support it but still only have en
-    for now. think through the questions wed need to asnwer, and then answer them" → #105;
-    "how will we go from code compoinent location that needs text, to getting the actual text
-    from the strings file? will there be type checking on strings file keys" → #106.
-  - "Great, lets get building but first tell me what each PR would be?" then "noooo noo no no,
-    dont buikld antyhing eyt" and "undo all of that. i want to know what each PR would be"
-    (the early start was deleted unpushed).
-  - "how will the backend handle this? are we reimplenting i18n twice basically?"; "so hopw does
-    tyer checking work when backend sends an ID/code and the frontend looks it up".
-  - "okay I would want to split out the setup PR to a few more PRs 1. add dependencies and
-    scafollding/utils code with their tests … 2. add some shadow calls that are not surfaced to
-    user, only in logs/console so i can check them 3. then continue with other order, page by
-    page extracting strings and cutting over usage to it".
-  - "commit the plan, each PR as a work item on the board/backlog. Make the i18n tasks top of
-    backlog/roadmap are any of these patches?" (#107); "how will adding i18n impact data we have
-    in databasE?"; "what did you mean by backfill events"; "1. yes add release for each change
-    2. what do you mean i18n events? … 3. yes skip the backfill dont build yet, just commit the
-    plan" (#108); "whats the pm dahboar link".
-  - "split out the i18n tasks to P8 just for it, then do the first item" (#109, #110); "merge 110
-    and release v1.1.1 then do the next item (shadow calls), you can also merge that and release
-    once ready, i approve" (#111); "okay whats the next part?"; "yeah lets do that, i want to
-    check the dev version before merhing. will there be a way to see the dev version with the
-    accented text and with the real text?"; "looks good, merge and release, then start the next
-    one" (#112 → #113).
-  - During #113: "dropdown calendar not yet updated, will that come in a later one or should it
-    be part of this one?"; "english dates should be 31st October 2026 (day month year), american
-    is month day year"; "to decide, apply, interested, are not done yet"; "dont merge yet"; "if
-    there are things planned for later that is fine"; "looks good, merge then release"; "when we
-    have multipee locales, will trhere be a check to ensure that every strings key is present in
-    all locales? it would be a bad bad error if one is missing" (made strict); "stop after merge
-    and release, dont start the next one".
-  - "does this feature also includea alnaguage picker/switcher for manual changes? if not, add it
-    to the roadmap, do it as the next item in this feature, and the languages should be English
-    and a 'Coming soon!'" (#114); "dev version can have the psuedo language as an option in the
-    picker"; "where do the strings for the pseudo language come from/"; "also add a feature to
-    the roadmap to reorganise the tests and also add react testing library to test individual
-    components" (#115); "you can merge and release once ready"; "then stop once thats done, dont
-    start the next".
-  - Then: "update … COMPACTION.md again for claude code compact command. i want to continue with
-    the i18n work".
+- **main at `e811280`** (merge of #214), plus this doc's PR until it merges. No other open PRs; one
+  worktree (the main checkout); only `main` locally and on GitHub. Version **1.18.0**, released as v1.18.0.
+- **Merged since the last snapshot (#185), all through the review-fix cycle, each release after a full
+  check run with the whole browser suite on the final commit:**
+  - Security (Dependabot), split two packages per PR at Kai's ask: #187 certifi + opentelemetry-api
+    (v1.2.44), #188 vite + seroval (v1.2.45), #186 website undici + fast-uri (v1.2.46), #190 frontend
+    undici + zod (v1.2.47). All patch or minor moves, no majors. 27 of 28 open alerts closed; minimatch
+    #32 stays open (eslint and redocly can't take minimatch 11; dev tools only).
+  - #189 install page made short and welcoming (v1.2.48), in Kai's friendly writing style.
+  - Rescheduling: #191 who and why (v1.3.0), #192 timelines (v1.4.0), #194 API counts (v1.5.0), #195
+    Insights block (v1.6.0; replaced #193, closed when its stacked base branch was deleted), #197 and #196
+    "a new time isn't agreed yet" for rounds (v1.7.0, v1.8.0).
+  - #200 version in the sidebar (v1.8.1), #199 reschedule i18n fixes and pseudo pass (v1.8.2).
+  - Calls rescheduling: #201 API + migration 0016 (v1.9.0), #205 Reschedule button (v1.10.0), #206
+    needs-a-new-time API (v1.11.0), #207 its screens (v1.12.0), #208 Insights (v1.13.0).
+  - #202 the recruiter on every card (v1.9.1).
+  - Rejection feedback: #209 API + migration 0017 (v1.14.0), #211 dialog and edit (v1.15.0), #212
+    Rejections tab (v1.16.0), #213 which round rejections came after (v1.17.0), #214 Sankey rounds
+    switch (v1.18.0).
+  - Roadmap and dashboard, no releases: #198 (notes/documents and Timeline items), #203 (people you
+    meet, a stage error bug), #204 (test resource limits), #210 (Backlog / Up next columns and the
+    "Report and wait" rule in `CLAUDE.md`).
+- **Tests on main** (last full run, #214): pytest 1,284, unit 1,131, browser 707 (a few `test.fail` for
+  known bugs pass by failing).
+- **Kai's tracker** answered on 8770 at v1.17.0 (schema 0017) at the last check: Kai must restart it
+  (Ctrl+C, `uv run jat serve`) for v1.18.0's server changes.
+- **Kai's messages since #185, in order** (word for word where quoted):
+  - "simplify this doc … install.md. this is what a few people first see" (style file given) → #189.
+  - "Github ui shows some security issues. fan out, fix the easy ones as release patches. if something
+    is going to be difficult to fix, or requier changes to the app dont do it, report it to me, and move
+    on"; "it might be best to do only a couple of version updates per PR in case something breaks";
+    "be sure to run e2e tests for this…"; "lmk if the fixes involve any major updates" (none did).
+  - Rescheduling: "an interview/etc is scheduled, then it has to be rescheduled … a reschedule button,
+    it needs a reason text box and also a blame drop down for things like me/them/mutual/neither … then
+    in timelines and insights and durations … dont forget e2e tests" → #191–#195. Then "sometimes you
+    need to reschedule … but yuou cant yet choose the new date/time … mark as "wotn attend, needs to be
+    rescheduled", create a to-do item to book the rescheduled item" → #196/#197; "why would the todo be
+    ticked by default?" (the checkbox is "Add a to-do…", the to-do starts open).
+  - "did it create new text? did it support i18n properly?" then "fix both now and do a pseudo pass" → #199.
+  - "need a new patch item … show the version number of the app" → #200; asked whether a mismatch can
+    happen (yes: dist is rebuilt on main, the server runs old code until restarted).
+  - "whereever we show a role/application card I also want to see the recruiter name" → #202.
+  - "I want to be able to reschedule calls too" → #201, #205–#208.
+  - Roadmap items: notes/documents and the Timeline (#198); people you meet (#203); "you are maxing out
+    my PC … make it a roadmap item" (#204).
+  - "new feature, when something is rejected be able to add some feedback, then on insights a way to see
+    all rejection feedback in one place"; "also would be nice to see which round or round type rejections
+    happen at, perhaps wth a toggle to exapnd stages" → #209, #211–#214.
+  - "perhaps it needs another column, e.g. backlog+todo" → #210; empty queue: "Report and wait".
+  - The branch-protection banner: Kai created the ruleset (deletion and force push only).
+  - "those things youre waiting on me for, leave them on the roadmap. we wont be doing thme this session".
+  - "what are github self hosted runners … are they useful to us here" → no (public repo, PC load, a
+    service); GitHub-hosted CI offered; Kai: "nvm".
+  - "update the compaction doc" → this PR.
 
-### 4a. Current work, 2026-11-01 (read this first; it overrides 4 and 5 where they differ)
+### 4a. Current work, 2026-11-02 (read this first; it overrides 4 and 5 where they differ)
 
 Keep this whole section word for word in the summary: it is the live plan.
 
-**Versions and main.** Released up to v1.2.43 (#181). P9's `e2e-*` tasks and all of P10 are done, and so is the i18n cutover: #167 to #174 and
-#176 (the nine parts of items 11 to 13, v1.2.30 to v1.2.38), #177 `i18n-finish` (v1.2.39), #179 `i18n-default-stages` (v1.2.40),
-#180 `i18n-contribute-language` (v1.2.41), #182 `language-switch-label` (v1.2.42), #181 `i18n-uncoded-errors` (v1.2.43). Dashboard
-and planning, no releases: #175 `delivery-speed`, #178 phase P11, #183 `pm-draft-building`, #184 `bug-ratings`. Tests on main:
-pytest 1,045, browser 649. Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
+**Versions and main.** Released up to v1.18.0 (#214); main at `e811280`. Everything Kai asked for this session is merged
+and released (section 4). Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 
-**Nothing is running: wait for Kai.** The "keep going" loop does not apply right now. Kai scopes each step, and nothing below is
-approved to start:
-- **Bugs:** "dont fix yet though". The 62 are rated (below); Kai picks which.
-- **`i18n-search`:** "ok nvm that for now, i will come back to that another tim". It needs a decision first: the server reads
-  the translation files (my leaning, loosening "the backend never translates" for search only), the frontend expands the
-  query, or search moves to the browser. Chinese also needs word splitting.
-- **Speed-up ideas** in `docs/rfc/delivery-speed.md`: "dont actual change behaviour yet this is just investigation for niow". The
-  process stays as it is until Kai picks from them, and that includes builders repeating checks.
-- **P11 "Test gaps"** (seven tasks): "i want to keep track of those so we can address them another time".
-- **Waiting too:** `multi-language`, `deps-*` and `security-alerts` (the Dependabot fixes, below), `tests-reorganise`.
+**Nothing is up next: report and wait.** No roadmap task has status `next`. By `CLAUDE.md` ("Report and wait", Kai,
+2026-11-02), with nothing up next I tell Kai what's in the backlog and wait for Kai to pick; nothing from the backlog starts
+without Kai's go-ahead. Kai: "those things youre waiting on me for, leave them on the roadmap. we wont be doing thme this
+session". So don't raise these again this session; they wait in the Backlog:
+- `notes-documents-improve`, `timeline-improve`, `people-you-meet` (all "to be planned with Kai first"),
+  `test-resource-limits` (the stopgap limiter in section 1 stays until then).
+- `security-alerts`: minimatch #32 stays open until eslint and redocly take minimatch 11, or Kai dismisses it.
+- Older backlog: `i18n-search`, `multi-language`, the speed-up ideas in `docs/rfc/delivery-speed.md`, P11 "Test gaps",
+  `tests-reorganise`, Docker and the rest of section 5.
 
-**Kai's latest word on how to work:**
-- "if you followed the iterative review-fix cycle then i give you permission to merge and release". The permission check
-  blocked #180's merge as "Merge Without Review" until Kai said this; it can block again. Asking was right, and a blocked
-  command ran nothing.
-- "i want you to fan out and work in parallel", and "massively fan out, e.g. 10 or more agents (a fresh agent per bug)". Parallel
-  when Kai says so; otherwise "tackle these sequentially". "make all of the roadmap changes in 1 PR".
-- A PR Kai holds: "do not merge this one, this one i want to check myself first". Label it, keep it a draft, give a preview on
-  demo data. "Other than that it looks good" was then read as a yes, said aloud so Kai could object.
-- "how is pr180 taking so long? wasnt it a small change": I'd grown the ask (an extra check), and the brief repeats checks. Don't
-  grow a small ask; say what's extra. Kai then said "continue as you are".
-- PM dashboard work gets no version bump or release. Asked "should these be releases?" with "i think yes because were
-  making changes, but also no because theyre not part of the actual tracker", I said no and Kai said "sounds good to me".
-- On the dashboard: "you dont have to match the styling, but hype pie dashboard has many features this dashboard doesnt
-  hav". Features matter, not matching the look. And "on roadmap i want to be able to collapse sections".
-- "if you have followed and completed the iterative review-fix cycle then it can auto merge and make a release as
-  appropriate, but it needs my explicit permission each time to make a major release" (section 1, CLAUDE.md *Git*). It
-  doesn't change what to start: Kai still scopes that.
-- "I want smaller PRs, PRs created as drafts as early as possible, work directly on the files in the worktree dont use
-  patch scripts": the rules are in CLAUDE.md *Git*.
-- "all deletes should have a confirmation dialog/modal". Recorded as `fix-deletes-no-confirm` and
-  `fix-call-delete-no-confirm`; not fixed.
-- "why are you making changes via tmp files and not working in the worktree directly": edit worktree files directly
-  with the Edit tool. A script only for a truly mechanical bulk change. Patch scripts kept breaking on Prettier's wrapping.
-- "have you started yet? the pm dashboard doesnt show anything in progress?": the dashboard reads `worktree-<id>`
-  branches and PRs, so push the branch as soon as work starts, not after it's done.
-- "the pm dashboard isnt showing the currently in progress item as being in progress": fixed by `pm-draft-building`: a draft shows as
-  Building, and a task only on its branch shows too, so a roadmap split no longer needs its own PR first.
-- "how tf is pr 131 still open??????" and "was antyhing done in the last 90 minutes…": never leave a ready PR unmerged
-  once the cycle is complete, and never report and stop while approved work remains. A subagent's report isn't the end of
-  the job: check for open PRs before going quiet.
+**Kai's latest word on how to work** (also section 1):
+- "if you followed the iterative review-fix cycle then i give you permission to merge and release"; a major still needs Kai's
+  explicit yes each time. The permission check can still block a merge; asking was right.
+- Split a feature into ~500-line tasks before building ("they are big PRs, way over the 1k line target. This time I will allow
+  it"). Calls and rejection feedback ran as five PRs each: one long-lived builder agent did them in turn (resumed with
+  `SendMessage` after each merge), with a fresh reviewer per PR and fixes sent back to the builder.
+- Only a couple of dependency updates per PR, and the whole browser suite before merging any of them.
+- "i want you to fan out and work in parallel" when Kai says so; parallel agents queue their heavy runs on the shared lock.
 - Mid-turn "sitrep" questions get a short honest answer straight away, then carry on.
+- When Kai asks a question ("does it support i18n properly?", "did the frontend merge … come with a release?"), check the
+  code or the running thing and answer plainly before proposing work.
 
-**Open bugs (phase B; 62; none to fix without a go-ahead).** One fresh agent rated each (#184), reading the code and any
-test but not running the browser suite; each rated one bug alone, so ratings between bugs may disagree. All are still real.
-Each entry has `severity`, `ease`, `estimate_h`, `fix_risk`, `data_risk`, `changes_english`, `root_cause`, `fix_outline`, `pinned_by`,
-`related_bugs`, and the dashboard shows them (a pill, and a Bug review panel on the task page). High 1, medium 18, low 43; trivial
-15, easy 38, moderate 9, no hard; about 52 hours. A fix that changes text needs Kai's go-ahead, and a bug's `test.fail` comes off in
-the PR that fixes it. Branch `worktree-<bug id>`, and the board follows it.
-- High: `fix-applied-date-wipe` (easy, 1 h; may have hit Kai's real data). Clicking Save right after moving to Applied clears the
-  date. Workaround, told to Kai: reload after the move, before saving.
+**Open bugs (phase B; 69, none to fix without a go-ahead).** The 62 rated in #184 plus seven found this session, all low and
+recorded with the rating fields: `fix-init-git-identity-traceback`, `fix-archive-lock-not-ignored`,
+`fix-escape-closes-quick-view`, `fix-phone-header-overlap`, `fix-today-recent-phone-column`, `fix-move-not-allowed-text`,
+`fix-deleted-application-rebook-todo`. High 1 (`fix-applied-date-wipe`), medium 18, low 50. A bug Kai OKs is set to `next`.
 - Medium, easy or trivial: `fix-add-another-role-carries-over`, `fix-call-delete-no-confirm`, `fix-didnt-happen-notes-hidden`,
   `fix-link-rename-tick-error`, `fix-link-rename-cancel-saves`, `fix-timeline-load-error-silent`,
   `fix-agency-delete-blocks-application-save`, `fix-emptied-agency-kept`, `fix-stale-edit-after-save`, `fix-hidden-link-blocks-save`,
   `fix-person-move-blocks-application`, `fix-note-reopen-stale`.
 - Medium, moderate: `fix-deletes-no-confirm`, `fix-duplicate-role`, `fix-typed-agency-lost`, `fix-double-save-locked`,
   `fix-duplicate-company-name`, `fix-duplicate-agency-name`.
-- The 19 high and medium come to about 24 hours. Seven low bugs can also lose data or block editing, about 4 hours more:
-  `fix-merge-dialog-after-back`, `fix-person-saved-before-new-company`, `fix-offer-no-kind-loses-rate`, `fix-round-end-before-start`,
-  `fix-website-rules-differ`, `fix-detail-spaces-refused`, `fix-event-data-not-dict`.
-Told to Kai but unconfirmed, not recorded: the backup hint says `jat init` where the restore docs say `jat restore`. Seen by
-#183's builder, not recorded: with GitHub down the Phase status panel clips "% of tasks" at 1440 px; the burn-up's "today" label
-clips without a forecast; a blank Timeline doesn't say why.
+- Seven earlier low bugs can also lose data or block editing: `fix-merge-dialog-after-back`, `fix-person-saved-before-new-company`,
+  `fix-offer-no-kind-loses-rate`, `fix-round-end-before-start`, `fix-website-rules-differ`, `fix-detail-spaces-refused`,
+  `fix-event-data-not-dict`.
 
 **Settled:** two people can share a name. Kai: "yes there can be 2 people with the same name". Keep that test pinned; it
 isn't a bug.
 
-**The running tracker** on 8770 needs a restart by Kai (Ctrl+C, `uv run jat serve`) to pick up the backend changes up to v1.2.43,
-unless Kai has already; I've told Kai. Until then new events save English only, so they'll stay English when a language arrives; a
-role's page loses "on Call with…" (#156). The buttons keep working, and an older server's English shows. Leave it alone.
+**The running tracker** on 8770 needs a restart by Kai (Ctrl+C, `uv run jat serve`) to pick up v1.18.0's server changes (the
+Sankey rounds filter); I've told Kai. Until then the switch says to restart. The sidebar version note says so too. Leave it alone.
 
 **A parallel batch, as run for items 11 to 13:** one builder agent per PR with `isolation: "worktree"` and the brief
 `<tmp>/deps/builder-brief.md`; each renames its branch, opens a draft, and doesn't bump or merge. A separate reviewer per PR;
@@ -538,23 +542,23 @@ merging main first. Give each server its own port and reviewers their own, or on
 
 **The loop's scripts,** in `<tmp>` = `/home/kai/.claude/jobs/cf5328f4/tmp`: `deps/e2e.sh <spec>` (format, typecheck, lint,
 one spec), `deps/merge_main.sh` (merge main; a roadmap conflict keeps both sides, then `deps/roadmap_dedupe.py` leaves one
-line per id, the longer, so check a task's status afterwards: "building" outlasts "done"), `deps/merge.sh`, `deps/ship.sh <version>
-<pr> <worktree folder> [<branch>]`, `deps/finish.py` (tests-only PRs), `deps/pm_checks.sh` (every
-check in CLAUDE.md *Git* on the current commit, printing PASS or FAIL for each and the commit it ran on; about 6 minutes,
-so run it in the background and restart it after any new commit), `<tmp>/pm_shot.py <base url> <prefix> <path>[@light][@375][@full]`
+line per id, the longer, so check a task's status afterwards: "building" and "planned" both outlast "done"; always run
+`git diff origin/main -- docs/ROADMAP.yaml` after it), `deps/merge.sh`, `deps/ship.sh <version>
+<pr> <worktree folder> [<branch>]` (pass a dummy worktree folder such as `keep-agent-worktree` to keep a builder's worktree
+for its next part), `deps/finish.py` (tests-only PRs), `deps/finish_deps.py <task> "<changelog entry>" "<title>" [minor]`
+(the bump for any PR: patch, or minor with `minor`; marks the task done, also when it already is; writes the changelog line
+as given), `deps/pm_checks.sh` (every check in CLAUDE.md *Git* on the current commit, printing PASS or FAIL for each and the
+commit it ran on; it re-runs itself under the shared lock, `nice` and `ionice`, with 3 workers; about 10 minutes now, so run it
+in the background and restart it after any new commit), `<tmp>/pm_shot.py <base url> <prefix> <path>[@light][@375][@full]`
 (screenshots, run with `uv run --with playwright python`; not the older `deps/pm_shot.py`). If they're gone, rewrite them from this description. `e2e.sh`'s
 output is cut short, so read the whole of it before trusting a pass. `finish_i18n.py` writes a generic changelog line: replace it
 with what the PR really does. A finished builder's worktree stays locked; once merged and clean, `git worktree remove -f -f`
 (Kai: "cleanup the no-longer-needed worktrees").
 
-**Dependabot, already reviewed (31 alerts: 27 open, 4 auto-dismissed; no PRs made). Three PRs, one per lockfile:**
-- `deps-python`, `uv.lock`: certifi to 2026.10.18 (critical advisory; only pulled in by httpx, a dev dependency, despite
-  GitHub saying runtime), opentelemetry-api to 1.45.1 (via FastAPI, runtime). `uv lock --upgrade-package`.
-- `deps-frontend`: vite to 8.3.3 (direct dev dependency; 6 alerts), seroval to 1.6.11 (via TanStack Router, in the
-  bundle), undici to 8.12.2 (via jsdom, tests only), zod to 4.6.6 (via the eslint plugin, lint only).
-- `deps-website`: fast-uri to 3.1.9, undici to 8.12.2. Check what pulls them in after installing (`pnpm why`).
-- Test each with pytest, vitest, `pnpm e2e`, and for the website a build and a screenshot. These are patches: start
-  them when Kai says, then merge and release after the review-fix cycle.
+**Dependabot: done** (#186–#188, #190; v1.2.44–v1.2.47). Only minimatch #32 is open: the fix is minimatch 11, but eslint's
+packages need ^10 and `@redocly/openapi-core` pins 5.1.9, and forcing 11 breaks redocly (`m is not a function`). Dev tools
+only. GitHub's alert list lags a merge by a few minutes; check `gh api …/dependabot/alerts?state=open` again before
+reporting. Check what pulls a package in with `pnpm why` / `uv tree --invert --package <name>`.
 
 **PM dashboard.** http://127.0.0.1:8767 runs from the main checkout as a background job of this session (`python3 -m
 tools.pm`). It reads the main checkout's roadmap, so **pull main after every merge, roadmap-only ones too**, or Kai's
@@ -617,7 +621,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
 
 ### 5. Work in flight and candidates
 
-- **In flight:** none (after this doc's PR merges).
+- **In flight:** none (after this doc's PR merges). **Up next:** nothing. **Backlog this session:** leave it (section 4a).
 - **Left of the i18n work, P8** (when Kai says; see 4a): `i18n-search` and `multi-language` (Chinese, a native-speaker review;
   also percent and number formats, brackets and separators).
 - **Noticed, for later:** long text clips on Today's Waiting rows, the call form's How and the offer form's kind (for
@@ -811,6 +815,24 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   a greyed *Coming soon!*; pseudo in dev only, never saved; languages by their own names (`LANGUAGE_NAMES`), not translated.
 - **Docker:** shelved; the plan is `docs/rfc/docker.md` (minor bump, bind-mounted data folder,
   user id and git identity passed in, Podman-compatible, Compose, published image later).
+- **Reschedules, who and why:** "Who needed the change?" (Me / Them / Both of us / Neither of us; values `me | them |
+  mutual | neither`), not "Blame". Required in the dialog, optional in the API (the Edit form's moves are *Not recorded*).
+  Each move keeps its own who and why on its event; old moves keep their text. Insights counts raw numbers, with companies and
+  recruiters only from 3 moved rounds, and never claims reschedules lengthen time in stage.
+- **A new time isn't agreed yet:** a mark beside the status, not a new status; the old time is kept; the to-do is made in the
+  same request and starts open (Kai: the checkbox is "Add a to-do to book the new time", never "ticked" meaning done); booking
+  counts as the one move with the marked who; Undo deletes the to-do only if unchanged since it was made, else ticks it off;
+  refused on a closed or archived application (and, for calls, a closed person).
+- **Calls mirror rounds** for rescheduling and needing a new time; the to-do goes on the application, else the person; a
+  waiting call isn't held or booked ahead in Insights.
+- **Rejection feedback:** a stage is rejected by its id `rejected` (Kai's workflow has it); one feedback per application,
+  editable any time, kept as written; undo and reopening keep it. The Rejections list shows every application with feedback,
+  whatever happened since: date and from-stage from the latest standing move to Rejected by `in_time_order`, "undone" if
+  none stands, and the current stage if it moved on. Its period goes by rejection date.
+- **"Reached" a round** (for which round a rejection came after, and the Sankey rounds): not cancelled, not waiting for a new
+  time, and its start (or a take-home's deadline) at or before the cutoff, or marked done by then (from its latest `done`
+  timeline entry, else when it was added). The Sankeys split only the first active stage with "interview" in its id.
+- **Up next / Backlog and "Report and wait"** (section 1, `CLAUDE.md`).
 
 ### 8. Gotchas already learned
 
@@ -903,6 +925,28 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
 - **Bash refusals in a worktree** also hit `cd ..` before git and `python3 - <<EOF` scripts that
   mention git: split the commands, and put long text in a file.
 
+- **Learned 2026-11-02:**
+  - **Roadmap merges revert statuses.** `merge_main.sh`'s dedupe keeps the longer line, so a `done` task can come back as
+    `planned` or `building`. It happened on almost every merge this session. Always check `git diff origin/main --
+    docs/ROADMAP.yaml` after merging main, and fix the line by hand.
+  - **Stacked PRs:** deleting a PR's base branch (merging the PR below it with `--delete-branch`) closes it, and GitHub won't
+    change a closed PR's base. Open a replacement from the same branch (#195 replaced #193). Prefer one base, main.
+  - **Isolated agents** (`isolation: "worktree"`) can't write to the job tmp dir: give them the worktree's `var/` or a
+    unique `/tmp/jat-…` folder. Their worktrees stay locked after they finish: `git worktree remove -f -f` once merged and clean.
+  - **The PATH needs `/home/kai/.local/bin`** for `uv`; without it e2e's fixtures fail 580 tests with `spawnSync uv ENOENT`.
+    A piped e2e run can report exit 0 on failure: read the pass and fail counts.
+  - **Mantine buttons are disabled while loading**, so "Save is disabled" isn't proof a save finished; wait on the saved
+    value (`expect.poll` on the API) instead (fixed in `companies.spec.ts` in #192).
+  - **A test that works a time out twice** (`_iso(10)` twice) can tick over a second between: work each time out once.
+  - **The shared test lock deadlocked once:** `pm_checks.sh` clears `JAT_*` variables, which wiped its own `JAT_HEAVY_LOCKED`
+    marker, so it re-took the lock it held and every agent waited 11 minutes. The marker is now `HEAVY_TESTS_LOCKED`.
+    Check `lsof /tmp/jat-heavy-tests.lock` when runs seem stuck.
+  - **Killing a process by PID is refused** by the permission check ("Interfere With Workloads"); stop your own background
+    task with TaskStop.
+  - **The PM dashboard parses branch roadmaps:** a new status on an unmerged branch shows under Problems on the old
+    dashboard until the PR merges and the dashboard restarts.
+  - **A forked Claude can't use EnterWorktree** from the main checkout; it works in the worktree by absolute paths.
+
 ### 8a. How Kai works
 
 - Uses the tracker for a real job search and reports gaps as they hit them, often several in
@@ -927,7 +971,7 @@ palettes; the earlier versions of this doc.
 ### 10. End the summary with
 
 The resume steps below, then one line with the next action: Kai's latest instruction if it's unfinished; otherwise
-"Next action: nothing is approved to start; wait for Kai (section 4a)."
+"Next action: nothing is up next; report and wait for Kai (section 4a)."
 
 ---
 
@@ -946,7 +990,7 @@ The resume steps below, then one line with the next action: Kai's latest instruc
 4. **Unfinished worktrees:** commit and push, then finish that task.
 5. **Then Kai's latest request,** which section 4a spells out. If there isn't one, report the state in two lines and
    wait.
-6. **Before the next compaction,** refresh sections 3, 4 and 5 in a small docs PR.
+6. **Before the next compaction,** refresh sections 3, 4, 4a and 5 in a small docs PR.
 
 ## Re-expanding what the summary dropped
 
