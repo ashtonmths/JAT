@@ -77,6 +77,7 @@ def populate(session) -> dict[str, str]:
         applied_on=date(2026, 9, 28),
         tags=["python", "fintech"],
         archived=False,
+        rejection_feedback="  Wanted more Go ✓\nKind words about the take-home.  ",
     )
     session.add(app)
     session.flush()

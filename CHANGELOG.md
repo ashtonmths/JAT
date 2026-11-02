@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.14.0 (2026-11-02)
+
+- **Groundwork for rejection feedback:** the API can keep feedback on a rejected application (one per application, editable any time, kept as written), sent with the move to Rejected or saved later with `PUT /applications/{id}/rejection-feedback`, and applications gain `rejection_feedback`. Feedback works with the stage whose id is `rejected`. The dialog and the Insights view come in the next releases. Restarting the tracker runs migration 0017, which only adds an empty column (#209).
+
 ## 1.13.0 (2026-11-02)
 
 - **Calls moved, on Insights:** the Recruiter conversations tab counts calls moved to another time and their moves, split by who needed the change, as plain counts. A call waiting for a new time counts as moved, but not as held or booked ahead. Restart the tracker and rebuild the frontend to see it (#208).

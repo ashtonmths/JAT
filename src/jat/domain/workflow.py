@@ -41,6 +41,9 @@ if TYPE_CHECKING:
 
 KINDS = ("active", "success", "closed")
 TRANSITIONS = ("any", "configured")
+# The stage that means they turned you down, by its id, as other closing stages are known
+# (replies.YOURS): what takes rejection feedback. A workflow without it has no such stage.
+REJECTED = "rejected"
 
 
 class WorkflowError(ValueError):

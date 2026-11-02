@@ -140,6 +140,9 @@ class Application(IdMixin, TimestampMixin, Base):
     last_activity_at: Mapped[datetime] = mapped_column(default=utcnow, index=True)
     tags: Mapped[list[str]] = mapped_column(default=list)
     archived: Mapped[bool] = mapped_column(Boolean, default=False)
+    # What they said when they turned you down, as you wrote it (plain text). One per application:
+    # about its latest rejection, kept through an undo or reopening, and only cleared when you clear it.
+    rejection_feedback: Mapped[str | None] = mapped_column(Text)
 
 
 class ApplicationContact(IdMixin, Base):

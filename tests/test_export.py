@@ -107,8 +107,41 @@ def _rows(path, table):
     return [json.loads(line) for line in (path / "export" / f"{table}.jsonl").read_text("utf-8").splitlines()]
 
 
+def _as_before_rejection_feedback(path, revision="0016"):
+    """Make `path`'s export look written at `revision`, before 0017: applications have no rejection_feedback."""
+    old = []
+    for row in _rows(path, "applications"):
+        del row["rejection_feedback"]
+        old.append(json.dumps(row, ensure_ascii=False, separators=(",", ":")))
+    (path / "export" / "applications.jsonl").write_text("\n".join(old) + "\n", encoding="utf-8")
+    meta_path = path / "export" / "_meta.json"
+    meta = json.loads(meta_path.read_text("utf-8"))
+    meta["schema_revision"] = revision
+    meta_path.write_text(json.dumps(meta), encoding="utf-8")
+
+
+def test_rejection_feedback_survives_export_and_restore_as_written(data_dir, tmp_path):
+    fresh = _fresh_with_export(data_dir, tmp_path)
+    restore_data_dir(fresh)
+    export_data_dir(fresh)
+    [app] = _rows(fresh, "applications")
+    assert app["rejection_feedback"] == "  Wanted more Go ✓\nKind words about the take-home.  "
+
+
+def test_an_export_from_before_rejection_feedback_restores(data_dir, tmp_path):
+    """An export written at 0016 has no rejection_feedback: restore builds it there, then migrates."""
+    fresh = _fresh_with_export(data_dir, tmp_path)
+    _as_before_rejection_feedback(fresh)
+    counts = restore_data_dir(fresh)
+    assert counts["applications"] == 1
+    export_data_dir(fresh)
+    [app] = _rows(fresh, "applications")
+    assert (app["rejection_feedback"], app["stage"], app["tags"]) == (None, "screen", ["python", "fintech"])
+
+
 def _as_before_calls_could_move(path, revision):
     """Make `path`'s export look written at `revision`, before 0016: no meeting_moves, no call columns."""
+    _as_before_rejection_feedback(path, revision)
     old = []
     for row in _rows(path, "meetings"):
         for key in (

@@ -404,6 +404,17 @@
             ],
             "title": "Recruiter Name"
           },
+          "rejection_feedback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Feedback"
+          },
           "reply_to_read_since": {
             "anyOf": [
               {
@@ -864,6 +875,17 @@
               }
             ],
             "title": "Recruiter Name"
+          },
+          "rejection_feedback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Feedback"
           },
           "reply_to_read_since": {
             "anyOf": [
@@ -3855,6 +3877,17 @@
             ],
             "title": "Recruiter Name"
           },
+          "rejection_feedback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Feedback"
+          },
           "reply_to_read_since": {
             "anyOf": [
               {
@@ -4161,6 +4194,8 @@
                   "recruiter_id_not_found",
                   "recruiter_other_agency",
                   "referral_has_recruiter",
+                  "rejection_feedback_not_rejected",
+                  "rejection_feedback_wrong_stage",
                   "role_call_other_person",
                   "role_has_applications",
                   "role_id_not_found",
@@ -6411,6 +6446,18 @@
             ],
             "title": "Occurred At"
           },
+          "rejection_feedback": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Feedback"
+          },
           "to_stage": {
             "title": "To Stage",
             "type": "string"
@@ -8079,6 +8126,17 @@
             ],
             "title": "Recruiter Name"
           },
+          "rejection_feedback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Feedback"
+          },
           "relations": {
             "items": {
               "type": "string"
@@ -8612,6 +8670,29 @@
           "new"
         ],
         "title": "RecruiterSetParams",
+        "type": "object"
+      },
+      "RejectionFeedbackIn": {
+        "additionalProperties": false,
+        "description": "An application's rejection feedback, as you wrote it; null or blank clears it.",
+        "properties": {
+          "feedback": {
+            "anyOf": [
+              {
+                "maxLength": 10000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback"
+          }
+        },
+        "required": [
+          "feedback"
+        ],
+        "title": "RejectionFeedbackIn",
         "type": "object"
       },
       "RepliedWaitingMsg": {
@@ -12552,7 +12633,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.13.0"
+    "version": "1.14.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -13821,6 +13902,59 @@
         "summary": "Create Offer",
         "tags": [
           "offers"
+        ]
+      }
+    },
+    "/api/v1/applications/{app_id}/rejection-feedback": {
+      "put": {
+        "description": "Add, edit or clear what they said when they turned you down, after the move to Rejected.",
+        "operationId": "put_rejection_feedback_api_v1_applications__app_id__rejection_feedback_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectionFeedbackIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
+          }
+        },
+        "summary": "Put Rejection Feedback",
+        "tags": [
+          "applications"
         ]
       }
     },
