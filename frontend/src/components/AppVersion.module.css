@@ -1,0 +1,10 @@
+/* The version mismatch sentence: orange, a warning like the status dot's, dark enough on white
+   for small text (about 5:1; Mantine's orange-6 is about 2.4:1). */
+.mismatch {
+  color: #c2410c;
+}
+
+/* A lighter orange on the dark sidebar. A custom value, not light-dark(): the build drops that. */
+:where([data-mantine-color-scheme="dark"]) .mismatch {
+  color: var(--mantine-color-orange-4);
+}

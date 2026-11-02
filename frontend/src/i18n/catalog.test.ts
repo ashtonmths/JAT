@@ -210,6 +210,33 @@ describe("unusedKeys", () => {
     expect(unusedKeys(catalog, [`t("a")`, `t("b", { count })`], "common")).toEqual(["today:c"]);
     expect(unusedKeys(catalog, [`t("a")`], "common", ["today"])).toEqual(["common:b"]);
   });
+
+  it("counts a key English nests with $t(ns:key) as used", () => {
+    const catalog = {
+      common: { a: 'Of {{count}}, $t(today:b, {"count": {{n}} })', c: "$t(other:c)" },
+      today: { b_one: "1", b_other: "n", c: "C" },
+    };
+    expect(unusedKeys(catalog, [`t("a")`, `t("c")`], "common")).toEqual(["today:c"]);
+  });
+});
+
+describe("two counts in one line", () => {
+  // Insights' "Of 5 booked rounds, 3 moved.": the booked count is the line's own, the moved count is nested.
+  const both = ["rescheduling.moved", "rescheduling.movedRounds"];
+
+  it("needs every plural form of each count", () => {
+    const forms = compare(en.insights, en.insights, "pl").pluralForms.filter((p) => both.includes(p.key));
+    expect(forms).toEqual(both.map((key) => ({ key, missing: ["few", "many"] })));
+  });
+
+  it("catches a translation that drops the nested count", () => {
+    const tree = structuredClone(en.insights) as unknown as { rescheduling: Record<string, string> };
+    tree.rescheduling.moved_one = "Of {{count}} booked round.";
+    tree.rescheduling.moved_other = "Of {{count}} booked rounds.";
+    expect(compare(en.insights, tree, "en").placeholders).toEqual([
+      { key: "rescheduling.moved", dropped: ["moved"], unknown: [] },
+    ]);
+  });
 });
 
 // The real text files. Other languages are JSON next to locales/en (none ship yet).

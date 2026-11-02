@@ -85,6 +85,22 @@ The app is running but the web interface hasn't been built. Run
 
 `jat serve` isn't running (or stopped). Start it again with `uv run jat serve`.
 
+## The sidebar says the server and this page are different versions
+
+The app comes in two halves that are released together: the tracker you start with `jat serve`,
+and the page in your browser, which `jat serve` reads from `frontend/dist` on disk. They can
+still drift apart, because updating changes the code on disk, not what's already running:
+
+- **"Restart the tracker to update."** The page is newer. After an update rebuilt the frontend,
+  `jat serve` keeps running the code it started with. Stop it (<kbd>Ctrl</kbd>+<kbd>C</kbd>) and
+  start it again; the note goes once both match.
+- **"Refresh this page to update."** The tracker is newer: this browser tab was opened before
+  it was restarted or updated. Reload the page.
+
+Until they match, some things may fail in confusing ways, because the page asks for things the
+tracker doesn't know about yet (or the other way round). If the note stays after a restart and a
+reload, the frontend wasn't rebuilt: see [Updating](commands.md#updating-to-a-newer-version).
+
 ## I edited a note in my editor and the app doesn't show it
 
 Notes are picked up the next time the app lists them: reload the page. The file must stay
