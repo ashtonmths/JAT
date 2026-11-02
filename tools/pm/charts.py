@@ -160,7 +160,8 @@ def status_table(roadmap: Roadmap) -> str:
         "review": "In review",
         "unknown": "Unknown",  # only while GitHub has never answered
         "building": "Building",
-        "planned": "Planned",
+        "next": "Up next",
+        "planned": "Backlog",
         "blocked": "Blocked",
         "bug": "Bugs",
     }

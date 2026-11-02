@@ -5,6 +5,9 @@
 # multi-line strings.
 #
 # status: bug | planned | building | review | done | blocked
+#   Not started is one of two. planned is the backlog (shown as Backlog): ideas, and things to plan
+#   with Kai first. next (shown as Up next) is work Kai has asked for, queued to be built. A bug
+#   stays in the Bugs column unless it's set to next.
 #   A task whose branch (worktree-<id>) or PR exists takes its LIVE status from git and
 #   GitHub: building while the branch has commits but no PR, review while the PR is open,
 #   done once merged. The status written here is the fallback when there's no live evidence.
@@ -173,6 +176,7 @@ phases:
       - {id: pm-activity, name: "PM Activity: commits over time by Conventional Commit type, PR throughput, PR size, and lines and tests by area", owner: lead, status: done, estimate_h: 3, depends: [pm-look], prd: docs/prd/tracker.md}
       - {id: pm-agents, name: "PM Agents: the worktrees being worked in, with state, last activity, commits and unsaved changes, and swimlanes of agents over time", owner: lead, status: done, estimate_h: 3, depends: [pm-look], prd: docs/prd/tracker.md}
       - {id: pm-task-pages, name: "PM task pages: a page per task with its stage and the evidence for it, branch, PR, ahead and behind, size, lines, tests and last commit", owner: lead, status: done, estimate_h: 2, depends: [pm-look], prd: docs/prd/tracker.md}
+      - {id: pm-up-next, name: "PM dashboard: split not started into Backlog (planned: ideas, things to plan with Kai first) and Up next (next: work Kai has asked for, queued to be built), on the board, Overview, Roadmap and task pages (Kai, 2026-11-02)", owner: lead, status: building, estimate_h: 2, depends: [pm-look], prd: docs/prd/tracker.md}
   - id: P9
     name: Automated browser tests
     goal: A browser suite that opens the app and really uses it, page by page, so dependency changes can be tested before they land

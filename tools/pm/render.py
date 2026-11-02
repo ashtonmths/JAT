@@ -9,7 +9,7 @@ from urllib.parse import quote
 from . import charts, derive
 from .charts import day
 from .live import Snapshot
-from .roadmap import STATUSES, Roadmap, Task
+from .roadmap import NOT_STARTED, PILL_WORDS, STATUS_LABELS, STATUSES, Roadmap, Task
 from .style import CSS, KEEP_FOLDS, THEME_BUTTON, THEME_HEAD
 
 NAV = (
@@ -71,8 +71,8 @@ def problems(roadmap: Roadmap, snapshot: Snapshot) -> str:
     return f'<div class="panel errors" style="margin-bottom:16px"><h2>Problems</h2><ul class="plain">{lis}</ul></div>'
 
 
-def pill(status: str) -> str:
-    return f'<span class="pill {escape(status)}">{escape(status)}</span>'
+def pill(status: str, text: str | None = None) -> str:
+    return f'<span class="pill {escape(status)}">{escape(text or PILL_WORDS.get(status, status))}</span>'
 
 
 def repo_link(roadmap: Roadmap, path: str, label: str, ref: str | None = None) -> str:
@@ -174,7 +174,12 @@ def kpis(roadmap: Roadmap, snapshot: Snapshot, now: datetime) -> str:
     no_commits = not snapshot.git_ok and not snapshot.commits
     no_code = not snapshot.git_ok and not snapshot.lines
     cards += [
-        kpi("Whole roadmap", f"{percent(done, len(tasks))}%", f"{done} of {len(tasks)} tasks done", bar),
+        kpi(
+            "Whole roadmap",
+            f"{percent(done, len(tasks))}%",
+            f"{done} of {len(tasks)} tasks done · {len(roadmap.queued())} up next",
+            bar,
+        ),
         kpi("Pull requests", "—", UNKNOWN_GITHUB)
         if no_prs
         else kpi("Pull requests", f"{open_prs} <small>open</small>", f"{merged} merged, {len(prs)} total"),
@@ -195,7 +200,7 @@ def phase_rows(roadmap: Roadmap, snapshot: Snapshot) -> str:
     rows = []
     for p in roadmap.phases:
         total = len(p.tasks)
-        counts = {s: sum(t.status == s for t in p.tasks) for s in ("done", "review", "building")}
+        counts = {s: sum(t.status == s for t in p.tasks) for s in ("done", "review", "building", "next")}
         segs = "".join(f'<i class="{s}" style="width:{100 * n / total:.2f}%"></i>' for s, n in counts.items() if n)
         dates = derive.phase_dates(p)
         if dates:
@@ -217,7 +222,7 @@ def phase_rows(roadmap: Roadmap, snapshot: Snapshot) -> str:
 
 UNKNOWN_GITHUB = "GitHub hasn't answered"
 UNKNOWN_GIT = "git hasn't answered"
-PIPELINE_STAGES = (("Planned", "planned"), ("Building", "building"), ("In review", "review"), ("Merged", "done"))
+PIPELINE_STAGES = tuple((STATUS_LABELS[s], s) for s in ("planned", "next", "building", "review", "done"))
 
 
 def pipeline_table(roadmap: Roadmap, snapshot: Snapshot) -> str:
@@ -270,7 +275,8 @@ def overview(roadmap: Roadmap, snapshot: Snapshot, now: datetime | None = None) 
     legend = "".join(
         f'<span><i class="{status}"></i>{label}</span>'
         for label, status in (
-            ("Planned", "planned"),
+            ("Backlog", "planned"),
+            ("Up next", "next"),
             ("Building", "building"),
             ("In review", "review"),
             ("Done", "done"),
@@ -289,8 +295,10 @@ live from branches and PRs</p>{pipeline_table(roadmap, snapshot)}</div></div>
             f"<summary>Open bugs · {len(roadmap.open_bugs())}</summary>"
             f'<ul class="plain">{bugs}</ul></details>'
         )
-    nxt = "".join(task_line(roadmap, t, False) for t in roadmap.next_up()[:8])
-    nxt = nxt or '<li class="muted">Nothing ready.</li>'
+    queued = roadmap.queued()
+    nxt = "".join(waits_on(roadmap, task_line(roadmap, t, False), t) for t in queued)
+    backlog = sum(t.status == "planned" for t in roadmap.tasks)
+    nxt = nxt or f'<li class="muted">Nothing queued. {backlog} in the <a href="/board">backlog</a>.</li>'
     blocked = [t for t in roadmap.tasks if t.status == "blocked"]
     blocked_html = (
         "".join(
@@ -319,12 +327,19 @@ live from branches and PRs</p>{pipeline_table(roadmap, snapshot)}</div></div>
     return (
         header
         + f"""<div class="grid">
-<div class="panel"><h2>Next up</h2><ul class="plain">{nxt}</ul></div>
+<div class="panel"><h2>Up next · {len(queued)}</h2><ul class="plain">{nxt}</ul></div>
 <div class="panel"><h2>Blocked</h2><ul class="plain">{blocked_html}</ul></div>
 <div class="panel"><h2>Open PRs</h2><ul class="plain">{prs}</ul></div>
 <div class="panel"><h2>Active worktrees</h2><ul class="plain">{trees_html}</ul></div>
 </div>"""
     )
+
+
+def waits_on(roadmap: Roadmap, line: str, task: Task) -> str:
+    """A task line, saying what it waits on when its dependencies aren't done."""
+    if not (waiting := roadmap.waiting(task)):
+        return line
+    return line.replace("</span></li>", f" · waits on {escape(', '.join(waiting))}</span></li>", 1)
 
 
 def phase_filter(roadmap: Roadmap, base: str, selected: str | None) -> str:
@@ -342,7 +357,7 @@ def board(roadmap: Roadmap, snapshot: Snapshot, phase: str | None = None) -> str
         cards = []
         for t in (t for t in tasks if t.status == status):
             extra = ""
-            if status == "planned" and (waiting := roadmap.waiting(t)):
+            if status in NOT_STARTED and (waiting := roadmap.waiting(t)):
                 extra = f'<div class="small muted">waits on {escape(", ".join(waiting))}</div>'
             links = task_links(roadmap, t)
             cards.append(
@@ -356,7 +371,7 @@ def board(roadmap: Roadmap, snapshot: Snapshot, phase: str | None = None) -> str
         if status == "unknown" and not count:  # only while GitHub has never answered
             continue
         cols.append(
-            f'<div class="col"><h2 class="small muted">{pill(status)} <span>{count}</span></h2>'
+            f'<div class="col"><h2 class="small muted">{pill(status, STATUS_LABELS[status])} <span>{count}</span></h2>'
             f"{''.join(cards) or '<p class=muted>—</p>'}</div>"
         )
     return phase_filter(roadmap, "/board", phase) + f'<div class="board">{"".join(cols)}</div>'
