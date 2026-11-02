@@ -100,7 +100,8 @@ font-size:11px;font-weight:400;white-space:nowrap}
 .legend .next{background:var(--next)}.legend .review{background:var(--review)}.legend .done{background:var(--done)}
 .stage{text-align:center}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--line-2)}
 .dot.past{background:var(--ink-3)}.dot.building{background:var(--building)}.dot.review{background:var(--review)}
-.dot.done{background:var(--done)}.dot.next{background:var(--next)}.dot.at{box-shadow:0 0 0 3px color-mix(in srgb,currentColor 25%,transparent)}
+.dot.done{background:var(--done)}.dot.next{background:var(--next)}
+.dot.at{box-shadow:0 0 0 3px color-mix(in srgb,currentColor 25%,transparent)}
 ol.feed{list-style:none;margin:0;padding:0;max-height:760px;overflow-y:auto}
 ol.feed li{display:grid;grid-template-columns:52px 14px minmax(0,1fr);gap:6px;padding:7px 0;
 border-top:1px solid var(--line)}

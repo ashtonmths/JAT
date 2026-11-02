@@ -92,7 +92,10 @@ class LiveTests(unittest.TestCase):
 
     def test_next_up_and_summary(self):
         roadmap = apply_live(sample(), Live(prs=[PullRequest(1, "a", "MERGED", "worktree-a", "u")]))
+        self.assertEqual(roadmap.next_up(), [])  # all backlog: nothing is queued
+        roadmap.task("b").status = roadmap.task("d").status = "next"
         self.assertEqual([t.id for t in roadmap.next_up()], ["b"])
+        self.assertEqual([t.id for t in roadmap.queued()], ["b", "d"])
         self.assertEqual(roadmap.waiting(roadmap.task("d")), ["b"])
         summary = roadmap.summary()
         self.assertEqual(summary["done_h"], 2)
