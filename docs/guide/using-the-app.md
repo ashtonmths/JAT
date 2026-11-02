@@ -277,7 +277,8 @@ feedback from the *Rejection feedback* block (below).
 The feedback is kept exactly as you wrote it, line breaks and all, up to 10,000 characters.
 Near the limit a count shows under the box. Text over the limit isn't cut: the dialog says
 why it wasn't saved and keeps what you wrote.
-It shows under *Rejection feedback* on the application's page and in the quick view, where
+
+The feedback shows under *Rejection feedback* on the application's page and in the quick view, where
 **Add feedback** or **Edit feedback** changes it later. Emptying it there clears it.
 **Undo last move** and reopening the application keep it. If it's rejected again, the
 dialog opens with what's there, so you can add to it, replace it, or empty it to clear it.
