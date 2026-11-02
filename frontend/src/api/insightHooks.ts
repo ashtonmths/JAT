@@ -76,6 +76,19 @@ export function useRescheduling(since?: string) {
   });
 }
 
+export type Rejection = Schemas["RejectionOut"];
+
+/** Every application with rejection feedback; with `since`, those rejected since then. */
+export function useRejections(since?: string) {
+  return useQuery({
+    queryKey: ["insights", "rejections", since],
+    queryFn: async () =>
+      unwrap(await api.GET("/api/v1/insights/rejections", { params: { query: { since } } })),
+    placeholderData: keepPreviousData,
+    retry: false, // an older server has no such endpoint: say so straight away
+  });
+}
+
 export type Conversations = Schemas["ConversationsOut"];
 export type ConversationPerson = Schemas["ConversationPerson"];
 export type ConversationAgency = Schemas["ConversationAgency"];

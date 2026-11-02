@@ -7,6 +7,7 @@ import { useFlow, useStats, type FlowFilters } from "../api/insightHooks";
 import { ConversationsSection } from "../components/Conversations";
 import { DocumentPerformanceSection } from "../components/DocumentPerformance";
 import { RouteTable, StageTable, WeeklyActivity } from "../components/InsightStats";
+import { RejectionsSection } from "../components/RejectionFeedbackList";
 import { ReschedulingCard } from "../components/Rescheduling";
 import { ScorecardCard } from "../components/Scorecard";
 import { SankeyChart } from "../components/SankeyChart";
@@ -19,7 +20,7 @@ function sinceFor(range: Range) {
   return new Date(Date.now() - Number(range) * 86_400_000).toISOString();
 }
 
-type Tab = "whole" | "applications" | "conversations" | "documents";
+type Tab = "whole" | "applications" | "conversations" | "documents" | "rejections";
 
 /**
  * How the search is going (PRD FR19, FR20): the whole picture (every role, from where it came
@@ -65,6 +66,7 @@ export function InsightsPage() {
           <Tabs.Tab value="applications">{t("tabs.applications")}</Tabs.Tab>
           <Tabs.Tab value="conversations">{t("tabs.conversations")}</Tabs.Tab>
           <Tabs.Tab value="documents">{t("tabs.documents")}</Tabs.Tab>
+          <Tabs.Tab value="rejections">{t("tabs.rejections")}</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="whole">
           <WholePicture since={range.since} />
@@ -122,6 +124,9 @@ export function InsightsPage() {
         </Tabs.Panel>
         <Tabs.Panel value="documents">
           <DocumentPerformanceSection since={range.since} />
+        </Tabs.Panel>
+        <Tabs.Panel value="rejections">
+          <RejectionsSection since={range.since} />
         </Tabs.Panel>
       </Tabs>
       <WeeklyActivity />
