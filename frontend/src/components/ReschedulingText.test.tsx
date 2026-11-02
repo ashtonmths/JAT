@@ -4,6 +4,7 @@ import { render, screen, within } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { Rescheduling } from "../api/insightHooks";
+import { createI18n, i18n } from "../i18n";
 import { daysMoved, RoundDaysMoved } from "./Reschedule";
 import { ReschedulingCard } from "./Rescheduling";
 
@@ -127,6 +128,39 @@ describe("the Rescheduling block", () => {
         "Of 5 booked rounds, 1 moved. That's 2 moves in all: a round that moves twice is one round and two moves.",
       ),
     ).toBeTruthy();
+  });
+
+  it("gives the booked and the moved count each its own plural", () => {
+    // English says both forms alike, so a language that doesn't shows which form each count picked.
+    const nested = '$t(insights:rescheduling.movedRounds, {"count": {{moved}} })';
+    const lang = createI18n({
+      lng: "en",
+      strict: true,
+      resources: {
+        en: {
+          insights: {
+            rescheduling: {
+              moved_one: `booked one {{count}}, ${nested}`,
+              moved_other: `booked other {{count}}, ${nested}`,
+              movedRounds_one: "moved one {{count}}",
+              movedRounds_other: "moved other {{count}}",
+            },
+          },
+        },
+      },
+    });
+    const say = (count: number, moved: number) => lang.t("insights:rescheduling.moved", { count, moved });
+    expect(say(1, 1)).toBe("booked one 1, moved one 1");
+    expect(say(5, 1)).toBe("booked other 5, moved one 1");
+    expect(say(5, 3)).toBe("booked other 5, moved other 3");
+    // And in English, every pair as it always read.
+    expect(i18n.t("insights:rescheduling.moved", { count: 1, moved: 1 })).toBe("Of 1 booked round, 1 moved.");
+    expect(i18n.t("insights:rescheduling.moved", { count: 5, moved: 1 })).toBe(
+      "Of 5 booked rounds, 1 moved.",
+    );
+    expect(i18n.t("insights:rescheduling.moved", { count: 5, moved: 3 })).toBe(
+      "Of 5 booked rounds, 3 moved.",
+    );
   });
 
   it("says how many moved rounds are still waiting for a new time, only when some are", async () => {

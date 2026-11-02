@@ -147,8 +147,12 @@ export default {
     noneMovedInPeriod_one: "The {{count}} booked round on applications added in this period hasn't moved.",
     noneMovedInPeriod_other:
       "None of the {{count}} booked rounds on applications added in this period has moved.",
-    moved_one: "Of {{count}} booked round, {{moved}} moved.",
-    moved_other: "Of {{count}} booked rounds, {{moved}} moved.",
+    // Two counts, each with its own plural: {{count}} booked rounds here, and the rounds that moved
+    // in movedRounds, nested with $t (keep it whole, with its {"count": {{moved}} }).
+    moved_one: 'Of {{count}} booked round, $t(insights:rescheduling.movedRounds, {"count": {{moved}} }).',
+    moved_other: 'Of {{count}} booked rounds, $t(insights:rescheduling.movedRounds, {"count": {{moved}} }).',
+    movedRounds_one: "{{count}} moved",
+    movedRounds_other: "{{count}} moved",
     moves_one: "That's {{count}} move.",
     moves_other: "That's {{count}} moves in all: a round that moves twice is one round and two moves.",
     // Rounds that can't go ahead at their time and have no new one yet (they keep the old time).

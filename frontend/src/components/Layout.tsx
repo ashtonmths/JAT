@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 
 import { NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
 import { ApiStatus } from "./ApiStatus";
+import { AppVersion } from "./AppVersion";
 import { HeaderSearch } from "./HeaderSearch";
 import { HelpButton, LanguageSwitch, NewApplicationButton } from "./HeaderButtons";
 
@@ -118,6 +119,7 @@ export function Layout() {
               </Group>
             </Anchor>
           </Tooltip>
+          <AppVersion />
         </Stack>
       </AppShell.Navbar>
 

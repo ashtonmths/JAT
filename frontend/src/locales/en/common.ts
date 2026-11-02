@@ -73,6 +73,17 @@ export default {
     detailsBackups: "v{{version}} · schema {{schema}} · backups on",
     detailsNoGit: "v{{version}} · schema {{schema}} · data dir isn't a git repo",
   },
+  // The version in the footer (AppVersion), and what to do when the server's differs from the
+  // page's. Versions are data, written as "1.8.0".
+  version: {
+    short: "v{{version}}",
+    // Starts with the visible text, so speech input can find it (WCAG 2.5.3).
+    linkLabel: "v{{version}}: see what's in it on GitHub (opens in a new tab).",
+    // The usual case: the frontend was rebuilt, but the running tracker still has older code.
+    serverOlder: "The server is v{{server}} but this page is v{{page}}. Restart the tracker to update.",
+    // A tab opened before the tracker was restarted or updated.
+    pageOlder: "The server is v{{server}} but this page is v{{page}}. Refresh this page to update.",
+  },
   // How long ago, or how long until, in days (utils/time.ts ago, utils/attention.ts).
   time: {
     today: "today",
