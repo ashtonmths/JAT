@@ -585,6 +585,50 @@ test.describe("Rejections", () => {
       page.getByText("Couldn't load the rejection feedback. If you've just updated the tracker, restart it."),
     ).toBeVisible();
   });
+
+  test("which round they came after agrees with the API, and follows the period", async ({
+    page,
+    request,
+  }) => {
+    interface Rounds {
+      rejections: number;
+      by_kind: { kind: string; count: number }[];
+    }
+    const day = (ago: number) => new Date(Date.now() - ago * 86_400_000).toISOString();
+    const { id } = await quick(request, "Round Reject Co", "Round Reject Role", { stage: "applied" });
+    await post(request, `applications/${id}/interviews`, {
+      kind: "coding_task",
+      status: "done",
+      starts_at: day(5),
+    });
+    await post(request, `applications/${id}/move`, { to_stage: "rejected", occurred_at: day(3) });
+    const all = await getJson<Rounds>(request, "insights/rejections/rounds");
+    const coding = all.by_kind.find((k) => k.kind === "coding_task")?.count ?? 0;
+    expect(coding).toBeGreaterThan(0);
+
+    await openInsights(page);
+    await tab(page, "Rejections");
+    const section = card(page, "Which round rejections came after");
+    await expect(
+      section.getByText(new RegExp(`^${plural(all.rejections, "rejection")} in all\\.`)),
+    ).toBeVisible();
+    const s = all.rejections === 1 ? "" : "s";
+    await expect(
+      section
+        .getByRole("list", { name: "By kind of round" })
+        .getByText(`${coding} of ${all.rejections} rejection${s} came after a coding task.`, { exact: true }),
+    ).toBeVisible();
+
+    await range(page, "Last 30 days");
+    const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+    const recent = await getJson<Rounds>(
+      request,
+      `insights/rejections/rounds?since=${encodeURIComponent(since)}`,
+    );
+    await expect(
+      section.getByText(new RegExp(`^${plural(recent.rejections, "rejection")} in all\\.`)),
+    ).toBeVisible();
+  });
 });
 
 test.describe("weekly activity", () => {
