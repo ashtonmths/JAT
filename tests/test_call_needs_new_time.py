@@ -203,10 +203,16 @@ def test_closing_the_conversation_ticks_the_to_do_and_keeps_the_mark(client, see
 
 
 def test_its_end_moves_with_its_start_when_it_s_booked(client, seeded):
-    call = _call(client, seeded, ends_at=_iso(4))  # a day long, to keep the sums plain
+    # Each time is worked out once, so a second ticking over mid-test can't break the sums.
+    def day_after(iso: str) -> str:
+        return (datetime.fromisoformat(iso) + timedelta(days=1)).isoformat().replace("+00:00", "Z")
+
+    starts, new_start = _iso(3), _iso(10)
+    ends, new_end = day_after(starts), day_after(new_start)
+    call = _call(client, seeded, starts_at=starts, ends_at=ends)  # a day long, to keep the sums plain
     _mark(client, call)
-    booked = client.patch(f"/api/v1/meetings/{call['id']}", json={"starts_at": _iso(10)}).json()
-    assert (booked["starts_at"], booked["ends_at"]) == (_iso(10), _iso(11))
+    booked = client.patch(f"/api/v1/meetings/{call['id']}", json={"starts_at": new_start}).json()
+    assert (booked["starts_at"], booked["ends_at"]) == (new_start, new_end)
 
 
 def test_booking_settles_it_even_without_its_started_move(client, seeded, app):
@@ -215,9 +221,10 @@ def test_booking_settles_it_even_without_its_started_move(client, seeded, app):
     todo_id = _mark(client, call, reason="A clash", todo=BOOK)["rebook_todo_id"]
     with app.state.sessions.begin() as session:
         session.query(MeetingMove).delete()
-    booked = client.patch(f"/api/v1/meetings/{call['id']}", json={"starts_at": _iso(8)}).json()
+    new_start = _iso(8)
+    booked = client.patch(f"/api/v1/meetings/{call['id']}", json={"starts_at": new_start}).json()
     assert (booked["needs_new_time_since"], booked["rebook_todo_id"], booked["rescheduled_count"]) == (None, None, 1)
-    assert booked["moves"] == [{"from_at": call["starts_at"], "to_at": _iso(8), "by": "them", "reason": None}]
+    assert booked["moves"] == [{"from_at": call["starts_at"], "to_at": new_start, "by": "them", "reason": None}]
     assert _todo(client, todo_id)["done_at"] is not None
     assert _waiting(client) == ([], [call["id"]])
 
