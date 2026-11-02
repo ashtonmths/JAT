@@ -31,7 +31,10 @@ What it does:
 - Interview rounds in the user's own words ("Round 2 · System design test"), rescheduled from
   the application page, the quick view (the current round, in an active stage), Today or the
   Interviews page and marked so, with each move's old and new time, who needed the change and
-  why on the application's timeline, the Timeline page and Today's Recent activity.
+  why on the application's timeline, the Timeline page and Today's Recent activity. A round
+  with no new time agreed yet can be marked as needing one (who, why, old time kept), with a
+  to-do to book it that's ticked off when the new time is set
+  (`POST`/`DELETE /api/v1/interviews/{id}/needs-new-time`).
 - Markdown notes as real files, links, attachments and `.eml` import onto the timeline;
   versioned CVs and cover letters.
 - Timeline across every role, application, company, agency and person, by day or as lanes
