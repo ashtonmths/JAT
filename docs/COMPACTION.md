@@ -400,10 +400,11 @@ next action.
 
 - **main at `e811280`** (merge of #214), plus this doc's PR until it merges. No other open PRs; one
   worktree (the main checkout); only `main` locally and on GitHub. Version **1.18.0**, released as v1.18.0.
-- **Merged since the last snapshot (#185), all through the review-fix cycle.** From #186 on, each merge
-  followed a full `<tmp>/deps/pm_checks.sh` run (every CLAUDE.md check, the whole browser suite included)
-  on the final commit, run by the lead session at merge time. The PR bodies record the builders' own,
-  smaller runs; the full results were in the session, not the PRs:
+- **Merged since the last snapshot (#185), all through the review-fix cycle.** From #186 on, each released
+  PR was merged after a full `<tmp>/deps/pm_checks.sh` run (every CLAUDE.md check, the whole browser suite
+  included) on its final commit, run by the lead session at merge time; the roadmap and dashboard PRs ran
+  `uv run pytest -q tests/pm`, as CLAUDE.md allows. The PR bodies record the builders' own, smaller runs;
+  the full results were in the session, not the PRs:
   - Security (Dependabot), split two packages per PR at Kai's ask: #187 certifi + opentelemetry-api
     (v1.2.44), #188 vite + seroval (v1.2.45), #186 website undici + fast-uri (v1.2.46), #190 frontend
     undici + zod (v1.2.47). All patch or minor moves, no majors. 27 of 28 open alerts closed; minimatch
@@ -473,7 +474,7 @@ session". So don't raise these again this session; they wait in the Backlog:
   `tests-reorganise`, Docker and the rest of section 5.
 
 **Kai's latest word on how to work** (also section 1):
-- Kai restated the merge permission on 2026-11-01 (section 1 has the 2026-10-31 wording): "if you followed the iterative
+- Kai later restated the merge permission (section 1 has the 2026-10-31 wording): "if you followed the iterative
   review-fix cycle then i give you permission to merge and release"; a major still needs Kai's explicit yes each time. The permission check can still block a merge; asking was right.
 - Split a feature into ~500-line tasks before building ("they are big PRs, way over the 1k line target. This time I will allow
   it"). Calls and rejection feedback ran as five PRs each: one long-lived builder agent did them in turn (resumed with
