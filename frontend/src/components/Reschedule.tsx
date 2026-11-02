@@ -20,12 +20,12 @@ import { useToday } from "../utils/useToday";
 
 const PICKER = "YYYY-MM-DD HH:mm:ss";
 
-/** "Rescheduled" (or "Rescheduled ×2") on a round that moved, with the time it moved from. */
+/** "Rescheduled" (or "Rescheduled ×2") on a round or a call that moved, with the time it moved from. */
 export function RescheduledBadge({
   interview,
   size = "sm",
 }: {
-  interview: Pick<Interview, "rescheduled_count" | "rescheduled_from">;
+  interview: { rescheduled_count: number; rescheduled_from?: string | null };
   size?: "xs" | "sm";
 }) {
   const { t } = useTranslation("interviews");
@@ -150,8 +150,9 @@ function notifyMarked(interview: Reschedulable, undo: () => void) {
     ),
   });
 }
-type RescheduleBy = NonNullable<Schemas["InterviewPatch"]["reschedule_by"]>;
-const WHO = [
+export type RescheduleBy = NonNullable<Schemas["InterviewPatch"]["reschedule_by"]>;
+/** Who needed the change, as the dialogs offer it: a round's and a call's alike. */
+export const WHO = [
   { value: "me", key: "interviews:reschedule.whoOptions.me" },
   { value: "them", key: "interviews:reschedule.whoOptions.them" },
   { value: "mutual", key: "interviews:reschedule.whoOptions.mutual" },

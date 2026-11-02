@@ -29,6 +29,11 @@ export default {
   },
   happened: "Happened",
   happenedWho: "Happened: {{label}}",
+  // Moving a booked call: its dialog uses the round's words for the rest (interviews:reschedule).
+  reschedule: {
+    was: "Booked for {{when}}.",
+    hint: "Who and why are kept with the call, and on its application's timeline if it's about one.",
+  },
   moreFor: "More for {{label}}",
   edit: "Edit",
   card: {

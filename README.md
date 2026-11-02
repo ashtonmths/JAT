@@ -188,7 +188,7 @@ the [releases](https://github.com/waddington/job-application-tracker/releases) a
 | 👀 | **At a glance** on every application: what needs attention (with how long it's been), what's coming up, and key dates as "3 weeks ago" |
 | ✅ | **To-dos** in your own words ("they messaged me, reply"), on their own or about a person, company, agency, role or application, with an optional date; see them on Today and the page they're about, and tick them off (with undo) |
 | 🤔 | **Roles to decide**: add the roles a recruiter mentions on a call, then apply (it makes the application, through them), mark it interested (tracked, not applied yet) or pass with a reason; each role has its own page with to-dos, notes, links and files (the job description, which carries over to the application) |
-| 📞 | **Calls and meetings** with people, outside any one application: book a recruiter catch-up with an agenda, then note how it went; shows on Today and the Timeline |
+| 📞 | **Calls and meetings** with people, outside any one application: book a recruiter catch-up with an agenda, then note how it went; reschedule one with who needed the change and why; shows on Today and the Timeline |
 | 📨 | **Waiting to hear back**: mark that you've replied and see who to chase; **They've replied** puts it at the top of Today; **Chased**, **Ghosted** or **Not interested** in one click, with a ghost by anyone who ghosted you; star favourite recruiters; see how many working days each person *usually* takes to reply |
 | 😴 | **One-click chasing**: set a follow-up reminder, snooze, or mark Ghosted straight from Today |
 | 📊 | **Sankey diagram** of your funnel: applications → screens → interviews → offers, filtered by date range and route, with counts on hover |

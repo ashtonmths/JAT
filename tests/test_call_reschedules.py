@@ -156,6 +156,58 @@ def test_a_moves_record_read_back_from_odd_data_is_never_a_500(client, seeded, a
     assert moves == [{"from_at": THEN, "to_at": LATER, "by": None, "reason": None}]
 
 
+def _moves_on_the_timeline(client):
+    items = client.get("/api/v1/timeline").json()["items"]
+    return [i for i in items if i["reschedule"] is not None]
+
+
+def test_a_move_of_a_call_with_no_application_is_on_the_timeline_once(client, seeded, app):
+    call = _call(client, seeded, title="Market catch-up")
+    _patch(client, call, starts_at=LATER, reschedule_by="them", reschedule_reason="A clash")
+    _patch(client, call, starts_at=LATEST)
+    first, second = sorted(_moves_on_the_timeline(client), key=lambda i: i["reschedule"]["from_at"])
+    assert first["id"].startswith("meeting-move:") and first["kind"] == "other-event"
+    assert first["category"] == "meeting" and first["application_id"] is None
+    assert first["title"] == "Call with Alex Recruiter: Market catch-up rescheduled (they needed the change): A clash"
+    assert first["msg"] == {
+        "key": "event.callRescheduledByThemReason",
+        "params": {"kind": "call", "title": "Market catch-up", "contact_name": "Alex Recruiter", "reason": "A clash"},
+    }
+    assert first["reschedule"] == {"from_at": THEN, "to_at": LATER, "by": "them", "reason": "A clash"}
+    assert [p["name"] for p in first["people"]] == ["Alex Recruiter"]
+    assert first["agency_name"] == "Northwind Talent"
+    assert second["msg"]["key"] == "event.callRescheduled" and second["reschedule"]["by"] is None
+
+    # A who the app doesn't know (a hand-edited export) is left unsaid, never a 500.
+    with app.state.sessions.begin() as session:
+        session.query(MeetingMove).update({"by": "blame"})
+    assert {i["msg"]["key"] for i in _moves_on_the_timeline(client)} == {
+        "event.callRescheduledReason",
+        "event.callRescheduled",
+    }
+
+
+def test_a_move_on_an_applications_timeline_isnt_shown_twice(client, seeded):
+    app_id = _app(client, seeded)
+    call = _call(client, seeded)
+    _patch(client, call, starts_at=LATER, reschedule_by="me")  # before it was about the application
+    _patch(client, call, application_id=app_id)
+    _patch(client, call, starts_at=LATEST, reschedule_by="them")  # its entry is on the application's timeline
+    moves = sorted(_moves_on_the_timeline(client), key=lambda i: i["reschedule"]["from_at"])
+    assert [(i["id"].split(":")[0], i["reschedule"]["by"]) for i in moves] == [
+        ("meeting-move", "me"),
+        ("event", "them"),
+    ]
+    assert {i["application_id"] for i in moves} == {app_id}  # both with the application it's about now
+
+
+def test_a_cancelled_calls_moves_still_happened(client, seeded):
+    call = _call(client, seeded)
+    _patch(client, call, starts_at=LATER, reschedule_by="me")
+    _patch(client, call, status="cancelled")
+    assert [i["reschedule"]["by"] for i in _moves_on_the_timeline(client)] == ["me"]
+
+
 def test_removing_a_call_removes_its_moves(client, seeded, app):
     call = _call(client, seeded)
     _patch(client, call, starts_at=LATER)

@@ -187,6 +187,8 @@ offer reply deadlines still ahead under *Coming up*. It's in the *Review* group,
 Insights. It includes:
 
 - calls and meetings with people (not ones that didn't happen);
+- each time a call was rescheduled, when you moved it, with its old and new time, who and why
+  (a call that later didn't happen keeps its moves);
 - roles people pitched to you, and the ones you passed on (with your reason);
 - everything on application timelines: stage moves, calls, emails, notes, interviews,
   offers, files and documents sent (an application added past *Interested* shows as one
@@ -442,10 +444,14 @@ meetings** on their page:
   asks for notes; **Didn't happen** asks what happened, then closes it.
 - If it's about one application, pick it under **About an application**; the call then shows
   with that application on the Timeline.
-- Changing the time of a booked call (**Edit** in its menu) counts as moving it, as with a
-  round, and the call keeps its length. A call about an application gets "Call with …
-  rescheduled" on that application's timeline, with the old and new time. Changing the time
-  while marking it Happened or Didn't happen isn't a move.
+- **Reschedule** (a booked call, on the person's page and on Today, including one whose time
+  has passed): pick the new time, say **Who needed the change?** (required) and, if you like,
+  **Why?**. The call keeps its length and shows *Rescheduled* (hover for the time it moved
+  from). Each move shows on the [Timeline](#timeline): "Call with … rescheduled", then the old
+  and new time, who and why. A call about an application has it on that application's timeline
+  too.
+- Changing the time with **Edit** in its menu also counts as a move, without a who. Changing
+  the time while marking it Happened or Didn't happen isn't a move.
 - Under a call that happened, **Add roles from this call** adds the roles they mentioned, to
   [decide on](#roles-to-decide) later. The call lists them with their status.
 

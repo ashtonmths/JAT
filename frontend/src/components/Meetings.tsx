@@ -33,8 +33,10 @@ import {
   type Meeting,
   type MeetingKind,
 } from "../api/meetingHooks";
+import { CallRescheduleButton } from "./CallReschedule";
 import { Markdown } from "./Markdown";
 import { MeetingDidntHappen } from "./OutcomeNotes";
+import { RescheduledBadge } from "./Reschedule";
 import { RoleFormModal, RoleLine } from "./Roles";
 import { useRoleSummaries } from "../api/roleHooks";
 import { i18n } from "../i18n";
@@ -296,6 +298,7 @@ export function MeetingLine({
                 })}
               </Anchor>
             )}
+            <RescheduledBadge interview={meeting} size="xs" />
             {meeting.meeting_url && meeting.status === "scheduled" && (
               <Anchor href={meeting.meeting_url} target="_blank" rel="noreferrer" size="xs">
                 {t("line.joinLink")}
@@ -405,6 +408,7 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
                 action={
                   <Group gap={4} wrap="nowrap">
                     {toClose.includes(m) && <MeetingOutcome meeting={m} />}
+                    <CallRescheduleButton meeting={m} />
                     <MeetingMenu meeting={m} onEdit={() => setEditing(m)} />
                   </Group>
                 }

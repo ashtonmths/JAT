@@ -32,7 +32,16 @@ export function useMeetings(filters: MeetingFilters, enabled = true) {
 function useRefreshMeetings() {
   const qc = useQueryClient();
   return () => {
-    for (const key of [["meetings"], ["next-actions"], ["timeline"], ["search"], ["role-summaries"]])
+    // A call about an application also changes that application: a move goes on its timeline.
+    for (const key of [
+      ["meetings"],
+      ["next-actions"],
+      ["timeline"],
+      ["search"],
+      ["role-summaries"],
+      ["application"],
+      ["applications"],
+    ])
       void qc.invalidateQueries({ queryKey: key });
   };
 }
