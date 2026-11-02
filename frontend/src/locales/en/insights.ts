@@ -23,7 +23,6 @@ export default {
     documents: "CVs and cover letters",
     rejections: "Rejections",
   },
-  // Every application's rejection feedback, newest first.
   // Which round rejections came after. Plurals go by {{count}}, every rejection; {{n}} is how many of them.
   rejectionRounds: {
     heading: "Which round rejections came after",
@@ -69,6 +68,7 @@ export default {
     unnumbered_other: "{{n}} of {{count}} rejections came after a round with no number.",
     hint: "These are plain counts, not a pattern: with only a few rejections, one more can change the picture.",
   },
+  // Every application's rejection feedback, newest first.
   rejections: {
     heading: "Rejection feedback",
     intro: "What they said when they turned you down, newest first, whatever has happened since.",

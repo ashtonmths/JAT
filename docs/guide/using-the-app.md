@@ -746,9 +746,14 @@ feedback or not, by the last interview round each one *reached* before you were 
 - and how many came before any round.
 
 A round counts as reached if it wasn't cancelled and its time (or a take-home's deadline) was at
-or before the rejection. A round with no time counts if it was marked done before then. A round
-booked for after the rejection, or added after the application was reopened, doesn't count. These
-are plain counts, not rates. With only a few rejections, one more can change the picture.
+or before the rejection. A round with no time, or a take-home due after the rejection, counts if
+it's marked done and was added before then (handed in early). The app doesn't keep when a round
+was marked done, so it goes by when the round was added. These don't count:
+- a round waiting for a new time when you were turned down;
+- a round booked for after the rejection;
+- a round added after the application was reopened.
+
+These are plain counts, not rates. With only a few rejections, one more can change the picture.
 
 Below that, the tab lists every application with [rejection feedback](#rejection-feedback) in one
 place, newest rejection first. Each shows:

@@ -86,6 +86,25 @@ describe("which round rejections came after", () => {
     expect(lines("By round number")).toEqual(["1 of 1 rejection came after a round with no number."]);
   });
 
+  it("adds kinds it doesn't know into other, as one line, sorted with the rest", async () => {
+    await showRounds(
+      counts({
+        rejections: 5,
+        by_kind: [
+          { kind: "technical", count: 2 },
+          { kind: "other", count: 1 },
+          { kind: "panel", count: 1 },
+          { kind: "chat", count: 1 },
+        ],
+      }),
+    );
+    await screen.findByText(/5 rejections in all/);
+    expect(lines("By kind of round")).toEqual([
+      "3 of 5 rejections came after another kind of round.",
+      "2 of 5 rejections came after a technical round.",
+    ]);
+  });
+
   it("has a sentence for every kind of round", async () => {
     const kinds = [
       "screen",

@@ -17,8 +17,15 @@ const AFTER_KIND = {
   other: "rejectionRounds.afterKind.other",
 } as const;
 
-const afterKind = (kind: string) =>
-  AFTER_KIND[Object.hasOwn(AFTER_KIND, kind) ? (kind as keyof typeof AFTER_KIND) : "other"];
+type Kind = keyof typeof AFTER_KIND;
+const known = (kind: string): Kind => (Object.hasOwn(AFTER_KIND, kind) ? (kind as Kind) : "other");
+
+/** Counts by kind, with kinds this build doesn't know added into "other" (one line, one sentence), most first. */
+function byKnownKind(rows: RejectionRounds["by_kind"]): [Kind, number][] {
+  const merged = new Map<Kind, number>();
+  for (const { kind, count } of rows) merged.set(known(kind), (merged.get(known(kind)) ?? 0) + count);
+  return [...merged].sort((a, b) => b[1] - a[1]); // stable: ties keep the server's order
+}
 
 function Lines({ label, lines }: { label: string; lines: string[] }) {
   if (!lines.length) return null;
@@ -41,7 +48,7 @@ function Lines({ label, lines }: { label: string; lines: string[] }) {
 function Counts({ data }: { data: RejectionRounds }) {
   const { t } = useTranslation("insights");
   const count = data.rejections;
-  const byKind = data.by_kind.map((k) => t(afterKind(k.kind), { count, n: k.count }));
+  const byKind = byKnownKind(data.by_kind).map(([kind, n]) => t(AFTER_KIND[kind], { count, n }));
   const byNumber = [
     ...data.by_number.map((r) => t("rejectionRounds.afterRound", { count, n: r.count, round: r.round })),
     ...(data.unnumbered ? [t("rejectionRounds.unnumbered", { count, n: data.unnumbered })] : []),

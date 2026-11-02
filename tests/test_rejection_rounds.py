@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from sqlalchemy import text
+
+from jat.db import db_path, make_engine
+
 from .factories import post
 
 URL = "/api/v1/insights/rejections/rounds"
@@ -62,6 +66,48 @@ def test_the_last_round_reached_by_kind_and_number(client, seeded):
         "by_kind": [{"kind": "coding_task", "count": 2}, {"kind": "system_design", "count": 1}],
         "by_number": [{"round": 1, "count": 1}, {"round": 2, "count": 2}],
     }
+
+
+def test_a_take_home_handed_in_early_counts(client, seeded):
+    a = _app(client, seeded)
+    _round(client, a, "coding_task", status="done", deadline_at="2099-03-01T17:00:00Z")  # due after, done
+    _move(client, a, "rejected", "2099-02-01T09:00:00Z")
+    b = _app(client, seeded)
+    _round(client, b, "coding_task", deadline_at="2099-03-01T17:00:00Z")  # due after, not done: not reached
+    _move(client, b, "rejected", "2099-02-01T09:00:00Z")
+    counts = _counts(client)
+    assert (counts["rejections"], counts["no_rounds"], counts["by_kind"]) == (
+        2,
+        1,
+        [{"kind": "coding_task", "count": 1}],
+    )
+
+
+def test_a_round_waiting_for_a_new_time_wasnt_reached(client, seeded):
+    a = _app(client, seeded)
+    _round(client, a, "screen", "2099-01-01T09:00:00Z", status="done")
+    waiting = _round(client, a, "technical", "2099-01-05T09:00:00Z")
+    r = client.post(f"/api/v1/interviews/{waiting}/needs-new-time", json={"by": "them"})
+    assert r.status_code == 200, r.text
+    _move(client, a, "rejected", "2099-02-01T09:00:00Z")  # after it started waiting
+    counts = _counts(client)
+    assert (counts["by_kind"], counts["by_number"]) == ([{"kind": "screen", "count": 1}], [{"round": 1, "count": 1}])
+
+
+def test_a_round_with_no_number_counts_by_kind(app, client, seeded):
+    a = _app(client, seeded)
+    unnumbered = _round(client, a, "pairing", "2026-10-01T09:00:00Z")
+    _move(client, a, "rejected", "2026-10-02T09:00:00Z")
+    engine = make_engine(db_path(app.state.jat.data_dir))
+    with engine.begin() as conn:  # a state the API won't make: rounds get a number when added
+        conn.execute(text("UPDATE interviews SET round = NULL WHERE id = :id"), {"id": unnumbered})
+    engine.dispose()
+    counts = _counts(client)
+    assert (counts["unnumbered"], counts["by_kind"], counts["by_number"]) == (
+        1,
+        [{"kind": "pairing", "count": 1}],
+        [],
+    )
 
 
 def test_an_undone_rejection_isnt_counted(client, seeded):

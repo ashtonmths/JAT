@@ -602,6 +602,9 @@ test.describe("Rejections", () => {
       starts_at: day(5),
     });
     await post(request, `applications/${id}/move`, { to_stage: "rejected", occurred_at: day(3) });
+    // One rejected long ago, so the last 30 days must count fewer.
+    const old = await quick(request, "Old Round Reject Co", "Round Reject Role", { stage: "applied" });
+    await post(request, `applications/${old.id}/move`, { to_stage: "rejected", occurred_at: day(400) });
     const all = await getJson<Rounds>(request, "insights/rejections/rounds");
     const coding = all.by_kind.find((k) => k.kind === "coding_task")?.count ?? 0;
     expect(coding).toBeGreaterThan(0);
@@ -625,6 +628,7 @@ test.describe("Rejections", () => {
       request,
       `insights/rejections/rounds?since=${encodeURIComponent(since)}`,
     );
+    expect(recent.rejections).toBeLessThan(all.rejections); // the period really narrows it
     await expect(
       section.getByText(new RegExp(`^${plural(recent.rejections, "rejection")} in all\\.`)),
     ).toBeVisible();

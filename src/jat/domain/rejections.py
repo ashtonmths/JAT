@@ -9,9 +9,11 @@ the rejection's date, in [since, until).
 
 Which round rejections came after (`by_round`) counts every application whose rejection stands,
 feedback or not, by the same rule and period. The round it came after is the last one it *reached*
-before that rejection: not cancelled, and its time (start, else deadline) at or before the
-rejection, or with no time, marked done and added before it. Rounds after a reopening come after
-the rejection, so they don't count; nor does a round booked but not yet held when it was rejected.
+before that rejection: not cancelled, not waiting for a new time then, and its start (or a
+take-home's deadline) at or before the rejection; or, with no start and no deadline yet passed,
+marked done and added before it (a take-home handed in early; when it was marked done isn't
+kept). Rounds after a reopening come after the rejection, so they don't count; nor does a round
+booked but not yet held when it was rejected.
 """
 
 from __future__ import annotations
@@ -123,10 +125,17 @@ def _reached(round_: Interview, rejected_at: datetime) -> datetime | None:
     """When the round was reached, if it was by `rejected_at` (see the module's docstring)."""
     if round_.status == "cancelled":
         return None
-    when = round_.starts_at or round_.deadline_at
-    if when is not None:
-        return when if when <= rejected_at else None
-    return round_.created_at if round_.status == "done" and round_.created_at <= rejected_at else None
+    # Waiting for a new time when you were turned down: it keeps its old time, but didn't go ahead.
+    if round_.needs_new_time_since is not None and round_.needs_new_time_since <= rejected_at:
+        return None
+    done_before = round_.created_at if round_.status == "done" and round_.created_at <= rejected_at else None
+    if round_.starts_at is not None:
+        return round_.starts_at if round_.starts_at <= rejected_at else None
+    if round_.deadline_at is not None and round_.deadline_at <= rejected_at:
+        return round_.deadline_at
+    # No time, or a take-home due after the rejection: reached if it's done and was added before it
+    # (handed in early). When it was marked done isn't kept, so it goes by when it was added.
+    return done_before
 
 
 def by_round(session: Session, *, since: datetime | None = None, until: datetime | None = None) -> ByRound:
