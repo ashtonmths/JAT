@@ -532,6 +532,27 @@ test.describe("deleting", () => {
 });
 
 test.describe("comparing", () => {
+  test("each column names the application's recruiter, when it has one", async ({ page, request }) => {
+    const via = await post<{ id: string }>(request, "applications/quick", {
+      company_name: "Compare Recruiter Co",
+      role_title: "Offered Role",
+      route: "direct",
+      recruiter_name: "Morgan Fairweather",
+    });
+    await addOffer(request, via.id, { salary: 90000 });
+    const alone = await application(request, "Compare Alone Co");
+    await addOffer(request, alone.id, { salary: 90000 });
+    await openOffers(page);
+    const column = (company: string) => page.getByRole("columnheader").filter({ hasText: company });
+    await expect(column("Compare Recruiter Co")).toHaveText(
+      "Compare Recruiter CoOffered Role · Morgan Fairweather",
+    );
+    await expect(
+      column("Compare Recruiter Co").getByRole("link", { name: "Morgan Fairweather" }),
+    ).toBeVisible();
+    await expect(column("Compare Alone Co")).toHaveText("Compare Alone CoOffered Role");
+  });
+
   test("every row shows what's set, and a dash for what isn't", async ({ page, request }) => {
     const full = await application(request, "Compare Full Co");
     await addOffer(request, full.id, {

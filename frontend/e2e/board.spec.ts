@@ -110,6 +110,21 @@ test.describe("what it shows", () => {
     await expect(card(page, "Fabrikam", "Staff Platform Engineer")).toContainText("Reply to read");
   });
 
+  test("a direct card names its in-house recruiter, and one without shows no one", async ({
+    page,
+    request,
+  }) => {
+    const made = await request.post("/api/v1/applications/quick", {
+      data: { company_name: "In-house Card Co", role_title: "Card Role", recruiter_name: "Ellis Varga" },
+    });
+    expect(made.ok()).toBe(true);
+    await addCard(page, request, "No Recruiter Card Co", "Card Role");
+    await expect(card(page, "In-house Card Co", "Card Role")).toContainText("Ellis Varga");
+    await expect(card(page, "No Recruiter Card Co", "Card Role")).toHaveText(
+      "No Recruiter Card CoCard Roletoday",
+    );
+  });
+
   test("a filter applies to the board too", async ({ page }) => {
     await expect(card(page, "Litware", "Senior Software Engineer")).toBeVisible();
     await page.getByPlaceholder("Search company, role, recruiter…").fill("Contoso");

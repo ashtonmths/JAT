@@ -852,6 +852,22 @@ test.describe("the company pages", () => {
     await expect(link).toHaveAttribute("target", "_blank");
   });
 
+  test("its applications name an in-house recruiter, and say Direct without one", async ({
+    page,
+    request,
+  }) => {
+    const co = await company(request, "In-house Page Co");
+    const person = await contact(request, { name: "Jules Brightwater", company_id: co.id });
+    await apply(request, { company_name: co.name, role_title: "Via Jules", recruiter_id: person.id });
+    await apply(request, { company_name: co.name, role_title: "On My Own" });
+    await page.goto(`/companies/${co.id}`);
+    await expect(page.getByRole("row").filter({ hasText: "Via Jules" })).toContainText(
+      "Direct · Jules Brightwater",
+    );
+    const alone = page.getByRole("row").filter({ hasText: "On My Own" }).getByRole("cell").first();
+    await expect(alone).toHaveText("On My OwnDirect");
+  });
+
   test("the list counts applications, and those in progress", async ({ page, request }) => {
     const active = await apply(request, { company_name: "Counted Co", role_title: "Counted One" });
     await apply(request, { company_name: "Counted Co", role_title: "Counted Two" });

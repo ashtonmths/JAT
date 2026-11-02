@@ -121,6 +121,11 @@ wide screen *Your move* is on the left and the other two sit beside it:
 **Coming up**: nothing to do yet. Interviews, task deadlines, [calls](#calls-and-meetings) and
 to-dos with a later date, soonest first, then rounds not booked yet.
 
+An application's row names its recruiter after the company and role ("Contoso · Backend
+Engineer · Alex Morgan"), linked to their page on interview and offer rows, here and on the
+Interviews and Offers pages. With no recruiter (you found it yourself, or a referral) it shows
+just the company and role.
+
 **Waiting on them**: who you're waiting for.
 
 - **Waiting to hear back**: applications and people you've replied to (see
@@ -219,6 +224,8 @@ view; open the full page from there.
 The **board** shows a column per stage. Drag a card to move it; the usual next stages are
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
 switch on *Show closed stages*, but appear while you drag so you can drop a card on them. Cards show the current interview round.
+Both name the recruiter: through an agency, the recruiter (and on the list their agency); directly,
+an in-house recruiter if one reached out ("Direct · Riley Chen" on the list and a company's page).
 
 **A column per interview round** (a switch above the board, remembered) splits *Interviewing*
 into *No round yet*, then *Round 1*, *Round 2*… up to the furthest any application has got
@@ -318,7 +325,7 @@ Today, and at the top of their page:
   *Not interested*, with the date. Someone who ghosted you gets a ghost: in place of the
   person icon on their page, and before their name on their tile, on the applications they
   brought you (the list, the board, the quick view, the People card, company, agency and role
-  pages), on calls, Today, Timeline entries and per-person rows, search results, and
+  pages, the Interviews and Offers pages), on calls, Today, Timeline entries and per-person rows, search results, and
   Insights (*Who you talk to* and the recruiter scorecard). Role lines say *(ghosted)* after
   the name.
   To take it off, whenever you like (a week later, say, when they were just slow), press
