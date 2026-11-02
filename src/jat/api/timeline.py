@@ -32,7 +32,7 @@ from ..db.models import (
 )
 from ..domain import interviews as interviews_svc
 from ..domain import offers as offers_svc
-from ..domain.applications import STAGE_CHANGE, is_implied
+from ..domain.applications import STAGE_CHANGE, is_call_move, is_implied
 from .deps import SessionDep, WorkflowDep
 from .meetings import label as meeting_label
 from .notes import _sync
@@ -154,6 +154,8 @@ def _event_category(event: Event) -> Category:
     data = event.data or {}
     if event.kind == STAGE_CHANGE:
         return "stage"
+    if is_call_move(event.kind, data):
+        return "meeting"  # a booked call moved, not a call that happened
     if event.kind in ("call", "email") or (event.kind == "file" and data.get("from")):
         return "message"  # an uploaded .eml counts as an email
     if event.kind == "interview":

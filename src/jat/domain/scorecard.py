@@ -28,10 +28,15 @@ from sqlalchemy.orm import Session
 
 from jat.db.models import Agency, Application, Contact, Event, Interview
 
-from .applications import STAGE_CHANGE, _effective_moves, is_implied
+from .applications import STAGE_CHANGE, _effective_moves, is_call_move, is_implied
 from .workflow import Workflow
 
 CONTACT_KINDS = ("call", "email", "message")
+
+
+def call_moved(event: Event) -> bool:
+    """A booked call moved to another time: it isn't contact about the application, so it's no sign of life."""
+    return is_call_move(event.kind, event.data)
 
 
 @dataclass
@@ -87,7 +92,8 @@ def scorecard(
             .where(Event.application_id.in_(ids), Event.kind.in_((STAGE_CHANGE, *CONTACT_KINDS)))
             .order_by(Event.seq)
         ):
-            events[ev.application_id].append(ev)
+            if not call_moved(ev):
+                events[ev.application_id].append(ev)
         interviewed = set(
             session.scalars(
                 select(Interview.application_id).where(

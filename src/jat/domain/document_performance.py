@@ -40,7 +40,7 @@ from jat.db.models import Application, ApplicationDocument, Document, DocumentVe
 
 from .applications import STAGE_CHANGE, _effective_moves, in_time_order, is_implied
 from .insights import applied_rank, stage_rank
-from .scorecard import CONTACT_KINDS, _added_at
+from .scorecard import CONTACT_KINDS, _added_at, call_moved
 from .workflow import Workflow
 
 KINDS = ("cv", "cover_letter", "other")
@@ -218,7 +218,8 @@ def performance(
             .where(Event.application_id.in_(ids), Event.kind.in_((STAGE_CHANGE, *CONTACT_KINDS)))
             .order_by(Event.seq)
         ):
-            history[ev.application_id].append(ev)
+            if not call_moved(ev):
+                history[ev.application_id].append(ev)
         for app_id, version_id in session.execute(
             select(ApplicationDocument.application_id, ApplicationDocument.document_version_id).where(
                 ApplicationDocument.application_id.in_(ids)

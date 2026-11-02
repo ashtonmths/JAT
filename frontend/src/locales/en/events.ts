@@ -38,6 +38,17 @@ export default {
   roundNeedsNewTimeByMutualReason: "{{label}} needs a new time (you both needed the change): {{reason}}",
   roundNeedsNewTimeByNeitherReason: "{{label}} needs a new time (not down to either of you): {{reason}}",
   roundNewTimeNotNeeded: "{{label}} no longer needs a new time",
+  // A call's {{label}} is already in your language (calls:name, built by callLabel): "Call with Alex Morgan".
+  callRescheduled: "{{label}} rescheduled",
+  callRescheduledReason: "{{label}} rescheduled: {{reason}}",
+  callRescheduledByMe: "{{label}} rescheduled (you needed the change)",
+  callRescheduledByThem: "{{label}} rescheduled (they needed the change)",
+  callRescheduledByMutual: "{{label}} rescheduled (you both needed the change)",
+  callRescheduledByNeither: "{{label}} rescheduled (not down to either of you)",
+  callRescheduledByMeReason: "{{label}} rescheduled (you needed the change): {{reason}}",
+  callRescheduledByThemReason: "{{label}} rescheduled (they needed the change): {{reason}}",
+  callRescheduledByMutualReason: "{{label}} rescheduled (you both needed the change): {{reason}}",
+  callRescheduledByNeitherReason: "{{label}} rescheduled (not down to either of you): {{reason}}",
   // {{money}} is built by formatMoney: the offer's currency, with digits in your language.
   offerReceivedYear: "Offer received: {{money}} a year",
   offerReceivedDay: "Offer received: {{money}} a day",

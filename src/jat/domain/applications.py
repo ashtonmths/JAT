@@ -348,6 +348,16 @@ EventMsgKey = Literal[
     "event.roundNeedsNewTimeByMutualReason",
     "event.roundNeedsNewTimeByNeitherReason",
     "event.roundNewTimeNotNeeded",
+    "event.callRescheduled",
+    "event.callRescheduledReason",
+    "event.callRescheduledByMe",
+    "event.callRescheduledByThem",
+    "event.callRescheduledByMutual",
+    "event.callRescheduledByNeither",
+    "event.callRescheduledByMeReason",
+    "event.callRescheduledByThemReason",
+    "event.callRescheduledByMutualReason",
+    "event.callRescheduledByNeitherReason",
     "event.offerReceivedYear",
     "event.offerReceivedDay",
     "event.offerReceivedNoFigures",
@@ -385,6 +395,17 @@ EventMsgKey = Literal[
     "event.rolePersonKeptUnnamedAgency",
     "event.rolePersonKeptDirect",
 ]
+
+
+def is_call_move(kind: str, data: Any) -> bool:
+    """An entry the app wrote when a booked call about the application moved to another time.
+
+    Keyed on what only the app writes (the activity endpoint drops a client's `msg` and
+    `reschedule`), so a call you log by hand is never taken for one, whatever else its data holds."""
+    if kind != "call" or not isinstance(data, dict) or not isinstance(data.get("reschedule"), dict):
+        return False
+    msg = data.get("msg")
+    return isinstance(msg, dict) and str(msg.get("key", "")).startswith("event.callRescheduled")
 
 
 def message(key: EventMsgKey, params: dict[str, str | int | None]) -> dict[str, Any]:

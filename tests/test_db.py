@@ -369,3 +369,32 @@ def test_0014_counts_reschedules_already_on_the_timeline(tmp_path):
         assert conn.execute(text("SELECT rescheduled_from FROM interviews WHERE id = 'i1'")).scalar_one() is None
     eng.dispose()
     assert rows == {"i1": 2, "i2": 0}
+
+
+def test_0016_leaves_every_call_as_it_was_and_never_moved(tmp_path):
+    path = tmp_path / "old.sqlite3"
+    migrate(path, "0015")
+    eng = make_engine(path)
+    ts = "'2026-01-01T09:00:00Z'"
+    with eng.begin() as conn:
+        conn.execute(text(f"INSERT INTO contacts (id, name, created_at, updated_at) VALUES ('p', 'Sam', {ts}, {ts})"))
+        for mid, status in (("m1", "scheduled"), ("m2", "done")):
+            conn.execute(
+                text(
+                    "INSERT INTO meetings (id, contact_id, kind, title, status, starts_at, ends_at, agenda, "
+                    f"created_at, updated_at) VALUES ('{mid}', 'p', 'call', 'Catch-up ✓', '{status}', {ts}, "
+                    f"'2026-01-01T09:30:00Z', 'Rates', {ts}, {ts})"
+                )
+            )
+        before = conn.execute(text("SELECT * FROM meetings ORDER BY id")).mappings().all()
+    eng.dispose()
+    migrate(path)
+    eng = make_engine(path)
+    with eng.connect() as conn:
+        after = conn.execute(text("SELECT * FROM meetings ORDER BY id")).mappings().all()
+        moves = conn.execute(text("SELECT COUNT(*) FROM meeting_moves")).scalar_one()
+    eng.dispose()
+    new = {"rescheduled_count": 0, "rescheduled_from": None, "needs_new_time_since": None}
+    new |= {"needs_new_time_by": None, "rebook_todo_id": None}
+    assert [dict(row) for row in after] == [{**row, **new} for row in before]
+    assert len(before) == 2 and moves == 0
