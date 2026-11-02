@@ -174,7 +174,9 @@ PR.** PRs that only touch internal files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `doc
 ## Keep going: the continuous delivery loop
 **Never stop because a piece of work is finished.** After every merge, pick the next item and
 start it in the same session. Stop only for a hard stop (below), a rate limit (wait 30 minutes
-and retry, repeatedly) or when Kai says so. **When Kai has scoped the work to specific items, Kai's
+and retry, repeatedly) or when Kai says so. **With nothing up next** (no `next` task left that isn't done
+or blocked on Kai), report what's in the backlog and wait for Kai to pick, rather than starting backlog
+work (see "When the roadmap runs out"). **When Kai has scoped the work to specific items, Kai's
 scope wins:** finish those, report, and wait instead of picking the next one. When Kai asks how it's going, give a short status
 update and carry on. Don't pause the loop for a question that has a sensible default: make
 the call, note the assumption in the PR, and keep going.
@@ -219,10 +221,12 @@ doing something else), goes on the roadmap straight away, like an issue in Jira:
   standing instruction covers it. A bug Kai has OK'd to fix is set to `next`.
 
 ### When the roadmap runs out
-The roadmap has run out when no `next` task is left that isn't done or blocked on Kai. Then, without waiting to be asked, run an
-ideation round against Kai's brief above, deduplicate against `docs/IDEAS.md`, and add the
-survivors to `docs/ROADMAP.yaml` as a new phase in the backlog (`planned`), for Kai to pick from
-rather than to start. Tell Kai in a line or two what was added and why.
+The roadmap has run out when no `next` task is left that isn't done or blocked on Kai. Then
+"Report and wait" (Kai, 2026-11-02): without waiting to be asked, run an ideation round against
+Kai's brief above, deduplicate against `docs/IDEAS.md`, and add the survivors to
+`docs/ROADMAP.yaml` as a new phase in the backlog (`planned`). Tell Kai in a line or two what was
+added and why, report what's in the backlog, and wait for Kai to pick. Nothing from the backlog
+is started without Kai's go-ahead.
 
 ### Hard stops: the loop never crosses these
 - Never commit or push personal data (see above), and never rewrite history on `main`.
