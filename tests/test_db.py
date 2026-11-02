@@ -398,3 +398,40 @@ def test_0016_leaves_every_call_as_it_was_and_never_moved(tmp_path):
     new |= {"needs_new_time_by": None, "rebook_todo_id": None}
     assert [dict(row) for row in after] == [{**row, **new} for row in before]
     assert len(before) == 2 and moves == 0
+
+
+def test_0017_leaves_every_application_as_it_was_with_no_feedback(tmp_path):
+    """Applications at every kind of stage, with history: 0017 only adds an empty column."""
+    path = tmp_path / "old.sqlite3"
+    _old_history(path, [("a1", "applied"), ("a2", "rejected"), ("a3", "ghosted")])
+    migrate(path, "0016")
+    eng = make_engine(path)
+    with eng.connect() as conn:
+        before = conn.execute(text("SELECT * FROM applications ORDER BY id")).mappings().all()
+        events_before = conn.execute(text("SELECT * FROM events ORDER BY seq")).mappings().all()
+    eng.dispose()
+    migrate(path)
+    eng = make_engine(path)
+    with eng.connect() as conn:
+        after = conn.execute(text("SELECT * FROM applications ORDER BY id")).mappings().all()
+        events_after = conn.execute(text("SELECT * FROM events ORDER BY seq")).mappings().all()
+    eng.dispose()
+    assert [dict(row) for row in after] == [{**row, "rejection_feedback": None} for row in before]
+    assert len(before) == 3 and len(events_before) >= 3
+    assert [dict(row) for row in events_after] == [dict(row) for row in events_before]
+
+    # Down again (with some feedback written meanwhile): the applications are as they were.
+    from alembic import command
+
+    from jat.db.engine import alembic_config
+
+    eng = make_engine(path)
+    with eng.begin() as conn:
+        conn.execute(text("UPDATE applications SET rejection_feedback = 'Wanted more Go' WHERE id = 'a2'"))
+    eng.dispose()
+    command.downgrade(alembic_config(path), "0016")
+    eng = make_engine(path)
+    with eng.connect() as conn:
+        down = conn.execute(text("SELECT * FROM applications ORDER BY id")).mappings().all()
+    eng.dispose()
+    assert [dict(row) for row in down] == [dict(row) for row in before]

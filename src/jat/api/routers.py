@@ -923,9 +923,29 @@ def move_app(
                 occurred_at=body.occurred_at,
                 note="No reply",
                 msg=svc.message("event.noReply", {}),
+                rejection_feedback=body.rejection_feedback,  # never dropped: refused unless it's to Rejected
             )
         else:
-            svc.move(session, workflow, app, body.to_stage, occurred_at=body.occurred_at, note=body.note)
+            svc.move(
+                session,
+                workflow,
+                app,
+                body.to_stage,
+                occurred_at=body.occurred_at,
+                note=body.note,
+                rejection_feedback=body.rejection_feedback,
+            )
+    except svc.TransitionError as exc:
+        raise _refused(exc) from exc
+    return _detail(session, workflow, app_id)
+
+
+@apps.put("/{app_id}/rejection-feedback", response_model=S.ApplicationDetail)
+def put_rejection_feedback(app_id: str, body: S.RejectionFeedbackIn, session: SessionDep, workflow: WorkflowDep):
+    """Add, edit or clear what they said when they turned you down, after the move to Rejected."""
+    app = get_or_404(session, Application, app_id)
+    try:
+        svc.set_rejection_feedback(session, app, body.feedback)
     except svc.TransitionError as exc:
         raise _refused(exc) from exc
     return _detail(session, workflow, app_id)
