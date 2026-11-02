@@ -55,6 +55,8 @@ describe("RecruiterLine", () => {
     );
     const link = await screen.findByRole("link", { name: "Alex Morgan" });
     expect(link).toHaveAttribute("href", "/people/c1");
+    // Dimmed and underlined, so it doesn't read as part of a blue "Company · Role" link before it.
+    expect(link).toHaveStyle({ color: "var(--mantine-color-dimmed)" });
     expect(screen.getByTestId("line")).toHaveTextContent(/^Contoso · Backend Engineer · Alex Morgan$/);
   });
 

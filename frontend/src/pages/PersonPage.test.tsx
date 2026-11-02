@@ -62,6 +62,67 @@ describe("people", () => {
     );
   });
 
+  it("names who brought each application and round, unless it's this person", async () => {
+    const round = (id: string, appId: string, recruiter: { id: string; name: string } | null) => ({
+      id,
+      application_id: appId,
+      round: 1,
+      title: "Panel",
+      kind: "interview",
+      status: "done",
+      label: "Round 1 · Panel",
+      starts_at: null,
+      deadline_at: null,
+      interviewer_ids: ["c9"],
+      company_name: appId === "a1" ? "Contoso" : "Fabrikam",
+      role_title: "Backend Engineer",
+      recruiter_id: recruiter?.id ?? null,
+      recruiter_name: recruiter?.name ?? null,
+    });
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/contacts/c9/summary": {
+        contact: riley,
+        agency_name: null,
+        company_name: "Contoso",
+        applications: [
+          { ...row(), relations: ["interviewer"] },
+          {
+            ...row({ id: "a2", company_name: "Fabrikam", recruiter_id: "c9", recruiter_name: "Riley Chen" }),
+            relations: ["source"],
+          },
+        ],
+        interviews: [
+          round("i1", "a1", { id: "c1", name: "Alex Recruiter" }),
+          round("i2", "a2", { id: "c9", name: "Riley Chen" }),
+        ],
+      },
+      "/api/v1/notes": [],
+      "/api/v1/links": [],
+      "/api/v1/attachments": [],
+      "/api/v1/contacts": [riley],
+      "/api/v1/health": {},
+    });
+    renderAt("/people/c9");
+    const apps = (await screen.findByRole("heading", { name: "Applications" })).closest(
+      ".mantine-Card-root",
+    ) as HTMLElement;
+    const line = within(apps).getByRole("link", { name: "Contoso · Backend Engineer" }).closest("p")!;
+    expect(line).toHaveTextContent(/^Contoso · Backend Engineer · Alex Recruiter$/);
+    expect(within(line).getByRole("link", { name: "Alex Recruiter" })).toHaveAttribute("href", "/people/c1");
+    const own = within(apps).getByRole("link", { name: "Fabrikam · Backend Engineer" }).closest("p")!;
+    expect(own).toHaveTextContent(/^Fabrikam · Backend Engineer$/);
+    const rounds = screen
+      .getByRole("heading", { name: "Interviews" })
+      .closest(".mantine-Card-root") as HTMLElement;
+    expect(within(rounds).getByText(/Contoso · Backend Engineer/)).toHaveTextContent(
+      /^Contoso · Backend Engineer · Alex Recruiter$/,
+    );
+    expect(within(rounds).getByText(/Fabrikam · Backend Engineer/)).toHaveTextContent(
+      /^Fabrikam · Backend Engineer$/,
+    );
+  });
+
   it("renames a company", async () => {
     const calls = mockApi({
       "/api/v1/workflow": WORKFLOW,

@@ -118,11 +118,10 @@ test.describe("what it shows", () => {
       data: { company_name: "In-house Card Co", role_title: "Card Role", recruiter_name: "Ellis Varga" },
     });
     expect(made.ok()).toBe(true);
-    await addCard(page, request, "No Recruiter Card Co", "Card Role");
+    // Another role at the same company, with no recruiter: their name mustn't leak onto it.
+    await addCard(page, request, "In-house Card Co", "Other Card Role");
     await expect(card(page, "In-house Card Co", "Card Role")).toContainText("Ellis Varga");
-    await expect(card(page, "No Recruiter Card Co", "Card Role")).toHaveText(
-      "No Recruiter Card CoCard Roletoday",
-    );
+    await expect(card(page, "In-house Card Co", "Other Card Role")).not.toContainText("Ellis Varga");
   });
 
   test("a filter applies to the board too", async ({ page }) => {

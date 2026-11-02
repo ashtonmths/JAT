@@ -273,7 +273,12 @@ export function ApplicationsPage() {
                       {row.route === "agency" && row.recruiter_name && <PersonMarks id={row.recruiter_id} />}
                       {row.route === "direct" ? (
                         // An in-house recruiter: "Direct · Riley Chen".
-                        <RecruiterLine id={row.recruiter_id} name={row.recruiter_name} link={false}>
+                        <RecruiterLine
+                          id={row.recruiter_id}
+                          name={row.recruiter_name}
+                          link={false}
+                          markSize={14}
+                        >
                           {routeLabel(row)}
                         </RecruiterLine>
                       ) : (

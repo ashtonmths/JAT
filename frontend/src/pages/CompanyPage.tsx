@@ -170,7 +170,12 @@ export function CompanyPage() {
                               t("applications:routes.referral")
                             ) : (
                               // An in-house recruiter: "Direct · Riley Chen".
-                              <RecruiterLine id={a.recruiter_id} name={a.recruiter_name} link={false}>
+                              <RecruiterLine
+                                id={a.recruiter_id}
+                                name={a.recruiter_name}
+                                link={false}
+                                markSize={14}
+                              >
                                 {t("applications:routes.direct")}
                               </RecruiterLine>
                             )}
