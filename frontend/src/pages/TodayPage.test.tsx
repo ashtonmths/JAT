@@ -270,6 +270,64 @@ describe("today: what to do", () => {
       }),
     );
   });
+
+  it("puts a round waiting for a new time in Your move, once, with the to-do to book it", async () => {
+    const booking = todo({
+      id: "t5",
+      text: "Book a new time for Round 2 · System design test",
+      due_on: "2026-09-30",
+      entity_type: "application",
+      entity_id: "a1",
+      about: "Contoso · Backend Engineer",
+    });
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/next-actions": {
+        follow_ups: [],
+        stale: [],
+        upcoming: [],
+        awaiting_outcome: [],
+        needs_new_time: [
+          interview({
+            needs_new_time_since: "2026-09-29T09:00:00Z",
+            needs_new_time_by: "them",
+            rebook_todo_id: "t5",
+          }),
+        ],
+        todos: [
+          booking,
+          todo({ id: "t2", text: "Update my CV", entity_type: null, entity_id: null, about: null }),
+        ],
+        today: "2026-09-30",
+      },
+      "GET /api/v1/contacts": [],
+      "GET /api/v1/companies": [],
+      "GET /api/v1/agencies": [],
+      "GET /api/v1/role-summaries": [],
+      "GET /api/v1/applications": [],
+      "GET /api/v1/timeline": { items: [], now: "2026-09-30T10:00:00Z" },
+      "/api/v1/health": {},
+    });
+    renderHome();
+    const section = await screen.findByRole("group", { name: "Needs a new time" });
+    expect(within(section).getByText("Round 2 · System design test")).toBeInTheDocument();
+    // The section's name, and the round's badge.
+    expect(within(section).getAllByText("Needs a new time")).toHaveLength(2);
+    expect(within(section).getByText(/^Was .*\. They needed the change\.$/)).toBeInTheDocument();
+    expect(
+      within(section).getByRole("checkbox", { name: "Book a new time for Round 2 · System design test" }),
+    ).not.toBeChecked();
+    expect(
+      within(section).getByRole("button", { name: "Set a new time for Round 2 · System design test" }),
+    ).toBeInTheDocument();
+    // Its to-do isn't listed again under To-dos; the other one is.
+    const todos = screen.getByRole("group", { name: "To-dos" });
+    expect(within(todos).queryByText("Book a new time for Round 2 · System design test")).toBeNull();
+    expect(within(todos).getByText("Update my CV")).toBeInTheDocument();
+    // One round and one to-do: two things are your move, not three.
+    expect(within(bucket("Your move")).getByLabelText(/^2 /)).toBeInTheDocument();
+    expect(within(bucket("Coming up")).queryByText("Round 2 · System design test")).toBeNull();
+  });
 });
 
 const NOTHING = {
