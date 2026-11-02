@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
-import { i18n } from "../i18n";
+import { createI18n, i18n } from "../i18n";
 import { PSEUDO } from "../i18n/language";
 import en from "../locales/en";
 import type { SearchHit } from "../api/searchHooks";
@@ -113,8 +113,54 @@ describe("a reschedule on the application timeline", () => {
     ["them", "They needed the change"],
     ["mutual", "You both needed the change"],
     ["neither", "Not down to either of you"],
-  ] as const)("words %s as: %s", (by, words) => {
+  ] as const)("words %s as: %s, with and without a reason", (by, words) => {
     expect(moveLine({ ...times, by })).toBe(`${TIMES} · ${words}`);
+    expect(moveLine({ ...times, by, reason: "Their $t(common:appName) clash" })).toBe(
+      `${TIMES} · ${words} · Their $t(common:appName) clash`,
+    );
+  });
+
+  it("is one whole line per state, so a translation can reorder it", () => {
+    // Every state's line, its times, who and reason in the order the language puts them.
+    const order = "{{reason}} / {{to}} / {{from}}";
+    const lang = createI18n({
+      lng: "en",
+      strict: true,
+      resources: {
+        en: {
+          interviews: {
+            reschedule: {
+              move: {
+                times: "T {{to}} / {{from}}",
+                timesReason: `R ${order}`,
+                timesBy: { me: "B me", them: "B them", mutual: "B mutual", neither: "B neither" },
+                timesByReason: {
+                  me: `BR me ${order}`,
+                  them: "BR them",
+                  mutual: "BR mutual",
+                  neither: "BR neither",
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    const from = "Tue 3 Nov, 10:00";
+    const to = "Thu 5 Nov, 14:00";
+    const translate = lang.t as unknown as (key: string, values: object) => string;
+    const spy = vi.spyOn(i18n, "t").mockImplementation(translate as unknown as typeof i18n.t);
+    try {
+      expect(moveLine(times)).toBe(`T ${to} / ${from}`);
+      expect(moveLine({ ...times, reason: "Why" })).toBe(`R Why / ${to} / ${from}`);
+      for (const by of ["me", "them", "mutual", "neither"] as const) {
+        expect(moveLine({ ...times, by })).toBe(`B ${by}`);
+      }
+      expect(moveLine({ ...times, by: "me", reason: "Why" })).toBe(`BR me Why / ${to} / ${from}`);
+      expect(moveLine({ ...times, by: "neither", reason: "Why" })).toBe("BR neither");
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it("gives the year only when a move crosses one, in your time zone", () => {

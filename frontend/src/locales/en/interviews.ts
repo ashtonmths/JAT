@@ -130,14 +130,24 @@ export default {
     notCounted_other: "{{count}} other moves have no saved times, so they aren't counted.",
     why: "Why? (optional)",
     whyPlaceholder: "They had a clash, you asked to move it…",
-    // A move's line on a timeline. {{from}} and {{to}} are built by formatDay; a reason follows as written.
+    // A move's line on a timeline, one whole line for each state: who needed the change (when saved)
+    // and why (when given). {{from}} and {{to}} are dates and times, with the year when the move
+    // crosses one; {{reason}} is your own words, shown as written.
     move: {
       times: "Moved from {{from}} to {{to}}",
-      byMe: "You needed the change",
-      byThem: "They needed the change",
-      byMutual: "You both needed the change",
-      byNeither: "Not down to either of you",
-      separator: " · ",
+      timesReason: "Moved from {{from}} to {{to}} · {{reason}}",
+      timesBy: {
+        me: "Moved from {{from}} to {{to}} · You needed the change",
+        them: "Moved from {{from}} to {{to}} · They needed the change",
+        mutual: "Moved from {{from}} to {{to}} · You both needed the change",
+        neither: "Moved from {{from}} to {{to}} · Not down to either of you",
+      },
+      timesByReason: {
+        me: "Moved from {{from}} to {{to}} · You needed the change · {{reason}}",
+        them: "Moved from {{from}} to {{to}} · They needed the change · {{reason}}",
+        mutual: "Moved from {{from}} to {{to}} · You both needed the change · {{reason}}",
+        neither: "Moved from {{from}} to {{to}} · Not down to either of you · {{reason}}",
+      },
     },
   },
   // A booked round that can't go ahead at its time, with no new time agreed yet.

@@ -150,7 +150,21 @@ export function usedKeys(code: string, namespaces: readonly string[], defaultNs:
   return used;
 }
 
-/** English keys ("ns:key") that no source uses. Plural forms count as one key. */
+/** Keys English text nests with $t(ns:key, …), as "ns:key": a second count's own plural, for one. */
+export function nestedKeys(en: Record<string, Tree>): Set<string> {
+  const namespaces = Object.keys(en);
+  const used = new Set<string>();
+  for (const tree of Object.values(en)) {
+    for (const text of Object.values(flatten(tree))) {
+      for (const m of text.matchAll(/\$t\(\s*([\w-]+):([\w.-]+)/g)) {
+        if (namespaces.includes(m[1]!)) used.add(`${m[1]}:${baseKey(m[2]!)}`);
+      }
+    }
+  }
+  return used;
+}
+
+/** English keys ("ns:key") that no source uses, nor English text nests. Plural forms count as one key. */
 export function unusedKeys(
   en: Record<string, Tree>,
   sources: string[],
@@ -158,7 +172,10 @@ export function unusedKeys(
   skip: string[] = [],
 ) {
   const namespaces = Object.keys(en);
-  const used = new Set(sources.flatMap((s) => [...usedKeys(s, namespaces, defaultNs)]));
+  const used = new Set([
+    ...sources.flatMap((s) => [...usedKeys(s, namespaces, defaultNs)]),
+    ...nestedKeys(en),
+  ]);
   const all = namespaces
     .filter((ns) => !skip.includes(ns))
     .flatMap((ns) => [...new Set(Object.keys(flatten(en[ns]!)).map(baseKey))].map((key) => `${ns}:${key}`));

@@ -245,7 +245,8 @@ describe("a row", () => {
       try {
         await act(() => i18n.changeLanguage(PSEUDO));
         await waitFor(() => expect(screen.queryByText(WITH_MOVE)).toBeNull());
-        expect(screen.getByText(/\]A <clash>$/)).toBeTruthy();
+        // The whole line is one sentence now, with the reason inside it, unaccented.
+        expect(screen.getByText(/^\[Ṁöṽéð ƒŕöɱ .* · A <clash> ·+\]$/)).toBeTruthy();
       } finally {
         await act(() => i18n.changeLanguage("en"));
       }

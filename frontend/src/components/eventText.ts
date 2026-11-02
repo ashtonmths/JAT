@@ -111,26 +111,35 @@ export function eventText(event: Pick<ApiEvent, "summary" | "msg">): string | nu
 
 export type RoundMove = NonNullable<ApiEvent["reschedule"]>;
 
-// Whole keys, so the unused-key scanner sees them. A newer server's who is left unsaid.
+// One whole line per who, with and without a reason. Whole keys, so the unused-key scanner sees them.
+// A newer server's who is left unsaid.
 const MOVE_BY = {
-  me: "interviews:reschedule.move.byMe",
-  them: "interviews:reschedule.move.byThem",
-  mutual: "interviews:reschedule.move.byMutual",
-  neither: "interviews:reschedule.move.byNeither",
+  me: "interviews:reschedule.move.timesBy.me",
+  them: "interviews:reschedule.move.timesBy.them",
+  mutual: "interviews:reschedule.move.timesBy.mutual",
+  neither: "interviews:reschedule.move.timesBy.neither",
+} as const;
+const MOVE_BY_REASON = {
+  me: "interviews:reschedule.move.timesByReason.me",
+  them: "interviews:reschedule.move.timesByReason.them",
+  mutual: "interviews:reschedule.move.timesByReason.mutual",
+  neither: "interviews:reschedule.move.timesByReason.neither",
 } as const;
 
-/** A move, in sentences: "Moved from Tue 3 Nov, 10:00 to Thu 5 Nov, 14:00 · They needed the change · Why". */
+/** A move, in one line: "Moved from Tue 3 Nov, 10:00 to Thu 5 Nov, 14:00 · They needed the change · Why". */
 export function moveLine(move: RoundMove): string {
   // The year only when the move crosses one, in your time zone like the times themselves.
   const crossesYear = dayjs(move.from_at).year() !== dayjs(move.to_at).year();
   const pattern = crossesYear ? "shortWeekdayDayMonthYearTime" : "shortWeekdayDayMonthTime";
   const when = (iso: string) => formatDay(iso, pattern, i18n.language);
-  const parts: string[] = [
-    i18n.t("interviews:reschedule.move.times", { from: when(move.from_at), to: when(move.to_at) }),
-  ];
-  if (move.by && Object.hasOwn(MOVE_BY, move.by)) parts.push(i18n.t(MOVE_BY[move.by]));
-  if (move.reason) parts.push(move.reason); // your own words, as written
-  return parts.join(i18n.t("interviews:reschedule.move.separator"));
+  const from = when(move.from_at);
+  const to = when(move.to_at);
+  const by = move.by && Object.hasOwn(MOVE_BY, move.by) ? move.by : null;
+  const reason = move.reason; // your own words, as written
+  if (by && reason) return i18n.t(MOVE_BY_REASON[by], { from, to, reason });
+  if (by) return i18n.t(MOVE_BY[by], { from, to });
+  if (reason) return i18n.t("interviews:reschedule.move.timesReason", { from, to, reason });
+  return i18n.t("interviews:reschedule.move.times", { from, to });
 }
 
 /**
