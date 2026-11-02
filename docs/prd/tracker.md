@@ -125,6 +125,11 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
   from, and shows it as *Rescheduled*, with how many days its saved moves pushed it back or
   brought it forward in total. Insights counts rounds moved of those booked, and moves by who,
   with *not recorded* as its own group, listing companies and recruiters only from 3 moved rounds.
+  When it can't go ahead at its time and no new time is agreed yet, it can be marked as needing a
+  new time (who and why, old time kept), with an optional open to-do to book it; setting the new
+  time is the move from the old one and ticks the to-do off. It shows on Today's Your move, the
+  Interviews page, the board, list, quick view and application page, counts as booked and as one
+  move in Insights, and can be undone.
 - **FR10:** Coding interviews and take-home tasks also hold instructions, repo or platform
   links, a deadline and attachments.
 

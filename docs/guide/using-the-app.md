@@ -108,6 +108,9 @@ wide screen *Your move* is on the left and the other two sit beside it:
   call: *Happened*) or *Didn't happen*. Each asks first: a round's *Done* for its debrief and
   the questions asked, *Didn't happen* for what happened (saved on the round, or in the call's
   notes). Nothing changes until you save; the notes can stay empty.
+- **Needs a new time**: rounds that can't go ahead at their time, with no new time agreed yet
+  (see [Interviews](#interviews)), longest waiting first, each with its old time, who needed the
+  change, its to-do to book the new time (listed here rather than under To-dos) and **Set new time**.
 - **To-dos**: your own reminders due today or earlier, or with no date (see [To-dos](#to-dos)).
   Add one here, about anything or nothing in particular.
 - **Follow up**: applications whose follow-up date is today or earlier.
@@ -455,7 +458,31 @@ or cancelled. On each row:
   keeps its own entry, so a second reschedule doesn't overwrite the first. The same button is on
   the application's page, on Today, and in the quick
   view for its current round while the application is in an active stage.
+- **A new time isn't agreed yet**, a box in the same dialog, for a round that can't go ahead at its
+  time when you can't pick the new one yet. Say who needed the change and, if you like, why, as
+  above. **Add a to-do to book the new time** is ticked unless you untick it: it adds an open to-do
+  on the application, "Book a new time for Round 2 · …", due today unless you pick another day or
+  clear the date. **Save: needs a new time** keeps the round's old time and marks it **Needs a new
+  time**; the timeline says "Round 2 · … needs a new time (they needed the change): why". A toast
+  offers **Undo**, which gives the round its old time back and deletes the to-do if it's still open
+  and as it was made (if you've edited it, it's ticked off instead). On a closed or archived application
+  saving is refused with a message, and nothing is saved: there's no new time to book.
+- **Set new time** takes the place of Reschedule on a round that needs one. Pick the time and
+  save: that's the move, from the old time to the new one, with the who and why you gave, and the
+  to-do is ticked off for you. Setting the time from the round's form does the same. **Keep the old
+  time**, in the same dialog, is for when it can go ahead after all: it works like Undo.
 - the pencil edits the round (everything on its form).
+
+A round that needs a new time shows at the top of this page under **Needs a new time**, with its
+old time and who needed the change; on Today it's in **Your move** (not *Coming up*), with its
+to-do, so it's counted once (the application's *At a glance* does the same), and the application
+doesn't show as gone quiet. The board, the list,
+the quick view and the application's page say "Round 2 · … · needs a new time". Cancelling the
+round, marking it done or removing it ticks its to-do off, as there's nothing left to book.
+Moving the application to a closed stage or an offer (or back to one with Undo), or archiving it,
+ticks the to-do off too; the round keeps needing a new time, so if you reopen it it's back on Today,
+without its to-do. If you clear a waiting round's old time on its form, it says "It has no time now"
+and still offers **Set new time**; the move is then counted from the time it had when you marked it.
 
 A round that's moved shows **Rescheduled** (or *Rescheduled ×2*), here and on the
 application's page; hover it for the time it moved from. Changing a booked round's time from

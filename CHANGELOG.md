@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.8.0 (2026-11-02)
+
+- **When a round can't go ahead and no new time is agreed yet:** tick *A new time isn't agreed yet* in the Reschedule dialog, say who needed the change and why, and add a to-do to book the new time (on by default, due today; it starts open). The round keeps its old time and shows as *Needs a new time* on Today (in *Your move*, with its to-do), the Interviews page, the board, the list, the quick view and the application page. *Set new time* books it as one move from the old time and ticks the to-do off for you. Undo, or *Keep the old time*, takes the mark back (a to-do you've edited is ticked off rather than deleted). Restart the tracker after updating: until you do, marking a round shows an error and saves nothing (#196).
+
 ## 1.7.0 (2026-11-02)
 
 - **Groundwork for rounds that need a new time:** the API can mark an interview round as needing a new time (who needed it and why, the old time kept, an optional to-do to book it) and books it later as one move. A marked round shows a red badge on the board, list, quick view and Interviews, and Insights says how many are waiting. There's nothing in the app to mark one yet: that's the next release. Restarting the tracker runs migration 0015, which only adds three empty columns to interview rounds (#197).

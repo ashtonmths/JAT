@@ -1,14 +1,22 @@
-import { Badge, Button, Group, Modal, Select, Stack, Text, Textarea, Tooltip } from "@mantine/core";
-import { DateTimePicker } from "@mantine/dates";
+import { Badge, Button, Checkbox, Group, Modal, Select, Stack, Text, Textarea, Tooltip } from "@mantine/core";
+import { DateInput, DateTimePicker } from "@mantine/dates";
+import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Schemas } from "../api/client";
-import { useSaveInterview, type Interview } from "../api/interviewHooks";
+import {
+  useKeepOldTime,
+  useMarkNeedsNewTime,
+  useSaveInterview,
+  useUndoNeedsNewTime,
+  type Interview,
+} from "../api/interviewHooks";
 import { i18n } from "../i18n";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
+import { useToday } from "../utils/useToday";
 
 const PICKER = "YYYY-MM-DD HH:mm:ss";
 
@@ -67,6 +75,15 @@ export function RoundDaysMoved({ interview }: { interview: Pick<Interview, "resc
   );
 }
 
+/** What the dialog needs of a round: the board's and quick view's summary has no end time, and needn't. */
+type Reschedulable = Pick<
+  Interview,
+  "id" | "round" | "title" | "kind" | "starts_at" | "needs_new_time_since" | "needs_new_time_by"
+> & {
+  company_name: string;
+  role_title: string;
+};
+
 const WAS = {
   me: "interviews:needsNewTime.was.me",
   them: "interviews:needsNewTime.was.them",
@@ -93,11 +110,46 @@ export function wasText(round: Pick<Interview, "starts_at" | "needs_new_time_by"
   });
 }
 
-/** What the dialog needs of a round: the board's and quick view's summary has no end time, and needn't. */
-type Reschedulable = Pick<Interview, "id" | "round" | "title" | "kind" | "starts_at"> & {
-  company_name: string;
-  role_title: string;
-};
+/** "Needs a new time", with the old time and who needed the change on hover; nothing for any other round. */
+export function NeedsNewTimeBadge({
+  interview,
+  size = "sm",
+}: {
+  interview: Pick<Interview, "starts_at" | "needs_new_time_since" | "needs_new_time_by">;
+  size?: "xs" | "sm";
+}) {
+  const { t } = useTranslation("interviews");
+  if (!interview.needs_new_time_since) return null;
+  return (
+    <Tooltip label={wasText(interview)} withArrow>
+      <Badge size={size} variant="light" color="red">
+        {t("needsNewTime.badge")}
+      </Badge>
+    </Tooltip>
+  );
+}
+
+/** "Round 2 · Technical needs a new time." with an Undo that gives it back its old time. */
+function notifyMarked(interview: Reschedulable, undo: () => void) {
+  const id = notifications.show({
+    autoClose: 8000, // long enough to reach Undo from the keyboard
+    message: (
+      <Group justify="space-between" wrap="nowrap" gap="xs">
+        <Text size="sm">{i18n.t("interviews:needsNewTime.marked", { label: roundLabel(interview) })}</Text>
+        <Button
+          size="compact-xs"
+          variant="light"
+          onClick={() => {
+            notifications.hide(id);
+            undo();
+          }}
+        >
+          {i18n.t("common:actions.undo")}
+        </Button>
+      </Group>
+    ),
+  });
+}
 type RescheduleBy = NonNullable<Schemas["InterviewPatch"]["reschedule_by"]>;
 const WHO = [
   { value: "me", key: "interviews:reschedule.whoOptions.me" },
@@ -106,23 +158,107 @@ const WHO = [
   { value: "neither", key: "interviews:reschedule.whoOptions.neither" },
 ] as const satisfies readonly { value: RescheduleBy; key: string }[];
 
-/** The Reschedule button and its dialog, for a booked round; nothing for any other. */
+/**
+ * The Reschedule button and its dialog, for a booked round; Set new time for one waiting for a new
+ * time, even if its old time has since been cleared; nothing for any other.
+ */
 export function RescheduleButton({ interview }: { interview: Reschedulable & { status: string } }) {
   const { t } = useTranslation("interviews");
   const [open, setOpen] = useState(false);
-  if (interview.status !== "scheduled" || !interview.starts_at) return null;
+  if (interview.status !== "scheduled") return null;
+  const label = roundLabel(interview);
+  if (interview.needs_new_time_since) {
+    return (
+      <>
+        <Button
+          size="compact-xs"
+          variant="light"
+          color="red"
+          aria-label={t("needsNewTime.setNamed", { label })}
+          onClick={() => setOpen(true)}
+        >
+          {t("needsNewTime.setAction")}
+        </Button>
+        {open && <SetNewTimeModal interview={interview} onClose={() => setOpen(false)} />}
+      </>
+    );
+  }
+  if (!interview.starts_at) return null;
   return (
     <>
       <Button
         size="compact-xs"
         variant="light"
-        aria-label={t("reschedule.named", { label: roundLabel(interview) })}
+        aria-label={t("reschedule.named", { label })}
         onClick={() => setOpen(true)}
       >
         {t("reschedule.action")}
       </Button>
       {open && <RescheduleModal interview={interview} onClose={() => setOpen(false)} />}
     </>
+  );
+}
+
+/**
+ * Give a round waiting for a new time that time: the move from its old one, with the who and why it
+ * was marked with, and its to-do ticked off (the API does both). Or it keeps its old time after all.
+ */
+function SetNewTimeModal({ interview, onClose }: { interview: Reschedulable; onClose: () => void }) {
+  const { t } = useTranslation(["interviews", "common"]);
+  const save = useSaveInterview();
+  const keep = useKeepOldTime();
+  const [when, setWhen] = useState<string | null>(null);
+  const busy = save.isPending || keep.isPending;
+  const moved = when !== null && !dayjs(when).isSame(dayjs(interview.starts_at), "minute");
+  return (
+    <Modal
+      opened
+      onClose={onClose}
+      title={t("needsNewTime.setNamed", { label: roundLabel(interview) })}
+      closeOnEscape={!busy}
+      closeOnClickOutside={!busy}
+      withCloseButton={!busy}
+    >
+      <Stack>
+        <Text size="sm" c="dimmed">
+          {t("reschedule.where", { company: interview.company_name, role: interview.role_title })}
+        </Text>
+        <Text size="sm">{wasText(interview)}</Text>
+        <DateTimePicker label={t("reschedule.newTime")} value={when} onChange={setWhen} data-autofocus />
+        <Text size="sm" c="dimmed">
+          {t("needsNewTime.setHint")}
+        </Text>
+        <Group justify={interview.starts_at ? "space-between" : "flex-end"}>
+          {/* With its old time cleared, there's no old time to keep. */}
+          {interview.starts_at && (
+            <Button
+              variant="subtle"
+              onClick={() => keep.mutate(interview.id, { onSuccess: onClose })}
+              disabled={busy}
+            >
+              {t("needsNewTime.keepOld")}
+            </Button>
+          )}
+          <Group gap="xs">
+            <Button variant="default" onClick={onClose} disabled={busy}>
+              {t("common:actions.cancel")}
+            </Button>
+            <Button
+              onClick={() =>
+                save.mutate(
+                  { id: interview.id, body: { starts_at: dayjs(when).toISOString() } },
+                  { onSuccess: onClose },
+                )
+              }
+              disabled={!moved || keep.isPending}
+              loading={save.isPending}
+            >
+              {t("common:actions.save")}
+            </Button>
+          </Group>
+        </Group>
+      </Stack>
+    </Modal>
   );
 }
 
@@ -139,12 +275,35 @@ export function RescheduleModal({ interview, onClose }: { interview: Reschedulab
   const [who, setWho] = useState<RescheduleBy | null>(null);
   const [whoMissing, setWhoMissing] = useState(false);
   const [reason, setReason] = useState("");
+  // No new time agreed yet: it keeps the old one, and you can add a to-do (open) to book the new one.
+  const [noTimeYet, setNoTimeYet] = useState(false);
+  const [addTodo, setAddTodo] = useState(true);
+  const today = useToday();
+  const [due, setDue] = useState<string | null>(today);
+  const mark = useMarkNeedsNewTime();
+  const undo = useUndoNeedsNewTime();
+  const busy = save.isPending || mark.isPending;
   // To the minute: a change of seconds or fractions alone is no move.
   const moved = when !== null && !dayjs(when).isSame(dayjs(interview.starts_at), "minute");
   const submit = () => {
-    if (!when) return;
+    if (!noTimeYet && !when) return;
     if (!who) {
       setWhoMissing(true);
+      return;
+    }
+    if (noTimeYet) {
+      const todo = addTodo
+        ? { text: t("needsNewTime.todoText", { label: roundLabel(interview) }), due_on: due }
+        : null;
+      mark.mutate(
+        { id: interview.id, body: { by: who, reason: reason.trim() || null, todo } },
+        {
+          onSuccess: () => {
+            onClose();
+            notifyMarked(interview, () => void undo(interview.id));
+          },
+        },
+      );
       return;
     }
     save.mutate(
@@ -165,9 +324,9 @@ export function RescheduleModal({ interview, onClose }: { interview: Reschedulab
       onClose={onClose}
       title={t("reschedule.named", { label: roundLabel(interview) })}
       // While saving, nothing closes it: if the save fails, what you typed is still here.
-      closeOnEscape={!save.isPending}
-      closeOnClickOutside={!save.isPending}
-      withCloseButton={!save.isPending}
+      closeOnEscape={!busy}
+      closeOnClickOutside={!busy}
+      withCloseButton={!busy}
     >
       <Stack>
         <Text size="sm" c="dimmed">
@@ -179,7 +338,18 @@ export function RescheduleModal({ interview, onClose }: { interview: Reschedulab
               })
             : t("reschedule.where", { company: interview.company_name, role: interview.role_title })}
         </Text>
-        <DateTimePicker label={t("reschedule.newTime")} value={when} onChange={setWhen} data-autofocus />
+        {!noTimeYet && (
+          <DateTimePicker label={t("reschedule.newTime")} value={when} onChange={setWhen} data-autofocus />
+        )}
+        <Checkbox
+          label={t("needsNewTime.choice")}
+          description={t("needsNewTime.choiceHint")}
+          checked={noTimeYet}
+          onChange={(e) => {
+            const checked = e.currentTarget.checked;
+            setNoTimeYet(checked);
+          }}
+        />
         <Select
           label={t("reschedule.who")}
           required
@@ -201,12 +371,30 @@ export function RescheduleModal({ interview, onClose }: { interview: Reschedulab
             setReason(value);
           }}
         />
+        {noTimeYet && (
+          <Stack gap="xs">
+            <Checkbox
+              label={t("needsNewTime.addTodo")}
+              checked={addTodo}
+              onChange={(e) => {
+                const checked = e.currentTarget.checked;
+                setAddTodo(checked);
+              }}
+            />
+            {addTodo && (
+              <DateInput label={t("needsNewTime.todoDue")} value={due} onChange={setDue} clearable w={200} />
+            )}
+            <Text size="sm" c="dimmed">
+              {t("needsNewTime.todoHint")}
+            </Text>
+          </Stack>
+        )}
         <Group justify="flex-end">
-          <Button variant="default" onClick={onClose} disabled={save.isPending}>
+          <Button variant="default" onClick={onClose} disabled={busy}>
             {t("common:actions.cancel")}
           </Button>
-          <Button onClick={submit} disabled={!moved} loading={save.isPending}>
-            {t("reschedule.action")}
+          <Button onClick={submit} disabled={noTimeYet ? false : !moved} loading={busy}>
+            {noTimeYet ? t("needsNewTime.save") : t("reschedule.action")}
           </Button>
         </Group>
       </Stack>

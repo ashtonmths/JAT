@@ -8,6 +8,7 @@ import {
   SegmentedControl,
   Select,
   Stack,
+  Text,
   Textarea,
   TextInput,
 } from "@mantine/core";
@@ -26,6 +27,7 @@ import {
 } from "../api/interviewHooks";
 import { i18n } from "../i18n";
 import { roundLabel } from "../utils/rounds";
+import { wasText } from "./Reschedule";
 
 type Status = "scheduled" | "done" | "cancelled";
 type Format = "video" | "phone" | "onsite" | "take_home";
@@ -177,6 +179,11 @@ export function InterviewFormModal({
             ]}
             {...form.getInputProps("status")}
           />
+          {interview?.needs_new_time_since && interview.status === "scheduled" && (
+            <Text size="sm" c="dimmed">
+              {wasText(interview)} {t("needsNewTime.editHint")}
+            </Text>
+          )}
           <Group grow align="flex-start">
             <DateTimePicker
               label={t("form.when")}
