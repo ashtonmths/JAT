@@ -36,7 +36,9 @@ afterEach(() => {
 
 describe("the version", () => {
   it("is the build's own, from package.json", () => {
-    const pkg = JSON.parse(readFileSync(resolve(process.cwd(), "package.json"), "utf8")) as { version: string };
+    const pkg = JSON.parse(readFileSync(resolve(process.cwd(), "package.json"), "utf8")) as {
+      version: string;
+    };
     expect(PAGE_VERSION).toBe(pkg.version);
   });
 

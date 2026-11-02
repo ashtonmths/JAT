@@ -234,9 +234,7 @@ test.describe("the version", () => {
 
   test("an older server says so, and to restart the tracker", async ({ page, request }) => {
     const health = (await (await request.get("/api/v1/health")).json()) as { version: string };
-    await page.route("**/api/v1/health", (route) =>
-      route.fulfill({ json: { ...health, version: "0.0.1" } }),
-    );
+    await page.route("**/api/v1/health", (route) => route.fulfill({ json: { ...health, version: "0.0.1" } }));
     await opened(page);
     await expect(
       menu(page).getByText(

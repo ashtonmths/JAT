@@ -43,8 +43,9 @@ function swaggerUi(): Plugin {
 }
 
 // The version this page was built from, shown in the footer next to the running server's.
-const pageVersion = (JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as { version: string })
-  .version;
+const pageVersion = (
+  JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as { version: string }
+).version;
 
 export default defineConfig({
   plugins: [react(), swaggerUi()],
