@@ -229,9 +229,11 @@ def update_meeting(meeting_id: str, body: S.MeetingPatch, session: SessionDep):
     elif booked and meeting.starts_at != before[1]:
         meeting.rescheduled_count = (meeting.rescheduled_count or 0) + 1
         meeting.rescheduled_from = before[1]
-        if pending is not None:  # the move it was waiting for, with the who and why it was marked with
-            by = by or pending.by
-            reason = reason or pending.reason or ""
+        if meeting.needs_new_time_since is not None:  # the move it was waiting for
+            # With the who and why it was marked with: from its started move, or, if that's missing
+            # (a hand-edited export), the mark's who. Either way it's booked now, not waiting.
+            by = by or (pending.by if pending else meeting.needs_new_time_by)
+            reason = reason or (pending.reason if pending else None) or ""
             _settle(session, meeting, "done", None)
         _record_move(session, meeting, before[1], by, reason, pending)
         session.flush()

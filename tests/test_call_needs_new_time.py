@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 from jat.app import create_app
 from jat.datadir import init_data_dir
-from jat.db.models import Todo
+from jat.db.models import MeetingMove, Todo
 from jat.snapshot import export_data_dir, restore_data_dir
 
 from .factories import post
@@ -112,8 +112,7 @@ def test_what_can_t_be_marked(client, seeded, app):
 
 def test_setting_the_new_time_is_the_one_move_with_the_marked_who_and_why(client, seeded):
     app = _app(client, seeded)
-    call = _call(client, seeded, application_id=app["id"], ends_at=_iso(3).replace("Z", "") + "Z")
-    call = client.patch(f"/api/v1/meetings/{call['id']}", json={"ends_at": None}).json()
+    call = _call(client, seeded, application_id=app["id"])
     out = _mark(client, call, reason="A clash", todo=BOOK)
     later = _iso(6)
     booked = client.patch(f"/api/v1/meetings/{call['id']}", json={"starts_at": later}).json()
@@ -201,6 +200,52 @@ def test_closing_the_conversation_ticks_the_to_do_and_keeps_the_mark(client, see
     assert _todo(client, todo_id)["done_at"] is not None
     assert _get(client, call)["needs_new_time_since"] is not None
     assert _waiting(client) == ([], [])
+
+
+def test_its_end_moves_with_its_start_when_it_s_booked(client, seeded):
+    call = _call(client, seeded, ends_at=_iso(4))  # a day long, to keep the sums plain
+    _mark(client, call)
+    booked = client.patch(f"/api/v1/meetings/{call['id']}", json={"starts_at": _iso(10)}).json()
+    assert (booked["starts_at"], booked["ends_at"]) == (_iso(10), _iso(11))
+
+
+def test_booking_settles_it_even_without_its_started_move(client, seeded, app):
+    """A hand-edited export can lose the started move: booking still ends the wait."""
+    call = _call(client, seeded)
+    todo_id = _mark(client, call, reason="A clash", todo=BOOK)["rebook_todo_id"]
+    with app.state.sessions.begin() as session:
+        session.query(MeetingMove).delete()
+    booked = client.patch(f"/api/v1/meetings/{call['id']}", json={"starts_at": _iso(8)}).json()
+    assert (booked["needs_new_time_since"], booked["rebook_todo_id"], booked["rescheduled_count"]) == (None, None, 1)
+    assert booked["moves"] == [{"from_at": call["starts_at"], "to_at": _iso(8), "by": "them", "reason": None}]
+    assert _todo(client, todo_id)["done_at"] is not None
+    assert _waiting(client) == ([], [call["id"]])
+
+
+def test_deleting_the_person_ticks_their_calls_to_dos_off(client, seeded):
+    app = _app(client, seeded)
+    person = post(client, "/api/v1/contacts", {"name": "Sam Leaving"})
+    calls = [_call(client, seeded, contact_id=person["id"], application_id=a) for a in (app["id"], None)]
+    todos = [_mark(client, c, todo=BOOK)["rebook_todo_id"] for c in calls]
+    assert client.delete(f"/api/v1/contacts/{person['id']}").status_code == 204
+    # Both stay, about the application or about nothing, but there's nothing left to book.
+    assert all(_todo(client, t)["done_at"] is not None for t in todos)
+
+
+@pytest.mark.parametrize("closed", ["keep", "gone"])
+def test_merging_into_a_closed_conversation_ticks_the_calls_to_dos_off(client, seeded, closed):
+    keep = post(client, "/api/v1/contacts", {"name": "Sam Kept"})
+    gone = post(client, "/api/v1/contacts", {"name": "Sam Twice"})
+    # The waiting call is with the one whose conversation is still open: the merge closes it.
+    closing, open_one = (keep, gone) if closed == "keep" else (gone, keep)
+    call = _call(client, seeded, contact_id=open_one["id"])
+    todo_id = _mark(client, call, todo=BOOK)["rebook_todo_id"]
+    client.patch(f"/api/v1/contacts/{closing['id']}", json={"closed_as": "not_interested"})
+    merged = client.post(f"/api/v1/contacts/{keep['id']}/merge", json={"from_id": gone["id"]})
+    assert merged.status_code == 200, merged.text
+    assert merged.json()["closed_as"] == "not_interested"
+    assert _todo(client, todo_id)["done_at"] is not None
+    assert _get(client, call)["needs_new_time_since"] is not None  # still waiting, as on a closed application
 
 
 def test_a_to_do_that_s_gone_is_skipped_when_it_s_booked(client, seeded):

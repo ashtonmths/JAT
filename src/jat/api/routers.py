@@ -309,7 +309,9 @@ def merge_contact(contact_id: str, body: S.MergeIn, request: Request, session: S
 
 @contacts.delete("/{contact_id}", status_code=204)
 def delete_contact(contact_id: str, session: SessionDep):
-    session.delete(get_or_404(session, Contact, contact_id))
+    contact = get_or_404(session, Contact, contact_id)
+    svc.tick_call_rebook_todos(session, contact.id)  # their calls go with them: nothing left to book
+    session.delete(contact)
     session.flush()
     return Response(status_code=204)
 
