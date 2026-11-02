@@ -395,6 +395,8 @@ def _round_summary(interview: Interview) -> S.RoundSummary:
         label=interviews_svc.label(interview),
         starts_at=interview.starts_at,
         deadline_at=interview.deadline_at,
+        needs_new_time_since=interview.needs_new_time_since,
+        needs_new_time_by=interview.needs_new_time_by,
     )
 
 
@@ -402,7 +404,8 @@ def _with_rounds(session: Session, rows: list[S.ApplicationRow]) -> list[S.Appli
     """Fill in each row's current interview round (one query for all rows).
 
     An application with a round booked in the future isn't stale: you're waiting on a date,
-    not on them. (One with an undated round still counts, so it doesn't hide forever.)
+    not on them. Nor is one with a round waiting for a new time: Today lists that as yours to do.
+    (One with an undated round still counts, so it doesn't hide forever.)
     """
     current = interviews_svc.current_rounds(session, (r.id for r in rows))
     booked = interviews_svc.booked_ahead(session, (r.id for r in rows), datetime.now(UTC))

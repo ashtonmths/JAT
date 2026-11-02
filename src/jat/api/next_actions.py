@@ -39,6 +39,9 @@ class NextActions(BaseModel):
     meetings_to_close: list[S.MeetingOut] = []  # their time has passed but they're still "scheduled"
     roles_to_decide: list[S.RoleSummary] = []  # no application and not passed on yet, oldest first
     todos: list[S.TodoOut] = []  # open to-dos: due in two weeks (soonest first), undated, then later
+    # Rounds that can't go ahead at their time, with no new one yet, longest waiting first. Their
+    # to-dos to book one (`rebook_todo_id`) are in `todos` too: show each round once.
+    needs_new_time: list[S.InterviewOut] = []
     today: date
 
 
@@ -78,11 +81,21 @@ def next_actions(
     )
 
     when = func.coalesce(Interview.starts_at, Interview.deadline_at)
-    scheduled = _query().where(
+    open_rounds = _query().where(
         Interview.status == "scheduled",
         Application.archived.is_(False),
         Application.stage.in_(active),
     )
+    # A round waiting for a new time is yours to book, not coming up or awaiting an outcome.
+    needs_new_time = _outs(
+        session,
+        session.execute(
+            open_rounds.where(Interview.needs_new_time_since.is_not(None)).order_by(
+                Interview.needs_new_time_since, Interview.id
+            )
+        ),
+    )
+    scheduled = open_rounds.where(Interview.needs_new_time_since.is_(None))
     window = scheduled.where(when >= min(start, now), when < start + timedelta(days=UPCOMING_DAYS))
     booked = _outs(session, session.execute(window.order_by(when, Interview.id)))
     unbooked = _outs(session, session.execute(scheduled.where(when.is_(None)).order_by(Interview.created_at)))
@@ -149,6 +162,7 @@ def next_actions(
         stale=stale,
         upcoming=upcoming + unbooked,
         awaiting_outcome=past,
+        needs_new_time=needs_new_time,
         today=today,
         offer_deadlines=offer_deadlines,
         meetings=meetings,

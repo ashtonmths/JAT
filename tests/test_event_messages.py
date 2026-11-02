@@ -303,6 +303,13 @@ ROUND_STEPS = {
         for who in ("me", "them", "mutual", "neither")
         for reason in ("", "Reason")
     },
+    # Marked through POST /interviews/{id}/needs-new-time (and taken back with DELETE).
+    **{
+        f"event.roundNeedsNewTimeBy{who.title()}{reason}": ("scheduled", None)
+        for who in ("me", "them", "mutual", "neither")
+        for reason in ("", "Reason")
+    },
+    "event.roundNewTimeNotNeeded": ("scheduled", None),
 }
 # The same for an offer: its status when made, then the status it changes to.
 OFFER_STEPS = {
@@ -334,6 +341,14 @@ def test_a_round_writes_its_message(client, seeded, app, case):
     url = f"/api/v1/interviews/{made['id']}"
     if case["key"] == "event.roundRemoved":
         assert client.delete(url).status_code == 204
+    elif case["key"].startswith("event.roundNeedsNewTime"):
+        who = case["key"].removeprefix("event.roundNeedsNewTimeBy").removesuffix("Reason").lower()
+        reason = f"  {params['reason'].replace(' ', '  ')}\n" if "reason" in params else None
+        r = client.post(f"{url}/needs-new-time", json={"by": who, "reason": reason})
+        assert r.status_code == 200, r.text
+    elif case["key"] == "event.roundNewTimeNotNeeded":
+        assert client.post(f"{url}/needs-new-time", json={"by": "them"}).status_code == 200
+        assert client.delete(f"{url}/needs-new-time").status_code == 200
     elif change:
         # Spaces around and inside the reason collapse, in the summary and the message alike.
         reason = {"reschedule_reason": f"  {params['reason'].replace(' ', '  ')}\n"} if "reason" in params else {}

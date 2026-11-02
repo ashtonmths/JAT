@@ -28,6 +28,16 @@ export default {
   roundRescheduledByThemReason: "{{label}} rescheduled (they needed the change): {{reason}}",
   roundRescheduledByMutualReason: "{{label}} rescheduled (you both needed the change): {{reason}}",
   roundRescheduledByNeitherReason: "{{label}} rescheduled (not down to either of you): {{reason}}",
+  // It can't go ahead at its time, and no new one is agreed yet.
+  roundNeedsNewTimeByMe: "{{label}} needs a new time (you needed the change)",
+  roundNeedsNewTimeByThem: "{{label}} needs a new time (they needed the change)",
+  roundNeedsNewTimeByMutual: "{{label}} needs a new time (you both needed the change)",
+  roundNeedsNewTimeByNeither: "{{label}} needs a new time (not down to either of you)",
+  roundNeedsNewTimeByMeReason: "{{label}} needs a new time (you needed the change): {{reason}}",
+  roundNeedsNewTimeByThemReason: "{{label}} needs a new time (they needed the change): {{reason}}",
+  roundNeedsNewTimeByMutualReason: "{{label}} needs a new time (you both needed the change): {{reason}}",
+  roundNeedsNewTimeByNeitherReason: "{{label}} needs a new time (not down to either of you): {{reason}}",
+  roundNewTimeNotNeeded: "{{label}} no longer needs a new time",
   // {{money}} is built by formatMoney: the offer's currency, with digits in your language.
   offerReceivedYear: "Offer received: {{money}} a year",
   offerReceivedDay: "Offer received: {{money}} a day",

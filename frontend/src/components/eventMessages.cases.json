@@ -227,6 +227,56 @@
     "summary": "Round 2 · Technical rescheduled (not down to either of you): A power cut"
   },
   {
+    "key": "event.roundNeedsNewTimeByMe",
+    "params": { "round": 2, "title": "Pairing session", "kind": "pairing" },
+    "summary": "Round 2 · Pairing session needs a new time (you needed the change)"
+  },
+  {
+    "key": "event.roundNeedsNewTimeByThem",
+    "params": { "round": 2, "title": "Pairing session", "kind": "pairing" },
+    "summary": "Round 2 · Pairing session needs a new time (they needed the change)"
+  },
+  {
+    "key": "event.roundNeedsNewTimeByMutual",
+    "params": { "round": 2, "title": "Pairing session", "kind": "pairing" },
+    "summary": "Round 2 · Pairing session needs a new time (you both needed the change)"
+  },
+  {
+    "key": "event.roundNeedsNewTimeByNeither",
+    "params": { "round": 2, "title": "Pairing session", "kind": "pairing" },
+    "summary": "Round 2 · Pairing session needs a new time (not down to either of you)"
+  },
+  {
+    "key": "event.roundNeedsNewTimeByMeReason",
+    "params": { "round": 2, "title": null, "kind": "technical", "reason": "I'm ill" },
+    "summary": "Round 2 · Technical needs a new time (you needed the change): I'm ill"
+  },
+  {
+    "key": "event.roundNeedsNewTimeByThemReason",
+    "params": { "round": 2, "title": null, "kind": "technical", "reason": "Their manager is away" },
+    "summary": "Round 2 · Technical needs a new time (they needed the change): Their manager is away"
+  },
+  {
+    "key": "event.roundNeedsNewTimeByMutualReason",
+    "params": { "round": 2, "title": null, "kind": "technical", "reason": "Neither of us can do Friday" },
+    "summary": "Round 2 · Technical needs a new time (you both needed the change): Neither of us can do Friday"
+  },
+  {
+    "key": "event.roundNeedsNewTimeByNeitherReason",
+    "params": {
+      "round": 2,
+      "title": "{{reason}}",
+      "kind": "technical",
+      "reason": "{{label}} $t(common:actions.cancel) $& <b>A & B</b>: é"
+    },
+    "summary": "Round 2 · {{reason}} needs a new time (not down to either of you): {{label}} $t(common:actions.cancel) $& <b>A & B</b>: é"
+  },
+  {
+    "key": "event.roundNewTimeNotNeeded",
+    "params": { "round": 2, "title": null, "kind": "technical" },
+    "summary": "Round 2 · Technical no longer needs a new time"
+  },
+  {
     "key": "event.offerReceivedYear",
     "params": { "amount": 85000, "currency": "GBP" },
     "summary": "Offer received: £85,000 a year"
