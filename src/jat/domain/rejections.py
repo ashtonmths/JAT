@@ -6,18 +6,24 @@ it happened (`in_time_order`): the date, and the stage it came from. Without one
 created at Rejected with nothing filled in before counts its creation. One whose move to Rejected was
 undone has no rejection to date, so it's listed only when no period is asked for. A period goes by
 the rejection's date, in [since, until).
+
+Which round rejections came after (`by_round`) counts every application whose rejection stands,
+feedback or not, by the same rule and period. The round it came after is the last one it *reached*
+before that rejection: not cancelled, and its time (start, else deadline) at or before the
+rejection, or with no time, marked done and added before it. Rounds after a reopening come after
+the rejection, so they don't count; nor does a round booked but not yet held when it was rejected.
 """
 
 from __future__ import annotations
 
-from collections import defaultdict
-from dataclasses import dataclass
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
 from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, aliased
 
-from jat.db.models import Application, Company, Contact, Event, Role
+from jat.db.models import Application, Company, Contact, Event, Interview, Role
 
 from .applications import STAGE_CHANGE, _effective_moves, in_time_order, is_implied
 from .workflow import REJECTED
@@ -45,6 +51,27 @@ def _in_period(when: datetime | None, since: datetime | None, until: datetime | 
     return when is not None and (since is None or when >= since) and (until is None or when < until)
 
 
+def _stage_events(session: Session, ids: list[str]) -> dict[str, list[Event]]:
+    """Each application's stage events, in the order they were recorded."""
+    events: dict[str, list[Event]] = defaultdict(list)
+    if ids:
+        for ev in session.scalars(
+            select(Event).where(Event.application_id.in_(ids), Event.kind == STAGE_CHANGE).order_by(Event.seq)
+        ):
+            events[ev.application_id].append(ev)
+    return events
+
+
+def standing_rejection(events: list[Event]) -> Event | None:
+    """The latest move to Rejected that still stands, by when it happened. With none, it may have been
+    created there with nothing filled in before (a workflow whose first stage is Rejected, or a row
+    migration 0013 left alone): that's its rejection, and creation can't be undone."""
+    moves = [ev for ev in in_time_order(_effective_moves(events)) if ev.to_stage == REJECTED]
+    if moves:
+        return moves[-1]
+    return next((ev for ev in events if ev.from_stage is None and ev.to_stage == REJECTED), None)
+
+
 def rejections(session: Session, *, since: datetime | None = None, until: datetime | None = None) -> list[Rejection]:
     """Applications with feedback, newest rejection first (undone ones last, most recently changed first)."""
     recruiter = aliased(Contact)
@@ -55,21 +82,10 @@ def rejections(session: Session, *, since: datetime | None = None, until: dateti
         .outerjoin(recruiter, Application.recruiter_id == recruiter.id)
         .where(Application.rejection_feedback.is_not(None))
     ).all()
-    ids = [app.id for app, *_ in rows]
-    events: dict[str, list[Event]] = defaultdict(list)
-    if ids:
-        for ev in session.scalars(
-            select(Event).where(Event.application_id.in_(ids), Event.kind == STAGE_CHANGE).order_by(Event.seq)
-        ):
-            events[ev.application_id].append(ev)
+    events = _stage_events(session, [app.id for app, *_ in rows])
     out: list[Rejection] = []
     for app, role, company, person in rows:
-        moves = [ev for ev in in_time_order(_effective_moves(events[app.id])) if ev.to_stage == REJECTED]
-        # With no move to Rejected, it may have been created there with nothing filled in before (a
-        # workflow whose first stage is Rejected, or a row migration 0013 left alone): that's its
-        # rejection, and creation can't be undone.
-        created = next((ev for ev in events[app.id] if ev.from_stage is None and ev.to_stage == REJECTED), None)
-        last = moves[-1] if moves else created
+        last = standing_rejection(events[app.id])
         when = last.occurred_at if last else None
         if not _in_period(when, since, until):
             continue
@@ -91,4 +107,51 @@ def rejections(session: Session, *, since: datetime | None = None, until: dateti
     updated = {app.id: app.updated_at for app, *_ in rows}
     # Newest rejection first; then the undone ones, most recently changed first.
     out.sort(key=lambda r: (r.rejected_at is not None, r.rejected_at or updated[r.application_id]), reverse=True)
+    return out
+
+
+@dataclass
+class ByRound:
+    rejections: int = 0
+    no_rounds: int = 0  # rejected before reaching any round
+    unnumbered: int = 0  # came after a round with no number
+    by_kind: Counter[str] = field(default_factory=Counter)  # the last round's kind
+    by_number: Counter[int] = field(default_factory=Counter)  # the last round's number
+
+
+def _reached(round_: Interview, rejected_at: datetime) -> datetime | None:
+    """When the round was reached, if it was by `rejected_at` (see the module's docstring)."""
+    if round_.status == "cancelled":
+        return None
+    when = round_.starts_at or round_.deadline_at
+    if when is not None:
+        return when if when <= rejected_at else None
+    return round_.created_at if round_.status == "done" and round_.created_at <= rejected_at else None
+
+
+def by_round(session: Session, *, since: datetime | None = None, until: datetime | None = None) -> ByRound:
+    """Rejections that stand, in [since, until) by rejection date, by the last round reached before them."""
+    rejected = select(Event.application_id).where(Event.kind == STAGE_CHANGE, Event.to_stage == REJECTED)
+    events = _stage_events(session, list(session.scalars(rejected.distinct())))
+    rounds: dict[str, list[Interview]] = defaultdict(list)
+    if events:
+        for r in session.scalars(select(Interview).where(Interview.application_id.in_(list(events)))):
+            rounds[r.application_id].append(r)
+    out = ByRound()
+    for app_id, evs in events.items():
+        last = standing_rejection(evs)
+        if last is None or not _in_period(last.occurred_at, since, until):
+            continue
+        out.rejections += 1
+        reached = [(when, r) for r in rounds[app_id] if (when := _reached(r, last.occurred_at)) is not None]
+        if not reached:
+            out.no_rounds += 1
+            continue
+        # The furthest round: the highest number, then the latest reached.
+        _, final = max(reached, key=lambda wr: (wr[1].round or 0, wr[0]))
+        out.by_kind[final.kind] += 1
+        if final.round:
+            out.by_number[final.round] += 1
+        else:
+            out.unnumbered += 1
     return out

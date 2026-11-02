@@ -1,0 +1,105 @@
+"""Which round rejections came after: the last round reached before each rejection that stands."""
+
+from __future__ import annotations
+
+from .factories import post
+
+URL = "/api/v1/insights/rejections/rounds"
+
+
+def _app(client, seeded):
+    return post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})["id"]
+
+
+def _move(client, app_id, to_stage, when):
+    r = client.post(f"/api/v1/applications/{app_id}/move", json={"to_stage": to_stage, "occurred_at": when})
+    assert r.status_code == 200, r.text
+
+
+def _round(client, app_id, kind, starts_at=None, status="scheduled", **more):
+    body = {"kind": kind, "status": status, "starts_at": starts_at, **more}
+    return post(client, f"/api/v1/applications/{app_id}/interviews", body)["id"]
+
+
+def _counts(client, **query):
+    r = client.get(URL, params=query)
+    assert r.status_code == 200, r.text
+    return r.json()
+
+
+def test_nothing_rejected(client, seeded):
+    _app(client, seeded)
+    assert _counts(client) == {"rejections": 0, "no_rounds": 0, "unnumbered": 0, "by_kind": [], "by_number": []}
+
+
+def test_rejected_before_any_round(client, seeded):
+    early = _app(client, seeded)
+    _round(client, early, "technical", "2026-10-20T09:00:00Z")  # booked for after the rejection: not reached
+    _move(client, early, "rejected", "2026-10-10T09:00:00Z")
+    cancelled = _app(client, seeded)
+    _round(client, cancelled, "screen", "2026-10-01T09:00:00Z", status="cancelled")
+    _move(client, cancelled, "rejected", "2026-10-10T09:00:00Z")
+    assert _counts(client) == {"rejections": 2, "no_rounds": 2, "unnumbered": 0, "by_kind": [], "by_number": []}
+
+
+def test_the_last_round_reached_by_kind_and_number(client, seeded):
+    a = _app(client, seeded)
+    _round(client, a, "technical", "2026-10-01T09:00:00Z", status="done")
+    _round(client, a, "coding_task", deadline_at="2026-10-05T17:00:00Z")  # a take-home, due before
+    _round(client, a, "final", "2026-10-30T09:00:00Z")  # booked after: not reached
+    _move(client, a, "rejected", "2026-10-08T09:00:00Z")
+    b = _app(client, seeded)
+    _round(client, b, "screen", "2026-10-01T09:00:00Z", status="done")
+    _round(client, b, "coding_task", "2026-10-03T09:00:00Z")
+    _move(client, b, "rejected", "2026-10-04T09:00:00Z")
+    c = _app(client, seeded)
+    _round(client, c, "system_design", status="done")  # done with no time, added before: reached
+    _move(client, c, "rejected", "2099-01-01T09:00:00Z")
+    assert _counts(client) == {
+        "rejections": 3,
+        "no_rounds": 0,
+        "unnumbered": 0,
+        "by_kind": [{"kind": "coding_task", "count": 2}, {"kind": "system_design", "count": 1}],
+        "by_number": [{"round": 1, "count": 1}, {"round": 2, "count": 2}],
+    }
+
+
+def test_an_undone_rejection_isnt_counted(client, seeded):
+    a = _app(client, seeded)
+    _round(client, a, "technical", "2026-10-01T09:00:00Z")
+    _move(client, a, "rejected", "2026-10-08T09:00:00Z")
+    assert client.post(f"/api/v1/applications/{a}/undo").status_code == 200
+    assert _counts(client)["rejections"] == 0
+
+
+def test_reopened_counts_only_rounds_up_to_the_rejection(client, seeded):
+    a = _app(client, seeded)
+    _round(client, a, "technical", "2026-10-01T09:00:00Z")
+    _move(client, a, "rejected", "2026-10-02T09:00:00Z")
+    _move(client, a, "interviewing", "2026-10-10T09:00:00Z")  # they came back
+    _round(client, a, "coding_task", "2026-10-12T09:00:00Z")
+    counts = _counts(client)
+    assert (counts["rejections"], counts["by_kind"], counts["by_number"]) == (
+        1,
+        [{"kind": "technical", "count": 1}],
+        [{"round": 1, "count": 1}],
+    )
+    # Rejected again after the second round: that rejection is the one that stands.
+    _move(client, a, "rejected", "2026-10-15T09:00:00Z")
+    counts = _counts(client)
+    assert (counts["rejections"], counts["by_kind"], counts["by_number"]) == (
+        1,
+        [{"kind": "coding_task", "count": 1}],
+        [{"round": 2, "count": 1}],
+    )
+
+
+def test_a_period_goes_by_the_rejection_date(client, seeded):
+    old = _app(client, seeded)
+    _move(client, old, "rejected", "2026-01-10T09:00:00Z")
+    new = _app(client, seeded)
+    _round(client, new, "pairing", "2026-10-01T09:00:00Z")
+    _move(client, new, "rejected", "2026-10-02T09:00:00Z")
+    counts = _counts(client, since="2026-09-01T00:00:00Z")
+    assert (counts["rejections"], counts["no_rounds"], counts["by_kind"]) == (1, 0, [{"kind": "pairing", "count": 1}])
+    assert _counts(client, until="2026-09-01T00:00:00Z")["no_rounds"] == 1
