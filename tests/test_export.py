@@ -66,6 +66,46 @@ def test_a_reschedules_who_and_why_survive_export_and_restore(data_dir, tmp_path
     }
 
 
+def test_a_round_needing_a_new_time_survives_export_and_restore(data_dir, tmp_path):
+    export_data_dir(data_dir)
+    fresh = tmp_path / "fresh"
+    init_data_dir(fresh, commit=False)
+    shutil.copytree(data_dir / "export", fresh / "export", dirs_exist_ok=True)
+    restore_data_dir(fresh)
+    export_data_dir(fresh)
+    [row] = [json.loads(line) for line in (fresh / "export" / "interviews.jsonl").read_text("utf-8").splitlines()]
+    assert (row["needs_new_time_since"], row["needs_new_time_by"], row["rebook_todo_id"]) == (
+        "2026-10-02T09:30:00Z",
+        "them",
+        "00000000-0000-4000-8000-000000000001",
+    )
+
+
+def test_an_export_from_before_rounds_needed_new_times_restores(data_dir, tmp_path):
+    """An export written at 0014 has none of the three columns: restore builds it there, then migrates."""
+    export_data_dir(data_dir)
+    fresh = tmp_path / "fresh"
+    init_data_dir(fresh, commit=False)
+    shutil.copytree(data_dir / "export", fresh / "export", dirs_exist_ok=True)
+    rounds = fresh / "export" / "interviews.jsonl"
+    old = []
+    for line in rounds.read_text("utf-8").splitlines():
+        row = json.loads(line)
+        for key in ("needs_new_time_since", "needs_new_time_by", "rebook_todo_id"):
+            del row[key]
+        old.append(json.dumps(row, ensure_ascii=False, separators=(",", ":")))
+    rounds.write_text("\n".join(old) + "\n", encoding="utf-8")
+    meta_path = fresh / "export" / "_meta.json"
+    meta = json.loads(meta_path.read_text("utf-8"))
+    meta["schema_revision"] = "0014"
+    meta_path.write_text(json.dumps(meta), encoding="utf-8")
+    restore_data_dir(fresh)
+    export_data_dir(fresh)
+    [row] = [json.loads(line) for line in rounds.read_text("utf-8").splitlines()]
+    assert (row["needs_new_time_since"], row["needs_new_time_by"], row["rebook_todo_id"]) == (None, None, None)
+    assert row["rescheduled_count"] == 1
+
+
 def test_round_trip_restore(data_dir, tmp_path):
     export_data_dir(data_dir)
     original = read_export(data_dir)
