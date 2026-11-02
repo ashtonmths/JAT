@@ -224,8 +224,8 @@ def phase_rows(roadmap: Roadmap, snapshot: Snapshot) -> str:
 
 
 UNKNOWN_GITHUB = "GitHub hasn't answered"
-UP_NEXT_SHOWN = 8  # on the Overview; the Board has the rest
 UNKNOWN_GIT = "git hasn't answered"
+UP_NEXT_SHOWN = 8  # on the Overview; the Board has the rest
 # The Overview's pipeline holds only work under way or merged; a task page adds a first, not-started stage.
 PIPELINE_STAGES = tuple((STATUS_LABELS[s], s) for s in ("building", "review", "done"))
 
