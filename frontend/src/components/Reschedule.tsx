@@ -98,11 +98,14 @@ const NO_TIME = {
   neither: "interviews:needsNewTime.noTime.neither",
 } as const;
 
+/** A round or a call waiting for a new time: its old time (a round's can be cleared) and who needed the change. */
+type Waiting = { starts_at: string | null; needs_new_time_by?: RescheduleBy | null };
+
 /**
- * "Was Tue 3 Nov, 10:00. They needed the change." for a round waiting for a new time, or "It has no
+ * "Was Tue 3 Nov, 10:00. They needed the change." for a round or call waiting for a new time, or "It has no
  * time now. They needed the change." once its old time has been cleared from its form.
  */
-export function wasText(round: Pick<Interview, "starts_at" | "needs_new_time_by">): string {
+export function wasText(round: Waiting): string {
   const by = round.needs_new_time_by;
   if (!round.starts_at) return i18n.t(by ? NO_TIME[by] : "interviews:needsNewTime.noTime.unsaid");
   return i18n.t(by ? WAS[by] : "interviews:needsNewTime.was.unsaid", {
@@ -114,28 +117,35 @@ export function wasText(round: Pick<Interview, "starts_at" | "needs_new_time_by"
 export function NeedsNewTimeBadge({
   interview,
   size = "sm",
+  hover = true,
 }: {
-  interview: Pick<Interview, "starts_at" | "needs_new_time_since" | "needs_new_time_by">;
+  interview: Waiting & { needs_new_time_since?: string | null };
   size?: "xs" | "sm";
+  hover?: boolean; // false where its "Was …" sentence is already shown beside it
 }) {
   const { t } = useTranslation("interviews");
   if (!interview.needs_new_time_since) return null;
-  return (
+  const badge = (
+    <Badge size={size} variant="light" color="red">
+      {t("needsNewTime.badge")}
+    </Badge>
+  );
+  return hover ? (
     <Tooltip label={wasText(interview)} withArrow>
-      <Badge size={size} variant="light" color="red">
-        {t("needsNewTime.badge")}
-      </Badge>
+      {badge}
     </Tooltip>
+  ) : (
+    badge
   );
 }
 
-/** "Round 2 · Technical needs a new time." with an Undo that gives it back its old time. */
-function notifyMarked(interview: Reschedulable, undo: () => void) {
+/** "Round 2 · Technical needs a new time." (or a call's name) with an Undo that gives it back its old time. */
+export function notifyMarked(label: string, undo: () => void) {
   const id = notifications.show({
     autoClose: 8000, // long enough to reach Undo from the keyboard
     message: (
       <Group justify="space-between" wrap="nowrap" gap="xs">
-        <Text size="sm">{i18n.t("interviews:needsNewTime.marked", { label: roundLabel(interview) })}</Text>
+        <Text size="sm">{i18n.t("interviews:needsNewTime.marked", { label })}</Text>
         <Button
           size="compact-xs"
           variant="light"
@@ -301,7 +311,7 @@ export function RescheduleModal({ interview, onClose }: { interview: Reschedulab
         {
           onSuccess: () => {
             onClose();
-            notifyMarked(interview, () => void undo(interview.id));
+            notifyMarked(roundLabel(interview), () => void undo(interview.id));
           },
         },
       );

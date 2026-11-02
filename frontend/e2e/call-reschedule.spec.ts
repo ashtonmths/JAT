@@ -17,6 +17,15 @@ interface Call {
   ends_at: string | null;
   rescheduled_count: number;
   moves: Move[];
+  needs_new_time_since?: string | null;
+  rebook_todo_id?: string | null;
+}
+interface Todo {
+  id: string;
+  text: string;
+  done_at: string | null;
+  entity_type: string | null;
+  entity_id: string | null;
 }
 
 const API = "/api/v1";
@@ -223,5 +232,137 @@ test.describe("rescheduling a call", () => {
     await page.goto(`/people/${personId}`);
     await expect(page.getByText(label)).toBeVisible();
     await expect(page.getByRole("button", { name: `Reschedule ${label}` })).toHaveCount(0);
+  });
+});
+
+test.describe("a call that needs a new time", () => {
+  const todoOf = async (request: APIRequestContext, id: string | null | undefined) => {
+    const all = (await (await request.get(`${API}/todos?status=all`)).json()) as Todo[];
+    return all.find((t) => t.id === id);
+  };
+  /** Today's Your move count (no badge: none). */
+  const yourMove = async (page: Page) => {
+    const badge = page.locator("#your-move .mantine-Badge-root").first();
+    await expect(page.getByRole("heading", { name: "Your move" })).toBeVisible();
+    return (await badge.count()) ? Number(await badge.textContent()) : 0;
+  };
+  const markFromDialog = async (page: Page, label: string, who: string, why?: string) => {
+    const dialog = await openDialog(page, label);
+    await dialog.getByRole("checkbox", { name: "A new time isn't agreed yet" }).check();
+    await expect(dialog.getByRole("checkbox", { name: "Add a to-do to book the new time" })).toBeChecked();
+    await pickWho(page, dialog, who);
+    if (why) await dialog.getByLabel("Why? (optional)").fill(why);
+    await dialog.getByRole("button", { name: "Save: needs a new time" }).click();
+    await expect(dialog).toBeHidden();
+  };
+
+  test("marked from the dialog, waits on Today with its to-do, then setting its time is the move", async ({
+    page,
+    request,
+  }) => {
+    const { personId, call, label } = await bookedCall(request, "Avery Waiting", 4);
+    await page.goto("/");
+    const before = await yourMove(page);
+    await page.goto(`/people/${personId}`);
+    await markFromDialog(page, label, "Them", "Their manager is away");
+    await expect(page.getByText(`${label} needs a new time.`)).toBeVisible();
+
+    // Saved: the old time kept, the move started, an open to-do on the person.
+    await expect.poll(async () => (await callNow(request, call.id)).needs_new_time_since).not.toBeNull();
+    const marked = await callNow(request, call.id);
+    expect(marked.starts_at).toBe(call.starts_at.replace(".000", ""));
+    expect(marked.moves).toEqual([
+      { from_at: marked.starts_at, to_at: null, by: "them", reason: "Their manager is away" },
+    ]);
+    expect(await todoOf(request, marked.rebook_todo_id)).toMatchObject({
+      text: `Book a new time for ${label}`,
+      done_at: null,
+    });
+
+    // The person page: the badge, and the old time and who in place of the time.
+    await expect(
+      page.locator(".mantine-Badge-root").getByText("Needs a new time", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText(/^Was .+\. They needed the change\.$/)).toBeVisible();
+    // Its to-do shows with it, once: not again in the person's To-dos card.
+    await expect(page.getByRole("checkbox", { name: `Book a new time for ${label}` })).toHaveCount(1);
+
+    // Today: under Needs a new time, once, with its to-do; not coming up; counted once in Your move.
+    await page.goto("/");
+    const section = page.getByRole("group", { name: "Needs a new time" });
+    await expect(section.getByText(label, { exact: true })).toBeVisible();
+    await expect.poll(() => yourMove(page)).toBe(before + 1);
+    await expect(section.getByRole("checkbox", { name: `Book a new time for ${label}` })).not.toBeChecked();
+    await expect(page.getByRole("checkbox", { name: `Book a new time for ${label}` })).toHaveCount(1);
+    await expect(page.locator("#coming-up").getByText(label)).toHaveCount(0);
+
+    // Set the new time from Today: the one move, with who and why; the to-do ticked off.
+    await section.getByRole("button", { name: `Set a new time for ${label}` }).click();
+    const set = page.locator(".mantine-Modal-content");
+    await set.getByText(`Set a new time for ${label}`).click();
+    // It starts with no time picked: any day will do, as for a round (reschedule-pending.spec.ts).
+    await set.getByLabel("New time", { exact: true }).first().click();
+    await page.locator('[class*="DateTimePicker-day"]:not([data-outside])').last().click();
+    await page.locator('[class*="DateTimePicker-submitButton"]').click();
+    await set.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(set).toBeHidden();
+    await expect.poll(async () => (await callNow(request, call.id)).rescheduled_count).toBe(1);
+    const booked = await callNow(request, call.id);
+    expect(booked.needs_new_time_since).toBeNull();
+    expect(booked.moves).toEqual([
+      { from_at: marked.starts_at, to_at: booked.starts_at, by: "them", reason: "Their manager is away" },
+    ]);
+    expect((await todoOf(request, marked.rebook_todo_id))?.done_at).not.toBeNull();
+    // Other tests may have their own waiting rounds or calls: only this call has left the section.
+    await expect(page.getByRole("group", { name: "Needs a new time" }).getByText(label)).toHaveCount(0);
+  });
+
+  test("a call about an application shows its to-do, kept on the application, with it", async ({
+    page,
+    request,
+  }) => {
+    const app = await post<{ id: string }>(request, "applications/quick", {
+      company_name: "Waiting Call Co",
+      role_title: "Tested Role",
+      route: "direct",
+      tags: [],
+    });
+    const { personId, call, label } = await bookedCall(request, "Casey Waiting", 4, app.id);
+    await page.goto(`/people/${personId}`);
+    await markFromDialog(page, label, "Both of us");
+    const todo = await todoOf(request, (await callNow(request, call.id)).rebook_todo_id);
+    expect(todo).toMatchObject({ entity_type: "application", entity_id: app.id, done_at: null });
+    // On the person page, with the call, though it's the application's to-do.
+    const card = page.locator(".mantine-Card-root").filter({ hasText: "Calls and meetings" });
+    await expect(card.getByRole("checkbox", { name: `Book a new time for ${label}` })).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: `Book a new time for ${label}` })).toHaveCount(1);
+  });
+
+  test("a call whose time has passed, once marked, isn't asked how it went", async ({ page, request }) => {
+    const { personId, label } = await bookedCall(request, "Drew Missed", -1);
+    await page.goto(`/people/${personId}`);
+    await expect(page.getByRole("button", { name: `Happened: ${label}` })).toBeVisible();
+    await markFromDialog(page, label, "Them");
+    await expect(page.getByRole("button", { name: `Set a new time for ${label}` })).toBeVisible();
+    await expect(page.getByRole("button", { name: `Happened: ${label}` })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: `Didn't happen: ${label}` })).toHaveCount(0);
+  });
+
+  test("Undo gives it its old time back and removes the to-do", async ({ page, request }) => {
+    const { personId, call, label } = await bookedCall(request, "Blake Undo", 4);
+    await page.goto(`/people/${personId}`);
+    await markFromDialog(page, label, "Me");
+    const toast = page
+      .locator(".mantine-Notification-root")
+      .filter({ hasText: `${label} needs a new time.` });
+    await toast.getByRole("button", { name: "Undo" }).click();
+    await expect.poll(async () => (await callNow(request, call.id)).needs_new_time_since).toBeNull();
+    const back = await callNow(request, call.id);
+    expect(back.moves).toEqual([]);
+    expect(back.rebook_todo_id).toBeNull();
+    await expect(page.getByRole("button", { name: `Reschedule ${label}` })).toBeVisible();
+    // The to-do it made, unchanged, is gone.
+    const todos = (await (await request.get(`${API}/todos?status=all`)).json()) as Todo[];
+    expect(todos.filter((t) => t.text === `Book a new time for ${label}`)).toEqual([]);
   });
 });

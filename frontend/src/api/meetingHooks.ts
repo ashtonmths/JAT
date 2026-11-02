@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
+import { invalidateApplicationViews } from "./hooks";
 import { notifyError } from "./notifyError";
 
 export type Meeting = Schemas["MeetingOut"];
@@ -32,18 +33,46 @@ export function useMeetings(filters: MeetingFilters, enabled = true) {
 function useRefreshMeetings() {
   const qc = useQueryClient();
   return () => {
-    // A call about an application also changes that application: a move goes on its timeline.
-    for (const key of [
-      ["meetings"],
-      ["next-actions"],
-      ["timeline"],
-      ["search"],
-      ["role-summaries"],
-      ["application"],
-      ["applications"],
-    ])
-      void qc.invalidateQueries({ queryKey: key });
+    // A call about an application also changes that application: a move goes on its timeline. A
+    // to-do to book a new time can be made or ticked off too.
+    invalidateApplicationViews(qc);
+    void qc.invalidateQueries({ queryKey: ["search"] });
   };
+}
+
+/** Mark a booked call as needing a new time; with `todo`, its to-do is made in this same request. */
+export function useMarkCallNeedsNewTime() {
+  const refresh = useRefreshMeetings();
+  return useMutation({
+    mutationFn: async (args: { id: string; body: Schemas["NeedsNewTimeIn"] }) =>
+      unwrap(
+        await api.POST("/api/v1/meetings/{meeting_id}/needs-new-time", {
+          params: { path: { meeting_id: args.id } },
+          body: args.body,
+        }),
+      ),
+    onSuccess: refresh,
+    onError: notifyError,
+  });
+}
+
+const keepOldTime = async (id: string) =>
+  unwrap(
+    await api.DELETE("/api/v1/meetings/{meeting_id}/needs-new-time", {
+      params: { path: { meeting_id: id } },
+    }),
+  );
+
+/** The call keeps its old time after all, or the mark is undone: deletes the mark's to-do if unchanged. */
+export function useKeepCallOldTime() {
+  const refresh = useRefreshMeetings();
+  return useMutation({ mutationFn: keepOldTime, onSuccess: refresh, onError: notifyError });
+}
+
+/** The same as a plain function, for an Undo toast that outlives its dialog. */
+export function useUndoCallNeedsNewTime() {
+  const refresh = useRefreshMeetings();
+  return (id: string) => keepOldTime(id).then(refresh, (error: unknown) => notifyError(error as Error));
 }
 
 export function useSaveMeeting() {

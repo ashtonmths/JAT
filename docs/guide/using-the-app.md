@@ -114,8 +114,8 @@ wide screen *Your move* is on the left and the other two sit beside it:
   call: *Happened*) or *Didn't happen*. Each asks first: a round's *Done* for its debrief and
   the questions asked, *Didn't happen* for what happened (saved on the round, or in the call's
   notes). Nothing changes until you save; the notes can stay empty.
-- **Needs a new time**: rounds that can't go ahead at their time, with no new time agreed yet
-  (see [Interviews](#interviews)), longest waiting first, each with its old time, who needed the
+- **Needs a new time**: rounds and calls that can't go ahead at their time, with no new time agreed yet
+  (see [Interviews](#interviews) and [Calls and meetings](#calls-and-meetings)), longest waiting first, each with its old time, who needed the
   change, its to-do to book the new time (listed here rather than under To-dos) and **Set new time**.
 - **To-dos**: your own reminders due today or earlier, or with no date (see [To-dos](#to-dos)).
   Add one here, about anything or nothing in particular.
@@ -450,6 +450,19 @@ meetings** on their page:
   from). Each move shows on the [Timeline](#timeline): "Call with … rescheduled", then the old
   and new time, who and why. A call about an application has it on that application's timeline
   too.
+- **A new time isn't agreed yet**, in the same dialog, for when the call can't go ahead and no
+  new time is set: say who and why, and leave **Add a to-do to book the new time** ticked (due
+  today; pick another day or clear it). The call keeps its old time and shows **Needs a new
+  time**, with "Was … They needed the change." and its to-do, on the person's page and under
+  *Needs a new time* on Today. The to-do belongs to the call's application, or to the person if
+  it isn't about one; either way it shows with the call (and not again in the person's
+  *To-dos*). It isn't asked how it went while it waits. **Undo** in the message that pops up
+  takes it back.
+- **Set new time** takes the place of Reschedule on a call that needs one: setting it is the
+  move from the old time, with the who and why you gave, and ticks the to-do off. **Keep the
+  old time** takes the mark back instead. The to-do is also ticked off if the call happens, is
+  cancelled or deleted, its application closes, or the person is marked ghosted or not
+  interested.
 - Changing the time with **Edit** in its menu also counts as a move, without a who. Changing
   the time while marking it Happened or Didn't happen isn't a move.
 - Under a call that happened, **Add roles from this call** adds the roles they mentioned, to

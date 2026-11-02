@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.12.0 (2026-11-02)
+
+- **When a call can't go ahead and no new time is agreed yet:** tick *A new time isn't agreed yet* in the call's Reschedule dialog, say who needed the change and why, and add a to-do to book the new time (on by default, due today; it starts open). The call shows *Needs a new time* on the person's page and in Today's *Your move*, with its to-do beside it. *Set new time* books it as one move and ticks the to-do off; Undo, or *Keep the old time*, takes the mark back. Rebuild the frontend after updating (#207).
+
 ## 1.11.0 (2026-11-02)
 
 - **Groundwork for calls that need a new time:** the API can mark a call as needing a new time (who and why, the old time kept, an optional to-do to book it, on the application or the person), take the mark back, and books it later as one move; the to-do is ticked off when the call is booked, happens, is cancelled or removed, or its application or person closes. The screens come in the next release. Restart the tracker and rebuild the frontend after updating (#206).

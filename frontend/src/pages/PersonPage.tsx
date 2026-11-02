@@ -29,7 +29,7 @@ import { roundStatus } from "../components/Interviews";
 import { roundLabel } from "../utils/rounds";
 import { LinksCard } from "../components/Links";
 import { TodosCard } from "../components/Todos";
-import { MeetingsCard } from "../components/Meetings";
+import { MeetingsCard, useRebookTodoIds } from "../components/Meetings";
 import { RolesCard } from "../components/Roles";
 import { FavouriteToggle, GhostMark } from "../components/GhostMark";
 import { MergePersonButton, PossibleDuplicates } from "../components/MergePerson";
@@ -49,6 +49,7 @@ export function PersonPage() {
   const stages = stageLookup(workflow);
   const [editing, setEditing] = useState(false);
   const router = useRouter();
+  const rebookTodoIds = useRebookTodoIds(personId);
 
   if (isError) return <Alert color="red">{t("person.loadFailed")}</Alert>;
   if (isLoading || !data) return <Loader />;
@@ -212,7 +213,7 @@ export function PersonPage() {
         <Grid.Col span={{ base: 12, md: 4 }}>
           <Stack>
             <ContactCard contact={contact} />
-            <TodosCard entityType="contact" entityId={contact.id} />
+            <TodosCard entityType="contact" entityId={contact.id} shownElsewhere={rebookTodoIds} />
             <LinksCard entityType="contact" entityId={contact.id} />
             <AttachmentsCard entityType="contact" entityId={contact.id} />
           </Stack>

@@ -36,8 +36,10 @@ import {
 import { CallRescheduleButton } from "./CallReschedule";
 import { Markdown } from "./Markdown";
 import { MeetingDidntHappen } from "./OutcomeNotes";
-import { RescheduledBadge } from "./Reschedule";
+import { NeedsNewTimeBadge, RescheduledBadge, wasText } from "./Reschedule";
 import { RoleFormModal, RoleLine } from "./Roles";
+import { TodoLine } from "./Todos";
+import { useTodos, type Todo } from "../api/todoHooks";
 import { useRoleSummaries } from "../api/roleHooks";
 import { i18n } from "../i18n";
 import { callLabel } from "../utils/calls";
@@ -140,6 +142,11 @@ export function MeetingFormModal({
     <Modal opened={opened} onClose={onClose} title={title} size="lg">
       <form onSubmit={submit}>
         <Stack>
+          {meeting?.needs_new_time_since && meeting.status === "scheduled" && status !== "done" && (
+            <Text size="sm" c="dimmed">
+              {wasText(meeting)} {i18n.t("interviews:needsNewTime.editHint")}
+            </Text>
+          )}
           <Group grow align="flex-start">
             <Select
               label={t("form.with")}
@@ -254,15 +261,20 @@ function statusBadge(status: string): { label: string; color?: string } {
   return { label: i18n.t(badge.key), color: badge.color };
 }
 
-/** One call: what, when, who with; `action` sits on the right. */
+/**
+ * One call: what, when, who with; `action` sits on the right. One waiting for a new time says so in
+ * place of its time, with its old time and who, and the to-do to book it (`todo`), shown with it.
+ */
 export function MeetingLine({
   meeting,
   action,
   showWho = true,
+  todo,
 }: {
   meeting: Meeting;
   action?: ReactNode;
   showWho?: boolean;
+  todo?: Todo;
 }) {
   const { t } = useTranslation("calls");
   const where = meeting.agency_name ?? meeting.company_name;
@@ -305,11 +317,24 @@ export function MeetingLine({
               </Anchor>
             )}
           </Group>
+          {meeting.needs_new_time_since && (
+            <Text size="xs" c="dimmed">
+              {wasText(meeting)}
+            </Text>
+          )}
         </div>
-        <Text size="xs" c="dimmed" ta="right" style={{ whiteSpace: "nowrap" }}>
-          {formatDateTime(meeting.starts_at)}
-        </Text>
+        {meeting.needs_new_time_since ? (
+          // Whole, like the time it replaces: the title truncates instead.
+          <div style={{ flexShrink: 0 }}>
+            <NeedsNewTimeBadge interview={meeting} size="xs" hover={false} />
+          </div>
+        ) : (
+          <Text size="xs" c="dimmed" ta="right" style={{ whiteSpace: "nowrap" }}>
+            {formatDateTime(meeting.starts_at)}
+          </Text>
+        )}
       </Group>
+      {todo && <TodoLine todo={todo} showAbout={false} />}
       {action && (
         <Group gap={6} wrap="wrap">
           {action}
@@ -368,17 +393,33 @@ function MeetingMenu({ meeting, onEdit }: { meeting: Meeting; onEdit: () => void
   );
 }
 
+/** The to-dos to book a new time for this person's waiting calls: shown with the call, not again on their own. */
+export function useRebookTodoIds(contactId: string): string[] {
+  const { data: meetings } = useMeetings({ contact_id: contactId });
+  return (meetings ?? []).flatMap((m) =>
+    m.status === "scheduled" && m.needs_new_time_since && m.rebook_todo_id ? [m.rebook_todo_id] : [],
+  );
+}
+
 /** A person's calls and meetings: booked ones first, then what happened, with notes. */
 export function MeetingsCard({ contactId, name }: { contactId: string; name: string }) {
   const { t } = useTranslation("calls");
   const { data: meetings } = useMeetings({ contact_id: contactId });
+  // A waiting call's to-do to book it, shown with it: on this person, or on the call's application,
+  // which this page otherwise wouldn't show. The To-dos card leaves it out (rebookTodoIds).
+  const { data: openTodos } = useTodos({ status: "open" });
+  const rebook = (m: Meeting) =>
+    m.needs_new_time_since ? openTodos?.find((x) => x.id === m.rebook_todo_id) : undefined;
   const [editing, setEditing] = useState<Meeting | "new" | null>(null);
   const [addingRoles, setAddingRoles] = useState<string | null>(null); // the call they came up in
   const { data: roles } = useRoleSummaries({ contact_id: contactId });
   const [now] = useState(() => Date.now()); // when the page opened: good enough to split ahead from past
   const all = meetings ?? [];
-  const ahead = all.filter((m) => m.status === "scheduled" && new Date(m.starts_at).getTime() >= now);
-  const toClose = all.filter((m) => m.status === "scheduled" && new Date(m.starts_at).getTime() < now);
+  // Waiting for a new time first: its old time isn't happening, so it's neither ahead nor to close.
+  const booked = all.filter((m) => m.status === "scheduled" && !m.needs_new_time_since);
+  const waiting = all.filter((m) => m.status === "scheduled" && m.needs_new_time_since);
+  const ahead = booked.filter((m) => new Date(m.starts_at).getTime() >= now);
+  const toClose = booked.filter((m) => new Date(m.starts_at).getTime() < now);
   const past = all.filter((m) => m.status !== "scheduled").reverse(); // newest first
 
   return (
@@ -400,11 +441,12 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
         </Text>
       ) : (
         <Stack gap="sm">
-          {[...ahead, ...toClose].map((m) => (
+          {[...waiting, ...ahead, ...toClose].map((m) => (
             <Stack key={m.id} gap={4}>
               <MeetingLine
                 meeting={m}
                 showWho={false}
+                todo={rebook(m)}
                 action={
                   <Group gap={4} wrap="nowrap">
                     {toClose.includes(m) && <MeetingOutcome meeting={m} />}
