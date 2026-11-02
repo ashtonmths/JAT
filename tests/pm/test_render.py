@@ -8,7 +8,17 @@ from tempfile import TemporaryDirectory
 
 from tools.pm import charts, derive, render, task_page
 from tools.pm.live import Commit, Snapshot, TaskEvidence, parse_branch_roadmap
-from tools.pm.roadmap import BranchRoadmap, Live, Phase, PullRequest, Task, apply_live, from_data, load
+from tools.pm.roadmap import (
+    STATUS_LABELS,
+    BranchRoadmap,
+    Live,
+    Phase,
+    PullRequest,
+    Task,
+    apply_live,
+    from_data,
+    load,
+)
 from tools.pm.yamlish import parse
 
 
@@ -238,9 +248,9 @@ class GitHubNeverAnsweredTests(unittest.TestCase):
             self.assertNotIn("not started", html, task_id)
 
     def test_the_board_shows_an_unknown_column_only_when_needed(self):
-        self.assertIn('pill unknown">unknown', render.board(self.roadmap, self.snapshot))
+        self.assertIn('pill unknown">Unknown', render.board(self.roadmap, self.snapshot))
         known = apply_live(from_data({"phases": [{"id": "P", "tasks": [{"id": "a"}]}]}), Live())
-        self.assertNotIn('pill unknown">unknown', render.board(known, Snapshot(live=Live())))
+        self.assertNotIn('pill unknown">Unknown', render.board(known, Snapshot(live=Live())))
 
     def test_one_commit_and_many(self):
         known = apply_live(
@@ -266,7 +276,7 @@ class DraftAndBranchTests(unittest.TestCase):
     def column(self, status):
         """The Board's column for a status."""
         html = render.board(self.roadmap, self.snapshot)
-        return next(c for c in html.split('<div class="col">') if f'pill {status}">{status}' in c)
+        return next(c for c in html.split('<div class="col">') if f'pill {status}">{STATUS_LABELS[status]}' in c)
 
     def test_a_draft_sits_in_the_building_column_not_review(self):
         self.assertIn("/task/a", self.column("building"))
@@ -473,7 +483,7 @@ class BugTests(unittest.TestCase):
         pr = PullRequest(9, "Fix", "OPEN", "worktree-high-one", "https://example.com/9")
         roadmap = self.roadmap(prs=[pr])
         html = render.board(roadmap, Snapshot(live=Live()))
-        self.assertLess(html.index('pill bug">bug'), html.index('pill planned">planned'))
+        self.assertLess(html.index('pill bug">Bugs'), html.index('pill planned">Backlog'))
         self.assertIn("BUG · high", html)
 
     def test_a_reviewed_bug_shows_how_easy_the_fix_is_and_its_hours(self):

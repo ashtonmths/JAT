@@ -120,6 +120,8 @@ PR.** PRs that only touch internal files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `doc
   Standard library only. It reads `docs/ROADMAP.yaml`, adds the tasks a `worktree-*` branch has added to
   its own copy (not `worktree-agent-*`, nor a branch whose PR merged or closed), and takes live task status
   from `worktree-<task id>` branches and their PRs (via `gh`): a draft PR is Building, a ready one Review.
+- Not started is two statuses: `next` (Up next) is work Kai has asked for, queued to be built; `planned`
+  (Backlog) is ideas and things to plan with Kai first.
 - Its tests run with the rest: `uv run pytest`.
 - After merging a PR that changes `tools/pm`, restart the dashboard so it loads the new code.
 
@@ -172,7 +174,9 @@ PR.** PRs that only touch internal files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `doc
 ## Keep going: the continuous delivery loop
 **Never stop because a piece of work is finished.** After every merge, pick the next item and
 start it in the same session. Stop only for a hard stop (below), a rate limit (wait 30 minutes
-and retry, repeatedly) or when Kai says so. **When Kai has scoped the work to specific items, Kai's
+and retry, repeatedly) or when Kai says so. **With nothing up next** (no `next` task left that isn't done
+or blocked on Kai), report what's in the backlog and wait for Kai to pick, rather than starting backlog
+work (see "When the roadmap runs out"). **When Kai has scoped the work to specific items, Kai's
 scope wins:** finish those, report, and wait instead of picking the next one. When Kai asks how it's going, give a short status
 update and carry on. Don't pause the loop for a question that has a sensible default: make
 the call, note the assumption in the PR, and keep going.
@@ -181,9 +185,11 @@ the call, note the assumption in the PR, and keep going.
 1. Unfinished work: open PRs, worktrees under `.claude/worktrees/` (check for uncommitted
    edits), and the "In flight" and follow-up lists in `var/RESUME.md`.
 2. Review follow-ups and `should_fix` items left over from merged PRs.
-3. `docs/ROADMAP.yaml`: the earliest phase's first task whose status is `planned` and whose
-   `depends` are all `done`. Run independent tasks in parallel (worktree and PR each).
-4. `var/RESUME.md` "Next" items that aren't on the roadmap yet: add them to the roadmap first.
+3. `docs/ROADMAP.yaml`: the first task with status `next` whose `depends` are all `done` (earliest
+   phase first). Backlog (`planned`) tasks aren't started without Kai's go-ahead. Run independent
+   tasks in parallel (worktree and PR each).
+4. `var/RESUME.md` "Next" items that aren't on the roadmap yet: add them to the roadmap first, as
+   `next` if Kai asked for them, else `planned`.
 
 ### Delivering an item
 - Big or unclear items get a PRD and an RFC first (`docs/prd`, `docs/rfc`), linked from the
@@ -195,9 +201,10 @@ the call, note the assumption in the PR, and keep going.
 - The lead session merges (subagents can't). Then fast-forward main, restart anything running
   so it loads the new code, try the change for real, and fix anything that shows up.
 - Keep `docs/ROADMAP.yaml` honest: set a task to `done` when it merges, and add any follow-ups
-  as new tasks. Work that comes from Kai's feedback goes on it too: the PR that builds it adds
-  a task (in the latest feedback phase) whose id is the branch name minus `worktree-`, so the
-  PM dashboard shows it while it's being built. Anything that slipped through gets backfilled. Update `var/RESUME.md` at every milestone.
+  as new tasks. Work that comes from Kai's feedback goes on the roadmap as `next`, or `building`
+  when its own PR adds it: the PR that builds it adds a task (in the latest feedback phase) whose
+  id is the branch name minus `worktree-`, so the PM dashboard shows it while it's being built.
+  Anything that slipped through gets backfilled. Update `var/RESUME.md` at every milestone.
 
 ### Bugs
 Every real bug found, however it's found (tests, a review, trying the app, or in passing while
@@ -211,14 +218,16 @@ doing something else), goes on the roadmap straight away, like an issue in Jira:
   Kai in the same message. Don't record what's only suspected: check it first, then record it.
 - **A fix that changes behaviour or text needs Kai's go-ahead,** unless a standing instruction
   covers it. A test that shows the bug can land before the fix, marked `test.fail`.
-- **Bugs aren't picked up by "next up":** raise them with Kai, and start one when he says go or a
-  standing instruction covers it.
+- **Bugs aren't started on their own:** raise them with Kai, and start one when he says go or a
+  standing instruction covers it. A bug Kai has OK'd to fix is set to `next`.
 
 ### When the roadmap runs out
-The roadmap has run out when every task is `done` or `blocked` on Kai. Then, without waiting
-to be asked, run an ideation round against Kai's brief above, deduplicate against
-`docs/IDEAS.md`, add the survivors to `docs/ROADMAP.yaml` as a new phase, and start building.
-Tell Kai in a line or two what was added and why.
+The roadmap has run out when no `next` task is left that isn't done or blocked on Kai. Then,
+without being asked, run an ideation round against Kai's brief above, deduplicate against
+`docs/IDEAS.md`, and add the survivors to `docs/ROADMAP.yaml` as a new phase in the backlog
+(`planned`). Then report and wait (Kai, 2026-11-02): tell Kai in a line or two what was added and
+why, report what's in the backlog, and wait for Kai to pick. Nothing from the backlog is started
+without Kai's go-ahead.
 
 ### Hard stops: the loop never crosses these
 - Never commit or push personal data (see above), and never rewrite history on `main`.

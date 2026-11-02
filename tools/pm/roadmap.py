@@ -9,7 +9,22 @@ from pathlib import Path
 from .yamlish import YamlishError, parse
 
 # "unknown" only comes from live evidence: commits on a branch while GitHub has never answered.
-STATUSES = ("bug", "planned", "building", "review", "unknown", "done", "blocked")
+# Not started is one of two: "planned" is the backlog (ideas, things to plan with Kai first) and "next" is
+# work Kai has asked for, queued to be built. "planned" keeps its name in the file, so older entries still parse.
+STATUSES = ("bug", "planned", "next", "building", "review", "unknown", "done", "blocked")
+NOT_STARTED = ("planned", "next")
+# What each status is called on a column or heading, and on a pill where the word in the file reads oddly.
+STATUS_LABELS = {
+    "bug": "Bugs",
+    "planned": "Backlog",
+    "next": "Up next",
+    "building": "Building",
+    "review": "In review",
+    "unknown": "Unknown",
+    "done": "Merged",
+    "blocked": "Blocked",
+}
+PILL_WORDS = {"planned": "backlog", "next": "up next"}
 SEVERITIES = ("high", "medium", "low")
 # What investigating a bug found, shown on its task page.
 REVIEW_FIELDS = (
@@ -151,9 +166,25 @@ class Roadmap:
     def deps_done(self, task: Task) -> bool:
         return all((d := self.task(dep)) is not None and d.status == "done" for dep in task.depends)
 
+    def queued(self) -> list[Task]:
+        """Tasks up next, ready ones first, each in roadmap order. The backlog isn't queued."""
+        tasks = [t for t in self.tasks if t.status == "next"]
+        return sorted(tasks, key=lambda t: not self.deps_done(t))
+
     def next_up(self) -> list[Task]:
-        """Planned tasks whose dependencies are all done, in roadmap order."""
-        return [t for t in self.tasks if t.status == "planned" and self.deps_done(t)]
+        """Tasks up next whose dependencies are all done, in roadmap order."""
+        return [t for t in self.queued() if self.deps_done(t)]
+
+    def queue_problems(self) -> list[str]:
+        """Tasks up next that wait on a backlog task or a bug nobody is fixing: nothing queued starts those."""
+        stuck = {"planned": "which is in the backlog", "bug": "a bug not being fixed"}
+        return [
+            f"{t.id} is up next but depends on {dep}, {stuck[d.status]}"
+            for t in self.tasks
+            if t.status == "next"
+            for dep in t.depends
+            if (d := self.task(dep)) is not None and d.status in stuck
+        ]
 
     def open_bugs(self) -> list[Task]:
         """Bugs not fixed yet, worst first, then in roadmap order."""
@@ -369,7 +400,8 @@ def apply_live(roadmap: Roadmap, live: Live) -> Roadmap:
     for task in roadmap.tasks:
         task.status, task.status_source = task.planned_status, "roadmap"
         if task.on_branch:
-            said = "says done, not merged yet" if task.done_on_branch else f"says {task.planned_status}"
+            words = PILL_WORDS.get(task.planned_status, task.planned_status)
+            said = "says done, not merged yet" if task.done_on_branch else f"says {words}"
             task.status_source = f"roadmap on {task.on_branch} {said}"
         task.pr_unknown = not live.prs_known
         own = task.branch_name

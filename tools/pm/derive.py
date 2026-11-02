@@ -57,11 +57,13 @@ def phase_is_bugs(phase: Phase) -> bool:
 
 
 def current_phase(roadmap: Roadmap) -> Phase | None:
-    """The first phase with work in flight, else the first with work left. Bugs aren't a phase of work."""
+    """The first phase with work in flight, else with work up next, else with work left. Bugs aren't a phase
+    of work."""
     phases = [p for p in roadmap.phases if not phase_is_bugs(p)]
-    for phase in phases:
-        if any(t.status in ("building", "review", "unknown") for t in phase.tasks):
-            return phase
+    for busy in (("building", "review", "unknown"), ("next",)):
+        for phase in phases:
+            if any(t.status in busy for t in phase.tasks):
+                return phase
     return next((p for p in phases if any(t.status != "done" for t in p.tasks)), None)
 
 
