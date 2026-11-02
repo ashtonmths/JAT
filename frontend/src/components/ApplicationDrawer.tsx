@@ -33,20 +33,14 @@ import { PersonMarks } from "./GhostMark";
 import type { ApiEvent, ApplicationDetail } from "../api/client";
 import { errorText } from "../api/notifyError";
 import { eventText, movedRoundText, moveLine } from "./eventText";
-import {
-  stageLookup,
-  useApplication,
-  useLogActivity,
-  useMoveApplication,
-  useUndoMove,
-  useWorkflow,
-} from "../api/hooks";
+import { stageLookup, useApplication, useLogActivity, useUndoMove, useWorkflow } from "../api/hooks";
 import { i18n } from "../i18n";
 import { stageName } from "../utils/stageName";
 import { ago, formatDate, formatDateTime } from "../utils/time";
 import { AtAGlance } from "./AtAGlance";
 import { DuplicateWarning } from "./DuplicateWarning";
 import { RoundBadge } from "./Interviews";
+import { RejectionFeedback, useMoveAsking } from "./RejectionFeedback";
 import { RescheduleButton } from "./Reschedule";
 import { StageBadge } from "./StageBadge";
 import { ApplicationWaiting } from "./Waiting";
@@ -153,7 +147,7 @@ export function ApplicationSummary({
   const { data: workflow } = useWorkflow();
   const stages = stageLookup(workflow);
   const names = new Map([...stages.values()].map((s) => [s.id, s.name]));
-  const move = useMoveApplication();
+  const move = useMoveAsking(); // a move to Rejected asks for feedback first
   const undo = useUndoMove();
   // Usual next stages first; with any-to-any moves, every other stage follows.
   const usual = app.allowed_next.filter((id) => app.suggested_next.includes(id));
@@ -161,7 +155,7 @@ export function ApplicationSummary({
   const moveItem = (stageId: string) => (
     <Menu.Item
       key={stageId}
-      onClick={() => move.mutate({ id: app.id, to_stage: stageId, stageName: names.get(stageId) })}
+      onClick={() => move.request({ id: app.id, to_stage: stageId, stageName: names.get(stageId) }, app)}
     >
       {stageName({ id: stageId, name: names.get(stageId) ?? stageId })}
     </Menu.Item>
@@ -238,6 +232,7 @@ export function ApplicationSummary({
           <ApplicationWaiting id={app.id} since={app.awaiting_reply_since} toRead={app.reply_to_read_since} />
         )}
       </Group>
+      {move.dialog}
       <Stack gap={4}>
         <Text size="sm">
           <Trans t={t} i18nKey="summary.route" components={{ b: <b />, route: <RouteLine app={app} /> }} />
@@ -269,6 +264,7 @@ export function ApplicationSummary({
           </Text>
         )}
       </Stack>
+      <RejectionFeedback app={app} />
     </Stack>
   );
 }

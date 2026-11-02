@@ -266,6 +266,41 @@ test.describe("the quick view", () => {
     await expect(page.getByRole("dialog").getByText("Rang about next steps")).toBeVisible();
     await expect(row(page, ...CONTOSO)).toContainText("today");
   });
+
+  test("Move to Rejected from it asks for feedback, which it then shows and edits", async ({
+    page,
+    request,
+  }) => {
+    const made = await request.post("/api/v1/applications/quick", {
+      data: { company_name: "Quick Reject Co", role_title: "Quick Reject Role", stage: "applied", tags: [] },
+    });
+    const { id } = (await made.json()) as { id: string };
+    const feedback = async () =>
+      (
+        (await (await request.get(`/api/v1/applications/${id}`)).json()) as {
+          rejection_feedback: string | null;
+        }
+      ).rejection_feedback;
+    await page.reload();
+    await row(page, "Quick Reject Role", "Quick Reject Co").click();
+    const drawer = page.getByRole("dialog", { name: "Application" });
+    await drawer.getByRole("button", { name: "Move to…" }).click();
+    await page.getByRole("menuitem", { name: "Rejected", exact: true }).click();
+    const asking = page.getByRole("dialog", { name: "Moving to Rejected: any feedback?" });
+    await asking.getByLabel("What did they say?").fill("Too senior for now");
+    await asking.getByRole("button", { name: "Move to Rejected" }).click();
+    await expect.poll(feedback).toBe("Too senior for now");
+    await expect(drawer.getByTestId("rejection-feedback")).toHaveText("Too senior for now");
+
+    await drawer.getByRole("button", { name: "Edit feedback" }).click();
+    const edit = page.getByRole("dialog", { name: "Edit rejection feedback" });
+    await edit.getByLabel("What did they say?").fill("Too senior for now; try again in a year");
+    await edit.getByRole("button", { name: "Save feedback" }).click();
+    await expect.poll(feedback).toBe("Too senior for now; try again in a year");
+    await expect(drawer.getByTestId("rejection-feedback")).toHaveText(
+      "Too senior for now; try again in a year",
+    );
+  });
 });
 
 test.describe("New application", () => {

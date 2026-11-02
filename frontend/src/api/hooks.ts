@@ -155,22 +155,31 @@ function useApplicationInvalidation() {
   };
 }
 
+export type MoveArgs = {
+  id: string;
+  to_stage: string;
+  note?: string;
+  appNote?: "no_reply";
+  stageName?: string;
+  // Only with a move to Rejected, and left out unless there's something to say (see feedbackField).
+  rejection_feedback?: string;
+};
+
 export function useMoveApplication() {
   const qc = useQueryClient();
   const refresh = useApplicationInvalidation();
   return useMutation({
-    mutationFn: async (args: {
-      id: string;
-      to_stage: string;
-      note?: string;
-      appNote?: "no_reply";
-      stageName?: string;
-    }) =>
+    mutationFn: async (args: MoveArgs) =>
       unwrap(
         await api.POST("/api/v1/applications/{app_id}/move", {
           // In the query, which an older server ignores: it saves `note` as typed, and the button still works.
           params: { path: { app_id: args.id }, query: args.appNote ? { app_note: args.appNote } : {} },
-          body: { to_stage: args.to_stage, note: args.note ?? null },
+          body: {
+            to_stage: args.to_stage,
+            note: args.note ?? null,
+            // Not in the body at all when left out: an older server refuses fields it doesn't know.
+            ...(args.rejection_feedback !== undefined ? { rejection_feedback: args.rejection_feedback } : {}),
+          },
         }),
       ),
     // Move the card straight away (the board would otherwise snap back until the refetch).
@@ -189,6 +198,22 @@ export function useMoveApplication() {
       notifyError(error);
     },
     onSuccess: refresh,
+  });
+}
+
+/** Add, edit or clear (null) what they said when they turned you down. */
+export function useSetRejectionFeedback() {
+  const refresh = useApplicationInvalidation();
+  return useMutation({
+    mutationFn: async (args: { id: string; feedback: string | null }) =>
+      unwrap(
+        await api.PUT("/api/v1/applications/{app_id}/rejection-feedback", {
+          params: { path: { app_id: args.id } },
+          body: { feedback: args.feedback },
+        }),
+      ),
+    onSuccess: refresh,
+    onError: notifyError,
   });
 }
 

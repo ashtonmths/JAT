@@ -98,6 +98,23 @@ export default {
     loadFailed: "Couldn't load this application",
     somethingWrong: "Something went wrong.",
   },
+  // What they said when they turned you down: asked on the way to Rejected, and kept on the application.
+  rejection: {
+    // {{stage}} is the stage's name: "Rejected", or yours if you renamed it.
+    moveTitle: "Moving to {{stage}}: any feedback?",
+    moveConfirm: "Move to {{stage}}",
+    where: "{{role}} at {{company}}",
+    label: "What did they say?",
+    description: "Optional: leave it empty to move it without feedback. You can add or change it later.",
+    placeholder: "Their reasons, anything they liked, what to work on…",
+    heading: "Rejection feedback",
+    none: "No feedback yet.",
+    add: "Add feedback",
+    edit: "Edit feedback",
+    addTitle: "Add rejection feedback",
+    editTitle: "Edit rejection feedback",
+    save: "Save feedback",
+  },
   // The route line, with the recruiter, agency and company linked to their pages.
   routeLine: {
     throughAgency: "Through an agency",
