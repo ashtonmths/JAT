@@ -4,7 +4,7 @@
 # and lists, one-line scalars, [flow, lists] and one-line {flow: mappings}. No anchors and no
 # multi-line strings.
 #
-# status: bug | planned | building | review | done | blocked
+# status: bug | planned | next | building | review | done | blocked
 #   Not started is one of two. planned is the backlog (shown as Backlog): ideas, and things to plan
 #   with Kai first. next (shown as Up next) is work Kai has asked for, queued to be built. A bug
 #   stays in the Bugs column unless it's set to next.

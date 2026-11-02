@@ -57,7 +57,7 @@ def page(title: str, active: str, body: str, roadmap: Roadmap, snapshot: Snapsho
 
 
 def problems(roadmap: Roadmap, snapshot: Snapshot) -> str:
-    items = [*roadmap.errors, *snapshot.live.warnings]
+    items = [*roadmap.errors, *snapshot.live.warnings, *roadmap.queue_problems()]
     ages = ((snapshot.git_ok, snapshot.git_at, "commits"), (snapshot.github_ok, snapshot.github_at, "PRs"))
     for ok, at, what in ages:
         if not ok and at:
@@ -122,7 +122,8 @@ def task_links(roadmap: Roadmap, task: Task) -> str:
     return " · ".join(parts)
 
 
-def task_line(roadmap: Roadmap, task: Task, show_status: bool = True) -> str:
+def task_line(roadmap: Roadmap, task: Task, show_status: bool = True, suffix: str = "") -> str:
+    """A task as a list item. `suffix` is HTML added to the end of its small line."""
     # A bug not started shows its tag instead of a second "bug" pill.
     status = pill(task.status) + " " if show_status and task.status != "bug" else ""
     links = task_links(roadmap, task)
@@ -131,7 +132,7 @@ def task_line(roadmap: Roadmap, task: Task, show_status: bool = True) -> str:
     return (
         f"<li>{status}{task_tags(task)}<b>{escape(task.name)}</b>{owner}{detail}<br>"
         f'<span class="small muted">{task_link(task.id)} · {escape(task.phase)} · {task.estimate_h:g} h'
-        f"{' · ' + links if links else ''}</span></li>"
+        f"{' · ' + links if links else ''}{suffix}</span></li>"
     )
 
 
@@ -177,7 +178,7 @@ def kpis(roadmap: Roadmap, snapshot: Snapshot, now: datetime) -> str:
         kpi(
             "Whole roadmap",
             f"{percent(done, len(tasks))}%",
-            f"{done} of {len(tasks)} tasks done · {len(roadmap.queued())} up next",
+            f"{done} of {len(tasks)} tasks done · {sum(t.status == 'next' for t in tasks)} up next",
             bar,
         ),
         kpi("Pull requests", "—", UNKNOWN_GITHUB)
@@ -222,7 +223,8 @@ def phase_rows(roadmap: Roadmap, snapshot: Snapshot) -> str:
 
 UNKNOWN_GITHUB = "GitHub hasn't answered"
 UNKNOWN_GIT = "git hasn't answered"
-PIPELINE_STAGES = tuple((STATUS_LABELS[s], s) for s in ("planned", "next", "building", "review", "done"))
+# The Overview's pipeline holds only work under way or merged; a task page adds a first, not-started stage.
+PIPELINE_STAGES = tuple((STATUS_LABELS[s], s) for s in ("building", "review", "done"))
 
 
 def pipeline_table(roadmap: Roadmap, snapshot: Snapshot) -> str:
@@ -296,15 +298,13 @@ live from branches and PRs</p>{pipeline_table(roadmap, snapshot)}</div></div>
             f'<ul class="plain">{bugs}</ul></details>'
         )
     queued = roadmap.queued()
-    nxt = "".join(waits_on(roadmap, task_line(roadmap, t, False), t) for t in queued)
+    nxt = "".join(task_line(roadmap, t, False, waits_on(roadmap, t)) for t in queued)
     backlog = sum(t.status == "planned" for t in roadmap.tasks)
     nxt = nxt or f'<li class="muted">Nothing queued. {backlog} in the <a href="/board">backlog</a>.</li>'
     blocked = [t for t in roadmap.tasks if t.status == "blocked"]
     blocked_html = (
         "".join(
-            task_line(roadmap, t, False).replace(
-                "</span></li>", f" · waiting on {escape(', '.join(roadmap.waiting(t)) or 'Kai')}</span></li>", 1
-            )
+            task_line(roadmap, t, False, f" · waiting on {escape(', '.join(roadmap.waiting(t)) or 'Kai')}")
             for t in blocked
         )
         or '<li class="muted">Nothing blocked.</li>'
@@ -335,11 +335,10 @@ live from branches and PRs</p>{pipeline_table(roadmap, snapshot)}</div></div>
     )
 
 
-def waits_on(roadmap: Roadmap, line: str, task: Task) -> str:
-    """A task line, saying what it waits on when its dependencies aren't done."""
-    if not (waiting := roadmap.waiting(task)):
-        return line
-    return line.replace("</span></li>", f" · waits on {escape(', '.join(waiting))}</span></li>", 1)
+def waits_on(roadmap: Roadmap, task: Task) -> str:
+    """What a task waits on, for the end of its line, when its dependencies aren't done."""
+    waiting = roadmap.waiting(task)
+    return f" · waits on {escape(', '.join(waiting))}" if waiting else ""
 
 
 def phase_filter(roadmap: Roadmap, base: str, selected: str | None) -> str:

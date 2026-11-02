@@ -175,6 +175,16 @@ class Roadmap:
         """Tasks up next whose dependencies are all done, in roadmap order."""
         return [t for t in self.queued() if self.deps_done(t)]
 
+    def queue_problems(self) -> list[str]:
+        """Tasks up next that wait on a backlog task: nothing queued would ever start that one."""
+        return [
+            f"{t.id} is up next but depends on {dep}, which is in the backlog"
+            for t in self.tasks
+            if t.status == "next"
+            for dep in t.depends
+            if (d := self.task(dep)) is not None and d.status == "planned"
+        ]
+
     def open_bugs(self) -> list[Task]:
         """Bugs not fixed yet, worst first, then in roadmap order."""
         rank = {s: i for i, s in enumerate(SEVERITIES)}
@@ -389,7 +399,8 @@ def apply_live(roadmap: Roadmap, live: Live) -> Roadmap:
     for task in roadmap.tasks:
         task.status, task.status_source = task.planned_status, "roadmap"
         if task.on_branch:
-            said = "says done, not merged yet" if task.done_on_branch else f"says {task.planned_status}"
+            words = PILL_WORDS.get(task.planned_status, task.planned_status)
+            said = "says done, not merged yet" if task.done_on_branch else f"says {words}"
             task.status_source = f"roadmap on {task.on_branch} {said}"
         task.pr_unknown = not live.prs_known
         own = task.branch_name

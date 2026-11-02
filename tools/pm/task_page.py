@@ -7,7 +7,7 @@ from html import escape
 from .derive import parse_time
 from .live import TaskEvidence
 from .render import PIPELINE_STAGES, pill, repo_link, task_link, task_tags
-from .roadmap import NOT_STARTED, PILL_WORDS, PullRequest, Roadmap, Task
+from .roadmap import NOT_STARTED, PILL_WORDS, STATUS_LABELS, PullRequest, Roadmap, Task
 
 # Review fields that are one of a few words, some hyphenated in the file.
 RATED = ("fix_risk", "data_risk", "confirmed_by")
@@ -44,14 +44,18 @@ def stage_why(task: Task) -> str:
 
 
 def stage_track(task: Task) -> str:
-    order = [status for _, status in PIPELINE_STAGES]
+    """Not started, then building to merged. The first stage names the task's own not-started status while
+    it's there; past it, which one it started from isn't known, so it says only "Not started"."""
+    first = (STATUS_LABELS[task.status], task.status) if task.status in NOT_STARTED else ("Not started", "")
+    stages = (first, *PIPELINE_STAGES)
+    order = [status for _, status in stages]
     if task.status not in order:  # blocked, or a bug nobody has started: not on the way to merged yet
         return ""
     at = order.index(task.status)
     cells = "".join(
         f'<div class="stage"><span class="dot{f" {status} at" if i == at else " past" if i < at else ""}"></span>'
         f'<br><span class="small{"" if i == at else " muted"}">{label}</span></div>'
-        for i, (label, status) in enumerate(PIPELINE_STAGES)
+        for i, (label, status) in enumerate(stages)
     )
     return f'<div class="track">{cells}</div>'
 

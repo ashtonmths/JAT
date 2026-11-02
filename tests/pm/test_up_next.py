@@ -6,7 +6,7 @@ from datetime import datetime
 
 from tools.pm import charts, derive, render, task_page
 from tools.pm.live import Snapshot, TaskEvidence
-from tools.pm.roadmap import Live, PullRequest, apply_live, from_data
+from tools.pm.roadmap import BranchRoadmap, Live, PullRequest, apply_live, from_data
 
 NOW = datetime(2026, 11, 2, 12, 0).astimezone()
 
@@ -135,10 +135,34 @@ class OverviewTests(unittest.TestCase):
 
     def test_counts_and_legend(self):
         html = self.html()
-        self.assertIn("1 of 6 tasks done · 3 up next", html)  # the bug up next is queued too
+        self.assertIn("1 of 6 tasks done · 2 up next", html)  # work tasks only, as in the 6: not the bug
         self.assertIn('<i class="planned"></i>Backlog', html)
         self.assertIn('<i class="next"></i>Up next', html)
         self.assertIn('<i class="next" style="width:66.67%">', html)  # P1: two of three up next
+
+    def test_the_pipeline_has_no_not_started_stages(self):
+        heads = re.findall(r'<th class="stage">([^<]+)</th>', self.html())
+        self.assertEqual(heads, ["Building", "In review", "Merged"])
+
+    def test_up_next_on_a_backlog_task_is_a_problem(self):
+        data = {
+            "phases": [
+                {
+                    "id": "P",
+                    "tasks": [
+                        {"id": "idea"},
+                        {"id": "asked", "status": "next", "depends": ["idea"]},
+                        {"id": "fine", "status": "next", "depends": ["asked"]},
+                    ],
+                }
+            ]
+        }
+        rm = apply_live(from_data(data), Live())
+        self.assertEqual(rm.errors, [])
+        self.assertEqual(rm.queue_problems(), ["asked is up next but depends on idea, which is in the backlog"])
+        self.assertIn("asked is up next but depends on idea", render.problems(rm, Snapshot(live=Live())))
+        building = apply_live(from_data(data), Live(branches_ahead={"worktree-idea": 1}))
+        self.assertEqual(building.queue_problems(), [])  # live status counts: it's being built
 
     def test_nothing_queued_says_how_much_is_in_the_backlog(self):
         rm = from_data({"phases": [{"id": "P", "tasks": [{"id": "a"}, {"id": "b"}]}]})
@@ -190,3 +214,22 @@ class TaskPageTests(unittest.TestCase):
         html = self.page("idea")
         self.assertIn('<span class="dot planned at">', html)
         self.assertIn("says backlog", html)
+
+    def track(self, task):
+        return re.findall(r'<span class="small(?: muted)?">([^<]+)</span></div>', task_page.stage_track(task))
+
+    def test_the_first_stage_is_named_by_its_own_status_and_not_started_once_past(self):
+        rm = roadmap(prs=[DRAFT])
+        self.assertEqual(self.track(rm.task("idea")), ["Backlog", "Building", "In review", "Merged"])
+        self.assertEqual(self.track(rm.task("queued")), ["Up next", "Building", "In review", "Merged"])
+        self.assertEqual(self.track(rm.task("queued-built")), ["Not started", "Building", "In review", "Merged"])
+        self.assertIn('<span class="dot past">', task_page.stage_track(rm.task("queued-built")))
+        self.assertEqual(task_page.stage_track(rm.task("a-bug")), "")
+
+    def test_a_task_only_on_a_branch_says_up_next_in_words(self):
+        main = from_data({"phases": [{"id": "P", "tasks": [{"id": "own"}]}]})
+        extra = from_data({"phases": [{"id": "P", "tasks": [{"id": "sib", "status": "next"}]}]}).phases
+        live = Live(branch_roadmaps={"worktree-own": BranchRoadmap("worktree-own", "s", extra)})
+        task = apply_live(main, live).task("sib")
+        self.assertEqual(task.status_source, "roadmap on worktree-own says up next")
+        self.assertIn("That file says up next.", task_page.stage_why(task))
