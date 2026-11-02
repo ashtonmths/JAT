@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.10.0 (2026-11-02)
+
+- **Reschedule a call:** every booked call has a Reschedule button, on the person's page and on Today (Coming up and How did it go?). Pick the new time, say who needed the change (required) and, if you like, why. A moved call shows Rescheduled, and each move shows on the Timeline with its old and new time, who and why; a call about an application has the move on that application's timeline too. Restart the tracker and rebuild the frontend so the Timeline shows calls' moves (#205).
+
 ## 1.9.1 (2026-11-02)
 
 - **The recruiter on every card:** interview and offer rows (Today, Interviews, Offers and a person's page) now name the application's recruiter, linked to their page with the star and ghost, and a direct application's in-house recruiter shows on the board, the list and its company's page. Restart the tracker to see the names on interview and offer rows (#202).
