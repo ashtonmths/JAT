@@ -576,7 +576,10 @@ reached.
   could look like a pattern; with none that far, there's no list. It counts what happened and
   doesn't say what moves caused. A move can have no date of its own, so the date range goes by when
   the application was added, whenever the move was: a move last week on an application added
-  three months ago isn't in *Last 30 days*. A removed round isn't counted.
+  three months ago isn't in *Last 30 days*. A removed round isn't counted. A round waiting for a
+  new time keeps its old one, so it's booked, and it's one move by whoever needed it; setting the
+  new time completes that move rather than adding another, and the block says how many are
+  still waiting. One cancelled while it waited, or given its old time back, didn't move.
 
 **Recruiter conversations**: what happens before an application. A *pitched role* is one with
 a person on it (someone told you about it: **Add roles from this call**, or a person set on

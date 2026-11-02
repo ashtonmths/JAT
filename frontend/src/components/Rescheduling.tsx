@@ -48,6 +48,9 @@ function Moved({ data }: { data: Rescheduling }) {
       <Text size="sm">
         {t("rescheduling.moved", { count: data.booked_rounds, moved: data.moved_rounds })}{" "}
         {t("rescheduling.moves", { count: data.moves })}
+        {/* None from a server before rounds could wait for a new time. */}
+        {(data.waiting_for_new_time ?? 0) > 0 &&
+          ` ${t("rescheduling.waiting", { count: data.waiting_for_new_time ?? 0 })}`}
       </Text>
       <Table aria-label={t("rescheduling.byWho")} maw={360}>
         <Table.Thead>

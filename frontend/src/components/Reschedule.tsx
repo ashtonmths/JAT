@@ -67,6 +67,32 @@ export function RoundDaysMoved({ interview }: { interview: Pick<Interview, "resc
   );
 }
 
+const WAS = {
+  me: "interviews:needsNewTime.was.me",
+  them: "interviews:needsNewTime.was.them",
+  mutual: "interviews:needsNewTime.was.mutual",
+  neither: "interviews:needsNewTime.was.neither",
+} as const;
+
+const NO_TIME = {
+  me: "interviews:needsNewTime.noTime.me",
+  them: "interviews:needsNewTime.noTime.them",
+  mutual: "interviews:needsNewTime.noTime.mutual",
+  neither: "interviews:needsNewTime.noTime.neither",
+} as const;
+
+/**
+ * "Was Tue 3 Nov, 10:00. They needed the change." for a round waiting for a new time, or "It has no
+ * time now. They needed the change." once its old time has been cleared from its form.
+ */
+export function wasText(round: Pick<Interview, "starts_at" | "needs_new_time_by">): string {
+  const by = round.needs_new_time_by;
+  if (!round.starts_at) return i18n.t(by ? NO_TIME[by] : "interviews:needsNewTime.noTime.unsaid");
+  return i18n.t(by ? WAS[by] : "interviews:needsNewTime.was.unsaid", {
+    when: formatDateTime(round.starts_at),
+  });
+}
+
 /** What the dialog needs of a round: the board's and quick view's summary has no end time, and needn't. */
 type Reschedulable = Pick<Interview, "id" | "round" | "title" | "kind" | "starts_at"> & {
   company_name: string;
