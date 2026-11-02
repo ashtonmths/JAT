@@ -517,6 +517,76 @@ test.describe("CVs and cover letters", () => {
   });
 });
 
+test.describe("Rejections", () => {
+  const reject = async (request: APIRequestContext, company: string, when: string, feedback: string) => {
+    const { id } = await quick(request, company, "Rejection Role", { stage: "applied" });
+    await post(request, `applications/${id}/move`, { to_stage: "screen", occurred_at: when });
+    await post(request, `applications/${id}/move`, {
+      to_stage: "rejected",
+      occurred_at: when.replace("T09", "T10"),
+      rejection_feedback: feedback,
+    });
+    return id;
+  };
+  const item = (page: Page, company: string) =>
+    page.getByRole("listitem", { name: `${company}: Rejection Role`, exact: true });
+
+  test("lists every rejection's feedback newest first, as written, linked to the application", async ({
+    page,
+    request,
+  }) => {
+    const recent = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
+    const old = await reject(request, "Old Reject Co", "2024-01-15T09:00:00Z", "Long ago ✓\n\nStill true");
+    await reject(request, "New Reject Co", `${recent}T09:00:00Z`, "Went with someone local");
+    await openInsights(page);
+    await tab(page, "Rejections");
+    const section = card(page, "Rejection feedback");
+    const names = await section
+      .getByRole("listitem")
+      .evaluateAll((items) => items.map((i) => i.getAttribute("aria-label")));
+    expect(names.indexOf("New Reject Co: Rejection Role")).toBeLessThan(
+      names.indexOf("Old Reject Co: Rejection Role"),
+    );
+    await expect(item(page, "Old Reject Co")).toContainText("Rejected from Screen on 15 Jan 2024.");
+    await expect(item(page, "Old Reject Co").getByText(/Long ago/)).toHaveText("Long ago ✓\n\nStill true", {
+      useInnerText: true,
+    });
+
+    // The period goes by when it was rejected.
+    await range(page, "Last 30 days");
+    await expect(item(page, "New Reject Co")).toBeVisible();
+    await expect(item(page, "Old Reject Co")).toBeHidden();
+    await range(page, "All time");
+
+    await item(page, "Old Reject Co").getByRole("link", { name: "Old Reject Co · Rejection Role" }).click();
+    await expect(page).toHaveURL(new RegExp(`/applications/${old}$`));
+    await expect(page.getByTestId("rejection-feedback")).toContainText("Long ago");
+  });
+
+  test("a reopened one stays, saying where it is now", async ({ page, request }) => {
+    const id = await reject(request, "Reopened Reject Co", "2025-06-02T09:00:00Z", "They came back");
+    await post(request, `applications/${id}/move`, {
+      to_stage: "interviewing",
+      occurred_at: "2025-06-09T09:00:00Z",
+    });
+    await openInsights(page);
+    await tab(page, "Rejections");
+    await expect(item(page, "Reopened Reject Co")).toContainText(
+      "Rejected from Screen on 2 Jun 2025. It's at Interviewing now.",
+    );
+  });
+
+  test("if it can't load, it says so", async ({ page, problems }) => {
+    problems.allow(/500.*\/insights\/rejections/);
+    await refuse(page, "rejections");
+    await openInsights(page);
+    await tab(page, "Rejections");
+    await expect(
+      page.getByText("Couldn't load the rejection feedback. If you've just updated the tracker, restart it."),
+    ).toBeVisible();
+  });
+});
+
 test.describe("weekly activity", () => {
   test("shows twelve weeks on every tab", async ({ page }) => {
     await openInsights(page);
