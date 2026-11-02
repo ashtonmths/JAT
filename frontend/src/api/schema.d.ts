@@ -292,6 +292,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/applications/{app_id}/rejection-feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Rejection Feedback
+         * @description Add, edit or clear what they said when they turned you down, after the move to Rejected.
+         */
+        put: operations["put_rejection_feedback_api_v1_applications__app_id__rejection_feedback_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/applications/{app_id}/undo": {
         parameters: {
             query?: never;
@@ -1504,6 +1524,8 @@ export interface components {
             recruiter_id: string | null;
             /** Recruiter Name */
             recruiter_name: string | null;
+            /** Rejection Feedback */
+            rejection_feedback?: string | null;
             /** Reply To Read Since */
             reply_to_read_since?: string | null;
             /** Role Id */
@@ -1626,6 +1648,8 @@ export interface components {
             recruiter_id: string | null;
             /** Recruiter Name */
             recruiter_name: string | null;
+            /** Rejection Feedback */
+            rejection_feedback?: string | null;
             /** Reply To Read Since */
             reply_to_read_since?: string | null;
             /** Role Id */
@@ -2665,6 +2689,8 @@ export interface components {
             recruiter_id: string | null;
             /** Recruiter Name */
             recruiter_name: string | null;
+            /** Rejection Feedback */
+            rejection_feedback?: string | null;
             /** Reply To Read Since */
             reply_to_read_since?: string | null;
             /** Role Id */
@@ -2751,7 +2777,7 @@ export interface components {
          */
         ErrorOut: {
             /** Code */
-            code?: ("agencies_in_use" | "application_link_not_found" | "attachment_entity_incomplete" | "attachment_entity_type_invalid" | "attachment_entity_type_required" | "companies_in_use" | "duplicates_needs_company" | "roles_in_use" | "time_zone_unknown" | "todo_entity_incomplete" | "application_document_not_found" | "attachment_file_missing" | "attachment_not_found" | "document_not_found" | "document_version_not_found" | "attachment_is_version_file" | "agency_id_not_found" | "agency_needs_agency_route" | "agency_not_found" | "agency_route_needs_agency" | "application_contact_not_found" | "application_id_not_found" | "application_not_found" | "backup_add_failed" | "backup_commit_failed" | "backup_detached_head" | "backup_git_timeout" | "backup_git_unavailable" | "backup_lock_failed" | "backup_mid_rebase" | "backup_no_remote" | "backup_not_a_repo" | "backup_push_failed" | "backup_shut_down" | "backup_snapshot_failed" | "backup_snapshots_off" | "cv_file_applications_invalid" | "cv_file_document_required" | "cv_file_missing" | "cv_file_not_found" | "document_sent" | "document_version_id_not_found" | "file_is_symlink" | "file_outside_files" | "file_too_large" | "note_changed" | "note_link_agency_not_found" | "note_link_application_not_found" | "note_link_company_not_found" | "note_link_contact_not_found" | "note_link_document_not_found" | "note_link_interview_not_found" | "note_link_invalid" | "note_link_role_not_found" | "note_not_found" | "note_path_invalid" | "note_unreadable" | "version_already_sent" | "version_label_required" | "version_sent" | "call_ends_before_start" | "company_has_applications" | "company_id_not_found" | "company_not_found" | "contact_detail_taken" | "contact_id_not_found" | "contact_not_found" | "data_conflict" | "direct_has_agency" | "direct_recruiter_has_agency" | "interview_not_found" | "interviewer_not_found" | "entity_agency_not_found" | "entity_application_not_found" | "entity_company_not_found" | "entity_contact_not_found" | "entity_document_not_found" | "entity_interview_not_found" | "link_not_found" | "entity_role_not_found" | "meeting_id_not_found" | "merge_same_person" | "meeting_not_found" | "move_not_allowed" | "move_not_allowed_none" | "offer_not_found" | "recruiter_id_not_found" | "recruiter_other_agency" | "referral_has_recruiter" | "role_call_other_person" | "role_has_applications" | "role_id_not_found" | "role_not_found" | "round_not_booked" | "round_application_closed" | "round_needs_new_time_already" | "round_needs_new_time_not" | "call_not_booked" | "call_application_closed" | "call_person_closed" | "call_needs_new_time_already" | "call_needs_new_time_not" | "stage_unknown" | "todo_not_found" | "todo_text_required" | "undo_inconsistent" | "undo_nothing" | "workflow_invalid") | null;
+            code?: ("agencies_in_use" | "application_link_not_found" | "attachment_entity_incomplete" | "attachment_entity_type_invalid" | "attachment_entity_type_required" | "companies_in_use" | "duplicates_needs_company" | "roles_in_use" | "time_zone_unknown" | "todo_entity_incomplete" | "application_document_not_found" | "attachment_file_missing" | "attachment_not_found" | "document_not_found" | "document_version_not_found" | "attachment_is_version_file" | "agency_id_not_found" | "agency_needs_agency_route" | "agency_not_found" | "agency_route_needs_agency" | "application_contact_not_found" | "application_id_not_found" | "application_not_found" | "backup_add_failed" | "backup_commit_failed" | "backup_detached_head" | "backup_git_timeout" | "backup_git_unavailable" | "backup_lock_failed" | "backup_mid_rebase" | "backup_no_remote" | "backup_not_a_repo" | "backup_push_failed" | "backup_shut_down" | "backup_snapshot_failed" | "backup_snapshots_off" | "cv_file_applications_invalid" | "cv_file_document_required" | "cv_file_missing" | "cv_file_not_found" | "document_sent" | "document_version_id_not_found" | "file_is_symlink" | "file_outside_files" | "file_too_large" | "note_changed" | "note_link_agency_not_found" | "note_link_application_not_found" | "note_link_company_not_found" | "note_link_contact_not_found" | "note_link_document_not_found" | "note_link_interview_not_found" | "note_link_invalid" | "note_link_role_not_found" | "note_not_found" | "note_path_invalid" | "note_unreadable" | "version_already_sent" | "version_label_required" | "version_sent" | "call_ends_before_start" | "company_has_applications" | "company_id_not_found" | "company_not_found" | "contact_detail_taken" | "contact_id_not_found" | "contact_not_found" | "data_conflict" | "direct_has_agency" | "direct_recruiter_has_agency" | "interview_not_found" | "interviewer_not_found" | "entity_agency_not_found" | "entity_application_not_found" | "entity_company_not_found" | "entity_contact_not_found" | "entity_document_not_found" | "entity_interview_not_found" | "link_not_found" | "entity_role_not_found" | "meeting_id_not_found" | "merge_same_person" | "meeting_not_found" | "move_not_allowed" | "move_not_allowed_none" | "offer_not_found" | "recruiter_id_not_found" | "recruiter_other_agency" | "referral_has_recruiter" | "rejection_feedback_not_rejected" | "rejection_feedback_wrong_stage" | "role_call_other_person" | "role_has_applications" | "role_id_not_found" | "role_not_found" | "round_not_booked" | "round_application_closed" | "round_needs_new_time_already" | "round_needs_new_time_not" | "call_not_booked" | "call_application_closed" | "call_person_closed" | "call_needs_new_time_already" | "call_needs_new_time_not" | "stage_unknown" | "todo_not_found" | "todo_text_required" | "undo_inconsistent" | "undo_nothing" | "workflow_invalid") | null;
             /** Detail */
             detail: string | components["schemas"]["ValidationIssue"][];
             /** Params */
@@ -3238,6 +3264,8 @@ export interface components {
             note?: string | null;
             /** Occurred At */
             occurred_at?: string | null;
+            /** Rejection Feedback */
+            rejection_feedback?: string | null;
             /** To Stage */
             to_stage: string;
         };
@@ -3788,6 +3816,8 @@ export interface components {
             recruiter_id: string | null;
             /** Recruiter Name */
             recruiter_name: string | null;
+            /** Rejection Feedback */
+            rejection_feedback?: string | null;
             /** Relations */
             relations: string[];
             /** Reply To Read Since */
@@ -3984,6 +4014,14 @@ export interface components {
         RecruiterSetParams: {
             /** New */
             new: string;
+        };
+        /**
+         * RejectionFeedbackIn
+         * @description An application's rejection feedback, as you wrote it; null or blank clears it.
+         */
+        RejectionFeedbackIn: {
+            /** Feedback */
+            feedback: string | null;
         };
         /** RepliedWaitingMsg */
         RepliedWaitingMsg: {
@@ -5726,6 +5764,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OfferOut"];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    put_rejection_feedback_api_v1_applications__app_id__rejection_feedback_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                app_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectionFeedbackIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationDetail"];
                 };
             };
             /** @description An error, with a code when people can see it */

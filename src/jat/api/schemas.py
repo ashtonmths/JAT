@@ -293,6 +293,9 @@ class ApplicationOut(Out):
     last_activity_at: datetime
     tags: list[str]
     archived: bool
+    # What they said when they turned you down (its latest rejection), as written; kept through an
+    # undo or reopening. Set with a move to Rejected or PUT /applications/{id}/rejection-feedback.
+    rejection_feedback: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -720,10 +723,21 @@ class ApplicationRow(ApplicationOut):
     current_round: RoundSummary | None = None
 
 
+REJECTION_FEEDBACK_MAX = 10_000  # characters: room for a pasted feedback email
+
+
 class MoveIn(In):
     to_stage: str
     occurred_at: AwareDatetime | None = None
     note: str | None = None
+    # Only with a move to Rejected: replaces the application's feedback (blank clears it); left out, it stays.
+    rejection_feedback: str | None = Field(default=None, max_length=REJECTION_FEEDBACK_MAX)
+
+
+class RejectionFeedbackIn(In):
+    """An application's rejection feedback, as you wrote it; null or blank clears it."""
+
+    feedback: str | None = Field(max_length=REJECTION_FEEDBACK_MAX)
 
 
 class ActivityIn(In):

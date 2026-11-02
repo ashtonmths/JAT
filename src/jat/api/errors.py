@@ -104,6 +104,8 @@ ErrorCode = Literal[
     "recruiter_id_not_found",
     "recruiter_other_agency",
     "referral_has_recruiter",
+    "rejection_feedback_not_rejected",
+    "rejection_feedback_wrong_stage",
     "role_call_other_person",
     "role_has_applications",
     "role_id_not_found",

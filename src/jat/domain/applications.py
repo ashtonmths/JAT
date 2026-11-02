@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from ..db.models import Application, Event, Interview, Meeting, Todo
 from ..db.types import utcnow
 from . import replies
-from .workflow import Workflow, WorkflowError
+from .workflow import REJECTED, Workflow, WorkflowError
 
 STAGE_CHANGE = "stage_change"
 ACTIVITY_KINDS = ("call", "email", "message", "note", "file", "interview", "manual")
@@ -118,8 +118,12 @@ def move(
     occurred_at: datetime | None = None,
     note: str | None = None,
     msg: dict[str, Any] | None = None,
+    rejection_feedback: str | None = None,
 ) -> Event:
-    """Move an application to `to_stage` if the workflow allows it. `msg` is `note` as a message (`message`)."""
+    """Move an application to `to_stage` if the workflow allows it. `msg` is `note` as a message (`message`).
+
+    `rejection_feedback` goes only with a move to Rejected: given, it replaces the application's
+    feedback (blank clears it); left out, any feedback from an earlier rejection stays."""
     try:
         allowed_move = workflow.can_move(app.stage, to_stage)
     except WorkflowError as exc:  # e.g. a stage removed from config.toml
@@ -133,6 +137,12 @@ def move(
             raise TransitionError(message, "move_not_allowed_none", {"from_stage": from_stage, "to_stage": to})
         raise TransitionError(
             message, "move_not_allowed", {"from_stage": from_stage, "to_stage": to, "allowed": allowed}
+        )
+    if rejection_feedback is not None and to_stage != REJECTED:
+        raise TransitionError(
+            f"rejection feedback only goes with a move to {REJECTED!r}, not {to_stage!r}",
+            "rejection_feedback_wrong_stage",
+            {"to_stage": repr(to_stage)},
         )
     when = occurred_at or utcnow()
     event = Event(
@@ -170,11 +180,41 @@ def move(
     app.stage = to_stage
     app.awaiting_reply_since = None
     app.reply_to_read_since = None
+    if rejection_feedback is not None:
+        app.rejection_feedback = feedback_text(rejection_feedback)
     if kind != "active":  # it's over: no new time left to book
         tick_rebook_todos(session, app.id)
     _touch(app, when)
     session.flush()
     return event
+
+
+def feedback_text(text: str | None) -> str | None:
+    """Feedback kept exactly as written; nothing but spaces counts as none."""
+    return text if text is not None and text.strip() else None
+
+
+def was_rejected(session: Session, app: Application) -> bool:
+    """It's at Rejected, or got there once (a move not since undone) and has been reopened."""
+    if app.stage == REJECTED:
+        return True
+    return any(ev.to_stage == REJECTED for ev in _effective_moves(_recorded(session, app.id)))
+
+
+def set_rejection_feedback(session: Session, app: Application, text: str | None) -> None:
+    """Add, edit or clear (None or blank) an application's rejection feedback, outside a move.
+
+    Feedback needs a rejection to be about; feedback already there can always be edited or
+    cleared, even after the rejection was undone. It's a detail, not contact with anyone: no
+    timeline entry, and how long the application has been quiet doesn't change."""
+    text = feedback_text(text)
+    if text is not None and app.rejection_feedback is None and not was_rejected(session, app):
+        raise TransitionError(
+            "this application hasn't been rejected, so it can't have rejection feedback",
+            "rejection_feedback_not_rejected",
+        )
+    app.rejection_feedback = text
+    session.flush()
 
 
 def tick_rebook_todos(session: Session, application_id: str) -> None:
