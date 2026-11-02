@@ -89,10 +89,7 @@ function CallRescheduleModal({ meeting, onClose }: { meeting: Meeting; onClose: 
           autosize
           minRows={2}
           value={reason}
-          onChange={(e) => {
-            const value = e.currentTarget.value;
-            setReason(value);
-          }}
+          onChange={(e) => setReason(e.currentTarget.value)}
         />
         <Text size="sm" c="dimmed">
           {t("calls:reschedule.hint")}

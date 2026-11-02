@@ -187,6 +187,8 @@ offer reply deadlines still ahead under *Coming up*. It's in the *Review* group,
 Insights. It includes:
 
 - calls and meetings with people (not ones that didn't happen);
+- each time a call was rescheduled, when you moved it, with its old and new time, who and why
+  (a call that later didn't happen keeps its moves);
 - roles people pitched to you, and the ones you passed on (with your reason);
 - everything on application timelines: stage moves, calls, emails, notes, interviews,
   offers, files and documents sent (an application added past *Interested* shows as one

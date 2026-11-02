@@ -56,6 +56,20 @@ const moveOneDay = async (page: Page, dialog: Locator) => {
   await days.nth(selected > 0 ? selected - 1 : selected + 1).click();
   await page.locator('[class*="DateTimePicker-submitButton"]').click();
 };
+/** Two days after the current one (a call from yesterday lands tomorrow), into next month if need be. */
+const moveTwoDaysOn = async (page: Page, dialog: Locator) => {
+  await dialog.getByLabel("New time", { exact: true }).first().click();
+  const days = page.locator('[class*="DateTimePicker-day"]:not([data-outside])');
+  const selected = await days.evaluateAll((all) => all.findIndex((d) => d.hasAttribute("data-selected")));
+  const count = await days.count();
+  if (selected + 2 < count) {
+    await days.nth(selected + 2).click();
+  } else {
+    await page.locator('[data-direction="next"]').first().click();
+    await days.nth(selected + 2 - count).click();
+  }
+  await page.locator('[class*="DateTimePicker-submitButton"]').click();
+};
 const pickWho = async (page: Page, dialog: Locator, option: string) => {
   await dialog
     .getByLabel(/^Who needed the change\?/)
@@ -111,8 +125,10 @@ test.describe("rescheduling a call", () => {
     // The Timeline says the call once, then the move's times, who and why.
     await page.goto("/timeline");
     const line = `Moved from ${dayTime(call.starts_at)} to ${dayTime(saved.starts_at)} · They needed the change · Their manager is away`;
-    await expect(page.getByText(line, { exact: true })).toBeVisible();
     await expect(page.getByText(`${label} rescheduled`, { exact: true })).toHaveCount(1);
+    // The line under this call's own title, not another entry's.
+    const row = page.getByText(`${label} rescheduled`, { exact: true }).locator("..");
+    await expect(row.getByText(line, { exact: true })).toBeVisible();
     await expect(page.getByText(new RegExp(`^${label} rescheduled .`))).toHaveCount(0);
   });
 
@@ -148,9 +164,26 @@ test.describe("rescheduling a call", () => {
       .poll(async () => (await callNow(request, soon.call.id)).moves.map((m) => m.by))
       .toEqual(["me"]);
 
-    // How did it go? offers it beside Happened and Didn't happen.
-    await expect(page.getByRole("button", { name: `Reschedule ${past.label}` })).toBeVisible();
+    // How did it go? offers it beside Happened and Didn't happen: a call that was missed moves ahead.
     await expect(page.getByRole("button", { name: `Happened: ${past.label}` })).toBeVisible();
+    const missed = await openDialog(page, past.label);
+    await moveTwoDaysOn(page, missed);
+    await pickWho(page, missed, "Them");
+    await missed.getByLabel("Why? (optional)").fill("They missed it");
+    await submit(missed);
+    await expect(missed).toBeHidden();
+    const moved = await callNow(request, past.call.id);
+    expect(moved.moves).toEqual([
+      {
+        from_at: past.call.starts_at.replace(".000", ""),
+        to_at: moved.starts_at,
+        by: "them",
+        reason: "They missed it",
+      },
+    ]);
+    expect(Date.parse(moved.starts_at)).toBeGreaterThan(Date.now());
+    // It's no longer waiting for how it went.
+    await expect(page.getByRole("button", { name: `Happened: ${past.label}` })).toHaveCount(0);
   });
 
   test("a call about an application: the move is on its timeline once", async ({ page, request }) => {

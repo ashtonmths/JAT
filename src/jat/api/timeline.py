@@ -389,6 +389,9 @@ def timeline(
 
     # Each move of a call, when it was made, worded like the entry a call about an application gets: a
     # call without one has no timeline of its own. Moves already there (that entry) aren't shown twice.
+    # They're matched on the call and the old and new time. Two edge cases, both rare: the same from-to
+    # move made before and after linking the call to an application shows once, not twice; and an entry
+    # whose saved move was hand-edited into something unreadable has no move, so this record shows it too.
     meetings = {m.id: m for m in session.scalars(select(Meeting).where(Meeting.id.in_(select(MeetingMove.meeting_id))))}
     for mv in session.scalars(select(MeetingMove).where(MeetingMove.to_at.is_not(None))):
         m = meetings.get(mv.meeting_id)
