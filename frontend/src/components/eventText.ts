@@ -150,11 +150,18 @@ export function moveLine(move: RoundMove): string {
 }
 
 /**
- * The short words above a move's line, "Round 2 · Technical rescheduled", so its who and why aren't said
- * twice. Null for anything else, which keeps its whole message: no move, or a message that isn't a move's.
+ * The short words above a move's line, "Round 2 · Technical rescheduled" or "Call with Alex Morgan
+ * rescheduled", so its who and why aren't said twice. Null for anything else, which keeps its whole
+ * message: no move, or a message that isn't a move's.
  */
 export function movedRoundText(event: Pick<ApiEvent, "msg" | "reschedule">): string | null {
   const msg = event.msg;
-  if (!event.reschedule || !msg?.key.startsWith("event.roundRescheduled") || !isRound(msg)) return null;
-  return i18n.t("events:roundRescheduled", { label: roundLabel(msg.params) });
+  if (!event.reschedule || !msg) return null;
+  if (msg.key.startsWith("event.roundRescheduled") && isRound(msg)) {
+    return i18n.t("events:roundRescheduled", { label: roundLabel(msg.params) });
+  }
+  if (msg.key.startsWith("event.callRescheduled") && isCall(msg)) {
+    return i18n.t("events:callRescheduled", { label: callLabel(msg.params) });
+  }
+  return null;
 }

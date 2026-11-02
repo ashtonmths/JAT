@@ -28,16 +28,15 @@ from sqlalchemy.orm import Session
 
 from jat.db.models import Agency, Application, Contact, Event, Interview
 
-from .applications import STAGE_CHANGE, _effective_moves, is_implied
+from .applications import STAGE_CHANGE, _effective_moves, is_call_move, is_implied
 from .workflow import Workflow
 
 CONTACT_KINDS = ("call", "email", "message")
 
 
 def call_moved(event: Event) -> bool:
-    """A booked call moved to another time (the app's "call" entry, with the call's id): it isn't
-    contact about the application, so it's no sign of life."""
-    return event.kind == "call" and isinstance(event.data, dict) and "meeting_id" in event.data
+    """A booked call moved to another time: it isn't contact about the application, so it's no sign of life."""
+    return is_call_move(event.kind, event.data)
 
 
 @dataclass

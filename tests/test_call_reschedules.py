@@ -121,6 +121,32 @@ def test_a_move_isnt_news_from_the_recruiter(client, seeded):
     assert (alex["median_first_update_days"], alex["last_contact"]) == (None, None)
 
 
+def test_a_call_you_log_is_contact_whatever_its_data_says(client, seeded):
+    """Only what the app writes marks a moved call: a logged call naming a meeting still counts."""
+    app_id = post(
+        client,
+        "/api/v1/applications",
+        {
+            "role_id": seeded["role"]["id"],
+            "stage": "applied",
+            "route": "agency",
+            "recruiter_id": seeded["recruiter"]["id"],
+        },
+    )["id"]
+    claimed = {"from": THEN, "to": LATER, "by": "them", "reason": None}
+    msg = {"key": "event.callRescheduledByThem", "params": {"kind": "call", "title": None, "contact_name": "X"}}
+    logged = post(
+        client,
+        f"/api/v1/applications/{app_id}/activities",
+        {"kind": "call", "summary": "Spoke to Alex", "data": {"meeting_id": "m1", "reschedule": claimed, "msg": msg}},
+    )
+    assert logged["data"] == {"meeting_id": "m1"} and logged["reschedule"] is None and logged["msg"] is None
+    [item] = [i for i in client.get("/api/v1/timeline").json()["items"] if i["id"] == f"event:{logged['id']}"]
+    assert item["category"] == "message" and item["reschedule"] is None
+    [alex] = client.get("/api/v1/insights/scorecard").json()["recruiters"]
+    assert alex["last_contact"] == logged["occurred_at"] and alex["median_first_update_days"] is not None
+
+
 def test_a_moves_record_read_back_from_odd_data_is_never_a_500(client, seeded, app):
     call = _call(client, seeded)
     _patch(client, call, starts_at=LATER, reschedule_by="them")

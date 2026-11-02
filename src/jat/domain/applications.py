@@ -397,6 +397,17 @@ EventMsgKey = Literal[
 ]
 
 
+def is_call_move(kind: str, data: Any) -> bool:
+    """An entry the app wrote when a booked call about the application moved to another time.
+
+    Keyed on what only the app writes (the activity endpoint drops a client's `msg` and
+    `reschedule`), so a call you log by hand is never taken for one, whatever else its data holds."""
+    if kind != "call" or not isinstance(data, dict) or not isinstance(data.get("reschedule"), dict):
+        return False
+    msg = data.get("msg")
+    return isinstance(msg, dict) and str(msg.get("key", "")).startswith("event.callRescheduled")
+
+
 def message(key: EventMsgKey, params: dict[str, str | int | None]) -> dict[str, Any]:
     """What goes in `data.msg`. A key the API doesn't know would be saved for good and show as null."""
     if key not in get_args(EventMsgKey):

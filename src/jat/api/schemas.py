@@ -8,6 +8,8 @@ from typing import Annotated, Any, ClassVar, Literal, get_args
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl, TypeAdapter, ValidationError, model_validator
 from pydantic_core import PydanticCustomError
 
+from ..domain.applications import is_call_move
+
 WorkMode = Literal["remote", "hybrid", "office"]
 EmploymentType = Literal["permanent", "contract", "fixed_term"]
 IR35 = Literal["inside", "outside", "unknown"]
@@ -1329,11 +1331,11 @@ def _aware(value: Any) -> datetime | None:
 
 
 def read_round_move(kind: str, data: Any) -> RoundMove | None:
-    """An interview event's saved move, or a call's (on its application's timeline, with its
-    `meeting_id`). A bad shape (a hand-edited export) is null, never a 500."""
+    """An interview event's saved move, or a call's (on its application's timeline). A bad shape
+    (a hand-edited export) is null, never a 500."""
     if not isinstance(data, dict):
         return None
-    ours = kind == "interview" or (kind == "call" and isinstance(data.get("meeting_id"), str))
+    ours = kind == "interview" or is_call_move(kind, data)
     saved = data.get("reschedule") if ours else None
     if not isinstance(saved, dict):
         return None
