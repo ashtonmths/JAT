@@ -89,6 +89,19 @@ export function useRejections(since?: string) {
   });
 }
 
+export type RejectionRounds = Schemas["RejectionRoundsOut"];
+
+/** Which round rejections came after; with `since`, those rejected since then. */
+export function useRejectionRounds(since?: string) {
+  return useQuery({
+    queryKey: ["insights", "rejection-rounds", since],
+    queryFn: async () =>
+      unwrap(await api.GET("/api/v1/insights/rejections/rounds", { params: { query: { since } } })),
+    placeholderData: keepPreviousData,
+    retry: false, // an older server has no such endpoint: say so straight away
+  });
+}
+
 export type Conversations = Schemas["ConversationsOut"];
 export type ConversationPerson = Schemas["ConversationPerson"];
 export type ConversationAgency = Schemas["ConversationAgency"];

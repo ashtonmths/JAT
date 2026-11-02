@@ -8,6 +8,7 @@ import { ConversationsSection } from "../components/Conversations";
 import { DocumentPerformanceSection } from "../components/DocumentPerformance";
 import { RouteTable, StageTable, WeeklyActivity } from "../components/InsightStats";
 import { RejectionsSection } from "../components/RejectionFeedbackList";
+import { RejectionRoundsCard } from "../components/RejectionRounds";
 import { ReschedulingCard } from "../components/Rescheduling";
 import { ScorecardCard } from "../components/Scorecard";
 import { SankeyChart } from "../components/SankeyChart";
@@ -126,7 +127,10 @@ export function InsightsPage() {
           <DocumentPerformanceSection since={range.since} />
         </Tabs.Panel>
         <Tabs.Panel value="rejections">
-          <RejectionsSection since={range.since} />
+          <Stack>
+            <RejectionRoundsCard since={range.since} />
+            <RejectionsSection since={range.since} />
+          </Stack>
         </Tabs.Panel>
       </Tabs>
       <WeeklyActivity />
