@@ -134,8 +134,10 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
   and `calls-needs-new-time-*` on the roadmap). A new time for a booked call is a move that keeps
   its length; the call keeps each move's old and new time, who and why (a call often has no
   application, so no timeline to keep them on), and a call about an application also puts the
-  move on that application's timeline. Still to come: the Reschedule button for calls, marking a
-  call as needing a new time with a to-do to book it, and calls in Insights.
+  move on that application's timeline. The Reschedule button (who required, why optional) is on
+  every booked call on the person's page and Today, a moved call shows *Rescheduled*, and the
+  Timeline page shows each move once. Still to come: marking a call as needing a new time with a
+  to-do to book it, and calls in Insights.
 - **FR10:** Coding interviews and take-home tasks also hold instructions, repo or platform
   links, a deadline and attachments.
 

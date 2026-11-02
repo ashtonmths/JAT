@@ -174,3 +174,27 @@ describe("calls and meetings", () => {
     expect(within(outcome as HTMLElement).getByRole("button", { name: /^Happened/ })).toBeInTheDocument();
   });
 });
+
+describe("rescheduling a call", () => {
+  it("is offered on a booked call, not one that happened, and a moved one says so", async () => {
+    mockApi({
+      ...PERSON,
+      "GET /api/v1/meetings": [
+        meeting({ id: "m0", starts_at: "2026-09-20T10:00:00Z", status: "done" }),
+        meeting({ id: "m1", rescheduled_count: 2, rescheduled_from: "2026-09-29T10:00:00Z" }),
+      ],
+    });
+    renderAt("/people/c1");
+    const name = "Reschedule Call with Alex Morgan: Market catch-up";
+    const button = await screen.findByRole("button", { name });
+    expect(screen.getAllByRole("button", { name: /^Reschedule / })).toHaveLength(1);
+    expect(screen.getByText("Rescheduled ×2")).toBeInTheDocument();
+
+    fireEvent.click(button);
+    const dialog = await screen.findByRole("dialog", { name });
+    expect(within(dialog).getByText(/^Booked for .+\.$/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/^Who and why are kept with the call/)).toBeInTheDocument();
+    // The same time isn't a move.
+    expect(within(dialog).getByRole("button", { name: "Reschedule" })).toBeDisabled();
+  });
+});
