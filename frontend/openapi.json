@@ -8133,6 +8133,11 @@
             },
             "title": "Recruiters",
             "type": "array"
+          },
+          "waiting_for_new_time": {
+            "default": 0,
+            "title": "Waiting For New Time",
+            "type": "integer"
           }
         },
         "required": [
