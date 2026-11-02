@@ -3,8 +3,8 @@ import type { Page } from "@playwright/test";
 import { LANGUAGES } from "../src/i18n/language";
 import { expect, test } from "./fixtures";
 
-// The frame around every page: the menu, theme, language, help, the connection dot, the backup
-// download, not found, and phone width. What each page does is in its own file.
+// The frame around every page: the menu, theme, language, help, the connection dot, the version,
+// the backup download, not found, and phone width. What each page does is in its own file.
 
 const MENU = [
   ["Today", "/", "Your move"],
@@ -210,6 +210,39 @@ test.describe("the connection dot", () => {
     await expect(dot).toBeVisible({ timeout: 15_000 });
     await dot.hover();
     await expect(page.getByRole("tooltip")).toContainText("uv run jat serve");
+  });
+});
+
+test.describe("the version", () => {
+  // Read from the server, never written here: it changes with every release.
+  test("the footer shows the server's version, linked to its release, with no mismatch", async ({
+    page,
+    request,
+  }) => {
+    const { version } = (await (await request.get("/api/v1/health")).json()) as { version: string };
+    await opened(page);
+    const link = menu(page).getByRole("link", { name: `Version ${version}.`, exact: false });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveText(`v${version}`);
+    await expect(link).toHaveAttribute(
+      "href",
+      `https://github.com/waddington/job-application-tracker/releases/tag/v${version}`,
+    );
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(page.getByText(/^The server is v/)).toHaveCount(0);
+  });
+
+  test("an older server says so, and to restart the tracker", async ({ page, request }) => {
+    const health = (await (await request.get("/api/v1/health")).json()) as { version: string };
+    await page.route("**/api/v1/health", (route) =>
+      route.fulfill({ json: { ...health, version: "0.0.1" } }),
+    );
+    await opened(page);
+    await expect(
+      menu(page).getByText(
+        `The server is v0.0.1 but this page is v${health.version}. Restart the tracker to update.`,
+      ),
+    ).toBeVisible();
   });
 });
 
