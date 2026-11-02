@@ -216,6 +216,30 @@ test.describe("rejection feedback", () => {
     expect((await app.read()).stage).toBe("rejected");
   });
 
+  test("over-long feedback isn't cut: the dialog says why it wasn't saved and keeps it", async ({
+    page,
+    request,
+    problems,
+  }) => {
+    problems.allow(/\/move/);
+    const app = await openNew(page, request);
+    const long = "é".repeat(10_001); // one over, counted in characters as the server counts them
+    await move(page, "Rejected");
+    const box = asking(page).getByLabel("What did they say?");
+    await box.fill(long);
+    await expect(asking(page).getByText("10,001 of 10,000 characters")).toBeVisible();
+    await asking(page).getByRole("button", { name: "Move to Rejected" }).click();
+    const alert = asking(page).getByRole("alert");
+    await expect(alert).toContainText("Not saved");
+    await expect(alert).toContainText("at most 10000 characters");
+    await expect(box).toHaveValue(long);
+    expect((await app.read()).stage).toBe("applied");
+    // Back under the limit, it saves.
+    await box.fill(long.slice(1));
+    await asking(page).getByRole("button", { name: "Move to Rejected" }).click();
+    await expect.poll(() => feedbackOf(app)).toBe(long.slice(1));
+  });
+
   test("added later to one moved there without any", async ({ page, request }) => {
     const app = await openNew(page, request, { stage: "rejected" });
     await page.getByRole("button", { name: "Add feedback" }).click();

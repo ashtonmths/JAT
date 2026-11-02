@@ -1,10 +1,13 @@
-import { Button, Group, Modal, Stack, Text, Textarea } from "@mantine/core";
+import { Alert, Button, Group, Modal, Stack, Text, Textarea } from "@mantine/core";
 import { IconPencil } from "@tabler/icons-react";
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ApplicationDetail } from "../api/client";
-import { useMoveApplication, useSetRejectionFeedback, type MoveArgs } from "../api/hooks";
+import { useMoveApplication, useSetRejectionFeedback, useWorkflow, type MoveArgs } from "../api/hooks";
+import { errorText } from "../api/notifyError";
+import { i18n } from "../i18n";
+import defaults from "../locales/defaultStages.json";
 import { stageName } from "../utils/stageName";
 
 /** The stage that takes feedback, by its id (the server's `workflow.REJECTED`): rename it and it still does. */
@@ -21,14 +24,20 @@ export function feedbackField(
   return (existing ?? null) !== null ? { rejection_feedback: "" } : {};
 }
 
+// The server's limit, in characters (code points, as it counts them). Not enforced here, so a long
+// paste is never cut short: the server refuses it and the dialog says why, keeping the text.
+const MAX = 10_000;
+const SHOW_COUNT_FROM = MAX - 1_000;
+
 /** Asking for the feedback. Nothing saves until you confirm, and while saving it can't close (as with
- * How did it go?): if the save fails, what you typed is still here. */
+ * How did it go?): if the save fails, what you typed is still here, with why. */
 function FeedbackModal({
   title,
   subtitle,
   initial,
   confirm,
   loading,
+  error,
   onSave,
   onClose,
 }: {
@@ -37,11 +46,14 @@ function FeedbackModal({
   initial: string | null | undefined;
   confirm: string;
   loading: boolean;
+  error: Error | null;
   onSave: (text: string) => void;
   onClose: () => void;
 }) {
   const { t } = useTranslation(["applications", "common"]);
   const [text, setText] = useState(initial ?? "");
+  const used = [...text].length;
+  const number = new Intl.NumberFormat(i18n.language);
   return (
     <Modal
       opened
@@ -63,11 +75,20 @@ function FeedbackModal({
           autosize
           minRows={4}
           maxRows={14}
-          maxLength={10000}
           data-autofocus
           value={text}
           onChange={(e) => setText(e.currentTarget.value)}
         />
+        {used >= SHOW_COUNT_FROM && (
+          <Text size="xs" c={used > MAX ? "red" : "dimmed"} ta="right">
+            {t("rejection.count", { used: number.format(used), max: number.format(MAX) })}
+          </Text>
+        )}
+        {error && (
+          <Alert color="red" title={t("rejection.notSaved")}>
+            {errorText(error)}
+          </Alert>
+        )}
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose} disabled={loading}>
             {t("common:actions.cancel")}
@@ -95,6 +116,7 @@ export function useMoveAsking(): {
 } {
   const { t } = useTranslation("applications");
   const move = useMoveApplication();
+  const { data: workflow } = useWorkflow();
   const [asking, setAsking] = useState<Asking | null>(null);
   const request = (args: MoveArgs, app: AppLike, onMoved?: () => void) => {
     if (args.to_stage !== REJECTED) {
@@ -102,11 +124,13 @@ export function useMoveAsking(): {
       onMoved?.();
       return;
     }
+    move.reset(); // no error left from an earlier move
     const where = t("rejection.where", { company: app.company_name, role: app.role_title });
     setAsking({ args, existing: app.rejection_feedback, where, onMoved });
   };
   // As the stage shows everywhere else: a default one in your language, one you renamed as you wrote it.
-  const stage = stageName({ id: REJECTED, name: asking?.args.stageName ?? REJECTED });
+  const configured = workflow?.stages.find((s) => s.id === REJECTED)?.name;
+  const stage = stageName({ id: REJECTED, name: asking?.args.stageName ?? configured ?? defaults.rejected });
   const dialog = asking && (
     <FeedbackModal
       title={t("rejection.moveTitle", { stage })}
@@ -114,6 +138,7 @@ export function useMoveAsking(): {
       initial={asking.existing}
       confirm={t("rejection.moveConfirm", { stage })}
       loading={move.isPending}
+      error={move.error}
       onClose={() => setAsking(null)}
       onSave={(text) =>
         move.mutate(
@@ -149,7 +174,10 @@ export function RejectionFeedback({ app }: { app: ApplicationDetail }) {
           size="compact-xs"
           variant="subtle"
           leftSection={<IconPencil size={12} />}
-          onClick={() => setEditing(true)}
+          onClick={() => {
+            save.reset(); // no error left from an earlier save
+            setEditing(true);
+          }}
         >
           {feedback === null ? t("rejection.add") : t("rejection.edit")}
         </Button>
@@ -174,6 +202,7 @@ export function RejectionFeedback({ app }: { app: ApplicationDetail }) {
           initial={feedback}
           confirm={t("rejection.save")}
           loading={save.isPending}
+          error={save.error}
           onClose={() => setEditing(false)}
           onSave={(text) =>
             save.mutate(

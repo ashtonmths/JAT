@@ -270,7 +270,13 @@ down. It's optional. Leave it empty and **Move to Rejected** moves it without an
 saved until you press that button, and **Cancel** (or closing the dialog) leaves the
 application where it was, with the card going back to its column.
 
+Only a move asks. Adding an application straight at Rejected (with **New application** or from
+a role) doesn't, and neither does **Undo last move** back to Rejected. For those, add the
+feedback from the *Rejection feedback* block (below).
+
 The feedback is kept exactly as you wrote it, line breaks and all, up to 10,000 characters.
+Near the limit a count shows under the box. Text over the limit isn't cut: the dialog says
+why it wasn't saved and keeps what you wrote.
 It shows under *Rejection feedback* on the application's page and in the quick view, where
 **Add feedback** or **Edit feedback** changes it later. Emptying it there clears it.
 **Undo last move** and reopening the application keep it. If it's rejected again, the

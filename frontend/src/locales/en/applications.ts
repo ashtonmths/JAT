@@ -114,6 +114,9 @@ export default {
     addTitle: "Add rejection feedback",
     editTitle: "Edit rejection feedback",
     save: "Save feedback",
+    // Under the box once it's near the limit: "9,500 of 10,000 characters".
+    count: "{{used}} of {{max}} characters",
+    notSaved: "Not saved",
   },
   // The route line, with the recruiter, agency and company linked to their pages.
   routeLine: {
