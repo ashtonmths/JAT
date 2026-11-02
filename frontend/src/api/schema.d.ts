@@ -805,6 +805,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights/rejections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Rejection Feedback
+         * @description Every application with rejection feedback, newest rejection first. With a period, those
+         *     rejected in [since, until); an application whose move to Rejected was undone has no rejection
+         *     date, so it's listed only without one.
+         */
+        get: operations["rejection_feedback_api_v1_insights_rejections_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/insights/rescheduling": {
         parameters: {
             query?: never;
@@ -4023,6 +4045,38 @@ export interface components {
             /** Feedback */
             feedback: string | null;
         };
+        /**
+         * RejectionOut
+         * @description One application's rejection feedback, with what's needed to list it (lighter than an application row).
+         */
+        RejectionOut: {
+            /** Added At Rejected */
+            added_at_rejected: boolean;
+            /** Application Id */
+            application_id: string;
+            /** Company Id */
+            company_id: string;
+            /** Company Name */
+            company_name: string;
+            /** Feedback */
+            feedback: string;
+            /** Recruiter Id */
+            recruiter_id: string | null;
+            /** Recruiter Name */
+            recruiter_name: string | null;
+            /** Rejected At */
+            rejected_at: string | null;
+            /** Rejected From */
+            rejected_from: string | null;
+            /** Rejected From Name */
+            rejected_from_name: string | null;
+            /** Role Title */
+            role_title: string;
+            /** Stage */
+            stage: string;
+            /** Stage Name */
+            stage_name: string;
+        };
         /** RepliedWaitingMsg */
         RepliedWaitingMsg: {
             /**
@@ -7003,6 +7057,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FlowOut"];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    rejection_feedback_api_v1_insights_rejections_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectionOut"][];
                 };
             };
             /** @description An error, with a code when people can see it */
