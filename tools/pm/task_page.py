@@ -7,7 +7,7 @@ from html import escape
 from .derive import parse_time
 from .live import TaskEvidence
 from .render import PIPELINE_STAGES, pill, repo_link, task_link, task_tags
-from .roadmap import PullRequest, Roadmap, Task
+from .roadmap import NOT_STARTED, PILL_WORDS, STATUS_LABELS, PullRequest, Roadmap, Task
 
 # Review fields that are one of a few words, some hyphenated in the file.
 RATED = ("fix_risk", "data_risk", "confirmed_by")
@@ -32,25 +32,30 @@ def stage_why(task: Task) -> str:
             where += f". PR #{task.pr.number} is {escape(task.pr.state.lower())}."
         if task.done_on_branch:
             return f"{where} That file says done, which it isn't until it merges."
-        return f"{where} That file says {escape(task.planned_status)}."
+        return f"{where} That file says {escape(PILL_WORDS.get(task.planned_status, task.planned_status))}."
     if task.status == "bug":
         if task.pr:  # any other PR state would have moved it on
             return f"Recorded as a bug in <code>docs/ROADMAP.yaml</code>. PR #{task.pr.number} closed without merging."
         return "Recorded as a bug in <code>docs/ROADMAP.yaml</code>. No fix has started."
     if task.status_source == "roadmap":
-        return f"<code>docs/ROADMAP.yaml</code> says {escape(task.status)}, and no open PR says otherwise."
+        said = PILL_WORDS.get(task.status, task.status)
+        return f"<code>docs/ROADMAP.yaml</code> says {escape(said)}, and no open PR says otherwise."
     return f"{escape(task.status_source)}."
 
 
 def stage_track(task: Task) -> str:
-    order = [status for _, status in PIPELINE_STAGES]
+    """Not started, then building to merged. The first stage names the task's own not-started status while
+    it's there; past it, which one it started from isn't known, so it says only "Not started"."""
+    first = (STATUS_LABELS[task.status], task.status) if task.status in NOT_STARTED else ("Not started", "")
+    stages = (first, *PIPELINE_STAGES)
+    order = [status for _, status in stages]
     if task.status not in order:  # blocked, or a bug nobody has started: not on the way to merged yet
         return ""
     at = order.index(task.status)
     cells = "".join(
         f'<div class="stage"><span class="dot{f" {status} at" if i == at else " past" if i < at else ""}"></span>'
         f'<br><span class="small{"" if i == at else " muted"}">{label}</span></div>'
-        for i, (label, status) in enumerate(PIPELINE_STAGES)
+        for i, (label, status) in enumerate(stages)
     )
     return f'<div class="track">{cells}</div>'
 
@@ -216,7 +221,7 @@ def task_page(task: Task, roadmap: Roadmap, evidence: TaskEvidence, branch_prs: 
     waiting = roadmap.waiting(task)
     wait_note = (
         f'<p class="small muted" style="margin:8px 0 0">Waiting on {escape(", ".join(waiting))}.</p>'
-        if waiting and task.status == "planned"
+        if waiting and task.status in NOT_STARTED
         else ""
     )
     return f"""<div class="stack">
