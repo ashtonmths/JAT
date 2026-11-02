@@ -104,6 +104,11 @@ const TEXT: Record<ErrorCode, [Record<string, string | number>, string]> = {
   round_application_closed: [{}, "the application is closed or archived, so there's no new time to book"],
   round_needs_new_time_already: [{}, "this round already needs a new time"],
   round_needs_new_time_not: [{}, "this round doesn't need a new time"],
+  call_not_booked: [{}, "only a booked call can need a new time"],
+  call_application_closed: [{}, "the application is closed or archived, so there's no new time to book"],
+  call_person_closed: [{}, "the conversation with them is closed, so there's no new time to book"],
+  call_needs_new_time_already: [{}, "this call already needs a new time"],
+  call_needs_new_time_not: [{}, "this call doesn't need a new time"],
   stage_unknown: [{ stage: "'nope'" }, "unknown stage 'nope'"],
   todo_not_found: [{ id: "x1" }, "Todo x1 not found"],
   undo_inconsistent: [

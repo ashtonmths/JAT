@@ -365,8 +365,8 @@ def timeline(
         from_call[r.meeting_id].append(TimelineRole(id=r.id, title=r.title, company_name=co.name if co else None))
     for m in session.scalars(select(Meeting).where(Meeting.status != "cancelled")):
         c = contacts.get(m.contact_id)
-        if c is None:
-            continue
+        if c is None or m.needs_new_time_since is not None:
+            continue  # one waiting for a new time won't happen at its old one
         status = "booked" if m.status == "scheduled" else m.status
         fields = dict(
             id=f"meeting:{m.id}",

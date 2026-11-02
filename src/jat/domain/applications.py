@@ -12,7 +12,7 @@ from typing import Any, Literal, get_args
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..db.models import Application, Event, Interview, Todo
+from ..db.models import Application, Event, Interview, Meeting, Todo
 from ..db.types import utcnow
 from . import replies
 from .workflow import Workflow, WorkflowError
@@ -178,13 +178,26 @@ def move(
 
 
 def tick_rebook_todos(session: Session, application_id: str) -> None:
-    """Tick off the open to-dos to book a new time for this application's rounds, once it's closed
-    (moved to a closed or success stage, by a move or an undo) or archived. The rounds keep needing
-    one, so reopening it brings them back to Today, though not their to-dos."""
-    made = select(Interview.rebook_todo_id).where(
+    """Tick off the open to-dos to book a new time for this application's rounds and calls, once
+    it's closed (moved to a closed or success stage, by a move or an undo) or archived. They keep
+    needing one, so reopening it brings them back to Today, though not their to-dos."""
+    rounds = select(Interview.rebook_todo_id).where(
         Interview.application_id == application_id, Interview.rebook_todo_id.is_not(None)
     )
-    for todo in session.scalars(select(Todo).where(Todo.id.in_(made), Todo.done_at.is_(None))):
+    calls = select(Meeting.rebook_todo_id).where(
+        Meeting.application_id == application_id, Meeting.rebook_todo_id.is_not(None)
+    )
+    _tick_open(session, rounds.union(calls))
+
+
+def tick_call_rebook_todos(session: Session, contact_id: str) -> None:
+    """The same for a person's calls, once the conversation with them is closed (ghosted or not interested)."""
+    made = select(Meeting.rebook_todo_id).where(Meeting.contact_id == contact_id, Meeting.rebook_todo_id.is_not(None))
+    _tick_open(session, made)
+
+
+def _tick_open(session: Session, todo_ids) -> None:
+    for todo in session.scalars(select(Todo).where(Todo.id.in_(todo_ids), Todo.done_at.is_(None))):
         todo.done_at = utcnow()
 
 

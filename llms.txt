@@ -19,7 +19,8 @@ What it does:
   how long, key dates as "3 weeks ago"), duplicate-submission warnings, renaming, deleting.
 - Recruiter CRM: agencies and people (one person per email address and LinkedIn profile;
   merge two records, `POST /api/v1/contacts/{id}/merge`), person pages with booked and logged
-  calls and meetings (`/api/v1/meetings`; rescheduled with who and why, each move kept),
+  calls and meetings (`/api/v1/meetings`; rescheduled with who and why, each move kept, or
+  marked as needing a new time with a to-do to book it: `/api/v1/meetings/{id}/needs-new-time`),
   favourites (`favourite` on contacts), and
   chased / ghosted / not interested, with a ghost before a ghosted person's name everywhere.
 - Roles to decide before applying (`/api/v1/role-summaries`): pitched by whom, on which

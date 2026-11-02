@@ -4049,6 +4049,11 @@
                   "round_application_closed",
                   "round_needs_new_time_already",
                   "round_needs_new_time_not",
+                  "call_not_booked",
+                  "call_application_closed",
+                  "call_person_closed",
+                  "call_needs_new_time_already",
+                  "call_needs_new_time_not",
                   "stage_unknown",
                   "todo_not_found",
                   "todo_text_required",
@@ -5921,6 +5926,35 @@
             "title": "Moves",
             "type": "array"
           },
+          "needs_new_time_by": {
+            "anyOf": [
+              {
+                "enum": [
+                  "me",
+                  "them",
+                  "mutual",
+                  "neither"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Needs New Time By"
+          },
+          "needs_new_time_since": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Needs New Time Since"
+          },
           "notes": {
             "anyOf": [
               {
@@ -5931,6 +5965,17 @@
               }
             ],
             "title": "Notes"
+          },
+          "rebook_todo_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rebook Todo Id"
           },
           "rescheduled_count": {
             "default": 0,
@@ -6259,7 +6304,7 @@
       },
       "NeedsNewTimeIn": {
         "additionalProperties": false,
-        "description": "A booked round can't go ahead at its time and no new one is agreed yet. Who needed that is\nrequired, as in the Reschedule dialog; why is optional. Both go on the timeline.",
+        "description": "A booked round or call can't go ahead at its time and no new one is agreed yet. Who needed\nthat is required, as in the Reschedule dialog; why is optional. A round's go on its timeline, a\ncall's on its started move.",
         "properties": {
           "by": {
             "enum": [
@@ -6322,6 +6367,14 @@
               "$ref": "#/components/schemas/MeetingOut"
             },
             "title": "Meetings",
+            "type": "array"
+          },
+          "meetings_needs_new_time": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/MeetingOut"
+            },
+            "title": "Meetings Needs New Time",
             "type": "array"
           },
           "meetings_to_close": {
@@ -16259,7 +16312,7 @@
     },
     "/api/v1/meetings": {
       "get": {
-        "description": "Calls and meetings, soonest first. `upcoming` keeps scheduled ones from `since` on (the\nstart of your local day; defaults to the start of today in UTC). `agency_id` and\n`company_id` match the person's agency or company.",
+        "description": "Calls and meetings, soonest first. `upcoming` keeps scheduled ones from `since` on (the\nstart of your local day; defaults to the start of today in UTC), but not those waiting for a\nnew time (their time isn't happening). `agency_id` and\n`company_id` match the person's agency or company.",
         "operationId": "list_meetings_api_v1_meetings_get",
         "parameters": [
           {
@@ -16567,6 +16620,100 @@
           }
         },
         "summary": "Update Meeting",
+        "tags": [
+          "meetings"
+        ]
+      }
+    },
+    "/api/v1/meetings/{meeting_id}/needs-new-time": {
+      "delete": {
+        "description": "It can go ahead at its time after all, or you're undoing marking it: the call keeps its time,\nthe started move is dropped, and the to-do made with the mark is deleted if it's still open and\nunchanged (one you've edited is ticked off instead).",
+        "operationId": "clear_needs_new_time_api_v1_meetings__meeting_id__needs_new_time_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
+          }
+        },
+        "summary": "Clear Needs New Time",
+        "tags": [
+          "meetings"
+        ]
+      },
+      "post": {
+        "description": "A booked call can't go ahead at its time, and no new time is agreed yet. It keeps its old\ntime, the started move keeps who needed the change and why, and with `todo` an open to-do\nreminds you to book the new one: on the call's application, or else on its person. Setting the\nnew time (PATCH `starts_at`) is the move.",
+        "operationId": "mark_needs_new_time_api_v1_meetings__meeting_id__needs_new_time_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "meeting_id",
+            "required": true,
+            "schema": {
+              "title": "Meeting Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NeedsNewTimeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeetingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
+          }
+        },
+        "summary": "Mark Needs New Time",
         "tags": [
           "meetings"
         ]

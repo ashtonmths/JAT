@@ -1013,7 +1013,8 @@ export interface paths {
         /**
          * List Meetings
          * @description Calls and meetings, soonest first. `upcoming` keeps scheduled ones from `since` on (the
-         *     start of your local day; defaults to the start of today in UTC). `agency_id` and
+         *     start of your local day; defaults to the start of today in UTC), but not those waiting for a
+         *     new time (their time isn't happening). `agency_id` and
          *     `company_id` match the person's agency or company.
          */
         get: operations["list_meetings_api_v1_meetings_get"];
@@ -1048,6 +1049,35 @@ export interface paths {
          *     `reschedule_reason`. A change of status in the same PATCH isn't a move.
          */
         patch: operations["update_meeting_api_v1_meetings__meeting_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/meetings/{meeting_id}/needs-new-time": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Needs New Time
+         * @description A booked call can't go ahead at its time, and no new time is agreed yet. It keeps its old
+         *     time, the started move keeps who needed the change and why, and with `todo` an open to-do
+         *     reminds you to book the new one: on the call's application, or else on its person. Setting the
+         *     new time (PATCH `starts_at`) is the move.
+         */
+        post: operations["mark_needs_new_time_api_v1_meetings__meeting_id__needs_new_time_post"];
+        /**
+         * Clear Needs New Time
+         * @description It can go ahead at its time after all, or you're undoing marking it: the call keeps its time,
+         *     the started move is dropped, and the to-do made with the mark is deleted if it's still open and
+         *     unchanged (one you've edited is ticked off instead).
+         */
+        delete: operations["clear_needs_new_time_api_v1_meetings__meeting_id__needs_new_time_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/next-actions": {
@@ -2601,7 +2631,7 @@ export interface components {
          */
         ErrorOut: {
             /** Code */
-            code?: ("agencies_in_use" | "application_link_not_found" | "attachment_entity_incomplete" | "attachment_entity_type_invalid" | "attachment_entity_type_required" | "companies_in_use" | "duplicates_needs_company" | "roles_in_use" | "time_zone_unknown" | "todo_entity_incomplete" | "application_document_not_found" | "attachment_file_missing" | "attachment_not_found" | "document_not_found" | "document_version_not_found" | "attachment_is_version_file" | "agency_id_not_found" | "agency_needs_agency_route" | "agency_not_found" | "agency_route_needs_agency" | "application_contact_not_found" | "application_id_not_found" | "application_not_found" | "backup_add_failed" | "backup_commit_failed" | "backup_detached_head" | "backup_git_timeout" | "backup_git_unavailable" | "backup_lock_failed" | "backup_mid_rebase" | "backup_no_remote" | "backup_not_a_repo" | "backup_push_failed" | "backup_shut_down" | "backup_snapshot_failed" | "backup_snapshots_off" | "cv_file_applications_invalid" | "cv_file_document_required" | "cv_file_missing" | "cv_file_not_found" | "document_sent" | "document_version_id_not_found" | "file_is_symlink" | "file_outside_files" | "file_too_large" | "note_changed" | "note_link_agency_not_found" | "note_link_application_not_found" | "note_link_company_not_found" | "note_link_contact_not_found" | "note_link_document_not_found" | "note_link_interview_not_found" | "note_link_invalid" | "note_link_role_not_found" | "note_not_found" | "note_path_invalid" | "note_unreadable" | "version_already_sent" | "version_label_required" | "version_sent" | "call_ends_before_start" | "company_has_applications" | "company_id_not_found" | "company_not_found" | "contact_detail_taken" | "contact_id_not_found" | "contact_not_found" | "data_conflict" | "direct_has_agency" | "direct_recruiter_has_agency" | "interview_not_found" | "interviewer_not_found" | "entity_agency_not_found" | "entity_application_not_found" | "entity_company_not_found" | "entity_contact_not_found" | "entity_document_not_found" | "entity_interview_not_found" | "link_not_found" | "entity_role_not_found" | "meeting_id_not_found" | "merge_same_person" | "meeting_not_found" | "move_not_allowed" | "move_not_allowed_none" | "offer_not_found" | "recruiter_id_not_found" | "recruiter_other_agency" | "referral_has_recruiter" | "role_call_other_person" | "role_has_applications" | "role_id_not_found" | "role_not_found" | "round_not_booked" | "round_application_closed" | "round_needs_new_time_already" | "round_needs_new_time_not" | "stage_unknown" | "todo_not_found" | "todo_text_required" | "undo_inconsistent" | "undo_nothing" | "workflow_invalid") | null;
+            code?: ("agencies_in_use" | "application_link_not_found" | "attachment_entity_incomplete" | "attachment_entity_type_invalid" | "attachment_entity_type_required" | "companies_in_use" | "duplicates_needs_company" | "roles_in_use" | "time_zone_unknown" | "todo_entity_incomplete" | "application_document_not_found" | "attachment_file_missing" | "attachment_not_found" | "document_not_found" | "document_version_not_found" | "attachment_is_version_file" | "agency_id_not_found" | "agency_needs_agency_route" | "agency_not_found" | "agency_route_needs_agency" | "application_contact_not_found" | "application_id_not_found" | "application_not_found" | "backup_add_failed" | "backup_commit_failed" | "backup_detached_head" | "backup_git_timeout" | "backup_git_unavailable" | "backup_lock_failed" | "backup_mid_rebase" | "backup_no_remote" | "backup_not_a_repo" | "backup_push_failed" | "backup_shut_down" | "backup_snapshot_failed" | "backup_snapshots_off" | "cv_file_applications_invalid" | "cv_file_document_required" | "cv_file_missing" | "cv_file_not_found" | "document_sent" | "document_version_id_not_found" | "file_is_symlink" | "file_outside_files" | "file_too_large" | "note_changed" | "note_link_agency_not_found" | "note_link_application_not_found" | "note_link_company_not_found" | "note_link_contact_not_found" | "note_link_document_not_found" | "note_link_interview_not_found" | "note_link_invalid" | "note_link_role_not_found" | "note_not_found" | "note_path_invalid" | "note_unreadable" | "version_already_sent" | "version_label_required" | "version_sent" | "call_ends_before_start" | "company_has_applications" | "company_id_not_found" | "company_not_found" | "contact_detail_taken" | "contact_id_not_found" | "contact_not_found" | "data_conflict" | "direct_has_agency" | "direct_recruiter_has_agency" | "interview_not_found" | "interviewer_not_found" | "entity_agency_not_found" | "entity_application_not_found" | "entity_company_not_found" | "entity_contact_not_found" | "entity_document_not_found" | "entity_interview_not_found" | "link_not_found" | "entity_role_not_found" | "meeting_id_not_found" | "merge_same_person" | "meeting_not_found" | "move_not_allowed" | "move_not_allowed_none" | "offer_not_found" | "recruiter_id_not_found" | "recruiter_other_agency" | "referral_has_recruiter" | "role_call_other_person" | "role_has_applications" | "role_id_not_found" | "role_not_found" | "round_not_booked" | "round_application_closed" | "round_needs_new_time_already" | "round_needs_new_time_not" | "call_not_booked" | "call_application_closed" | "call_person_closed" | "call_needs_new_time_already" | "call_needs_new_time_not" | "stage_unknown" | "todo_not_found" | "todo_text_required" | "undo_inconsistent" | "undo_nothing" | "workflow_invalid") | null;
             /** Detail */
             detail: string | components["schemas"]["ValidationIssue"][];
             /** Params */
@@ -3009,8 +3039,14 @@ export interface components {
              * @default []
              */
             moves: components["schemas"]["CallMove"][];
+            /** Needs New Time By */
+            needs_new_time_by?: ("me" | "them" | "mutual" | "neither") | null;
+            /** Needs New Time Since */
+            needs_new_time_since?: string | null;
             /** Notes */
             notes: string | null;
+            /** Rebook Todo Id */
+            rebook_todo_id?: string | null;
             /**
              * Rescheduled Count
              * @default 0
@@ -3087,8 +3123,9 @@ export interface components {
         };
         /**
          * NeedsNewTimeIn
-         * @description A booked round can't go ahead at its time and no new one is agreed yet. Who needed that is
-         *     required, as in the Reschedule dialog; why is optional. Both go on the timeline.
+         * @description A booked round or call can't go ahead at its time and no new one is agreed yet. Who needed
+         *     that is required, as in the Reschedule dialog; why is optional. A round's go on its timeline, a
+         *     call's on its started move.
          */
         NeedsNewTimeIn: {
             /**
@@ -3111,6 +3148,11 @@ export interface components {
              * @default []
              */
             meetings: components["schemas"]["MeetingOut"][];
+            /**
+             * Meetings Needs New Time
+             * @default []
+             */
+            meetings_needs_new_time: components["schemas"]["MeetingOut"][];
             /**
              * Meetings To Close
              * @default []
@@ -7406,6 +7448,72 @@ export interface operations {
                 "application/json": components["schemas"]["MeetingPatch"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingOut"];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    mark_needs_new_time_api_v1_meetings__meeting_id__needs_new_time_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NeedsNewTimeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeetingOut"];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    clear_needs_new_time_api_v1_meetings__meeting_id__needs_new_time_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                meeting_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

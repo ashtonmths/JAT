@@ -3,18 +3,19 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import get_args
+from typing import Literal, get_args
 
 from fastapi import APIRouter, Response
 from pydantic import AwareDatetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session, aliased
 
-from ..db.models import Agency, Application, Company, Contact, Meeting, MeetingMove, Role
+from ..db.models import Agency, Application, Company, Contact, Meeting, MeetingMove, Role, Todo
+from ..db.types import utcnow
 from ..domain import applications as app_svc
 from . import schemas as S
 from .crud import values
-from .deps import SessionDep, get_or_404, require
+from .deps import SessionDep, WorkflowDep, get_or_404, require
 from .errors import CodedError
 
 router = APIRouter(tags=["meetings"])
@@ -108,7 +109,8 @@ def list_meetings(
     since: AwareDatetime | None = None,
 ):
     """Calls and meetings, soonest first. `upcoming` keeps scheduled ones from `since` on (the
-    start of your local day; defaults to the start of today in UTC). `agency_id` and
+    start of your local day; defaults to the start of today in UTC), but not those waiting for a
+    new time (their time isn't happening). `agency_id` and
     `company_id` match the person's agency or company."""
     stmt = query()
     if contact_id:
@@ -123,7 +125,11 @@ def list_meetings(
         stmt = stmt.where(Meeting.status == status)
     if upcoming:
         start = since or datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
-        stmt = stmt.where(Meeting.status == "scheduled", Meeting.starts_at >= start.astimezone(UTC))
+        stmt = stmt.where(
+            Meeting.status == "scheduled",
+            Meeting.needs_new_time_since.is_(None),
+            Meeting.starts_at >= start.astimezone(UTC),
+        )
     return outs(session, session.execute(stmt.order_by(Meeting.starts_at, Meeting.id)))
 
 
@@ -155,14 +161,21 @@ _RESCHEDULED_BY: dict[str, tuple[app_svc.EventMsgKey, app_svc.EventMsgKey, str]]
 }
 
 
-def _record_move(session: Session, meeting: Meeting, moved_from: datetime, by: str | None, reason: str) -> None:
-    """Keep the move with the call, and, when the call is on an application, put it on that
-    application's timeline as a round's move is: "Call with Alex Morgan rescheduled (they needed
-    the change): why", saving the call's raw parts so a language can build its own name, and the
-    move itself (`data.reschedule`, read like a round's)."""
-    session.add(
-        MeetingMove(meeting_id=meeting.id, from_at=moved_from, to_at=meeting.starts_at, by=by, reason=reason or None)
-    )
+def _record_move(
+    session: Session,
+    meeting: Meeting,
+    moved_from: datetime,
+    by: str | None,
+    reason: str,
+    started: MeetingMove | None = None,
+) -> None:
+    """Keep the move with the call (completing the one `started` when it needed a new time), and,
+    when the call is on an application, put it on that application's timeline as a round's move is:
+    "Call with Alex Morgan rescheduled (they needed the change): why", saving the call's raw parts
+    so a language can build its own name, and the move itself (`data.reschedule`, read like a round's)."""
+    row = started or MeetingMove(meeting_id=meeting.id, from_at=moved_from)
+    row.to_at, row.by, row.reason = meeting.starts_at, by, reason or None
+    session.add(row)
     app = session.get(Application, meeting.application_id) if meeting.application_id else None
     if app is None:
         return
@@ -210,15 +223,112 @@ def update_meeting(meeting_id: str, body: S.MeetingPatch, session: SessionDep):
         setattr(meeting, field, value)
     session.flush()
     session.refresh(meeting)  # stored values: times in UTC, whole seconds
-    if booked and meeting.starts_at != before[1]:
+    pending = _pending_move(session, meeting) if meeting.needs_new_time_since is not None else None
+    if meeting.status != before[0] and meeting.needs_new_time_since is not None:
+        _settle(session, meeting, "done", pending)  # it happened or it won't: nothing left to book
+    elif booked and meeting.starts_at != before[1]:
         meeting.rescheduled_count = (meeting.rescheduled_count or 0) + 1
         meeting.rescheduled_from = before[1]
-        _record_move(session, meeting, before[1], by, reason)
+        if pending is not None:  # the move it was waiting for, with the who and why it was marked with
+            by = by or pending.by
+            reason = reason or pending.reason or ""
+            _settle(session, meeting, "done", None)
+        _record_move(session, meeting, before[1], by, reason, pending)
         session.flush()
+    return _out(session, meeting.id)
+
+
+def _pending_move(session: Session, meeting: Meeting) -> MeetingMove | None:
+    """The move a call waiting for a new time has started: its old time, who and why, and no new time."""
+    return session.scalars(
+        select(MeetingMove)
+        .where(MeetingMove.meeting_id == meeting.id, MeetingMove.to_at.is_(None))
+        .order_by(MeetingMove.created_at.desc(), MeetingMove.id.desc())
+    ).first()
+
+
+def _settle(session: Session, meeting: Meeting, todo: Literal["done", "delete"], drop: MeetingMove | None) -> None:
+    """The call no longer needs a new time, as a round's `_settle`: its to-do to book one, if still
+    open, is ticked off, or deleted when the mark is taken back and it's as it was made (made and
+    last changed at the same moment; one you've edited is yours, so it's ticked off). A to-do
+    deleted by hand is skipped. `drop` is the started move, when the call didn't move after all."""
+    made = session.get(Todo, meeting.rebook_todo_id) if meeting.rebook_todo_id else None
+    if made is not None and made.done_at is None:
+        if todo == "delete" and made.updated_at == made.created_at:
+            session.delete(made)
+        else:
+            made.done_at = utcnow()
+    if drop is not None:
+        session.delete(drop)
+    meeting.needs_new_time_since = None
+    meeting.needs_new_time_by = None
+    meeting.rebook_todo_id = None
+
+
+def _refuse_if_over(session: Session, meeting: Meeting, workflow) -> None:
+    """There's no new time to book for a call whose application is closed or archived, or whose
+    person's conversation is closed (ghosted or not interested)."""
+    app = session.get(Application, meeting.application_id) if meeting.application_id else None
+    if app is not None:
+        kind = next((s.kind for s in workflow.stages if s.id == app.stage), "active")
+        if app.archived or kind != "active":
+            raise CodedError(
+                409, "the application is closed or archived, so there's no new time to book", "call_application_closed"
+            )
+    if session.get(Contact, meeting.contact_id).closed_as:
+        raise CodedError(
+            409, "the conversation with them is closed, so there's no new time to book", "call_person_closed"
+        )
+
+
+@router.post("/meetings/{meeting_id}/needs-new-time", response_model=S.MeetingOut)
+def mark_needs_new_time(meeting_id: str, body: S.NeedsNewTimeIn, session: SessionDep, workflow: WorkflowDep):
+    """A booked call can't go ahead at its time, and no new time is agreed yet. It keeps its old
+    time, the started move keeps who needed the change and why, and with `todo` an open to-do
+    reminds you to book the new one: on the call's application, or else on its person. Setting the
+    new time (PATCH `starts_at`) is the move."""
+    meeting = get_or_404(session, Meeting, meeting_id)
+    if meeting.status != "scheduled":
+        raise CodedError(409, "only a booked call can need a new time", "call_not_booked")
+    if meeting.needs_new_time_since is not None:
+        raise CodedError(409, "this call already needs a new time", "call_needs_new_time_already")
+    _refuse_if_over(session, meeting, workflow)
+    reason = " ".join((body.reason or "").split()) or None
+    meeting.needs_new_time_since = utcnow()
+    meeting.needs_new_time_by = body.by
+    meeting.rebook_todo_id = None
+    if body.todo is not None:
+        text = body.todo.text.strip()
+        if not text:
+            raise CodedError(422, "text: say what needs doing", "todo_text_required")
+        about = ("application", meeting.application_id) if meeting.application_id else ("contact", meeting.contact_id)
+        now = utcnow()  # made and last changed together: so Undo can tell it hasn't been edited
+        todo = Todo(text=text, due_on=body.todo.due_on, entity_type=about[0], entity_id=about[1])
+        todo.created_at = todo.updated_at = now
+        session.add(todo)
+        session.flush()
+        meeting.rebook_todo_id = todo.id
+    session.add(MeetingMove(meeting_id=meeting.id, from_at=meeting.starts_at, to_at=None, by=body.by, reason=reason))
+    session.flush()
+    return _out(session, meeting.id)
+
+
+@router.delete("/meetings/{meeting_id}/needs-new-time", response_model=S.MeetingOut)
+def clear_needs_new_time(meeting_id: str, session: SessionDep):
+    """It can go ahead at its time after all, or you're undoing marking it: the call keeps its time,
+    the started move is dropped, and the to-do made with the mark is deleted if it's still open and
+    unchanged (one you've edited is ticked off instead)."""
+    meeting = get_or_404(session, Meeting, meeting_id)
+    if meeting.needs_new_time_since is None:
+        raise CodedError(409, "this call doesn't need a new time", "call_needs_new_time_not")
+    _settle(session, meeting, "delete", _pending_move(session, meeting))
+    session.flush()
     return _out(session, meeting.id)
 
 
 @router.delete("/meetings/{meeting_id}", status_code=204)
 def delete_meeting(meeting_id: str, session: SessionDep):
-    session.delete(get_or_404(session, Meeting, meeting_id))
+    meeting = get_or_404(session, Meeting, meeting_id)
+    _settle(session, meeting, "done", None)  # nothing left to book
+    session.delete(meeting)
     return Response(status_code=204)

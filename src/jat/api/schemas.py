@@ -660,12 +660,14 @@ class RebookTodoIn(In):
 
 
 class NeedsNewTimeIn(In):
-    """A booked round can't go ahead at its time and no new one is agreed yet. Who needed that is
-    required, as in the Reschedule dialog; why is optional. Both go on the timeline."""
+    """A booked round or call can't go ahead at its time and no new one is agreed yet. Who needed
+    that is required, as in the Reschedule dialog; why is optional. A round's go on its timeline, a
+    call's on its started move."""
 
     by: RescheduleBy
     reason: str | None = Field(default=None, max_length=500)
-    todo: RebookTodoIn | None = None  # also add a to-do (open) on the application to book the new time
+    # Also add a to-do (open) to book the new time: on the application (a call with none: its person).
+    todo: RebookTodoIn | None = None
 
 
 class RoundMove(BaseModel):
@@ -1522,7 +1524,12 @@ class MeetingOut(Out):
     # Defaults, so a reader of an older server's calls gets "never moved".
     rescheduled_count: int = 0  # times a booked call moved to another time
     rescheduled_from: datetime | None = None  # the time it moved from last
-    moves: list[CallMove] = []  # oldest first
+    moves: list[CallMove] = []  # oldest first; one with no `to_at` is the move it's waiting to make
+    # It can't go ahead at `starts_at` and no new time is agreed yet: since when, who needed that,
+    # and the to-do made to book it (it may since be gone). All null when it doesn't.
+    needs_new_time_since: datetime | None = None
+    needs_new_time_by: RescheduleBy | None = None
+    rebook_todo_id: str | None = None
     # Who it's with, and the application if there is one, for lists across people.
     label: str  # "Call with Alex Morgan: market catch-up"
     contact_name: str
