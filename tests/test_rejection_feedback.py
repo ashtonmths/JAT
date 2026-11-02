@@ -141,13 +141,15 @@ def test_feedback_has_a_length_limit(client, seeded):
     longest = "x" * REJECTION_FEEDBACK_MAX
     assert _put(client, app, longest)["rejection_feedback"] == longest
     too_long = longest + "x"
-    body = _put(client, app, too_long, status=422)
-    assert body["detail"][0]["type"] == "string_too_long"
-    r = client.post(
-        f"/api/v1/applications/{app['id']}/move", json={"to_stage": "interviewing", "rejection_feedback": too_long}
-    )
-    assert r.status_code == 422
+    [issue] = _put(client, app, too_long, status=422)["detail"]
+    assert (issue["type"], issue["loc"][-1]) == ("string_too_long", "feedback")
     assert client.get(f"/api/v1/applications/{app['id']}").json()["rejection_feedback"] == longest
+    # The same limit on the move itself, to Rejected: refused, and nothing moved.
+    other = _application(client, seeded)
+    [issue] = _move(client, other, "rejected", status=422, rejection_feedback=too_long)["detail"]
+    assert (issue["type"], issue["loc"][-1]) == ("string_too_long", "rejection_feedback")
+    after = client.get(f"/api/v1/applications/{other['id']}").json()
+    assert (after["stage"], after["rejection_feedback"]) == ("applied", None)
 
 
 def test_a_workflow_without_a_rejected_stage_takes_none(app, client, seeded):
