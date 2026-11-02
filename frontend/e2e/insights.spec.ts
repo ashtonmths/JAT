@@ -173,6 +173,44 @@ test.describe("the Sankey chart", () => {
     await expect(page.locator("p", { hasText: words })).toBeVisible();
   });
 
+  test("Show interview rounds splits Interviewing into rounds, on to Rejected, and is remembered", async ({
+    page,
+    request,
+  }) => {
+    const day = (ago: number) => new Date(Date.now() - ago * 86_400_000).toISOString();
+    const { id } = await quick(request, "Sankey Round Co", "Sankey Round Role", { stage: "applied" });
+    await post(request, `applications/${id}/move`, { to_stage: "interviewing", occurred_at: day(6) });
+    await post(request, `applications/${id}/interviews`, {
+      kind: "technical",
+      status: "done",
+      starts_at: day(5),
+    });
+    await post(request, `applications/${id}/move`, { to_stage: "rejected", occurred_at: day(3) });
+    const titles = () => chart(page).locator("path title").allTextContents();
+
+    await openFlow(page);
+    const toggle = page.getByRole("switch", { name: "Show interview rounds" });
+    await expect(toggle).not.toBeChecked();
+    expect((await titles()).some((t) => t.startsWith("Round 1"))).toBe(false);
+
+    await toggle.click({ force: true });
+    await expect
+      .poll(async () => (await titles()).some((t) => t.startsWith("Round 1 → Rejected: ")))
+      .toBe(true);
+    expect((await titles()).some((t) => t.startsWith("Interviewing → Round 1: "))).toBe(true);
+
+    // Remembered, and on The whole picture too.
+    await page.reload();
+    await tab(page, "The whole picture");
+    await expect(page.getByRole("switch", { name: "Show interview rounds" })).toBeChecked();
+    await expect
+      .poll(async () => (await titles()).some((t) => t.startsWith("Round 1 → Rejected: ")))
+      .toBe(true);
+
+    await page.getByRole("switch", { name: "Show interview rounds" }).click({ force: true });
+    await expect.poll(async () => (await titles()).some((t) => t.startsWith("Round 1"))).toBe(false);
+  });
+
   test("on a phone it scrolls by itself, and the page doesn't", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await openFlow(page);

@@ -82,6 +82,7 @@ def test_flow(client, seeded):
         "applications": 0,
         "nodes": [],
         "links": [],
+        "rounds": False,
     }
 
 

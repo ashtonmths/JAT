@@ -2886,7 +2886,7 @@ export interface components {
         /** FlowNode */
         FlowNode: {
             /** Code */
-            code?: ("source_recruiter" | "source_referral" | "source_found" | "deciding" | "passed" | "holding_applied" | "holding_screen" | "holding_interviewing" | "holding_final" | "holding_offer" | "holding_other" | "pitched" | "applied" | "in_progress" | "offer" | "closed" | "ghosted") | null;
+            code?: ("source_recruiter" | "source_referral" | "source_found" | "deciding" | "passed" | "holding_applied" | "holding_screen" | "holding_interviewing" | "holding_final" | "holding_offer" | "holding_other" | "pitched" | "applied" | "in_progress" | "offer" | "closed" | "ghosted" | "round") | null;
             /** Color */
             color: string;
             /** Current */
@@ -2899,6 +2899,8 @@ export interface components {
             name: string;
             /** Reached */
             reached: number;
+            /** Round */
+            round?: number | null;
             /** Stage Name */
             stage_name?: string | null;
         };
@@ -2910,6 +2912,11 @@ export interface components {
             links: components["schemas"]["FlowLink"][];
             /** Nodes */
             nodes: components["schemas"]["FlowNode"][];
+            /**
+             * Rounds
+             * @default false
+             */
+            rounds: boolean;
         };
         /** FollowedUpMsg */
         FollowedUpMsg: {
@@ -7094,6 +7101,8 @@ export interface operations {
                 since?: string | null;
                 until?: string | null;
                 route?: ("direct" | "agency" | "referral") | null;
+                /** @description Expand the interviewing stage into the rounds each application reached (Round 1, Round 2…). */
+                rounds?: boolean;
             };
             header?: never;
             path?: never;
@@ -7286,6 +7295,8 @@ export interface operations {
             query?: {
                 since?: string | null;
                 until?: string | null;
+                /** @description Expand the interviewing stage into the rounds each application reached (Round 1, Round 2…). */
+                rounds?: boolean;
             };
             header?: never;
             path?: never;

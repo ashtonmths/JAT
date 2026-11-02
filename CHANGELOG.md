@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.18.0 (2026-11-02)
+
+- **See the rounds in the Sankeys:** a *Show interview rounds* switch on The whole picture and the Applications flow splits Interviewing into the rounds each application reached, so you can follow Round 1 → Round 2 → Rejected. It's off at first and remembered. Restart the tracker and rebuild the frontend to use it (#214).
+
 ## 1.17.0 (2026-11-02)
 
 - **Which round rejections came after:** the Rejections tab on Insights now counts every rejection by the last round it came after, by kind (for example "4 of 6 rejections came after a coding task") and by round number, with those before any round on their own. Only rounds that had happened count: a round booked for later, cancelled, waiting for a new time, or marked done after the rejection doesn't. Plain counts, not a pattern. Restart the tracker and rebuild the frontend to see it (#213).

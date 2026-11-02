@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
-from typing import Literal
+from typing import Annotated, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import APIRouter, Query
@@ -43,6 +43,7 @@ NodeCode = Literal[
     "offer",
     "closed",
     "ghosted",
+    "round",
 ]
 
 
@@ -55,6 +56,7 @@ class FlowNode(BaseModel):
     current: int  # of those, how many got no further (0 on holding and source nodes)
     code: NodeCode | None = None
     stage_name: str | None = None  # with holding_other: the stage it's waiting at, as you wrote it
+    round: int | None = None  # with code "round": its number ("Round 2"); the id is "<stage>#round-<n>"
 
 
 class FlowLink(BaseModel):
@@ -67,6 +69,13 @@ class FlowOut(BaseModel):
     applications: int
     nodes: list[FlowNode]  # left-to-right order
     links: list[FlowLink]
+    rounds: bool = False  # the interviewing stage is expanded into its rounds (asked for with ?rounds=true)
+
+
+RoundsQuery = Annotated[
+    bool,
+    Query(description="Expand the interviewing stage into the rounds each application reached (Round 1, Round 2…)."),
+]
 
 
 @router.get("/flow", response_model=FlowOut)
@@ -76,9 +85,11 @@ def stage_flow(
     since: AwareDatetime | None = None,
     until: AwareDatetime | None = None,
     route: S.Route | None = None,
+    rounds: RoundsQuery = False,
 ):
     """Stage-to-stage flows for a Sankey diagram, for applications added in [since, until)."""
-    return _flow_out(svc.flow(session, workflow, since=since, until=until, route=route), workflow)
+    result = svc.flow(session, workflow, since=since, until=until, route=route, rounds=rounds)
+    return _flow_out(result, workflow, rounds=rounds)
 
 
 # Roles you passed on, in the diagrams ("Passed" alone reads like passing an interview).
@@ -144,33 +155,43 @@ def _with_holding(result: svc.Flow, workflow) -> svc.Flow:
             hid = _holding(workflow, st.id)
             out.links[(st.id, hid)] += n
             out.reached[hid] += n
+    # Still interviewing after a round: the spur leaves from that round, to the stage's own holding node.
+    for node, n in result.current.items():
+        if (r := svc.round_of(node)) and n:
+            hid = _holding(workflow, r[0])
+            out.links[(node, hid)] += n
+            out.reached[hid] += n
     return out
 
 
-def _flow_out(result: svc.Flow, workflow) -> FlowOut:
+def _flow_out(result: svc.Flow, workflow, *, rounds: bool = False) -> FlowOut:
     result = _with_holding(result, workflow)
     rank = svc.stage_rank(workflow)
     stages = {s.id: s for s in workflow.stages}
     sources = [f"source:{s}" for s in svc.SOURCES]
 
-    def pos(sid: str) -> tuple[int, int, str]:
-        """Sources, active stages, what's still waiting, outcomes, passed: the order nodes are listed
-        in (the chart places and orders them itself)."""
+    def pos(sid: str) -> tuple[int, int, int, str]:
+        """Sources, active stages (each followed by its rounds), what's still waiting, outcomes,
+        passed: the order nodes are listed in (the chart places and orders them itself)."""
         if sid in sources:
-            return (0, sources.index(sid), sid)
+            return (0, sources.index(sid), 0, sid)
         if sid == svc.DECIDING:
-            return (2, -1, sid)
+            return (2, -1, 0, sid)
         if sid.startswith("holding:"):
-            return (2, rank.get(sid.removeprefix("holding:"), len(rank)), sid)
+            return (2, rank.get(sid.removeprefix("holding:"), len(rank)), 0, sid)
         if sid in EXTRA_NODES:
-            return (4, list(EXTRA_NODES).index(sid), sid)
+            return (4, list(EXTRA_NODES).index(sid), 0, sid)
+        if r := svc.round_of(sid):
+            return (1, rank.get(r[0], len(rank)), r[1], sid)
         if sid in stages and stages[sid].kind == "active":
-            return (1, rank[sid], sid)
-        return (3, rank.get(sid, len(rank)), sid)  # outcomes; unknown (removed) stages last
+            return (1, rank[sid], 0, sid)
+        return (3, rank.get(sid, len(rank)), 0, sid)  # outcomes; unknown (removed) stages last
 
     def describe(sid: str) -> tuple[str, str, str]:
         if sid in EXTRA_NODES:
             return EXTRA_NODES[sid]
+        if r := svc.round_of(sid):
+            return f"Round {r[1]}", "active", stages[r[0]].color if r[0] in stages else "gray"
         if sid.startswith("holding:"):
             st = stages[sid.removeprefix("holding:")]
             return HOLDING_NAMES.get(st.id, f"Still at {st.name}"), "holding", st.color
@@ -181,6 +202,8 @@ def _flow_out(result: svc.Flow, workflow) -> FlowOut:
     def code_of(sid: str) -> tuple[NodeCode | None, str | None]:
         if sid in EXTRA_CODES:
             return EXTRA_CODES[sid], None
+        if svc.round_of(sid):
+            return "round", None
         if sid.startswith("holding:"):
             st = stages[sid.removeprefix("holding:")]
             return (HOLDING_CODES[st.id], None) if st.id in HOLDING_CODES else ("holding_other", st.name)
@@ -200,13 +223,14 @@ def _flow_out(result: svc.Flow, workflow) -> FlowOut:
                 current=result.current[sid],
                 code=code,
                 stage_name=stage_name,
+                round=r[1] if (r := svc.round_of(sid)) else None,
             )
         )
     links = [
         FlowLink(source=a, target=b, value=n)
         for (a, b), n in sorted(result.links.items(), key=lambda kv: (pos(kv[0][0]), pos(kv[0][1])))
     ]
-    return FlowOut(applications=result.applications, nodes=nodes, links=links)
+    return FlowOut(applications=result.applications, nodes=nodes, links=links, rounds=rounds)
 
 
 @router.get("/whole-flow", response_model=FlowOut)
@@ -215,12 +239,14 @@ def whole_flow(
     workflow: WorkflowDep,
     since: AwareDatetime | None = None,
     until: AwareDatetime | None = None,
+    rounds: RoundsQuery = False,
 ):
     """The whole picture as one Sankey diagram: every application added in [since, until) from
     where it came from (a recruiter, a referral, or you found it) through its stages, and every
     role added then without an application, to passed or still deciding. `applications` counts
     both."""
-    return _flow_out(svc.whole_flow(session, workflow, since=since, until=until), workflow)
+    result = svc.whole_flow(session, workflow, since=since, until=until, rounds=rounds)
+    return _flow_out(result, workflow, rounds=rounds)
 
 
 class StageStatsOut(BaseModel):

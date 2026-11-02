@@ -184,7 +184,7 @@ const NODE_NAMES = {
   offer: "insights:sankey.nodes.offer",
   closed: "insights:sankey.nodes.closed",
   ghosted: "insights:sankey.nodes.ghosted",
-} as const satisfies Record<Exclude<NonNullable<FlowNode["code"]>, "holding_other">, string>;
+} as const satisfies Record<Exclude<NonNullable<FlowNode["code"]>, "holding_other" | "round">, string>;
 
 /** A node's name in your language. A stage has no code and its node's id is its own: a default stage
  * shows translated, any other as you wrote it. "Still at" nodes' ids are `holding:<stage id>`. */
@@ -193,6 +193,11 @@ export function nodeName(node: FlowNode, lng = i18n.language): string {
   if (node.code === "holding_other") {
     const stage = stageName({ id: node.id.replace(/^holding:/, ""), name: node.stage_name ?? "" }, lng);
     return i18n.t("insights:sankey.nodes.holding_other", { stage, lng });
+  }
+  // An interview round, with Interviewing expanded: its id is "<stage>#round-<n>".
+  if (node.code === "round") {
+    const round = node.round ?? Number(/#round-(\d+)$/.exec(node.id)?.[1]);
+    return i18n.t("insights:sankey.nodes.round", { round, lng });
   }
   return i18n.t(NODE_NAMES[node.code], { lng });
 }
