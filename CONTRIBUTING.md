@@ -140,7 +140,12 @@ a test and the type check fail until it does.
 - **Values** go in `{{placeholders}}`, never glued on with `+` or a template string, so a
   translation can put them anywhere in the sentence.
 - **Plurals** are `_one` / `_other` keys used with `count`, never `n === 1 ? … : …`. So no
-  other key may end in `_one`, `_other`, `_few` and the like.
+  other key may end in `_one`, `_other`, `_few` and the like. A second count in the same sentence
+  gets its own plural key, nested with its count:
+  `"Of {{count}} booked rounds, $t(insights:rescheduling.movedRounds, {\"count\": {{moved}} })."`
+  (always `ns:key`, so the unused-key check sees it).
+- **One whole sentence per state,** not pieces joined with a translated separator: a move's line has a
+  key for each mix of who and reason, so a translation can put the reason first.
 - **Markup inside a sentence** uses `<Trans>` with named tags: `"Read <guide>the guide</guide>"`
   plus `components={{ guide: <a href="…" /> }}`. Don't name a tag after an HTML element that
   can't hold text (`link`, `img`, `br`, `input`, `meta`): it renders empty.

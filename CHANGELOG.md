@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.8.2 (2026-11-02)
+
+- **Developers:** the rescheduling text is ready for other languages: the moved count on Insights has its own plural forms, and each timeline move line is one whole sentence a translator can reorder. The English is unchanged (#199).
+
 ## 1.8.1 (2026-11-02)
 
 - **See which version you're running:** the bottom of the sidebar shows the app's version, linked to that release on GitHub. If the running server and the page in your browser are different versions, it says so: restart the tracker when the server is older, or refresh the page when the page is older (#200).
