@@ -320,6 +320,7 @@ phases:
       - {id: timeline-improve, name: "Improve the Timeline page. A general improvement, to be planned with Kai first (Kai, 2026-11-02)", owner: lead, status: planned, estimate_h: 3, depends: [], prd: docs/prd/tracker.md}
       - {id: reschedule-pending-api, name: "Rescheduling, part 4a: the API behind needing a new time: mark a round (who, why, old time kept) with an optional to-do to book it, undo it, and setting the new time counts as the move and ticks the to-do off; Today, staleness and Insights counts; the timeline text (Kai, 2026-11-02)", owner: lead, status: done, estimate_h: 2.5, depends: [reschedule-insights], prd: docs/prd/tracker.md}
       - {id: reschedule-pending, name: "Rescheduling, part 4b: mark a round as needing a new time from the Reschedule dialog (who and why, old time kept), with a to-do to book it that's ticked off when the new time is set; shown everywhere the round shows, counted in Insights, undoable; a plan for calls (Kai, 2026-11-02)", owner: lead, status: done, estimate_h: 3, depends: [reschedule-pending-api], prd: docs/prd/tracker.md}
+      - {id: recruiter-on-cards, name: "Show the recruiter's name wherever a role or application card shows, filling the gaps: Today's interview and offer rows, the Interviews and Offers pages, and direct applications with a recruiter on the board, list and company page; one shared look, linked to the person, with the ghost and star (Kai, 2026-11-02)", owner: lead, status: building, estimate_h: 2.5, depends: [], prd: docs/prd/tracker.md}
 
   - id: P11
     name: Test gaps
