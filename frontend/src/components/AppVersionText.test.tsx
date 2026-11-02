@@ -46,7 +46,7 @@ describe("the version", () => {
     const calls = mockApi({ "/api/v1/health": health("4.5.6") });
     wrap(<AppVersion page="4.5.6" />);
     const link = screen.getByRole("link", {
-      name: "Version 4.5.6. See what's in it on GitHub (opens in a new tab).",
+      name: "v4.5.6: see what's in it on GitHub (opens in a new tab).",
     });
     expect(link).toHaveTextContent(/^v4\.5\.6$/);
     expect(link).toHaveAttribute(

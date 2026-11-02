@@ -214,14 +214,19 @@ test.describe("the connection dot", () => {
 });
 
 test.describe("the version", () => {
-  // Read from the server, never written here: it changes with every release.
+  // Read from the server, never written here: it changes with every release. The footer shows the
+  // page's own version, so this also checks the page's version (frontend/package.json) equals the
+  // server's (src/jat/__init__.py): it catches a version bump that missed one of the files.
   test("the footer shows the server's version, linked to its release, with no mismatch", async ({
     page,
     request,
   }) => {
     const { version } = (await (await request.get("/api/v1/health")).json()) as { version: string };
     await opened(page);
-    const link = menu(page).getByRole("link", { name: `Version ${version}.`, exact: false });
+    const link = menu(page).getByRole("link", {
+      name: `v${version}: see what's in it on GitHub (opens in a new tab).`,
+      exact: true,
+    });
     await expect(link).toBeVisible();
     await expect(link).toHaveText(`v${version}`);
     await expect(link).toHaveAttribute(

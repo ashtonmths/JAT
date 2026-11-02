@@ -77,7 +77,8 @@ export default {
   // page's. Versions are data, written as "1.8.0".
   version: {
     short: "v{{version}}",
-    linkLabel: "Version {{version}}. See what's in it on GitHub (opens in a new tab).",
+    // Starts with the visible text, so speech input can find it (WCAG 2.5.3).
+    linkLabel: "v{{version}}: see what's in it on GitHub (opens in a new tab).",
     // The usual case: the frontend was rebuilt, but the running tracker still has older code.
     serverOlder: "The server is v{{server}} but this page is v{{page}}. Restart the tracker to update.",
     // A tab opened before the tracker was restarted or updated.

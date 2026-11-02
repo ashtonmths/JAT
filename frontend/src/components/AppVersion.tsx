@@ -2,6 +2,7 @@ import { Anchor, Text } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 
 import { useHealth } from "./ApiStatus";
+import classes from "./AppVersion.module.css";
 
 /** The version this page was built from (frontend/package.json, set by the build). */
 export const PAGE_VERSION = __APP_VERSION__;
@@ -34,7 +35,7 @@ export function AppVersion({ page = PAGE_VERSION }: { page?: string }) {
   const { t } = useTranslation();
   const { data } = useHealth();
   // Nothing is said about the server until it has answered.
-  const server = data ? String(data.version) : page;
+  const server = data?.version ? String(data.version) : page;
   const order = server === page ? 0 : compareVersions(server, page);
   // Versions that differ but can't be compared: restarting the server is the usual cure.
   const mismatch = order === 0 ? null : order !== null && order > 0 ? "pageOlder" : "serverOlder";
@@ -54,7 +55,7 @@ export function AppVersion({ page = PAGE_VERSION }: { page?: string }) {
       </Anchor>
       <div role="status">
         {mismatch && (
-          <Text size="xs">
+          <Text size="xs" className={classes.mismatch}>
             {mismatch === "serverOlder"
               ? t("version.serverOlder", { server, page })
               : t("version.pageOlder", { server, page })}
