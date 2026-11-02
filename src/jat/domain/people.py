@@ -27,6 +27,8 @@ from jat.db.models import (
 )
 from jat.storage.notes import NoteStore
 
+from .applications import tick_call_rebook_todos
+
 # /in/<handle>, or an old-style /pub/<name>/<a>/<b>/<c> (all of it: the name alone isn't unique).
 _LINKEDIN = re.compile(
     r"^(?:https?://)?(?:[a-z]{2,3}\.)?(?:www\.)?linkedin\.com/(?:in/([^/?#]+)|pub/([^?#]+?))/?(?:[?#].*)?$", re.I
@@ -155,6 +157,8 @@ def merge(session: Session, keep: Contact, gone: Contact, notes: NoteStore) -> N
     session.execute(update(Role).where(Role.contact_id == gone.id).values(contact_id=keep.id))
     session.execute(update(Application).where(Application.recruiter_id == gone.id).values(recruiter_id=keep.id))
     session.execute(update(Meeting).where(Meeting.contact_id == gone.id).values(contact_id=keep.id))
+    if keep.closed_as:  # closed, as they were or as `gone` was: none of their calls has a new time to book
+        tick_call_rebook_todos(session, keep.id)
     session.execute(update(Reply).where(Reply.contact_id == gone.id).values(contact_id=keep.id))
 
     # On applications and interview panels, once per (application, relation) or interview.

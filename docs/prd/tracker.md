@@ -136,8 +136,12 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
   application, so no timeline to keep them on), and a call about an application also puts the
   move on that application's timeline. The Reschedule button (who required, why optional) is on
   every booked call on the person's page and Today, a moved call shows *Rescheduled*, and the
-  Timeline page shows each move once. Still to come: marking a call as needing a new time with a
-  to-do to book it, and calls in Insights.
+  Timeline page shows each move once. A booked call can be marked as needing a new time, as a
+  round can (the API so far; the dialog comes next): who and why, old time kept, an optional
+  open to-do to book it on the call's application or else its person, and setting the new time
+  is the one move. The to-do is ticked off when the call is booked, happens, is cancelled or
+  removed, or its application or the conversation with its person closes; Undo deletes it if
+  it's unchanged. Still to come: the dialog and where a waiting call shows, and calls in Insights.
 - **FR10:** Coding interviews and take-home tasks also hold instructions, repo or platform
   links, a deadline and attachments.
 

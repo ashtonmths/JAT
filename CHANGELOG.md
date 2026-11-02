@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.11.0 (2026-11-02)
+
+- **Groundwork for calls that need a new time:** the API can mark a call as needing a new time (who and why, the old time kept, an optional to-do to book it, on the application or the person), take the mark back, and books it later as one move; the to-do is ticked off when the call is booked, happens, is cancelled or removed, or its application or person closes. The screens come in the next release. Restart the tracker and rebuild the frontend after updating (#206).
+
 ## 1.10.0 (2026-11-02)
 
 - **Reschedule a call:** every booked call has a Reschedule button, on the person's page and on Today (Coming up and How did it go?). Pick the new time, say who needed the change (required) and, if you like, why. A moved call shows Rescheduled, and each move shows on the Timeline with its old and new time, who and why; a call about an application has the move on that application's timeline too. Restart the tracker and rebuild the frontend so the Timeline shows calls' moves (#205).

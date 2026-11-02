@@ -258,7 +258,8 @@ def update_contact(contact_id: str, body: S.ContactPatch, session: SessionDep):
         data["awaiting_reply_since"] = data["chased_on"]
     _one_reply_state(data)
     if data.get("closed_as"):
-        # Ghosted or not interested: nothing to wait for or read any more.
+        # Ghosted or not interested: nothing to wait for or read any more, nor any call to rebook.
+        svc.tick_call_rebook_todos(session, contact.id)
         data.setdefault("closed_on", None)
         data["closed_on"] = data["closed_on"] or date.today()
         data["awaiting_reply_since"] = data["reply_to_read_since"] = None
@@ -308,7 +309,9 @@ def merge_contact(contact_id: str, body: S.MergeIn, request: Request, session: S
 
 @contacts.delete("/{contact_id}", status_code=204)
 def delete_contact(contact_id: str, session: SessionDep):
-    session.delete(get_or_404(session, Contact, contact_id))
+    contact = get_or_404(session, Contact, contact_id)
+    svc.tick_call_rebook_todos(session, contact.id)  # their calls go with them: nothing left to book
+    session.delete(contact)
     session.flush()
     return Response(status_code=204)
 

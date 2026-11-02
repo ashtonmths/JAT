@@ -42,6 +42,9 @@ class NextActions(BaseModel):
     # Rounds that can't go ahead at their time, with no new one yet, longest waiting first. Their
     # to-dos to book one (`rebook_todo_id`) are in `todos` too: show each round once.
     needs_new_time: list[S.InterviewOut] = []
+    # The same for calls (on an open application, or none, with a person whose conversation is open).
+    # They're in neither `meetings` nor `meetings_to_close`; their to-dos are in `todos` too.
+    meetings_needs_new_time: list[S.MeetingOut] = []
     today: date
 
 
@@ -142,7 +145,18 @@ def next_actions(
         .order_by(Contact.reply_to_read_since, Contact.name)
     )
     to_read_people = _contact_outs(session, replied)
-    booked_meetings = _meeting_query().where(Meeting.status == "scheduled")
+    open_calls = _meeting_query().where(Meeting.status == "scheduled")
+    booked_meetings = open_calls.where(Meeting.needs_new_time_since.is_(None))
+    # The application, when there is one, is still in play, and the conversation isn't closed.
+    in_play = (Application.id.is_(None)) | (Application.archived.is_(False) & Application.stage.in_(active))
+    meetings_needs_new_time = _meeting_outs(
+        session,
+        session.execute(
+            open_calls.where(Meeting.needs_new_time_since.is_not(None), in_play, Contact.closed_as.is_(None)).order_by(
+                Meeting.needs_new_time_since, Meeting.id
+            )
+        ),
+    )
     meetings = _meeting_outs(
         session,
         session.execute(
@@ -165,6 +179,7 @@ def next_actions(
         upcoming=upcoming + unbooked,
         awaiting_outcome=past,
         needs_new_time=needs_new_time,
+        meetings_needs_new_time=meetings_needs_new_time,
         today=today,
         offer_deadlines=offer_deadlines,
         meetings=meetings,
