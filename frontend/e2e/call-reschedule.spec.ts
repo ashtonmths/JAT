@@ -17,6 +17,13 @@ interface Call {
   ends_at: string | null;
   rescheduled_count: number;
   moves: Move[];
+  needs_new_time_since?: string | null;
+  rebook_todo_id?: string | null;
+}
+interface Todo {
+  id: string;
+  text: string;
+  done_at: string | null;
 }
 
 const API = "/api/v1";
@@ -223,5 +230,94 @@ test.describe("rescheduling a call", () => {
     await page.goto(`/people/${personId}`);
     await expect(page.getByText(label)).toBeVisible();
     await expect(page.getByRole("button", { name: `Reschedule ${label}` })).toHaveCount(0);
+  });
+});
+
+test.describe("a call that needs a new time", () => {
+  const todoOf = async (request: APIRequestContext, id: string | null | undefined) => {
+    const all = (await (await request.get(`${API}/todos?status=all`)).json()) as Todo[];
+    return all.find((t) => t.id === id);
+  };
+  const markFromDialog = async (page: Page, label: string, who: string, why?: string) => {
+    const dialog = await openDialog(page, label);
+    await dialog.getByRole("checkbox", { name: "A new time isn't agreed yet" }).check();
+    await expect(dialog.getByRole("checkbox", { name: "Add a to-do to book the new time" })).toBeChecked();
+    await pickWho(page, dialog, who);
+    if (why) await dialog.getByLabel("Why? (optional)").fill(why);
+    await dialog.getByRole("button", { name: "Save: needs a new time" }).click();
+    await expect(dialog).toBeHidden();
+  };
+
+  test("marked from the dialog, waits on Today with its to-do, then setting its time is the move", async ({
+    page,
+    request,
+  }) => {
+    const { personId, call, label } = await bookedCall(request, "Avery Waiting", 4);
+    await page.goto(`/people/${personId}`);
+    await markFromDialog(page, label, "Them", "Their manager is away");
+    await expect(page.getByText(`${label} needs a new time.`)).toBeVisible();
+
+    // Saved: the old time kept, the move started, an open to-do on the person.
+    await expect.poll(async () => (await callNow(request, call.id)).needs_new_time_since).not.toBeNull();
+    const marked = await callNow(request, call.id);
+    expect(marked.starts_at).toBe(call.starts_at.replace(".000", ""));
+    expect(marked.moves).toEqual([
+      { from_at: marked.starts_at, to_at: null, by: "them", reason: "Their manager is away" },
+    ]);
+    expect(await todoOf(request, marked.rebook_todo_id)).toMatchObject({
+      text: `Book a new time for ${label}`,
+      done_at: null,
+    });
+
+    // The person page: the badge, and the old time and who in place of the time.
+    await expect(
+      page.locator(".mantine-Badge-root").getByText("Needs a new time", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText(/^Was .+\. They needed the change\.$/)).toBeVisible();
+
+    // Today: under Needs a new time, once, with its to-do; not coming up.
+    await page.goto("/");
+    const section = page.getByRole("group", { name: "Needs a new time" });
+    await expect(section.getByText(label, { exact: true })).toBeVisible();
+    await expect(section.getByRole("checkbox", { name: `Book a new time for ${label}` })).not.toBeChecked();
+    await expect(page.getByRole("checkbox", { name: `Book a new time for ${label}` })).toHaveCount(1);
+    await expect(page.locator("#coming-up").getByText(label)).toHaveCount(0);
+
+    // Set the new time from Today: the one move, with who and why; the to-do ticked off.
+    await section.getByRole("button", { name: `Set a new time for ${label}` }).click();
+    const set = page.locator(".mantine-Modal-content");
+    await set.getByText(`Set a new time for ${label}`).click();
+    // It starts with no time picked: any day will do, as for a round (reschedule-pending.spec.ts).
+    await set.getByLabel("New time", { exact: true }).first().click();
+    await page.locator('[class*="DateTimePicker-day"]:not([data-outside])').last().click();
+    await page.locator('[class*="DateTimePicker-submitButton"]').click();
+    await set.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(set).toBeHidden();
+    await expect.poll(async () => (await callNow(request, call.id)).rescheduled_count).toBe(1);
+    const booked = await callNow(request, call.id);
+    expect(booked.needs_new_time_since).toBeNull();
+    expect(booked.moves).toEqual([
+      { from_at: marked.starts_at, to_at: booked.starts_at, by: "them", reason: "Their manager is away" },
+    ]);
+    expect((await todoOf(request, marked.rebook_todo_id))?.done_at).not.toBeNull();
+    await expect(page.getByRole("group", { name: "Needs a new time" })).toHaveCount(0);
+  });
+
+  test("Undo gives it its old time back and removes the to-do", async ({ page, request }) => {
+    const { personId, call, label } = await bookedCall(request, "Blake Undo", 4);
+    await page.goto(`/people/${personId}`);
+    await markFromDialog(page, label, "Me");
+    const toast = page
+      .locator(".mantine-Notification-root")
+      .filter({ hasText: `${label} needs a new time.` });
+    await toast.getByRole("button", { name: "Undo" }).click();
+    await expect.poll(async () => (await callNow(request, call.id)).needs_new_time_since).toBeNull();
+    const back = await callNow(request, call.id);
+    expect(back.moves).toEqual([]);
+    expect(back.rebook_todo_id).toBeNull();
+    await expect(page.getByRole("button", { name: `Reschedule ${label}` })).toBeVisible();
+    // The to-do it made, unchanged, is gone.
+    const todos = (await (await request.get(`${API}/todos?status=all`)).json()) as Todo[];
+    expect(todos.filter((t) => t.text === `Book a new time for ${label}`)).toEqual([]);
   });
 });
