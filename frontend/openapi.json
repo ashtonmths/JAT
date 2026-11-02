@@ -3744,6 +3744,7 @@
                   "role_id_not_found",
                   "role_not_found",
                   "round_not_booked",
+                  "round_application_closed",
                   "round_needs_new_time_already",
                   "round_needs_new_time_not",
                   "stage_unknown",
@@ -15456,7 +15457,7 @@
     },
     "/api/v1/interviews/{interview_id}/needs-new-time": {
       "delete": {
-        "description": "It can go ahead at its time after all, or you're undoing marking it: the round keeps its\ntime, and the to-do made with the mark is deleted if it's still open. The timeline keeps both\nentries, as with any undo.",
+        "description": "It can go ahead at its time after all, or you're undoing marking it: the round keeps its\ntime, and the to-do made with the mark is deleted if it's still open and just as it was made\n(one you've edited is ticked off instead). The timeline keeps both entries, as with any undo.",
         "operationId": "clear_needs_new_time_api_v1_interviews__interview_id__needs_new_time_delete",
         "parameters": [
           {
@@ -15497,7 +15498,7 @@
         ]
       },
       "post": {
-        "description": "A booked round can't go ahead at its time, and no new time is agreed yet. It keeps its old\ntime, its timeline says who needed the change and why, and with `todo` an open to-do on the\napplication reminds you to book the new one. Setting the new time (PATCH `starts_at`) is the move.",
+        "description": "A booked round can't go ahead at its time, and no new time is agreed yet. It keeps its old\ntime, its timeline says who needed the change and why, and with `todo` an open to-do on the\napplication reminds you to book the new one. Setting the new time (PATCH `starts_at`) is the move.\nNot on a closed or archived application: there's nothing left to book there.",
         "operationId": "mark_needs_new_time_api_v1_interviews__interview_id__needs_new_time_post",
         "parameters": [
           {

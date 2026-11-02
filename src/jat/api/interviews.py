@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any, Literal
 
 from fastapi import APIRouter, Response
@@ -15,7 +15,7 @@ from ..db.types import utcnow
 from ..domain import interviews as svc
 from . import schemas as S
 from .crud import values
-from .deps import SessionDep, get_or_404
+from .deps import SessionDep, WorkflowDep, get_or_404
 from .errors import CodedError
 
 router = APIRouter(tags=["interviews"])
@@ -164,20 +164,29 @@ def _one_line(text: str | None) -> str:
 
 def _settle(session: Session, interview: Interview, todo: Literal["done", "delete"]) -> None:
     """The round no longer needs a new time. Its to-do to book one, if still open, is ticked off
-    (there's nothing left to book) or, when that's being taken back, deleted."""
+    (there's nothing left to book). When the mark is taken back, the to-do is deleted instead, but
+    only if it's just as it was made: one you've edited is yours, so it's ticked off. A to-do
+    that's gone (deleted by hand) is simply skipped."""
     made = session.get(Todo, interview.rebook_todo_id) if interview.rebook_todo_id else None
     if made is not None and made.done_at is None:
-        if todo == "done":
-            made.done_at = utcnow()
-        else:
+        as_made = _pending_event(session, interview).get("rebook_todo")
+        unchanged = isinstance(as_made, dict) and (made.id, made.text, made.due_on) == (
+            as_made.get("id"),
+            as_made.get("text"),
+            _saved_day(as_made.get("due_on")),
+        )
+        if todo == "delete" and unchanged:
             session.delete(made)
+        else:
+            made.done_at = utcnow()
     interview.needs_new_time_since = None
     interview.needs_new_time_by = None
     interview.rebook_todo_id = None
 
 
-def _pending_record(session: Session, interview: Interview) -> dict[str, Any]:
-    """The newest "needs a new time" record of this round: where it moved from, and why."""
+def _pending_event(session: Session, interview: Interview) -> dict[str, Any]:
+    """The data of this round's newest "needs a new time" entry: its record (`reschedule`: where it
+    moved from, who and why) and the to-do it made, as made (`rebook_todo`)."""
     found = session.scalars(
         select(Event.data)
         .where(Event.kind == "interview", Event.application_id == interview.application_id)
@@ -186,8 +195,21 @@ def _pending_record(session: Session, interview: Interview) -> dict[str, Any]:
     for data in found:
         saved = data.get("reschedule") if isinstance(data, dict) and data.get("interview_id") == interview.id else None
         if isinstance(saved, dict) and saved.get("to") is None:
-            return saved
+            return data
     return {}
+
+
+def _pending_record(session: Session, interview: Interview) -> dict[str, Any]:
+    """The newest "needs a new time" record of this round: where it moved from, and why."""
+    saved = _pending_event(session, interview).get("reschedule")
+    return saved if isinstance(saved, dict) else {}
+
+
+def _saved_day(value: Any) -> date | None:
+    try:
+        return date.fromisoformat(value) if isinstance(value, str) else None
+    except ValueError:
+        return None
 
 
 def _saved_time(value: Any) -> datetime | None:
@@ -253,19 +275,27 @@ def update_interview(interview_id: str, body: S.InterviewPatch, session: Session
 
 
 @router.post("/interviews/{interview_id}/needs-new-time", response_model=S.InterviewOut)
-def mark_needs_new_time(interview_id: str, body: S.NeedsNewTimeIn, session: SessionDep):
+def mark_needs_new_time(interview_id: str, body: S.NeedsNewTimeIn, session: SessionDep, workflow: WorkflowDep):
     """A booked round can't go ahead at its time, and no new time is agreed yet. It keeps its old
     time, its timeline says who needed the change and why, and with `todo` an open to-do on the
-    application reminds you to book the new one. Setting the new time (PATCH `starts_at`) is the move."""
+    application reminds you to book the new one. Setting the new time (PATCH `starts_at`) is the move.
+    Not on a closed or archived application: there's nothing left to book there."""
     interview = get_or_404(session, Interview, interview_id)
     if interview.status != "scheduled" or interview.starts_at is None:
         raise CodedError(409, "only a booked round can need a new time", "round_not_booked")
     if interview.needs_new_time_since is not None:
         raise CodedError(409, "this round already needs a new time", "round_needs_new_time_already")
     app = session.get(Application, interview.application_id)
+    kind = next((s.kind for s in workflow.stages if s.id == app.stage), "active")
+    if app.archived or kind != "active":
+        raise CodedError(
+            409, "the application is closed or archived, so there's no new time to book", "round_application_closed"
+        )
     interview.needs_new_time_since = utcnow()
     interview.needs_new_time_by = body.by
     interview.rebook_todo_id = None
+    # The to-do as made, so taking the mark back deletes it only if you haven't changed it since.
+    made: dict[str, Any] = {}
     if body.todo is not None:
         text = body.todo.text.strip()
         if not text:
@@ -274,16 +304,18 @@ def mark_needs_new_time(interview_id: str, body: S.NeedsNewTimeIn, session: Sess
         session.add(todo)
         session.flush()
         interview.rebook_todo_id = todo.id
+        due = todo.due_on.isoformat() if todo.due_on else None
+        made = {"rebook_todo": {"id": todo.id, "text": todo.text, "due_on": due}}
     session.flush()
-    svc.record(session, app, interview, "needs a new time", reason=_one_line(body.reason), by=body.by)
+    svc.record(session, app, interview, "needs a new time", reason=_one_line(body.reason), by=body.by, extra=made)
     return _out(session, interview.id)
 
 
 @router.delete("/interviews/{interview_id}/needs-new-time", response_model=S.InterviewOut)
 def clear_needs_new_time(interview_id: str, session: SessionDep):
     """It can go ahead at its time after all, or you're undoing marking it: the round keeps its
-    time, and the to-do made with the mark is deleted if it's still open. The timeline keeps both
-    entries, as with any undo."""
+    time, and the to-do made with the mark is deleted if it's still open and just as it was made
+    (one you've edited is ticked off instead). The timeline keeps both entries, as with any undo."""
     interview = get_or_404(session, Interview, interview_id)
     if interview.needs_new_time_since is None:
         raise CodedError(409, "this round doesn't need a new time", "round_needs_new_time_not")

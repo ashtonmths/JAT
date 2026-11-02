@@ -842,6 +842,8 @@ def update_app(app_id: str, body: S.ApplicationPatch, session: SessionDep, workf
     _one_reply_state(data)
     for key, value in data.items():
         setattr(app, key, value)
+    if data.get("archived"):  # it's done with: no new time left to book
+        svc.tick_rebook_todos(session, app.id)
     _note_reply(
         session,
         was_waiting,
@@ -933,7 +935,14 @@ def undo_app(app_id: str, session: SessionDep, workflow: WorkflowDep):
         svc.undo_last_move(session, app)
     except svc.TransitionError as exc:
         raise _refused(exc) from exc
+    if _stage_kind(workflow, app.stage) != "active":  # undone back to a closed stage, as a move there would
+        svc.tick_rebook_todos(session, app.id)
     return _detail(session, workflow, app_id)
+
+
+def _stage_kind(workflow: Workflow, stage: str) -> str:
+    """A stage's kind; one no longer in config.toml counts as active, as a move does."""
+    return next((s.kind for s in workflow.stages if s.id == stage), "active")
 
 
 @apps.get("/{app_id}/events", response_model=list[S.EventOut])

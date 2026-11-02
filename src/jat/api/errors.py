@@ -109,6 +109,7 @@ ErrorCode = Literal[
     "role_id_not_found",
     "role_not_found",
     "round_not_booked",
+    "round_application_closed",
     "round_needs_new_time_already",
     "round_needs_new_time_not",
     "stage_unknown",
