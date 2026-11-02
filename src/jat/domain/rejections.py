@@ -2,7 +2,8 @@
 
 Every application with feedback is listed, whatever has happened since, so nothing you wrote drops
 out of sight. Its rejection is the latest move to Rejected that still stands (not undone), by when
-it happened (`in_time_order`): the date, and the stage it came from. One whose move to Rejected was
+it happened (`in_time_order`): the date, and the stage it came from. Without one, an application
+created at Rejected with nothing filled in before counts its creation. One whose move to Rejected was
 undone has no rejection to date, so it's listed only when no period is asked for. A period goes by
 the rejection's date, in [since, until).
 """
@@ -64,7 +65,11 @@ def rejections(session: Session, *, since: datetime | None = None, until: dateti
     out: list[Rejection] = []
     for app, role, company, person in rows:
         moves = [ev for ev in in_time_order(_effective_moves(events[app.id])) if ev.to_stage == REJECTED]
-        last = moves[-1] if moves else None
+        # With no move to Rejected, it may have been created there with nothing filled in before (a
+        # workflow whose first stage is Rejected, or a row migration 0013 left alone): that's its
+        # rejection, and creation can't be undone.
+        created = next((ev for ev in events[app.id] if ev.from_stage is None and ev.to_stage == REJECTED), None)
+        last = moves[-1] if moves else created
         when = last.occurred_at if last else None
         if not _in_period(when, since, until):
             continue
@@ -80,7 +85,7 @@ def rejections(session: Session, *, since: datetime | None = None, until: dateti
                 feedback=app.rejection_feedback or "",
                 rejected_at=when,
                 rejected_from=last.from_stage if last else None,
-                added_at_rejected=bool(last and is_implied(last)),
+                added_at_rejected=bool(last and (is_implied(last) or last.from_stage is None)),
             )
         )
     updated = {app.id: app.updated_at for app, *_ in rows}

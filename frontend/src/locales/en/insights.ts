@@ -35,6 +35,8 @@ export default {
     count_one: "{{count}} application has feedback.",
     count_other: "{{count}} applications have feedback.",
     title: "{{company}} · {{role}}",
+    // Each entry's name for screen readers.
+    itemLabel: "{{company}}: {{role}}",
     // {{stage}} is a stage's name: "Screen", or yours.
     rejectedFrom: "Rejected from {{stage}} on {{date}}.",
     addedAt: "Added as rejected on {{date}}.",

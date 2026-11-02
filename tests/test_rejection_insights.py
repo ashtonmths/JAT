@@ -118,6 +118,34 @@ def test_added_straight_at_rejected_says_so(client, seeded):
     assert (row["added_at_rejected"], row["rejected_from"], row["stage"]) == (True, "interested", "rejected")
 
 
+def test_rejected_twice_and_undone_once_goes_back_to_the_first(client, seeded):
+    app_id = _app(client, seeded)
+    _move(client, app_id, "screen", "2026-10-01T09:00:00Z")
+    _move(client, app_id, "rejected", "2026-10-02T09:00:00Z", rejection_feedback="First")
+    _move(client, app_id, "interviewing", "2026-10-05T09:00:00Z")
+    _move(client, app_id, "rejected", "2026-10-09T09:00:00Z")
+    assert client.post(f"/api/v1/applications/{app_id}/undo").status_code == 200
+    [row] = _listed(client)
+    assert (row["rejected_at"], row["rejected_from"], row["stage"], row["feedback"]) == (
+        "2026-10-02T09:00:00Z",
+        "screen",
+        "interviewing",
+        "First",
+    )
+
+
+def test_created_at_rejected_with_nothing_filled_in_counts_as_added_there(app, client, seeded):
+    # A workflow that starts at Rejected: the creation itself lands there, with no move before it.
+    (app.state.jat.data_dir / "config.toml").write_text('[workflow]\ninitial = "rejected"\n')
+    app_id = _app(client, seeded, stage="rejected")
+    put = client.put(f"/api/v1/applications/{app_id}/rejection-feedback", json={"feedback": "Never started"})
+    assert put.status_code == 200, put.text
+    [row] = _listed(client)
+    assert (row["added_at_rejected"], row["rejected_from"], row["stage"]) == (True, None, "rejected")
+    assert row["rejected_at"] is not None
+    assert len(_listed(client, since="2000-01-01T00:00:00Z")) == 1  # it has a date, so a period takes it
+
+
 def test_none_at_all(client, seeded):
     _app(client, seeded)
     assert _listed(client) == []

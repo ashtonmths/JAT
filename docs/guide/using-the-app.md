@@ -750,8 +750,9 @@ it was reopened, the line also says where it is now. If its move to Rejected was
 so and where it is now. Rejected more than once, it shows the latest rejection that still stands
 (by when it happened), with the one piece of feedback it keeps.
 
-The period goes by **when it was rejected**, unlike the other tabs, which go by when an
-application was added. An application whose move to Rejected was undone has no rejection date,
+The period goes by **when it was rejected**. The whole picture goes by when applications and
+roles were added, the Applications and CVs tabs by when an application was added, and Recruiter
+conversations by when calls happened and roles were pitched. An application whose move to Rejected was undone has no rejection date,
 so it shows only under *All time*.
 
 - **Weekly activity**: applications added and sent, stage moves, interviews, calls held and

@@ -25,7 +25,12 @@ function rejectionLine(r: Rejection, t: ReturnType<typeof useTranslation<"insigh
 function RejectionItem({ r }: { r: Rejection }) {
   const { t } = useTranslation("insights");
   return (
-    <Card withBorder padding="sm" component="li" aria-label={`${r.company_name}: ${r.role_title}`}>
+    <Card
+      withBorder
+      padding="sm"
+      component="li"
+      aria-label={t("rejections.itemLabel", { company: r.company_name, role: r.role_title })}
+    >
       <Stack gap={4}>
         <Text size="sm" fw={600}>
           <RecruiterLine id={r.recruiter_id} name={r.recruiter_name}>
