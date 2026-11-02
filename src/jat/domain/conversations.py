@@ -4,7 +4,9 @@ A lot of a search happens on calls: a recruiter pitches roles, and you apply for
 on others. This looks at that part:
 - **calls**: calls and meetings with people, by status: *held* means marked Happened,
   *booked* is scheduled and still to come (a scheduled call that has passed waits on Next
-  actions to be marked, and isn't counted);
+  actions to be marked, and isn't counted), *waiting* can't go ahead at its time and has no
+  new one yet (neither held nor booked); and calls *moved* to another time, with each move's
+  who (a waiting call's started move counts, with the who it was marked with);
 - **pitched roles**: roles someone told you about (a role with a person). Each is *applied*
   (an application that got to Applied or further), *passed* (you passed, or every
   application was closed before it got to Applied: withdrawn while only *Interested*) or
@@ -32,13 +34,14 @@ from statistics import median
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from jat.db.models import Agency, Application, Company, Contact, Event, Interview, Meeting, Offer, Role
+from jat.db.models import Agency, Application, Company, Contact, Event, Interview, Meeting, MeetingMove, Offer, Role
 
 from .applications import STAGE_CHANGE
 from .insights import role_progress, stage_paths
 from .workflow import Workflow
 
 OUTCOMES = ("offer", "in_progress", "closed", "ghosted")  # best first
+WHO = ("me", "them", "mutual", "neither")  # who needed a call moved; anything else is not recorded
 
 
 @dataclass
@@ -48,6 +51,10 @@ class Tally:
     calls_held: int = 0
     calls_booked: int = 0  # scheduled, still to come
     calls_cancelled: int = 0
+    calls_waiting: int = 0  # booked, but can't go ahead at its time and has no new one yet
+    calls_moved: int = 0  # calls moved to another time at least once (a waiting one has started its move)
+    call_moves: int = 0  # their moves: a call that moves twice is one call and two moves
+    moves_by: dict[str, int] = field(default_factory=lambda: dict.fromkeys((*WHO, "not_recorded"), 0))
     last_call: datetime | None = None
     pitched: int = 0
     applied: int = 0
@@ -138,17 +145,29 @@ def conversations(
             )
         return people[contact_id]
 
-    # Calls.
+    # Calls, and their moves (a call waiting for a new time has started one, with its who).
+    moves: dict[str, list[MeetingMove]] = defaultdict(list)
+    for mv in session.scalars(select(MeetingMove)):
+        moves[mv.meeting_id].append(mv)
     for m in session.scalars(select(Meeting)):
         if not _within(m.starts_at, since, until) or m.contact_id not in contacts:
             continue
         starts = _aware(m.starts_at)
+        waiting = m.status == "scheduled" and m.needs_new_time_since is not None
+        made = [mv for mv in moves[m.id] if mv.to_at is not None or waiting]
         for t in (total, person(m.contact_id)):
+            if made:
+                t.calls_moved += 1
+                t.call_moves += len(made)
+                for mv in made:
+                    t.moves_by[mv.by if mv.by in WHO else "not_recorded"] += 1
             if m.status == "cancelled":
                 t.calls_cancelled += 1
             elif m.status == "done":  # marked Happened: trust it, whatever its time
                 t.calls_held += 1
                 t.last_call = max(t.last_call or starts, starts)
+            elif waiting:  # its old time isn't happening: neither held nor booked ahead
+                t.calls_waiting += 1
             elif m.status == "scheduled" and starts > now:
                 t.calls_booked += 1
 
@@ -247,6 +266,9 @@ def conversations(
             "calls_held",
             "calls_booked",
             "calls_cancelled",
+            "calls_waiting",
+            "calls_moved",
+            "call_moves",
             "pitched",
             "applied",
             "passed",
@@ -256,6 +278,8 @@ def conversations(
             setattr(a, name, getattr(a, name) + getattr(p, name))
         for k, n in p.outcomes.items():
             a.outcomes[k] += n
+        for k, n in p.moves_by.items():
+            a.moves_by[k] += n
         a.decide_days.extend(p.decide_days)
         if p.last_call and (a.last_call is None or p.last_call > a.last_call):
             a.last_call = p.last_call

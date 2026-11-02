@@ -79,6 +79,55 @@ function Outcomes({ tally }: { tally: Tally }) {
   );
 }
 
+/**
+ * Calls moved to another time, and who needed each move: plain counts, as Rescheduling gives for
+ * rounds. Nothing when none moved (or from a server before calls could move).
+ */
+function CallsMoved({ tally }: { tally: Tally }) {
+  const { t } = useTranslation("insights");
+  const moved = tally.calls_moved ?? 0;
+  if (!moved) return null;
+  const groups: [string, number][] = [
+    [t("rescheduling.who.me"), tally.moves_by_me ?? 0],
+    [t("rescheduling.who.them"), tally.moves_by_them ?? 0],
+    [t("rescheduling.who.mutual"), tally.moves_by_mutual ?? 0],
+    [t("rescheduling.who.neither"), tally.moves_by_neither ?? 0],
+    [t("rescheduling.who.notRecorded"), tally.moves_not_recorded ?? 0],
+  ];
+  const waiting = tally.calls_waiting ?? 0;
+  return (
+    <Stack gap="sm" mt="lg">
+      <Title order={5}>{t("conversations.moved.title")}</Title>
+      <Text size="sm">
+        {t("conversations.moved.calls", { count: moved })}{" "}
+        {t("conversations.moved.moves", { count: tally.call_moves ?? 0 })}
+        {waiting > 0 && ` ${t("conversations.moved.waiting", { count: waiting })}`}
+      </Text>
+      <Table aria-label={t("conversations.moved.title")} maw={360}>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>{t("rescheduling.byWho")}</Table.Th>
+            <Table.Th ta="right">{t("rescheduling.movesColumn")}</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {groups.map(([name, n]) => (
+            <Table.Tr key={name}>
+              <Table.Td>{name}</Table.Td>
+              <Table.Td ta="right">{n}</Table.Td>
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
+      {(tally.moves_not_recorded ?? 0) > 0 && (
+        <Text size="sm" c="dimmed">
+          {t("conversations.moved.notRecordedHint")}
+        </Text>
+      )}
+    </Stack>
+  );
+}
+
 type View = "people" | "agencies";
 
 function WhoTable({ data }: { data: Conversations }) {
@@ -290,6 +339,7 @@ export function ConversationsSection({ since }: { since?: string }) {
             hint={t("conversations.stats.ghostedHint")}
           />
         </SimpleGrid>
+        <CallsMoved tally={total} />
         <Title order={5} mt="lg" mb={4}>
           {t("conversations.flow")}
         </Title>

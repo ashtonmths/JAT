@@ -2059,12 +2059,27 @@ export interface components {
             applied: number;
             /** Apply Rate */
             apply_rate: number | null;
+            /**
+             * Call Moves
+             * @default 0
+             */
+            call_moves: number;
             /** Calls Booked */
             calls_booked: number;
             /** Calls Cancelled */
             calls_cancelled: number;
             /** Calls Held */
             calls_held: number;
+            /**
+             * Calls Moved
+             * @default 0
+             */
+            calls_moved: number;
+            /**
+             * Calls Waiting
+             * @default 0
+             */
+            calls_waiting: number;
             /** Closed */
             closed: number;
             /** Deciding */
@@ -2081,6 +2096,31 @@ export interface components {
             last_call: string | null;
             /** Median Decide Days */
             median_decide_days: number | null;
+            /**
+             * Moves By Me
+             * @default 0
+             */
+            moves_by_me: number;
+            /**
+             * Moves By Mutual
+             * @default 0
+             */
+            moves_by_mutual: number;
+            /**
+             * Moves By Neither
+             * @default 0
+             */
+            moves_by_neither: number;
+            /**
+             * Moves By Them
+             * @default 0
+             */
+            moves_by_them: number;
+            /**
+             * Moves Not Recorded
+             * @default 0
+             */
+            moves_not_recorded: number;
             /** Name */
             name: string;
             /** Offers */
@@ -2102,12 +2142,27 @@ export interface components {
             applied: number;
             /** Apply Rate */
             apply_rate: number | null;
+            /**
+             * Call Moves
+             * @default 0
+             */
+            call_moves: number;
             /** Calls Booked */
             calls_booked: number;
             /** Calls Cancelled */
             calls_cancelled: number;
             /** Calls Held */
             calls_held: number;
+            /**
+             * Calls Moved
+             * @default 0
+             */
+            calls_moved: number;
+            /**
+             * Calls Waiting
+             * @default 0
+             */
+            calls_waiting: number;
             /** Closed */
             closed: number;
             /** Closed As */
@@ -2128,6 +2183,31 @@ export interface components {
             last_call: string | null;
             /** Median Decide Days */
             median_decide_days: number | null;
+            /**
+             * Moves By Me
+             * @default 0
+             */
+            moves_by_me: number;
+            /**
+             * Moves By Mutual
+             * @default 0
+             */
+            moves_by_mutual: number;
+            /**
+             * Moves By Neither
+             * @default 0
+             */
+            moves_by_neither: number;
+            /**
+             * Moves By Them
+             * @default 0
+             */
+            moves_by_them: number;
+            /**
+             * Moves Not Recorded
+             * @default 0
+             */
+            moves_not_recorded: number;
             /** Name */
             name: string;
             /** Offers */
@@ -2143,12 +2223,27 @@ export interface components {
             applied: number;
             /** Apply Rate */
             apply_rate: number | null;
+            /**
+             * Call Moves
+             * @default 0
+             */
+            call_moves: number;
             /** Calls Booked */
             calls_booked: number;
             /** Calls Cancelled */
             calls_cancelled: number;
             /** Calls Held */
             calls_held: number;
+            /**
+             * Calls Moved
+             * @default 0
+             */
+            calls_moved: number;
+            /**
+             * Calls Waiting
+             * @default 0
+             */
+            calls_waiting: number;
             /** Closed */
             closed: number;
             /** Deciding */
@@ -2163,6 +2258,31 @@ export interface components {
             last_call: string | null;
             /** Median Decide Days */
             median_decide_days: number | null;
+            /**
+             * Moves By Me
+             * @default 0
+             */
+            moves_by_me: number;
+            /**
+             * Moves By Mutual
+             * @default 0
+             */
+            moves_by_mutual: number;
+            /**
+             * Moves By Neither
+             * @default 0
+             */
+            moves_by_neither: number;
+            /**
+             * Moves By Them
+             * @default 0
+             */
+            moves_by_them: number;
+            /**
+             * Moves Not Recorded
+             * @default 0
+             */
+            moves_not_recorded: number;
             /** Offers */
             offers: number;
             /** Passed */
