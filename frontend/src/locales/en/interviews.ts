@@ -149,7 +149,7 @@ export default {
     // The to-do's own text, in your words once it's made.
     todoText: "Book a new time for {{label}}",
     todoHint:
-      "The to-do stays open until the round has its new time. Setting that, with Reschedule or Edit, counts as the move from the old time and ticks the to-do off for you.",
+      "The to-do stays open until the round has its new time. Setting that, with Set new time or Edit, counts as the move from the old time and ticks the to-do off for you.",
     save: "Save: needs a new time",
     badge: "Needs a new time",
     roundBadge: "{{label}} · needs a new time",
@@ -160,6 +160,14 @@ export default {
       mutual: "Was {{when}}. You both needed the change.",
       neither: "Was {{when}}. Not down to either of you.",
       unsaid: "Was {{when}}.",
+    },
+    // The same once its old time has been cleared from its form.
+    noTime: {
+      me: "It has no time now. You needed the change.",
+      them: "It has no time now. They needed the change.",
+      mutual: "It has no time now. You both needed the change.",
+      neither: "It has no time now. Not down to either of you.",
+      unsaid: "It has no time now.",
     },
     marked: "{{label}} needs a new time.",
     setAction: "Set new time",

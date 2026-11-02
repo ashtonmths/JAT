@@ -91,11 +91,23 @@ const WAS = {
   neither: "interviews:needsNewTime.was.neither",
 } as const;
 
-/** "Was Tue 3 Nov, 10:00. They needed the change." for a round waiting for a new time. */
+const NO_TIME = {
+  me: "interviews:needsNewTime.noTime.me",
+  them: "interviews:needsNewTime.noTime.them",
+  mutual: "interviews:needsNewTime.noTime.mutual",
+  neither: "interviews:needsNewTime.noTime.neither",
+} as const;
+
+/**
+ * "Was Tue 3 Nov, 10:00. They needed the change." for a round waiting for a new time, or "It has no
+ * time now. They needed the change." once its old time has been cleared from its form.
+ */
 export function wasText(round: Pick<Interview, "starts_at" | "needs_new_time_by">): string {
-  const when = round.starts_at ? formatDateTime(round.starts_at) : "";
   const by = round.needs_new_time_by;
-  return i18n.t(by ? WAS[by] : "interviews:needsNewTime.was.unsaid", { when });
+  if (!round.starts_at) return i18n.t(by ? NO_TIME[by] : "interviews:needsNewTime.noTime.unsaid");
+  return i18n.t(by ? WAS[by] : "interviews:needsNewTime.was.unsaid", {
+    when: formatDateTime(round.starts_at),
+  });
 }
 
 /** "Needs a new time", with the old time and who needed the change on hover; nothing for any other round. */
@@ -146,11 +158,14 @@ const WHO = [
   { value: "neither", key: "interviews:reschedule.whoOptions.neither" },
 ] as const satisfies readonly { value: RescheduleBy; key: string }[];
 
-/** The Reschedule button and its dialog, for a booked round; nothing for any other. */
+/**
+ * The Reschedule button and its dialog, for a booked round; Set new time for one waiting for a new
+ * time, even if its old time has since been cleared; nothing for any other.
+ */
 export function RescheduleButton({ interview }: { interview: Reschedulable & { status: string } }) {
   const { t } = useTranslation("interviews");
   const [open, setOpen] = useState(false);
-  if (interview.status !== "scheduled" || !interview.starts_at) return null;
+  if (interview.status !== "scheduled") return null;
   const label = roundLabel(interview);
   if (interview.needs_new_time_since) {
     return (
@@ -168,6 +183,7 @@ export function RescheduleButton({ interview }: { interview: Reschedulable & { s
       </>
     );
   }
+  if (!interview.starts_at) return null;
   return (
     <>
       <Button
@@ -212,14 +228,17 @@ function SetNewTimeModal({ interview, onClose }: { interview: Reschedulable; onC
         <Text size="sm" c="dimmed">
           {t("needsNewTime.setHint")}
         </Text>
-        <Group justify="space-between">
-          <Button
-            variant="subtle"
-            onClick={() => keep.mutate(interview.id, { onSuccess: onClose })}
-            disabled={busy}
-          >
-            {t("needsNewTime.keepOld")}
-          </Button>
+        <Group justify={interview.starts_at ? "space-between" : "flex-end"}>
+          {/* With its old time cleared, there's no old time to keep. */}
+          {interview.starts_at && (
+            <Button
+              variant="subtle"
+              onClick={() => keep.mutate(interview.id, { onSuccess: onClose })}
+              disabled={busy}
+            >
+              {t("needsNewTime.keepOld")}
+            </Button>
+          )}
           <Group gap="xs">
             <Button variant="default" onClick={onClose} disabled={busy}>
               {t("common:actions.cancel")}

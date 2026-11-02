@@ -2,7 +2,6 @@ import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import dayjs from "dayjs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { mockApi } from "../test/mockApi";
@@ -43,11 +42,12 @@ function wrap(node: React.ReactNode) {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 describe("the Reschedule dialog, with no new time yet", () => {
   const TODO_HINT =
-    "The to-do stays open until the round has its new time. Setting that, with Reschedule or Edit, counts as the move from the old time and ticks the to-do off for you.";
+    "The to-do stays open until the round has its new time. Setting that, with Set new time or Edit, counts as the move from the old time and ticks the to-do off for you.";
 
   it("swaps the new time for a to-do to book it, added by default", async () => {
     mockApi({});
@@ -67,6 +67,8 @@ describe("the Reschedule dialog, with no new time yet", () => {
   });
 
   it("still asks who needed the change, then sends who, why and the to-do", async () => {
+    // A fixed clock just before local midnight: the due date is the day the dialog opened on.
+    vi.useFakeTimers({ toFake: ["Date"], now: new Date(2030, 2, 11, 23, 59, 30) });
     const calls = mockApi({ "POST /api/v1/interviews/i1/needs-new-time": waiting });
     const onClose = vi.fn();
     wrap(<RescheduleModal interview={round} onClose={onClose} />);
@@ -88,7 +90,7 @@ describe("the Reschedule dialog, with no new time yet", () => {
           reason: "Their manager is away",
           todo: {
             text: "Book a new time for Round 2 · System design test",
-            due_on: dayjs().format("YYYY-MM-DD"),
+            due_on: "2030-03-11",
           },
         },
       },
@@ -128,6 +130,27 @@ describe("a round waiting for a new time", () => {
     [null, `Was ${OLD}.`],
   ] as const)("says its old time, and who needed the change (%s)", (by, text) => {
     expect(wasText({ starts_at: round.starts_at, needs_new_time_by: by })).toBe(text);
+  });
+
+  it.each([
+    ["me", "It has no time now. You needed the change."],
+    ["them", "It has no time now. They needed the change."],
+    ["mutual", "It has no time now. You both needed the change."],
+    ["neither", "It has no time now. Not down to either of you."],
+    [null, "It has no time now."],
+  ] as const)("says so in a whole sentence once its old time is cleared (%s)", (by, text) => {
+    expect(wasText({ starts_at: null, needs_new_time_by: by })).toBe(text);
+  });
+
+  it("still offers Set new time once its old time is cleared, with no old time to keep", async () => {
+    mockApi({});
+    wrap(<RescheduleButton interview={{ ...waiting, starts_at: null }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Set a new time for Round 2 · System design test" }));
+    const dialog = await screen.findByRole("dialog", {
+      name: "Set a new time for Round 2 · System design test",
+    });
+    expect(within(dialog).getByText("It has no time now. They needed the change.")).toBeInTheDocument();
+    expect(within(dialog).queryByRole("button", { name: "Keep the old time" })).toBeNull();
   });
 
   it("is marked so in its status and its badge on the board, list and quick view", () => {

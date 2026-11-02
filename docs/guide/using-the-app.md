@@ -464,7 +464,9 @@ or cancelled. On each row:
   on the application, "Book a new time for Round 2 · …", due today unless you pick another day or
   clear the date. **Save: needs a new time** keeps the round's old time and marks it **Needs a new
   time**; the timeline says "Round 2 · … needs a new time (they needed the change): why". A toast
-  offers **Undo**, which gives the round its old time back and deletes the to-do if it's still open.
+  offers **Undo**, which gives the round its old time back and deletes the to-do if it's still open
+  and as it was made (if you've edited it, it's ticked off instead). On a closed or archived application
+  saving is refused with a message, and nothing is saved: there's no new time to book.
 - **Set new time** takes the place of Reschedule on a round that needs one. Pick the time and
   save: that's the move, from the old time to the new one, with the who and why you gave, and the
   to-do is ticked off for you. Setting the time from the round's form does the same. **Keep the old
@@ -477,8 +479,10 @@ to-do, so it's counted once (the application's *At a glance* does the same), and
 doesn't show as gone quiet. The board, the list,
 the quick view and the application's page say "Round 2 · … · needs a new time". Cancelling the
 round, marking it done or removing it ticks its to-do off, as there's nothing left to book.
-Moving the application to a closed stage, or an offer, ticks the to-do off too; the round keeps
-needing a new time, so if you undo that move it's back on Today, without its to-do.
+Moving the application to a closed stage or an offer (or back to one with Undo), or archiving it,
+ticks the to-do off too; the round keeps needing a new time, so if you reopen it it's back on Today,
+without its to-do. If you clear a waiting round's old time on its form, it says "It has no time now"
+and still offers **Set new time**; the move is then counted from the time it had when you marked it.
 
 A round that's moved shows **Rescheduled** (or *Rescheduled ×2*), here and on the
 application's page; hover it for the time it moved from. Changing a booked round's time from

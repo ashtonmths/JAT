@@ -226,4 +226,36 @@ test("the board, the quick view and the Interviews page show it too", async ({ p
 
   await page.goto(`/applications/${appId}`);
   await expect(page.getByRole("button", { name: `Set a new time for ${label}` })).toBeVisible();
+
+  // Its old time cleared on the form: it still says why, and can still be given a time.
+  const cleared = await request.patch(`${API}/interviews/${round.id}`, { data: { starts_at: null } });
+  expect(cleared.ok()).toBe(true);
+  await page.reload();
+  await expect(page.getByText("It has no time now. You needed the change.")).toBeVisible();
+  await expect(page.getByRole("button", { name: `Set a new time for ${label}` })).toBeVisible();
+});
+
+test("Cancel saves nothing, and Keep the old time takes the mark back", async ({ page, request }) => {
+  const { appId, round, label } = await bookedRound(request, "Keep Time Co", "Keep time");
+  await page.goto(`/applications/${appId}`);
+  await page.getByRole("button", { name: `Reschedule ${label}` }).click();
+  let dialog = await dialogNamed(page, `Reschedule ${label}`);
+  await dialog.getByRole("checkbox", { name: "A new time isn't agreed yet" }).check();
+  await pickWho(page, dialog, "Me");
+  await dialog.getByRole("button", { name: "Cancel" }).click();
+  await expect(dialog).toBeHidden();
+  expect((await roundNow(request, round.id)).needs_new_time_since).toBeNull();
+  expect(await todosOf(request, appId)).toEqual([]);
+
+  await markFromDialog(page, label, "Ill");
+  await expect.poll(async () => (await todosOf(request, appId)).length).toBe(1);
+  await page.getByRole("button", { name: `Set a new time for ${label}` }).click();
+  dialog = await dialogNamed(page, `Set a new time for ${label}`);
+  await dialog.getByRole("button", { name: "Keep the old time" }).click();
+  await expect(dialog).toBeHidden();
+  await expect.poll(async () => (await roundNow(request, round.id)).needs_new_time_since).toBeNull();
+  const kept = await roundNow(request, round.id);
+  expect([kept.starts_at, kept.rescheduled_count]).toEqual([round.starts_at, 0]);
+  await expect.poll(async () => (await todosOf(request, appId)).length).toBe(0); // unchanged, so deleted
+  await expect(page.getByRole("button", { name: `Reschedule ${label}` })).toBeVisible();
 });

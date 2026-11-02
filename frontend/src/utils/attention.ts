@@ -161,7 +161,7 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
           key: `round-${round.id}`,
           label: t("today:glance.needsNewTime", { label: roundLabel(round) }),
           when: since(daysBetween(dayOf(round.needs_new_time_since), today)),
-          tone: "orange",
+          tone: "red", // as its badges are
         });
       } else if (!at) {
         comingUp.push({
