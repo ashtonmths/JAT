@@ -16,15 +16,20 @@ async function fetchHealth(): Promise<Health> {
   return res.json() as Promise<Health>;
 }
 
-/** A small connection indicator for the navbar footer. */
-export function ApiStatus() {
-  const { t } = useTranslation();
-  const { data, isError, isPending } = useQuery({
+/** The running server's health, checked every 30 seconds; shared by the dot and the version. */
+export function useHealth() {
+  return useQuery({
     queryKey: ["health"],
     queryFn: fetchHealth,
     refetchInterval: 30_000,
     retry: 1,
   });
+}
+
+/** A small connection indicator for the navbar footer. */
+export function ApiStatus() {
+  const { t } = useTranslation();
+  const { data, isError, isPending } = useHealth();
 
   const [color, label, detail] = isPending
     ? ["gray", t("api.connecting"), t("api.connectingHint")]

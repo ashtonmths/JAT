@@ -12,6 +12,12 @@ the top, on every page:
 - the [language](#language) switch;
 - light/dark mode.
 
+At the bottom of the sidebar (behind the menu button on a phone): whether the app is
+connected, **Download a backup**, and the version you're running, written like *v1.0.0*. The version
+links to what changed in that release on GitHub, in a new tab. If the running tracker and the
+page are different versions, a sentence under it says so and what to do (see
+[Troubleshooting](troubleshooting.md#the-sidebar-says-the-server-and-this-page-are-different-versions)).
+
 ## The basics: companies, roles and applications
 
 - A **company** is somewhere you might work.
