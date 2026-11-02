@@ -142,8 +142,9 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
   is the one move. The to-do is ticked off when the call is booked, happens, is cancelled or
   removed, or its application or the conversation with its person closes; Undo deletes it if
   it's unchanged. A waiting call shows Needs a new time, with its old time and who, on the
-  person's page and in Today's Needs a new time with its to-do; Set new time books it. Still to
-  come: calls in Insights.
+  person's page and in Today's Needs a new time with its to-do; Set new time books it. Insights'
+  recruiter conversations count calls moved and their moves by who (plain counts), and calls
+  waiting for a new time, which count as neither held nor booked ahead.
 - **FR10:** Coding interviews and take-home tasks also hold instructions, repo or platform
   links, a deadline and attachments.
 
