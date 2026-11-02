@@ -23,7 +23,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { InterviewOutcome } from "../components/OutcomeNotes";
-import { RescheduleButton } from "../components/Reschedule";
+import { NeedsNewTimeBadge, RescheduleButton, wasText } from "../components/Reschedule";
 import { ReplyHabit } from "../components/ReplyHabit";
 import { PersonName } from "../components/GhostMark";
 import { api, unwrap, type ApplicationRow, type Contact } from "../api/client";
@@ -237,7 +237,15 @@ function Row({
   );
 }
 
-function InterviewLine({ interview, action }: { interview: Interview; action?: ReactNode }) {
+function InterviewLine({
+  interview,
+  action,
+  todo,
+}: {
+  interview: Interview;
+  action?: ReactNode;
+  todo?: Todo; // a round waiting for a new time: the to-do to book it, shown with it rather than twice
+}) {
   const { t } = useTranslation("today");
   const when = interview.starts_at ?? interview.deadline_at;
   return (
@@ -250,16 +258,26 @@ function InterviewLine({ interview, action }: { interview: Interview; action?: R
           <Anchor component={Link} to={`/applications/${interview.application_id}`} size="xs">
             {t("rows.where", { company: interview.company_name, role: interview.role_title })}
           </Anchor>
+          {interview.needs_new_time_since && (
+            <Text size="xs" c="dimmed">
+              {wasText(interview)}
+            </Text>
+          )}
         </>
       }
+      habit={todo && <TodoLine todo={todo} showAbout={false} />}
       status={
-        <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-          {when
-            ? interview.starts_at
-              ? formatDateTime(when)
-              : t("rows.due", { when: formatDateTime(when) })
-            : t("rows.notBooked")}
-        </Text>
+        interview.needs_new_time_since ? (
+          <NeedsNewTimeBadge interview={interview} size="xs" />
+        ) : (
+          <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
+            {when
+              ? interview.starts_at
+                ? formatDateTime(when)
+                : t("rows.due", { when: formatDateTime(when) })
+              : t("rows.notBooked")}
+          </Text>
+        )
       }
       actions={action}
     />
@@ -449,7 +467,18 @@ export function TodayPage() {
   const meetings = data?.meetings ?? [];
   const meetingsToClose = data?.meetings_to_close ?? [];
   const rolesToDecide = data?.roles_to_decide ?? [];
-  const todos = data?.todos ?? [];
+  // Rounds waiting for a new time (none from a server before them). Each shows with the to-do to
+  // book it, so that to-do isn't listed again on its own.
+  const needsNewTime = data?.needs_new_time ?? [];
+  const allTodos = data?.todos ?? [];
+  const rebook = new Map(
+    needsNewTime.flatMap((i) => {
+      const todo = allTodos.find((td) => td.id === i.rebook_todo_id);
+      return todo ? [[i.id, todo] as const] : [];
+    }),
+  );
+  const shownWithRounds = new Set([...rebook.values()].map((td) => td.id));
+  const todos = allTodos.filter((td) => !shownWithRounds.has(td.id));
   // To-dos due today or before, or with no date, are yours to do now; dated ones wait their turn.
   const day = data?.today ?? today;
   const todosNow = todos.filter((t) => !t.due_on || t.due_on <= day);
@@ -480,6 +509,7 @@ export function TodayPage() {
     toReadPeople.length +
     offers.length +
     (data?.awaiting_outcome.length ?? 0) +
+    needsNewTime.length +
     meetingsToClose.length +
     todosNow.length +
     (data?.follow_ups.length ?? 0) +
@@ -696,6 +726,20 @@ export function TodayPage() {
                           <MeetingOutcome meeting={m} />
                         </Group>
                       }
+                    />
+                  ))}
+                </Section>
+                <Section
+                  title={t("sections.needsNewTime")}
+                  count={needsNewTime.length}
+                  hint={t("sections.needsNewTimeHint")}
+                >
+                  {needsNewTime.map((i) => (
+                    <InterviewLine
+                      key={i.id}
+                      interview={i}
+                      todo={rebook.get(i.id)}
+                      action={<RescheduleButton interview={i} />}
                     />
                   ))}
                 </Section>

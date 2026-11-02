@@ -11,12 +11,23 @@ import { formatShortWeekday } from "../utils/format";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 import { InterviewFormModal } from "./InterviewFormModal";
-import { RescheduleButton, RescheduledBadge, RoundDaysMoved } from "./Reschedule";
+import { RescheduleButton, RescheduledBadge, RoundDaysMoved, wasText } from "./Reschedule";
 
-type RoundLike = { status: string; starts_at: string | null; deadline_at: string | null };
+type RoundLike = {
+  status: string;
+  starts_at: string | null;
+  deadline_at: string | null;
+  needs_new_time_since?: string | null;
+};
 
-/** "Coming up", "Done", "Cancelled", or "Awaiting outcome" for a scheduled round whose time has passed. */
+/**
+ * "Coming up", "Done", "Cancelled", "Awaiting outcome" for a scheduled round whose time has passed, or
+ * "Needs a new time" for one that can't go ahead at its time.
+ */
 export function roundStatus(round: RoundLike): { label: string; color: string } {
+  if (round.status === "scheduled" && round.needs_new_time_since) {
+    return { label: i18n.t("interviews:needsNewTime.badge"), color: "red" };
+  }
   const when = round.starts_at ?? round.deadline_at;
   if (round.status === "scheduled" && when && new Date(when) < new Date()) {
     return { label: i18n.t("interviews:status.awaitingOutcome"), color: "orange" };
@@ -45,14 +56,15 @@ export function RoundBadge({
   useTranslation("interviews"); // re-renders on a language change: roundLabel goes through i18n.t
   if (!round || stageKind !== "active") return null;
   const when = round.starts_at ?? round.deadline_at;
+  const pending = round.status === "scheduled" && !!round.needs_new_time_since;
   const upcoming = round.status === "scheduled" && when;
   const label = roundLabel(round);
   return (
-    <Tooltip label={when ? formatDateTime(when) : ""} disabled={!when}>
+    <Tooltip label={pending ? wasText(round) : when ? formatDateTime(when) : ""} disabled={!when}>
       <Badge
         size={size}
         variant="light"
-        color="violet"
+        color={pending ? "red" : "violet"}
         leftSection={<IconCalendarEvent size={12} />}
         // Wrap rather than cut off on narrow board cards.
         h="auto"
@@ -60,7 +72,11 @@ export function RoundBadge({
         style={{ textTransform: "none", maxWidth: "100%" }}
         styles={{ label: { whiteSpace: "normal", overflow: "visible", textAlign: "left" } }}
       >
-        {upcoming ? i18n.t("interviews:badgeWhen", { label, when: shortDate(when) }) : label}
+        {pending
+          ? i18n.t("interviews:needsNewTime.roundBadge", { label })
+          : upcoming
+            ? i18n.t("interviews:badgeWhen", { label, when: shortDate(when) })
+            : label}
       </Badge>
     </Tooltip>
   );
@@ -80,11 +96,13 @@ function InterviewItem({
   const when = interview.starts_at ?? interview.deadline_at;
   const people = interview.interviewer_ids.map((id) => names.get(id)).filter(Boolean);
   const label = roundLabel(interview);
-  const whenText = !when
-    ? t("notBooked")
-    : interview.starts_at
-      ? formatDateTime(when)
-      : t("due", { when: formatDateTime(when) });
+  const whenText = interview.needs_new_time_since
+    ? wasText(interview)
+    : !when
+      ? t("notBooked")
+      : interview.starts_at
+        ? formatDateTime(when)
+        : t("due", { when: formatDateTime(when) });
   return (
     <Card withBorder padding="sm">
       <Group justify="space-between" align="flex-start" wrap="nowrap">

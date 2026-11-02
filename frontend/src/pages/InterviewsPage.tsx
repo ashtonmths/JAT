@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import { useInterviews, type Interview } from "../api/interviewHooks";
 import { InterviewFormModal } from "../components/InterviewFormModal";
 import { roundStatus } from "../components/Interviews";
-import { RescheduleButton, RescheduledBadge } from "../components/Reschedule";
+import { RescheduleButton, RescheduledBadge, wasText } from "../components/Reschedule";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 
@@ -78,11 +78,13 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
               <Table.Tr key={i.id}>
                 <Table.Td>
                   <Text size="sm">
-                    {!when
-                      ? t("notBooked")
-                      : i.starts_at
-                        ? formatDateTime(when)
-                        : t("due", { when: formatDateTime(when) })}
+                    {i.needs_new_time_since
+                      ? wasText(i)
+                      : !when
+                        ? t("notBooked")
+                        : i.starts_at
+                          ? formatDateTime(when)
+                          : t("due", { when: formatDateTime(when) })}
                   </Text>
                 </Table.Td>
                 <Table.Td>
@@ -129,7 +131,9 @@ export function InterviewsPage() {
   const isLoading = upcomingQuery.isLoading || allQuery.isLoading;
   const upcoming = upcomingQuery.data;
   const upcomingIds = new Set((upcoming ?? []).map((i) => i.id));
-  const rest = (allQuery.data ?? []).filter((i) => !upcomingIds.has(i.id)).reverse();
+  // Waiting for a new time: on top, since it's yours to sort out. Their old time isn't coming up.
+  const waiting = (allQuery.data ?? []).filter((i) => i.status === "scheduled" && i.needs_new_time_since);
+  const rest = (allQuery.data ?? []).filter((i) => !upcomingIds.has(i.id) && !waiting.includes(i)).reverse();
 
   return (
     <Stack maw={1100}>
@@ -141,6 +145,14 @@ export function InterviewsPage() {
         <Loader />
       ) : (
         <>
+          {waiting.length > 0 && (
+            <Card withBorder>
+              <Title order={4} mb="sm">
+                {t("page.needsNewTime")}
+              </Title>
+              <InterviewTable interviews={waiting} empty="" />
+            </Card>
+          )}
           <Card withBorder>
             <Title order={4} mb="sm">
               {t("page.comingUp")}

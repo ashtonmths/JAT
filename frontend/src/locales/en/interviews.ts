@@ -48,6 +48,8 @@ export default {
     title: "Interviews",
     comingUp: "Coming up",
     comingUpEmpty: "Nothing booked. Add interview rounds from an application's page.",
+    // Rounds that can't go ahead at their time, with no new one agreed yet. Only shown when there are some.
+    needsNewTime: "Needs a new time",
     earlier: "Earlier and cancelled",
     earlierEmpty: "None yet.",
     when: "When",
@@ -137,5 +139,35 @@ export default {
       byNeither: "Not down to either of you",
       separator: " · ",
     },
+  },
+  // A booked round that can't go ahead at its time, with no new time agreed yet.
+  needsNewTime: {
+    choice: "A new time isn't agreed yet",
+    choiceHint: "The round keeps its old time and shows as needing a new one.",
+    addTodo: "Add a to-do to book the new time",
+    todoDue: "To-do due",
+    // The to-do's own text, in your words once it's made.
+    todoText: "Book a new time for {{label}}",
+    todoHint:
+      "The to-do stays open until the round has its new time. Setting that, with Reschedule or Edit, counts as the move from the old time and ticks the to-do off for you.",
+    save: "Save: needs a new time",
+    badge: "Needs a new time",
+    roundBadge: "{{label}} · needs a new time",
+    // The round's old time and who needed the change, one sentence for each.
+    was: {
+      me: "Was {{when}}. You needed the change.",
+      them: "Was {{when}}. They needed the change.",
+      mutual: "Was {{when}}. You both needed the change.",
+      neither: "Was {{when}}. Not down to either of you.",
+      unsaid: "Was {{when}}.",
+    },
+    marked: "{{label}} needs a new time.",
+    setAction: "Set new time",
+    setNamed: "Set a new time for {{label}}",
+    setHint: "Setting it counts as the move from the old time, and ticks off any to-do made to book it.",
+    keepOld: "Keep the old time",
+    // In the Edit form, after the old time and who needed the change.
+    editHint:
+      "Setting a new time here counts as the move from the old one, and ticks off any to-do made to book it.",
   },
 } as const;

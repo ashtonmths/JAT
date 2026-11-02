@@ -79,6 +79,44 @@ export function useSaveInterview() {
   });
 }
 
+/** A booked round can't go ahead at its time and no new one is agreed yet (who, why, and maybe a to-do). */
+export function useMarkNeedsNewTime() {
+  const refresh = useRefreshInterviews();
+  return useMutation({
+    mutationFn: async (args: { id: string; body: Schemas["NeedsNewTimeIn"] }) =>
+      unwrap(
+        await api.POST("/api/v1/interviews/{interview_id}/needs-new-time", {
+          params: { path: { interview_id: args.id } },
+          body: args.body,
+        }),
+      ),
+    onSuccess: refresh,
+    onError: notifyError,
+  });
+}
+
+const keepOldTime = async (id: string) =>
+  unwrap(
+    await api.DELETE("/api/v1/interviews/{interview_id}/needs-new-time", {
+      params: { path: { interview_id: id } },
+    }),
+  );
+
+/** It keeps its old time after all, or the mark is undone: deletes the mark's to-do if still open. */
+export function useKeepOldTime() {
+  const refresh = useRefreshInterviews();
+  return useMutation({ mutationFn: keepOldTime, onSuccess: refresh, onError: notifyError });
+}
+
+/**
+ * The same as a plain function, for an Undo toast that outlives the dialog it came from (a
+ * mutation's own callbacks stop once its component has gone).
+ */
+export function useUndoNeedsNewTime() {
+  const refresh = useRefreshInterviews();
+  return (id: string) => keepOldTime(id).then(refresh, (error: unknown) => notifyError(error as Error));
+}
+
 export function useDeleteInterview() {
   const refresh = useRefreshInterviews();
   return useMutation({

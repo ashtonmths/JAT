@@ -61,6 +61,8 @@ export default {
     offersHint: "Reply due in the next two weeks",
     outcome: "How did it go?",
     outcomeHint: "Their time has passed",
+    needsNewTime: "Needs a new time",
+    needsNewTimeHint: "Rounds that can't go ahead at their time; set the new one once it's agreed",
     todos: "To-dos",
     todosHint: "Your own reminders; tick them off when done",
     followUp: "Follow up",
