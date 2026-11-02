@@ -134,6 +134,7 @@ def record(
     reason: str = "",
     by: str | None = None,
     moved_from: datetime | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> None:
     """Put an interview change on the application's timeline ("Round 2 · System design test scheduled").
 
@@ -176,4 +177,4 @@ def record(
             "by": by,
             "reason": reason or None,
         }
-    svc.log_message(session, app, "interview", key=key, params=params, summary=summary, data=data)
+    svc.log_message(session, app, "interview", key=key, params=params, summary=summary, data={**data, **(extra or {})})

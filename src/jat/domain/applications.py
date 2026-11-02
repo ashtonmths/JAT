@@ -171,15 +171,16 @@ def move(
     app.awaiting_reply_since = None
     app.reply_to_read_since = None
     if kind != "active":  # it's over: no new time left to book
-        _tick_rebook_todos(session, app.id)
+        tick_rebook_todos(session, app.id)
     _touch(app, when)
     session.flush()
     return event
 
 
-def _tick_rebook_todos(session: Session, application_id: str) -> None:
-    """Tick off the open to-dos to book a new time for this application's rounds. The rounds keep
-    needing one, so an undo brings them back to Today, though not their to-dos."""
+def tick_rebook_todos(session: Session, application_id: str) -> None:
+    """Tick off the open to-dos to book a new time for this application's rounds, once it's closed
+    (moved to a closed or success stage, by a move or an undo) or archived. The rounds keep needing
+    one, so reopening it brings them back to Today, though not their to-dos."""
     made = select(Interview.rebook_todo_id).where(
         Interview.application_id == application_id, Interview.rebook_todo_id.is_not(None)
     )

@@ -275,3 +275,88 @@ def test_a_todo_made_for_it_is_an_ordinary_to_do(client, seeded):
     with client.app.state.sessions.begin() as session:
         todo = session.get(Todo, todo_id)
         assert (todo.entity_type, todo.entity_id) == ("application", app["id"])
+
+
+def test_a_closed_or_archived_application_can_t_have_a_round_marked(client, seeded):
+    closed = _app(client, seeded)
+    made = _round(client, closed)
+    assert client.post(f"/api/v1/applications/{closed['id']}/move", json={"to_stage": "rejected"}).status_code == 200
+    out = _mark(client, made, status=409, todo={"text": "Book it"})
+    assert (out["code"], out["detail"]) == (
+        "round_application_closed",
+        "the application is closed or archived, so there's no new time to book",
+    )
+    archived = _app(client, seeded)
+    other = _round(client, archived)
+    client.patch(f"/api/v1/applications/{archived['id']}", json={"archived": True})
+    assert _mark(client, other, status=409)["code"] == "round_application_closed"
+    # Nothing was saved: no mark, no to-do left open on Today.
+    assert client.get(f"/api/v1/interviews/{made['id']}").json()["needs_new_time_since"] is None
+    assert _todos(client, closed) == [] and _todos(client, archived) == []
+
+
+def test_undo_ticks_off_a_to_do_you_ve_changed_rather_than_deleting_it(client, seeded):
+    app = _app(client, seeded)
+    edited, redated = _round(client, app), _round(client, app, days=4)
+    edited_id = _mark(client, edited, todo={"text": "Book it"})["rebook_todo_id"]
+    redated_id = _mark(client, redated, todo={"text": "Book it too", "due_on": "2030-01-09"})["rebook_todo_id"]
+    client.patch(f"/api/v1/todos/{edited_id}", json={"text": "Book it, and ask about the panel"})
+    client.patch(f"/api/v1/todos/{redated_id}", json={"due_on": "2030-01-10"})
+    for made in (edited, redated):
+        assert client.delete(f"/api/v1/interviews/{made['id']}/needs-new-time").status_code == 200
+    kept = {t["id"]: t for t in _todos(client, app)}
+    assert set(kept) == {edited_id, redated_id}
+    assert all(t["done_at"] is not None for t in kept.values())
+    assert kept[edited_id]["text"] == "Book it, and ask about the panel"
+
+
+def test_a_to_do_deleted_by_hand_doesn_t_get_in_the_way(client, seeded):
+    app = _app(client, seeded)
+    rounds = [_round(client, app, days=d) for d in (3, 4, 5, 6)]
+    for made in rounds:
+        todo_id = _mark(client, made, todo={"text": f"Book {made['id']}"})["rebook_todo_id"]
+        assert client.delete(f"/api/v1/todos/{todo_id}").status_code == 204
+    booked, undone, cancelled, removed = rounds
+    out = client.patch(f"/api/v1/interviews/{booked['id']}", json={"starts_at": _iso(9)})
+    assert out.status_code == 200 and out.json()["rescheduled_count"] == 1
+    out = client.delete(f"/api/v1/interviews/{undone['id']}/needs-new-time")
+    assert out.status_code == 200 and out.json()["needs_new_time_since"] is None
+    out = client.patch(f"/api/v1/interviews/{cancelled['id']}", json={"status": "cancelled"})
+    assert out.status_code == 200 and out.json()["needs_new_time_since"] is None
+    assert client.delete(f"/api/v1/interviews/{removed['id']}").status_code == 204
+    assert _todos(client, app) == []
+    for made in (booked, undone, cancelled):
+        assert client.get(f"/api/v1/interviews/{made['id']}").json()["rebook_todo_id"] is None
+
+
+def test_archiving_or_undoing_back_to_a_closed_stage_ticks_the_to_do_off(client, seeded):
+    archived = _app(client, seeded)
+    _mark(client, _round(client, archived), todo={"text": "Book it"})
+    client.patch(f"/api/v1/applications/{archived['id']}", json={"archived": True})
+    assert _todos(client, archived, "open") == [] and len(_todos(client, archived, "done")) == 1
+
+    reopened = _app(client, seeded)
+    made = _round(client, reopened)
+    for stage in ("rejected", "interviewing"):
+        r = client.post(f"/api/v1/applications/{reopened['id']}/move", json={"to_stage": stage})
+        assert r.status_code == 200, r.text
+    _mark(client, made, todo={"text": "Book it"})
+    assert client.post(f"/api/v1/applications/{reopened['id']}/undo").status_code == 200  # back to rejected
+    assert _todos(client, reopened, "open") == [] and len(_todos(client, reopened, "done")) == 1
+    assert client.get(f"/api/v1/interviews/{made['id']}").json()["needs_new_time_by"] == "them"
+
+
+def test_a_waiting_round_whose_time_was_cleared_books_from_its_saved_time(client, seeded):
+    app = _app(client, seeded)
+    made = _round(client, app)
+    _mark(client, made, reason="Ill", todo={"text": "Book it"})
+    cleared = client.patch(f"/api/v1/interviews/{made['id']}", json={"starts_at": None}).json()
+    assert cleared["starts_at"] is None and cleared["needs_new_time_by"] == "them"
+    later = _iso(8)
+    out = client.patch(f"/api/v1/interviews/{made['id']}", json={"starts_at": later}).json()
+    assert out["rescheduled_count"] == 1 and out["needs_new_time_since"] is None
+    [move] = out["moves"]
+    assert (move["from_at"], move["to_at"], move["by"], move["reason"]) == (made["starts_at"], later, "them", "Ill")
+    assert _todos(client, app)[0]["done_at"] is not None
+    stats = client.get("/api/v1/insights/rescheduling").json()
+    assert (stats["moved_rounds"], stats["moves"], stats["by_them"], stats["waiting_for_new_time"]) == (1, 1, 1, 0)

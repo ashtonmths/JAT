@@ -117,6 +117,7 @@ const codes = {
   role_id_not_found: "role_id: Role {{id}} not found",
   role_not_found: "Role {{id}} not found",
   round_not_booked: "only a booked round can need a new time",
+  round_application_closed: "the application is closed or archived, so there's no new time to book",
   round_needs_new_time_already: "this round already needs a new time",
   round_needs_new_time_not: "this round doesn't need a new time",
   stage_unknown: "unknown stage {{stage}}",
