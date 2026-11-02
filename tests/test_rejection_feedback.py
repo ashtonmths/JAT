@@ -63,6 +63,15 @@ def test_feedback_only_goes_with_a_move_to_rejected(client, seeded):
     assert (after["stage"], after["rejection_feedback"], len(after["events"])) == ("applied", None, len(app["events"]))
 
 
+def test_a_no_reply_move_keeps_or_refuses_feedback_like_any_other(client, seeded):
+    app = _application(client, seeded)
+    url = f"/api/v1/applications/{app['id']}/move?app_note=no_reply"
+    refused = client.post(url, json={"to_stage": "ghosted", "rejection_feedback": "x"})
+    assert (refused.status_code, refused.json()["code"]) == (422, "rejection_feedback_wrong_stage")
+    moved = client.post(url, json={"to_stage": "rejected", "rejection_feedback": FEEDBACK}).json()
+    assert (moved["stage"], moved["rejection_feedback"]) == ("rejected", FEEDBACK)
+
+
 def test_add_edit_and_clear_it_on_its_own(client, seeded):
     app = _move(client, _application(client, seeded), "rejected")
     quiet_since = app["last_activity_at"]

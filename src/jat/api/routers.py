@@ -923,6 +923,7 @@ def move_app(
                 occurred_at=body.occurred_at,
                 note="No reply",
                 msg=svc.message("event.noReply", {}),
+                rejection_feedback=body.rejection_feedback,  # never dropped: refused unless it's to Rejected
             )
         else:
             svc.move(
