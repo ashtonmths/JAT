@@ -377,9 +377,13 @@ describe("the list", () => {
           id: "a4",
           company_name: "Northwind Traders",
           route: "direct",
+          recruiter_id: null,
+          recruiter_name: null,
           agency_id: null,
           agency_name: null,
         }),
+        // An in-house recruiter.
+        row({ id: "a6", company_name: "Tailspin", route: "direct", agency_id: null, agency_name: null }),
         row({ id: "a5", company_name: "Proseware", route: "referral", agency_id: null, agency_name: null }),
       ],
     });
@@ -392,6 +396,7 @@ describe("the list", () => {
     expect(await route("Fabrikam")).toBe("Northwind Talent");
     expect(await route("Litware")).toBe("Agency");
     expect(await route("Northwind Traders")).toBe("Direct");
+    expect(await route("Tailspin")).toBe("Direct · Alex Recruiter");
     expect(await route("Proseware")).toBe("Referral");
   });
 });

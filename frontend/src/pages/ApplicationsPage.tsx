@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PersonMarks } from "../components/GhostMark";
+import { RecruiterLine } from "../components/RecruiterLine";
 import type { ApplicationRow } from "../api/client";
 import {
   stageLookup,
@@ -270,7 +271,14 @@ export function ApplicationsPage() {
                   <Table.Td>
                     <Text size="sm">
                       {row.route === "agency" && row.recruiter_name && <PersonMarks id={row.recruiter_id} />}
-                      {routeLabel(row)}
+                      {row.route === "direct" ? (
+                        // An in-house recruiter: "Direct · Riley Chen".
+                        <RecruiterLine id={row.recruiter_id} name={row.recruiter_name} link={false}>
+                          {routeLabel(row)}
+                        </RecruiterLine>
+                      ) : (
+                        routeLabel(row)
+                      )}
                     </Text>
                   </Table.Td>
                   <Table.Td>

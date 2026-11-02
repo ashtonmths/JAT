@@ -19,6 +19,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { headline, money, OFFER_STATUS, useOffers, type Offer } from "../api/offerHooks";
+import { RecruiterLine } from "../components/RecruiterLine";
 import { i18n } from "../i18n";
 import { formatDate } from "../utils/time";
 
@@ -141,7 +142,9 @@ export function OffersPage() {
                         {o.company_name}
                       </Anchor>
                       <Text size="xs" c="dimmed" fw={400}>
-                        {o.role_title}
+                        <RecruiterLine id={o.recruiter_id} name={o.recruiter_name}>
+                          {o.role_title}
+                        </RecruiterLine>
                       </Text>
                     </Table.Th>
                   ))}

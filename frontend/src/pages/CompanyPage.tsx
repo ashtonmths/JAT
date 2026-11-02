@@ -19,6 +19,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PersonMarks, PersonName } from "../components/GhostMark";
+import { RecruiterLine } from "../components/RecruiterLine";
 import type { Schemas } from "../api/client";
 import { useCompanySummary, useUpdateCompany } from "../api/detailHooks";
 import { stageLookup, useWorkflow } from "../api/hooks";
@@ -161,13 +162,18 @@ export function CompanyPage() {
                           </Text>
                           <Text size="xs" c="dimmed">
                             {a.route === "agency" && <PersonMarks id={a.recruiter_id} />}
-                            {a.route === "agency"
-                              ? [a.recruiter_name, a.agency_name]
-                                  .filter(Boolean)
-                                  .join(t("applications:routes.separator"))
-                              : a.route === "referral"
-                                ? t("applications:routes.referral")
-                                : t("applications:routes.direct")}
+                            {a.route === "agency" ? (
+                              [a.recruiter_name, a.agency_name]
+                                .filter(Boolean)
+                                .join(t("applications:routes.separator"))
+                            ) : a.route === "referral" ? (
+                              t("applications:routes.referral")
+                            ) : (
+                              // An in-house recruiter: "Direct · Riley Chen".
+                              <RecruiterLine id={a.recruiter_id} name={a.recruiter_name} link={false}>
+                                {t("applications:routes.direct")}
+                              </RecruiterLine>
+                            )}
                           </Text>
                         </Table.Td>
                         <Table.Td>
