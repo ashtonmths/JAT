@@ -62,7 +62,7 @@ next action.
   some behaviour".
 - **Don't max out Kai's PC.** "you are maxing out my PC": every heavy test command goes through
   `flock /tmp/jat-heavy-tests.lock nice -n 19 ionice -c 3`, Vitest `--maxWorkers=3`, Playwright
-  `--workers=3` (in `deps/pm_checks.sh` and every agent brief). A proper repo-level cap is the backlog task
+  `--workers=3` (in `<tmp>/deps/pm_checks.sh` and every agent brief). A proper repo-level cap is the backlog task
   `test-resource-limits`.
 - **Plan before building when asked.** "lets plan it firtst and dont start building until i say
   so" (Docker); "dont build yet, just commit the plan"; "noooo noo no no, dont buikld antyhing
@@ -96,7 +96,7 @@ next action.
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
   Released: v1.0.0 up to v1.18.0 (section 4a). Kai: "yes add release for each change"
   (each i18n PR is its own patch release; the switcher was minor). Only internal planning
-  files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `docs/rfc/` plans) and the PM dashboard skip
+  files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `var/`) and the PM dashboard skip
   the bump.
 - **Privacy.** Kai's data never enters this repo. Tests, fixtures, seed data and screenshots use
   fictional names (Contoso, Fabrikam, Litware, Northwind Talent, Northwind Pay, Blue Yonder
@@ -142,7 +142,7 @@ next action.
   `docs/social-preview.png`, indigo, layout B since #96: "No account. No cloud. / No AI. No
   tracking." beside the whole-picture Sankey (Kai: the board is what every competitor shows).
   Rebuilt by `python3 scripts/social_preview/make_card.py [--layout a|b]` from `card.html`
-  (layout A is a checklist). 4 stars as of 2026-10-25.
+  (layout A is a checklist). 9 stars as of 2026-11-02.
 - **Website** (`website/`, Astro 7, one landing page, PR #64): published by
   `.github/workflows/website.yml` to GitHub Pages (Source: GitHub Actions) on pushes to main
   touching `website/**`, `docs/screenshots/**`, `docs/social-preview.png`,
@@ -400,8 +400,11 @@ next action.
 
 - **main at `e811280`** (merge of #214), plus this doc's PR until it merges. No other open PRs; one
   worktree (the main checkout); only `main` locally and on GitHub. Version **1.18.0**, released as v1.18.0.
-- **Merged since the last snapshot (#185), all through the review-fix cycle, each release after a full
-  check run with the whole browser suite on the final commit:**
+- **Merged since the last snapshot (#185), all through the review-fix cycle.** From #186 on, each released
+  PR was merged after a full `<tmp>/deps/pm_checks.sh` run (every CLAUDE.md check, the whole browser suite
+  included) on its final commit, run by the lead session at merge time; the roadmap and dashboard PRs ran
+  `uv run pytest -q tests/pm`, as CLAUDE.md allows. The PR bodies record the builders' own, smaller runs;
+  the full results were in the session, not the PRs:
   - Security (Dependabot), split two packages per PR at Kai's ask: #187 certifi + opentelemetry-api
     (v1.2.44), #188 vite + seroval (v1.2.45), #186 website undici + fast-uri (v1.2.46), #190 frontend
     undici + zod (v1.2.47). All patch or minor moves, no majors. 27 of 28 open alerts closed; minimatch
@@ -420,8 +423,8 @@ next action.
   - Roadmap and dashboard, no releases: #198 (notes/documents and Timeline items), #203 (people you
     meet, a stage error bug), #204 (test resource limits), #210 (Backlog / Up next columns and the
     "Report and wait" rule in `CLAUDE.md`).
-- **Tests on main** (last full run, #214): pytest 1,284, unit 1,131, browser 707 (a few `test.fail` for
-  known bugs pass by failing).
+- **Tests on main** (the lead's full `pm_checks.sh` run on #214's final commit, `580c9d2`, not in the PR
+  body): pytest 1,284, unit 1,131, browser 707 (a few `test.fail` for known bugs pass by failing).
 - **Kai's tracker** answered on 8770 at v1.17.0 (schema 0017) at the last check: Kai must restart it
   (Ctrl+C, `uv run jat serve`) for v1.18.0's server changes.
 - **Kai's messages since #185, in order** (word for word where quoted):
@@ -471,8 +474,8 @@ session". So don't raise these again this session; they wait in the Backlog:
   `tests-reorganise`, Docker and the rest of section 5.
 
 **Kai's latest word on how to work** (also section 1):
-- "if you followed the iterative review-fix cycle then i give you permission to merge and release"; a major still needs Kai's
-  explicit yes each time. The permission check can still block a merge; asking was right.
+- Kai later restated the merge permission (section 1 has the 2026-10-31 wording): "if you followed the iterative
+  review-fix cycle then i give you permission to merge and release"; a major still needs Kai's explicit yes each time. The permission check can still block a merge; asking was right.
 - Split a feature into ~500-line tasks before building ("they are big PRs, way over the 1k line target. This time I will allow
   it"). Calls and rejection feedback ran as five PRs each: one long-lived builder agent did them in turn (resumed with
   `SendMessage` after each merge), with a fresh reviewer per PR and fixes sent back to the builder.
@@ -482,8 +485,9 @@ session". So don't raise these again this session; they wait in the Backlog:
 - When Kai asks a question ("does it support i18n properly?", "did the frontend merge … come with a release?"), check the
   code or the running thing and answer plainly before proposing work.
 
-**Open bugs (phase B; 69, none to fix without a go-ahead).** The 62 rated in #184 plus seven found this session, all low and
-recorded with the rating fields: `fix-init-git-identity-traceback`, `fix-archive-lock-not-ignored`,
+**Open bugs (phase B; 69, none to fix without a go-ahead).** The 62 rated in #184 plus seven found this session, all low;
+all but `fix-escape-closes-quick-view` and `fix-phone-header-overlap` have the rating fields (those two need rating):
+`fix-init-git-identity-traceback`, `fix-archive-lock-not-ignored`,
 `fix-escape-closes-quick-view`, `fix-phone-header-overlap`, `fix-today-recent-phone-column`, `fix-move-not-allowed-text`,
 `fix-deleted-application-rebook-todo`. High 1 (`fix-applied-date-wipe`), medium 18, low 50. A bug Kai OKs is set to `next`.
 - Medium, easy or trivial: `fix-add-another-role-carries-over`, `fix-call-delete-no-confirm`, `fix-didnt-happen-notes-hidden`,
@@ -502,10 +506,11 @@ isn't a bug.
 **The running tracker** on 8770 needs a restart by Kai (Ctrl+C, `uv run jat serve`) to pick up v1.18.0's server changes (the
 Sankey rounds filter); I've told Kai. Until then the switch says to restart. The sidebar version note says so too. Leave it alone.
 
-**A parallel batch, as run for items 11 to 13:** one builder agent per PR with `isolation: "worktree"` and the brief
-`<tmp>/deps/builder-brief.md`; each renames its branch, opens a draft, and doesn't bump or merge. A separate reviewer per PR;
-findings go back to the builder by `SendMessage`, or I fix small ones. I bump (`finish_i18n.py`), check and merge one at a time,
-merging main first. Give each server its own port and reviewers their own, or one's test data shows up in another's snapshot.
+**How a feature ran this session:** one builder agent (`isolation: "worktree"`) builds part 1, opens a draft and stops;
+a fresh reviewer per PR; findings go back to the builder by `SendMessage`, or I fix small ones; then I merge main, bump with
+`<tmp>/deps/finish_deps.py <task> "<changelog>" "<title>" [minor]`, run `pm_checks.sh`, `merge.sh`, and `ship.sh` with a dummy
+worktree name so the builder's worktree survives, and resume the builder for the next part. Parallel work (separate features)
+uses separate builders and queues heavy runs on the shared lock. Give each server its own port and reviewers their own, or one's test data shows up in another's snapshot.
 
 **The loop for an i18n change:**
 - Read the area and the last entry in `docs/rfc/i18n.md`. If it won't fit in about 500 changed lines (1,000 at most,
@@ -537,7 +542,7 @@ merging main first. Give each server its own port and reviewers their own, or on
 - A changed response field can be a major: #181 first changed a 422's `type`, then kept it and added to `ctx` instead. Stay additive.
 - `pr-<task>.md` in `<tmp>/deps/` is the PR body; `python3 <tmp>/deps/finish_i18n.py <task> "<what>" "<title>"` bumps, writes
   the changelog, marks the roadmap done, sets the draft PR's title and body, and marks it ready.
-- Review, fix, review again until no `must_fix` is left, run everything (the list is in CLAUDE.md *Git*), `merge.sh <pr>`, then `ship.sh <version> <pr> <task>` from the main checkout. Add the
+- Review, fix, review again until no `must_fix` is left, run everything (the list is in CLAUDE.md *Git*), `merge.sh <pr>`, then `ship.sh <version> <pr> <worktree name> [<branch>]` from the main checkout. Add the
   RFC's Built entry in the PR. Don't stop after the merge without checking the release exists.
 
 **The loop's scripts,** in `<tmp>` = `/home/kai/.claude/jobs/cf5328f4/tmp`: `deps/e2e.sh <spec>` (format, typecheck, lint,
@@ -547,7 +552,7 @@ line per id, the longer, so check a task's status afterwards: "building" and "pl
 <pr> <worktree folder> [<branch>]` (pass a dummy worktree folder such as `keep-agent-worktree` to keep a builder's worktree
 for its next part), `deps/finish.py` (tests-only PRs), `deps/finish_deps.py <task> "<changelog entry>" "<title>" [minor]`
 (the bump for any PR: patch, or minor with `minor`; marks the task done, also when it already is; writes the changelog line
-as given), `deps/pm_checks.sh` (every check in CLAUDE.md *Git* on the current commit, printing PASS or FAIL for each and the
+as given), `<tmp>/deps/pm_checks.sh` (every check in CLAUDE.md *Git* on the current commit, printing PASS or FAIL for each and the
 commit it ran on; it re-runs itself under the shared lock, `nice` and `ionice`, with 3 workers; about 10 minutes now, so run it
 in the background and restart it after any new commit), `<tmp>/pm_shot.py <base url> <prefix> <path>[@light][@375][@full]`
 (screenshots, run with `uv run --with playwright python`; not the older `deps/pm_shot.py`). If they're gone, rewrite them from this description. `e2e.sh`'s
@@ -625,7 +630,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
 - **Left of the i18n work, P8** (when Kai says; see 4a): `i18n-search` and `multi-language` (Chinese, a native-speaker review;
   also percent and number formats, brackets and separators).
 - **Noticed, for later:** long text clips on Today's Waiting rows, the call form's How and the offer form's kind (for
-  `multi-language`); README screenshots showing the header still have the old language icon (`readme-refresh-*`).
+  `multi-language`); README screenshots showing the header still have the old language icon (no open task: the `readme-refresh-*` tasks are done, so retaking them needs a new one).
 - **Planned elsewhere, not started** (build only when Kai asks): `tests-reorganise` (P7: a test
   file per component next to it with React Testing Library, shared render helpers in
   `src/test/`, `@testing-library/user-event`, backend tests by module, a Testing section in
@@ -651,7 +656,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
     `firstDayOfWeek` is fixed at Monday (TODO in `App.tsx`).
   - Ghost and star still missing in the Timeline *About* select and to-do "about" text.
   - Reply times: weekdays only, no bank holidays.
-  - On phones: the header search overlaps the page title (`fix-phone-header-overflow`); the header
+  - On phones: the header search overlaps the page title (`fix-phone-header-overflow`, and `fix-phone-header-overlap` from 2026-11-02 likely describes the same thing); the header
     only just fits at 375 px, so anything wider there pushes the theme toggle off.
   - The application page's People card ignores a recruiter set through the route.
   - Today: a to-do on a role shows on its role line and in Coming up; to-dos months ahead still
