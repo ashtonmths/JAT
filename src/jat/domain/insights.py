@@ -17,9 +17,11 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from jat.db.models import Application, Event, Role
+from jat.db.models import Application, Event, Interview, Role
+from jat.db.types import utcnow
 
 from .applications import STAGE_CHANGE, _effective_moves, in_time_order, is_implied
+from .rejections import _marked_done, _reached
 from .workflow import Workflow
 
 
@@ -131,6 +133,49 @@ def fold_forward(path: list[str], rank: dict[str, int], closed: frozenset[str] =
     return folded
 
 
+ROUND = "#round-"  # a round node's id: "<stage id>#round-<n>", as the board names its round columns
+
+
+def interviewing_stage(workflow: Workflow, path: list[str]) -> str | None:
+    """The stage rounds belong to, as on the board: the first active stage in the path whose id says
+    "interview" (names are yours, and may be in any language)."""
+    active = {s.id for s in workflow.stages if s.is_active}
+    return next((s for s in path if s in active and "interview" in s.lower()), None)
+
+
+class Rounds:
+    """Each application's rounds and when they were marked done, to expand Interviewing into them."""
+
+    def __init__(self, session: Session, app_ids: list[str]) -> None:
+        self.by_app: dict[str, list[Interview]] = {i: [] for i in app_ids}
+        if app_ids:
+            for r in session.scalars(select(Interview).where(Interview.application_id.in_(app_ids))):
+                self.by_app[r.application_id].append(r)
+        self.done = _marked_done(session, app_ids)
+
+    def expand(self, workflow: Workflow, app_id: str, path: list[str], events: list[Event]) -> list[str]:
+        """The path with each numbered round reached while at the interviewing stage after it:
+        Interviewing → Round 1 → Round 2 → what came next. "Reached" is as in which round rejections
+        came after (rejections._reached), by the move on to the next stage in the path, else now."""
+        stage = interviewing_stage(workflow, path)
+        if stage is None or not self.by_app.get(app_id):
+            return path
+        at = path.index(stage)
+        after = path[at + 1] if at + 1 < len(path) else None
+        moves = [ev for ev in in_time_order(_effective_moves(events)) if after and ev.to_stage == after]
+        cutoff = moves[-1].occurred_at if moves else utcnow()
+        numbers = sorted(
+            {r.round for r in self.by_app[app_id] if r.round and _reached(r, self.done[r.id], cutoff) is not None}
+        )
+        return [*path[: at + 1], *(f"{stage}{ROUND}{n}" for n in numbers), *path[at + 1 :]]
+
+
+def round_of(node: str) -> tuple[str, int] | None:
+    """A round node's stage and number."""
+    stage, sep, n = node.partition(ROUND)
+    return (stage, int(n)) if sep and n.isdigit() else None
+
+
 def flow(
     session: Session,
     workflow: Workflow,
@@ -138,8 +183,10 @@ def flow(
     since: datetime | None = None,
     until: datetime | None = None,
     route: str | None = None,
+    rounds: bool = False,
 ) -> Flow:
-    """Applications added in [since, until) (and by `route`), counted along their folded paths."""
+    """Applications added in [since, until) (and by `route`), counted along their folded paths;
+    with `rounds`, the interviewing stage expanded into the rounds each reached."""
     stmt = select(Application.id)
     if since is not None:
         stmt = stmt.where(Application.created_at >= since)
@@ -157,11 +204,14 @@ def flow(
 
     rank = stage_rank(workflow)
     closed = closed_stages(workflow)
+    expand = Rounds(session, ids) if rounds else None
     result = Flow()
     for app_id in ids:
         path = fold_forward(stage_path(events[app_id]), rank, closed)
         if not path:
             continue
+        if expand:
+            path = expand.expand(workflow, app_id, path, events[app_id])
         result.applications += 1
         result.current[path[-1]] += 1
         for stage in path:
@@ -187,7 +237,12 @@ def source_of(app: Application | None, role: Role) -> str:
 
 
 def whole_flow(
-    session: Session, workflow: Workflow, *, since: datetime | None = None, until: datetime | None = None
+    session: Session,
+    workflow: Workflow,
+    *,
+    since: datetime | None = None,
+    until: datetime | None = None,
+    rounds: bool = False,
 ) -> Flow:
     """Everything in one flow: each application added in [since, until) from where it came from
     through its stages, and each role added then with no application, to passed or still deciding.
@@ -225,8 +280,11 @@ def whole_flow(
         for a, b in zip(path, path[1:], strict=False):
             result.links[(a, b)] += 1
 
+    expand = Rounds(session, [a.id for a in apps]) if rounds else None
     for app in apps:
         path = fold_forward(stage_path(events[app.id]), rank, closed)
+        if path and expand:
+            path = expand.expand(workflow, app.id, path, events[app.id])
         if path and app.role_id in roles:
             add([f"source:{source_of(app, roles[app.role_id])}", *path])
     since_ok = select(Role.id).where(*within(Role.created_at))

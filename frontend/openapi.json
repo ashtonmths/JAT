@@ -4770,7 +4770,8 @@
                   "in_progress",
                   "offer",
                   "closed",
-                  "ghosted"
+                  "ghosted",
+                  "round"
                 ],
                 "type": "string"
               },
@@ -4803,6 +4804,17 @@
           "reached": {
             "title": "Reached",
             "type": "integer"
+          },
+          "round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
           },
           "stage_name": {
             "anyOf": [
@@ -4846,6 +4858,11 @@
             },
             "title": "Nodes",
             "type": "array"
+          },
+          "rounds": {
+            "default": false,
+            "title": "Rounds",
+            "type": "boolean"
           }
         },
         "required": [
@@ -15902,6 +15919,18 @@
               ],
               "title": "Route"
             }
+          },
+          {
+            "description": "Expand the interviewing stage into the rounds each application reached (Round 1, Round 2\u2026).",
+            "in": "query",
+            "name": "rounds",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Expand the interviewing stage into the rounds each application reached (Round 1, Round 2\u2026).",
+              "title": "Rounds",
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -16313,6 +16342,18 @@
                 }
               ],
               "title": "Until"
+            }
+          },
+          {
+            "description": "Expand the interviewing stage into the rounds each application reached (Round 1, Round 2\u2026).",
+            "in": "query",
+            "name": "rounds",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Expand the interviewing stage into the rounds each application reached (Round 1, Round 2\u2026).",
+              "title": "Rounds",
+              "type": "boolean"
             }
           }
         ],

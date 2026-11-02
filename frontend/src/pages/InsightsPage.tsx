@@ -10,6 +10,7 @@ import { RouteTable, StageTable, WeeklyActivity } from "../components/InsightSta
 import { RejectionsSection } from "../components/RejectionFeedbackList";
 import { RejectionRoundsCard } from "../components/RejectionRounds";
 import { ReschedulingCard } from "../components/Rescheduling";
+import { RoundsNote, RoundsToggle, useShowRounds } from "../components/RoundsToggle";
 import { ScorecardCard } from "../components/Scorecard";
 import { SankeyChart } from "../components/SankeyChart";
 import { WholePicture } from "../components/WholePicture";
@@ -35,9 +36,11 @@ export function InsightsPage() {
   const [range, setRange] = useState<{ range: Range; since?: string }>({ range: "all" });
   const [route, setRoute] = useState("any");
   const [tab, setTab] = useState<Tab>("whole");
+  const [rounds, setRounds] = useShowRounds();
   const filters: FlowFilters = {
     since: range.since,
     route: route === "any" ? undefined : (route as FlowFilters["route"]),
+    ...(rounds ? { rounds: true as const } : {}),
   };
   const { data: flow, isLoading, isError } = useFlow(filters);
   const { data: stats, isError: statsError } = useStats(range.since);
@@ -82,21 +85,25 @@ export function InsightsPage() {
                     {flow ? t("flow.intro", { count: flow.applications }) : t("flow.introLoading")}
                   </Text>
                 </div>
-                <Select
-                  aria-label={t("routes.label")}
-                  size="xs"
-                  w={150}
-                  data={[
-                    { value: "any", label: t("routes.any") },
-                    { value: "direct", label: t("routes.direct") },
-                    { value: "agency", label: t("routes.agency") },
-                    { value: "referral", label: t("routes.referral") },
-                  ]}
-                  value={route}
-                  onChange={(value) => setRoute(value ?? "any")}
-                  allowDeselect={false}
-                />
+                <Group gap="md" wrap="wrap">
+                  <RoundsToggle checked={rounds} onChange={setRounds} />
+                  <Select
+                    aria-label={t("routes.label")}
+                    size="xs"
+                    w={150}
+                    data={[
+                      { value: "any", label: t("routes.any") },
+                      { value: "direct", label: t("routes.direct") },
+                      { value: "agency", label: t("routes.agency") },
+                      { value: "referral", label: t("routes.referral") },
+                    ]}
+                    value={route}
+                    onChange={(value) => setRoute(value ?? "any")}
+                    allowDeselect={false}
+                  />
+                </Group>
               </Group>
+              <RoundsNote on={rounds} flow={flow} />
               {isLoading ? (
                 <Loader />
               ) : isError || !flow ? (

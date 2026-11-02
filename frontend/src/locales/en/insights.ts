@@ -101,6 +101,12 @@ export default {
     noMatch: "No applications match these filters.",
     statsFailed: "Couldn't load the stats.",
   },
+  // The switch on both Sankeys that expands Interviewing into its rounds (remembered, off at first).
+  rounds: {
+    toggle: "Show interview rounds",
+    hint: "Interviewing splits into the rounds each application reached before it moved on: Round 1, Round 2 and so on. A round counts once it has happened, or is done.",
+    olderServer: "Showing rounds needs the tracker to be restarted after the update.",
+  },
   whole: {
     title: "The whole picture",
     intro_one:
@@ -175,6 +181,8 @@ export default {
       holding_final: "In final rounds",
       holding_offer: "Deciding on the offer",
       holding_other: "Still at {{stage}}",
+      // With Interviewing expanded into its rounds.
+      round: "Round {{round}}",
       pitched: "Pitched to you",
       applied: "Applied",
       in_progress: "In progress",

@@ -2,7 +2,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "./client";
 
-export type Flow = Schemas["FlowOut"];
+// `rounds` is missing from an older server's flows (it couldn't expand them).
+export type Flow = Omit<Schemas["FlowOut"], "rounds"> & { rounds?: boolean };
 export type FlowNode = Schemas["FlowNode"];
 export type FlowLink = Schemas["FlowLink"];
 export type Stats = Schemas["StatsOut"];
@@ -11,6 +12,7 @@ export type Week = Schemas["WeekOut"];
 export interface FlowFilters {
   since?: string;
   route?: "direct" | "agency" | "referral";
+  rounds?: true; // expand Interviewing into its rounds; left out when off, as an older server has no such filter
 }
 
 /** Stage-to-stage flows for applications added since `since` (and by `route`). */
@@ -23,11 +25,16 @@ export function useFlow(filters: FlowFilters) {
 }
 
 /** Everything in one flow: where roles came from, through passed, deciding and every stage. */
-export function useWholeFlow(since?: string) {
+export function useWholeFlow(since?: string, rounds = false) {
   return useQuery({
-    queryKey: ["insights", "whole-flow", since],
+    queryKey: ["insights", "whole-flow", since, rounds],
     queryFn: async () =>
-      unwrap(await api.GET("/api/v1/insights/whole-flow", { params: { query: { since } } })),
+      unwrap(
+        await api.GET("/api/v1/insights/whole-flow", {
+          // Only when asked: an older server ignores it, and says so by not marking the flow `rounds`.
+          params: { query: rounds ? { since, rounds } : { since } },
+        }),
+      ),
     placeholderData: keepPreviousData,
   });
 }
