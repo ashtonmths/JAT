@@ -24,6 +24,8 @@ interface Todo {
   id: string;
   text: string;
   done_at: string | null;
+  entity_type: string | null;
+  entity_id: string | null;
 }
 
 const API = "/api/v1";
@@ -238,6 +240,12 @@ test.describe("a call that needs a new time", () => {
     const all = (await (await request.get(`${API}/todos?status=all`)).json()) as Todo[];
     return all.find((t) => t.id === id);
   };
+  /** Today's Your move count (no badge: none). */
+  const yourMove = async (page: Page) => {
+    const badge = page.locator("#your-move .mantine-Badge-root").first();
+    await expect(page.getByRole("heading", { name: "Your move" })).toBeVisible();
+    return (await badge.count()) ? Number(await badge.textContent()) : 0;
+  };
   const markFromDialog = async (page: Page, label: string, who: string, why?: string) => {
     const dialog = await openDialog(page, label);
     await dialog.getByRole("checkbox", { name: "A new time isn't agreed yet" }).check();
@@ -253,6 +261,8 @@ test.describe("a call that needs a new time", () => {
     request,
   }) => {
     const { personId, call, label } = await bookedCall(request, "Avery Waiting", 4);
+    await page.goto("/");
+    const before = await yourMove(page);
     await page.goto(`/people/${personId}`);
     await markFromDialog(page, label, "Them", "Their manager is away");
     await expect(page.getByText(`${label} needs a new time.`)).toBeVisible();
@@ -274,11 +284,14 @@ test.describe("a call that needs a new time", () => {
       page.locator(".mantine-Badge-root").getByText("Needs a new time", { exact: true }),
     ).toBeVisible();
     await expect(page.getByText(/^Was .+\. They needed the change\.$/)).toBeVisible();
+    // Its to-do shows with it, once: not again in the person's To-dos card.
+    await expect(page.getByRole("checkbox", { name: `Book a new time for ${label}` })).toHaveCount(1);
 
-    // Today: under Needs a new time, once, with its to-do; not coming up.
+    // Today: under Needs a new time, once, with its to-do; not coming up; counted once in Your move.
     await page.goto("/");
     const section = page.getByRole("group", { name: "Needs a new time" });
     await expect(section.getByText(label, { exact: true })).toBeVisible();
+    await expect.poll(() => yourMove(page)).toBe(before + 1);
     await expect(section.getByRole("checkbox", { name: `Book a new time for ${label}` })).not.toBeChecked();
     await expect(page.getByRole("checkbox", { name: `Book a new time for ${label}` })).toHaveCount(1);
     await expect(page.locator("#coming-up").getByText(label)).toHaveCount(0);
@@ -300,7 +313,39 @@ test.describe("a call that needs a new time", () => {
       { from_at: marked.starts_at, to_at: booked.starts_at, by: "them", reason: "Their manager is away" },
     ]);
     expect((await todoOf(request, marked.rebook_todo_id))?.done_at).not.toBeNull();
-    await expect(page.getByRole("group", { name: "Needs a new time" })).toHaveCount(0);
+    // Other tests may have their own waiting rounds or calls: only this call has left the section.
+    await expect(page.getByRole("group", { name: "Needs a new time" }).getByText(label)).toHaveCount(0);
+  });
+
+  test("a call about an application shows its to-do, kept on the application, with it", async ({
+    page,
+    request,
+  }) => {
+    const app = await post<{ id: string }>(request, "applications/quick", {
+      company_name: "Waiting Call Co",
+      role_title: "Tested Role",
+      route: "direct",
+      tags: [],
+    });
+    const { personId, call, label } = await bookedCall(request, "Casey Waiting", 4, app.id);
+    await page.goto(`/people/${personId}`);
+    await markFromDialog(page, label, "Both of us");
+    const todo = await todoOf(request, (await callNow(request, call.id)).rebook_todo_id);
+    expect(todo).toMatchObject({ entity_type: "application", entity_id: app.id, done_at: null });
+    // On the person page, with the call, though it's the application's to-do.
+    const card = page.locator(".mantine-Card-root").filter({ hasText: "Calls and meetings" });
+    await expect(card.getByRole("checkbox", { name: `Book a new time for ${label}` })).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: `Book a new time for ${label}` })).toHaveCount(1);
+  });
+
+  test("a call whose time has passed, once marked, isn't asked how it went", async ({ page, request }) => {
+    const { personId, label } = await bookedCall(request, "Drew Missed", -1);
+    await page.goto(`/people/${personId}`);
+    await expect(page.getByRole("button", { name: `Happened: ${label}` })).toBeVisible();
+    await markFromDialog(page, label, "Them");
+    await expect(page.getByRole("button", { name: `Set a new time for ${label}` })).toBeVisible();
+    await expect(page.getByRole("button", { name: `Happened: ${label}` })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: `Didn't happen: ${label}` })).toHaveCount(0);
   });
 
   test("Undo gives it its old time back and removes the to-do", async ({ page, request }) => {

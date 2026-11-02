@@ -39,7 +39,7 @@ import { MeetingDidntHappen } from "./OutcomeNotes";
 import { NeedsNewTimeBadge, RescheduledBadge, wasText } from "./Reschedule";
 import { RoleFormModal, RoleLine } from "./Roles";
 import { TodoLine } from "./Todos";
-import type { Todo } from "../api/todoHooks";
+import { useTodos, type Todo } from "../api/todoHooks";
 import { useRoleSummaries } from "../api/roleHooks";
 import { i18n } from "../i18n";
 import { callLabel } from "../utils/calls";
@@ -142,7 +142,7 @@ export function MeetingFormModal({
     <Modal opened={opened} onClose={onClose} title={title} size="lg">
       <form onSubmit={submit}>
         <Stack>
-          {meeting?.needs_new_time_since && status !== "done" && (
+          {meeting?.needs_new_time_since && meeting.status === "scheduled" && status !== "done" && (
             <Text size="sm" c="dimmed">
               {wasText(meeting)} {i18n.t("interviews:needsNewTime.editHint")}
             </Text>
@@ -324,7 +324,10 @@ export function MeetingLine({
           )}
         </div>
         {meeting.needs_new_time_since ? (
-          <NeedsNewTimeBadge interview={meeting} size="xs" />
+          // Whole, like the time it replaces: the title truncates instead.
+          <div style={{ flexShrink: 0 }}>
+            <NeedsNewTimeBadge interview={meeting} size="xs" hover={false} />
+          </div>
         ) : (
           <Text size="xs" c="dimmed" ta="right" style={{ whiteSpace: "nowrap" }}>
             {formatDateTime(meeting.starts_at)}
@@ -390,10 +393,23 @@ function MeetingMenu({ meeting, onEdit }: { meeting: Meeting; onEdit: () => void
   );
 }
 
+/** The to-dos to book a new time for this person's waiting calls: shown with the call, not again on their own. */
+export function useRebookTodoIds(contactId: string): string[] {
+  const { data: meetings } = useMeetings({ contact_id: contactId });
+  return (meetings ?? []).flatMap((m) =>
+    m.status === "scheduled" && m.needs_new_time_since && m.rebook_todo_id ? [m.rebook_todo_id] : [],
+  );
+}
+
 /** A person's calls and meetings: booked ones first, then what happened, with notes. */
 export function MeetingsCard({ contactId, name }: { contactId: string; name: string }) {
   const { t } = useTranslation("calls");
   const { data: meetings } = useMeetings({ contact_id: contactId });
+  // A waiting call's to-do to book it, shown with it: on this person, or on the call's application,
+  // which this page otherwise wouldn't show. The To-dos card leaves it out (rebookTodoIds).
+  const { data: openTodos } = useTodos({ status: "open" });
+  const rebook = (m: Meeting) =>
+    m.needs_new_time_since ? openTodos?.find((x) => x.id === m.rebook_todo_id) : undefined;
   const [editing, setEditing] = useState<Meeting | "new" | null>(null);
   const [addingRoles, setAddingRoles] = useState<string | null>(null); // the call they came up in
   const { data: roles } = useRoleSummaries({ contact_id: contactId });
@@ -430,6 +446,7 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
               <MeetingLine
                 meeting={m}
                 showWho={false}
+                todo={rebook(m)}
                 action={
                   <Group gap={4} wrap="nowrap">
                     {toClose.includes(m) && <MeetingOutcome meeting={m} />}

@@ -314,10 +314,18 @@ export function AddTodo({
 }
 
 /** To-dos about one thing, for its page: the open ones, the last few done, and a box to add one. */
-export function TodosCard({ entityType, entityId }: { entityType: TodoAbout; entityId: string }) {
+export function TodosCard({
+  entityType,
+  entityId,
+  shownElsewhere = [],
+}: {
+  entityType: TodoAbout;
+  entityId: string;
+  shownElsewhere?: string[]; // open ones the page shows with what they're for (a waiting call's)
+}) {
   const { t } = useTranslation("todos");
   const { data: todos } = useTodos({ entity_type: entityType, entity_id: entityId, status: "all" });
-  const open = (todos ?? []).filter((x) => !x.done_at);
+  const open = (todos ?? []).filter((x) => !x.done_at && !shownElsewhere.includes(x.id));
   const done = (todos ?? []).filter((x) => x.done_at).slice(0, 3);
   return (
     <Card withBorder>

@@ -117,18 +117,25 @@ export function wasText(round: Waiting): string {
 export function NeedsNewTimeBadge({
   interview,
   size = "sm",
+  hover = true,
 }: {
   interview: Waiting & { needs_new_time_since?: string | null };
   size?: "xs" | "sm";
+  hover?: boolean; // false where its "Was …" sentence is already shown beside it
 }) {
   const { t } = useTranslation("interviews");
   if (!interview.needs_new_time_since) return null;
-  return (
+  const badge = (
+    <Badge size={size} variant="light" color="red">
+      {t("needsNewTime.badge")}
+    </Badge>
+  );
+  return hover ? (
     <Tooltip label={wasText(interview)} withArrow>
-      <Badge size={size} variant="light" color="red">
-        {t("needsNewTime.badge")}
-      </Badge>
+      {badge}
     </Tooltip>
+  ) : (
+    badge
   );
 }
 
