@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import type { ApiEvent } from "../api/client";
 import { i18n } from "../i18n";
 import type { TextKey } from "../locales/en";
+import { callLabel } from "../utils/calls";
 import { formatDay, formatMoney } from "../utils/format";
 import { roundLabel } from "../utils/rounds";
 
@@ -45,6 +46,16 @@ export const EVENT_TEXT = {
   "event.roundNeedsNewTimeByMutualReason": "events:roundNeedsNewTimeByMutualReason",
   "event.roundNeedsNewTimeByNeitherReason": "events:roundNeedsNewTimeByNeitherReason",
   "event.roundNewTimeNotNeeded": "events:roundNewTimeNotNeeded",
+  "event.callRescheduled": "events:callRescheduled",
+  "event.callRescheduledReason": "events:callRescheduledReason",
+  "event.callRescheduledByMe": "events:callRescheduledByMe",
+  "event.callRescheduledByThem": "events:callRescheduledByThem",
+  "event.callRescheduledByMutual": "events:callRescheduledByMutual",
+  "event.callRescheduledByNeither": "events:callRescheduledByNeither",
+  "event.callRescheduledByMeReason": "events:callRescheduledByMeReason",
+  "event.callRescheduledByThemReason": "events:callRescheduledByThemReason",
+  "event.callRescheduledByMutualReason": "events:callRescheduledByMutualReason",
+  "event.callRescheduledByNeitherReason": "events:callRescheduledByNeitherReason",
   "event.offerReceivedYear": "events:offerReceivedYear",
   "event.offerReceivedDay": "events:offerReceivedDay",
   "event.offerReceivedNoFigures": "events:offerReceivedNoFigures",
@@ -83,15 +94,20 @@ export const EVENT_TEXT = {
   "event.rolePersonKeptDirect": "events:rolePersonKeptDirect",
 } as const satisfies Record<EventMsg["key"], TextKey>;
 
-/** A message saves raw parts where a language builds its own: a round's name, an offer's money. */
+/** A message saves raw parts where a language builds its own: a round's or a call's name, an offer's money. */
 function textParams(msg: EventMsg): object {
   if (isRound(msg)) return { ...msg.params, label: roundLabel(msg.params) };
+  if (isCall(msg)) return { ...msg.params, label: callLabel(msg.params) };
   if (isMoney(msg)) return { money: formatMoney(msg.params.amount, msg.params.currency, i18n.language) };
   return msg.params;
 }
 
-function isRound(msg: EventMsg): msg is Extract<EventMsg, { params: { kind: string } }> {
-  return "kind" in msg.params;
+function isRound(msg: EventMsg): msg is Extract<EventMsg, { params: { round: number | null } }> {
+  return "round" in msg.params;
+}
+
+function isCall(msg: EventMsg): msg is Extract<EventMsg, { params: { contact_name: string } }> {
+  return "contact_name" in msg.params;
 }
 
 function isMoney(msg: EventMsg): msg is Extract<EventMsg, { params: { amount: number } }> {
@@ -143,11 +159,18 @@ export function moveLine(move: RoundMove): string {
 }
 
 /**
- * The short words above a move's line, "Round 2 · Technical rescheduled", so its who and why aren't said
- * twice. Null for anything else, which keeps its whole message: no move, or a message that isn't a move's.
+ * The short words above a move's line, "Round 2 · Technical rescheduled" or "Call with Alex Morgan
+ * rescheduled", so its who and why aren't said twice. Null for anything else, which keeps its whole
+ * message: no move, or a message that isn't a move's.
  */
 export function movedRoundText(event: Pick<ApiEvent, "msg" | "reschedule">): string | null {
   const msg = event.msg;
-  if (!event.reschedule || !msg?.key.startsWith("event.roundRescheduled") || !isRound(msg)) return null;
-  return i18n.t("events:roundRescheduled", { label: roundLabel(msg.params) });
+  if (!event.reschedule || !msg) return null;
+  if (msg.key.startsWith("event.roundRescheduled") && isRound(msg)) {
+    return i18n.t("events:roundRescheduled", { label: roundLabel(msg.params) });
+  }
+  if (msg.key.startsWith("event.callRescheduled") && isCall(msg)) {
+    return i18n.t("events:callRescheduled", { label: callLabel(msg.params) });
+  }
+  return null;
 }

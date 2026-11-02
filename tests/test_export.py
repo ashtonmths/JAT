@@ -95,15 +95,76 @@ def test_an_export_from_before_rounds_needed_new_times_restores(data_dir, tmp_pa
             del row[key]
         old.append(json.dumps(row, ensure_ascii=False, separators=(",", ":")))
     rounds.write_text("\n".join(old) + "\n", encoding="utf-8")
-    meta_path = fresh / "export" / "_meta.json"
-    meta = json.loads(meta_path.read_text("utf-8"))
-    meta["schema_revision"] = "0014"
-    meta_path.write_text(json.dumps(meta), encoding="utf-8")
+    _as_before_calls_could_move(fresh, "0014")
     restore_data_dir(fresh)
     export_data_dir(fresh)
     [row] = [json.loads(line) for line in rounds.read_text("utf-8").splitlines()]
     assert (row["needs_new_time_since"], row["needs_new_time_by"], row["rebook_todo_id"]) == (None, None, None)
     assert row["rescheduled_count"] == 1
+
+
+def _rows(path, table):
+    return [json.loads(line) for line in (path / "export" / f"{table}.jsonl").read_text("utf-8").splitlines()]
+
+
+def _as_before_calls_could_move(path, revision):
+    """Make `path`'s export look written at `revision`, before 0016: no meeting_moves, no call columns."""
+    old = []
+    for row in _rows(path, "meetings"):
+        for key in (
+            "rescheduled_count",
+            "rescheduled_from",
+            "needs_new_time_since",
+            "needs_new_time_by",
+            "rebook_todo_id",
+        ):
+            del row[key]
+        old.append(json.dumps(row, ensure_ascii=False, separators=(",", ":")))
+    (path / "export" / "meetings.jsonl").write_text("\n".join(old) + "\n", encoding="utf-8")
+    (path / "export" / "meeting_moves.jsonl").unlink()
+    meta_path = path / "export" / "_meta.json"
+    meta = json.loads(meta_path.read_text("utf-8"))
+    meta["schema_revision"] = revision
+    del meta["tables"]["meeting_moves"]
+    meta_path.write_text(json.dumps(meta), encoding="utf-8")
+
+
+def test_a_calls_moves_survive_export_and_restore(data_dir, tmp_path):
+    export_data_dir(data_dir)
+    fresh = tmp_path / "fresh"
+    init_data_dir(fresh, commit=False)
+    shutil.copytree(data_dir / "export", fresh / "export", dirs_exist_ok=True)
+    restore_data_dir(fresh)
+    export_data_dir(fresh)
+    [call] = _rows(fresh, "meetings")
+    assert (call["rescheduled_count"], call["rescheduled_from"]) == (1, "2026-09-29T14:00:00Z")
+    assert (call["needs_new_time_since"], call["needs_new_time_by"], call["rebook_todo_id"]) == (
+        "2026-09-30T09:00:00Z",
+        "me",
+        "00000000-0000-4000-8000-000000000002",
+    )
+    moves = sorted(_rows(fresh, "meeting_moves"), key=lambda m: m["to_at"] is None)
+    assert [(m["meeting_id"], m["from_at"], m["to_at"], m["by"], m["reason"]) for m in moves] == [
+        (call["id"], "2026-09-29T14:00:00Z", "2026-09-30T14:00:00Z", "them", "A clash ✓"),
+        (call["id"], "2026-09-30T14:00:00Z", None, None, None),
+    ]
+
+
+def test_an_export_from_before_calls_could_move_restores(data_dir, tmp_path):
+    """An export written at 0015 has no meeting_moves and none of the five call columns: restore
+    builds it there, then migrates, and every call reads as never moved."""
+    export_data_dir(data_dir)
+    fresh = tmp_path / "fresh"
+    init_data_dir(fresh, commit=False)
+    shutil.copytree(data_dir / "export", fresh / "export", dirs_exist_ok=True)
+    _as_before_calls_could_move(fresh, "0015")
+    counts = restore_data_dir(fresh)
+    assert counts["meetings"] == 1
+    export_data_dir(fresh)
+    [call] = _rows(fresh, "meetings")
+    assert (call["rescheduled_count"], call["rescheduled_from"], call["needs_new_time_since"]) == (0, None, None)
+    assert (call["needs_new_time_by"], call["rebook_todo_id"], call["title"]) == (None, None, "Market catch-up")
+    assert _rows(fresh, "meeting_moves") == []
 
 
 def test_round_trip_restore(data_dir, tmp_path):

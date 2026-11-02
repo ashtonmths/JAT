@@ -277,6 +277,86 @@
     "summary": "Round 2 · Technical no longer needs a new time"
   },
   {
+    "key": "event.callRescheduled",
+    "params": { "kind": "call", "title": null, "contact_name": "Sam Sample" },
+    "summary": "Call with Sam Sample rescheduled"
+  },
+  {
+    "key": "event.callRescheduled",
+    "params": { "kind": "in_person", "title": "Coffee", "contact_name": "Sam Sample" },
+    "summary": "Meeting with Sam Sample: Coffee rescheduled"
+  },
+  {
+    "key": "event.callRescheduledReason",
+    "params": {
+      "kind": "video",
+      "title": "Market catch-up",
+      "contact_name": "Sam Sample",
+      "reason": "A clash"
+    },
+    "summary": "Video call with Sam Sample: Market catch-up rescheduled: A clash"
+  },
+  {
+    "key": "event.callRescheduledByMe",
+    "params": { "kind": "call", "title": "Market catch-up", "contact_name": "Sam Sample" },
+    "summary": "Call with Sam Sample: Market catch-up rescheduled (you needed the change)"
+  },
+  {
+    "key": "event.callRescheduledByThem",
+    "params": { "kind": "call", "title": "Market catch-up", "contact_name": "Sam Sample" },
+    "summary": "Call with Sam Sample: Market catch-up rescheduled (they needed the change)"
+  },
+  {
+    "key": "event.callRescheduledByMutual",
+    "params": { "kind": "call", "title": "Market catch-up", "contact_name": "Sam Sample" },
+    "summary": "Call with Sam Sample: Market catch-up rescheduled (you both needed the change)"
+  },
+  {
+    "key": "event.callRescheduledByNeither",
+    "params": { "kind": "call", "title": "Market catch-up", "contact_name": "Sam Sample" },
+    "summary": "Call with Sam Sample: Market catch-up rescheduled (not down to either of you)"
+  },
+  {
+    "key": "event.callRescheduledByMeReason",
+    "params": {
+      "kind": "call",
+      "title": "Market catch-up",
+      "contact_name": "Sam Sample",
+      "reason": "A clash"
+    },
+    "summary": "Call with Sam Sample: Market catch-up rescheduled (you needed the change): A clash"
+  },
+  {
+    "key": "event.callRescheduledByThemReason",
+    "params": {
+      "kind": "call",
+      "title": "Market catch-up",
+      "contact_name": "Sam Sample",
+      "reason": "A clash"
+    },
+    "summary": "Call with Sam Sample: Market catch-up rescheduled (they needed the change): A clash"
+  },
+  {
+    "key": "event.callRescheduledByMutualReason",
+    "params": {
+      "kind": "call",
+      "title": "Market catch-up",
+      "contact_name": "Sam Sample",
+      "reason": "A clash"
+    },
+    "summary": "Call with Sam Sample: Market catch-up rescheduled (you both needed the change): A clash"
+  },
+  {
+    "key": "event.callRescheduledByNeitherReason",
+    "params": {
+      "kind": "call",
+      "title": "Market catch-up",
+      "contact_name": "Sam Sample",
+      "reason": "A clash"
+    },
+    "summary": "Call with Sam Sample: Market catch-up rescheduled (not down to either of you): A clash"
+  },
+  {
     "key": "event.offerReceivedYear",
     "params": { "amount": 85000, "currency": "GBP" },
     "summary": "Offer received: £85,000 a year"

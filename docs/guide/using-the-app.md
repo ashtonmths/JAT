@@ -431,6 +431,10 @@ meetings** on their page:
   asks for notes; **Didn't happen** asks what happened, then closes it.
 - If it's about one application, pick it under **About an application**; the call then shows
   with that application on the Timeline.
+- Changing the time of a booked call (**Edit** in its menu) counts as moving it, as with a
+  round, and the call keeps its length. A call about an application gets "Call with …
+  rescheduled" on that application's timeline, with the old and new time. Changing the time
+  while marking it Happened or Didn't happen isn't a move.
 - Under a call that happened, **Add roles from this call** adds the roles they mentioned, to
   [decide on](#roles-to-decide) later. The call lists them with their status.
 

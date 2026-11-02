@@ -20,6 +20,7 @@ from jat.db.models import (
     InterviewContact,
     Link,
     Meeting,
+    MeetingMove,
     Offer,
     Reply,
     Role,
@@ -133,11 +134,16 @@ def populate(session) -> dict[str, str]:
                 },
             ),
             Link(entity_type="role", entity_id=role.id, url="https://docs.example.com/d/1", title="JD notes"),
-            Meeting(
+            call := Meeting(
                 contact_id=recruiter.id,
                 title="Market catch-up",
                 starts_at=datetime(2026, 9, 30, 14, 0, tzinfo=UTC),
                 agenda="Contract rates",
+                rescheduled_count=1,
+                rescheduled_from=datetime(2026, 9, 29, 14, 0, tzinfo=UTC),
+                needs_new_time_since=datetime(2026, 9, 30, 9, 0, tzinfo=UTC),
+                needs_new_time_by="me",
+                rebook_todo_id="00000000-0000-4000-8000-000000000002",  # a link: the to-do may be gone
             ),
             Reply(
                 contact_id=recruiter.id,
@@ -160,6 +166,19 @@ def populate(session) -> dict[str, str]:
                 ir35="outside",
                 pension_percent=5.5,
             ),
+        ]
+    )
+    session.flush()
+    session.add_all(
+        [
+            MeetingMove(
+                meeting_id=call.id,
+                from_at=datetime(2026, 9, 29, 14, 0, tzinfo=UTC),
+                to_at=datetime(2026, 9, 30, 14, 0, tzinfo=UTC),
+                by="them",
+                reason="A clash ✓",
+            ),
+            MeetingMove(meeting_id=call.id, from_at=datetime(2026, 9, 30, 14, 0, tzinfo=UTC)),  # waiting
         ]
     )
     session.flush()

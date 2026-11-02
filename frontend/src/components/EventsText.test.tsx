@@ -190,6 +190,39 @@ describe("a reschedule on the application timeline", () => {
     expect(screen.queryByText(/^Moved from/)).not.toBeInTheDocument();
   });
 
+  describe("of a call", () => {
+    const CALL_SAVED = "Call with Sam Sample: Catch-up rescheduled (they needed the change): A clash";
+    const call = {
+      ...event(
+        "e4",
+        CALL_SAVED,
+        {
+          key: "event.callRescheduledByThemReason",
+          params: { kind: "call", title: "Catch-up", contact_name: "Sam Sample", reason: "A clash" },
+        } as EventMsg,
+        "call",
+      ),
+      reschedule: { ...times, by: "them", reason: "A clash" } as RoundMove,
+    };
+
+    it("says the call, then its times, who and why, once", async () => {
+      showTimeline([call]);
+      expect(await screen.findByText("Call with Sam Sample: Catch-up rescheduled")).toBeInTheDocument();
+      expect(screen.getByText(moveLine(call.reschedule))).toBeInTheDocument();
+      expect(screen.queryByText(CALL_SAVED)).not.toBeInTheDocument();
+    });
+
+    it("builds the short words in your language", async () => {
+      await i18n.changeLanguage(PSEUDO);
+      const label = i18n.t("calls:name.withAbout", {
+        what: i18n.t("calls:name.call", { name: "Sam Sample" }),
+        about: "Catch-up",
+      });
+      expect(movedRoundText(call)).toBe(i18n.t("events:callRescheduled", { label }));
+      expect(movedRoundText(call)).not.toBe("Call with Sam Sample: Catch-up rescheduled");
+    });
+  });
+
   it("keeps the whole text beside a move when its message isn't a move's", async () => {
     const summaryOnly = { ...saved({ ...times, reason: "A clash" }), msg: null };
     showTimeline([summaryOnly]);

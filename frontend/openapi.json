@@ -1266,6 +1266,308 @@
         "title": "Body_upload_attachment_api_v1_attachments_post",
         "type": "object"
       },
+      "CallMove": {
+        "description": "One move of a call to another time, as it was when it happened.",
+        "properties": {
+          "by": {
+            "anyOf": [
+              {
+                "enum": [
+                  "me",
+                  "them",
+                  "mutual",
+                  "neither"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "By"
+          },
+          "from_at": {
+            "format": "date-time",
+            "title": "From At",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "to_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To At"
+          }
+        },
+        "required": [
+          "from_at",
+          "to_at"
+        ],
+        "title": "CallMove",
+        "type": "object"
+      },
+      "CallParams": {
+        "description": "A call's raw parts, so a language builds its own name (\"Call with Alex Morgan: catch-up\").",
+        "properties": {
+          "contact_name": {
+            "title": "Contact Name",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "kind",
+          "title",
+          "contact_name"
+        ],
+        "title": "CallParams",
+        "type": "object"
+      },
+      "CallReasonParams": {
+        "properties": {
+          "contact_name": {
+            "title": "Contact Name",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "kind",
+          "title",
+          "contact_name",
+          "reason"
+        ],
+        "title": "CallReasonParams",
+        "type": "object"
+      },
+      "CallRescheduledByMeMsg": {
+        "properties": {
+          "key": {
+            "const": "event.callRescheduledByMe",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/CallParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CallRescheduledByMeMsg",
+        "type": "object"
+      },
+      "CallRescheduledByMeReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.callRescheduledByMeReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/CallReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CallRescheduledByMeReasonMsg",
+        "type": "object"
+      },
+      "CallRescheduledByMutualMsg": {
+        "properties": {
+          "key": {
+            "const": "event.callRescheduledByMutual",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/CallParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CallRescheduledByMutualMsg",
+        "type": "object"
+      },
+      "CallRescheduledByMutualReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.callRescheduledByMutualReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/CallReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CallRescheduledByMutualReasonMsg",
+        "type": "object"
+      },
+      "CallRescheduledByNeitherMsg": {
+        "properties": {
+          "key": {
+            "const": "event.callRescheduledByNeither",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/CallParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CallRescheduledByNeitherMsg",
+        "type": "object"
+      },
+      "CallRescheduledByNeitherReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.callRescheduledByNeitherReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/CallReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CallRescheduledByNeitherReasonMsg",
+        "type": "object"
+      },
+      "CallRescheduledByThemMsg": {
+        "properties": {
+          "key": {
+            "const": "event.callRescheduledByThem",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/CallParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CallRescheduledByThemMsg",
+        "type": "object"
+      },
+      "CallRescheduledByThemReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.callRescheduledByThemReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/CallReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CallRescheduledByThemReasonMsg",
+        "type": "object"
+      },
+      "CallRescheduledMsg": {
+        "properties": {
+          "key": {
+            "const": "event.callRescheduled",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/CallParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CallRescheduledMsg",
+        "type": "object"
+      },
+      "CallRescheduledReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.callRescheduledReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/CallReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "CallRescheduledReasonMsg",
+        "type": "object"
+      },
       "CompanyIn": {
         "additionalProperties": false,
         "properties": {
@@ -3844,6 +4146,16 @@
               {
                 "discriminator": {
                   "mapping": {
+                    "event.callRescheduled": "#/components/schemas/CallRescheduledMsg",
+                    "event.callRescheduledByMe": "#/components/schemas/CallRescheduledByMeMsg",
+                    "event.callRescheduledByMeReason": "#/components/schemas/CallRescheduledByMeReasonMsg",
+                    "event.callRescheduledByMutual": "#/components/schemas/CallRescheduledByMutualMsg",
+                    "event.callRescheduledByMutualReason": "#/components/schemas/CallRescheduledByMutualReasonMsg",
+                    "event.callRescheduledByNeither": "#/components/schemas/CallRescheduledByNeitherMsg",
+                    "event.callRescheduledByNeitherReason": "#/components/schemas/CallRescheduledByNeitherReasonMsg",
+                    "event.callRescheduledByThem": "#/components/schemas/CallRescheduledByThemMsg",
+                    "event.callRescheduledByThemReason": "#/components/schemas/CallRescheduledByThemReasonMsg",
+                    "event.callRescheduledReason": "#/components/schemas/CallRescheduledReasonMsg",
                     "event.coverLetterSent": "#/components/schemas/CoverLetterSentMsg",
                     "event.cvSent": "#/components/schemas/CvSentMsg",
                     "event.documentSent": "#/components/schemas/DocumentSentMsg",
@@ -4023,6 +4335,36 @@
                   },
                   {
                     "$ref": "#/components/schemas/RoundNewTimeNotNeededMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMeMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByThemMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMutualMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByNeitherMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMeReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByThemReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMutualReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByNeitherReasonMsg"
                   },
                   {
                     "$ref": "#/components/schemas/OfferReceivedYearMsg"
@@ -5549,6 +5891,14 @@
             ],
             "title": "Meeting Url"
           },
+          "moves": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/CallMove"
+            },
+            "title": "Moves",
+            "type": "array"
+          },
           "notes": {
             "anyOf": [
               {
@@ -5559,6 +5909,23 @@
               }
             ],
             "title": "Notes"
+          },
+          "rescheduled_count": {
+            "default": 0,
+            "title": "Rescheduled Count",
+            "type": "integer"
+          },
+          "rescheduled_from": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rescheduled From"
           },
           "role_title": {
             "anyOf": [
@@ -5718,6 +6085,35 @@
               }
             ],
             "title": "Notes"
+          },
+          "reschedule_by": {
+            "anyOf": [
+              {
+                "enum": [
+                  "me",
+                  "them",
+                  "mutual",
+                  "neither"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reschedule By"
+          },
+          "reschedule_reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reschedule Reason"
           },
           "starts_at": {
             "anyOf": [
@@ -10030,6 +10426,16 @@
               {
                 "discriminator": {
                   "mapping": {
+                    "event.callRescheduled": "#/components/schemas/CallRescheduledMsg",
+                    "event.callRescheduledByMe": "#/components/schemas/CallRescheduledByMeMsg",
+                    "event.callRescheduledByMeReason": "#/components/schemas/CallRescheduledByMeReasonMsg",
+                    "event.callRescheduledByMutual": "#/components/schemas/CallRescheduledByMutualMsg",
+                    "event.callRescheduledByMutualReason": "#/components/schemas/CallRescheduledByMutualReasonMsg",
+                    "event.callRescheduledByNeither": "#/components/schemas/CallRescheduledByNeitherMsg",
+                    "event.callRescheduledByNeitherReason": "#/components/schemas/CallRescheduledByNeitherReasonMsg",
+                    "event.callRescheduledByThem": "#/components/schemas/CallRescheduledByThemMsg",
+                    "event.callRescheduledByThemReason": "#/components/schemas/CallRescheduledByThemReasonMsg",
+                    "event.callRescheduledReason": "#/components/schemas/CallRescheduledReasonMsg",
                     "event.coverLetterSent": "#/components/schemas/CoverLetterSentMsg",
                     "event.cvSent": "#/components/schemas/CvSentMsg",
                     "event.documentSent": "#/components/schemas/DocumentSentMsg",
@@ -10209,6 +10615,36 @@
                   },
                   {
                     "$ref": "#/components/schemas/RoundNewTimeNotNeededMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMeMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByThemMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMutualMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByNeitherMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMeReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByThemReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMutualReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByNeitherReasonMsg"
                   },
                   {
                     "$ref": "#/components/schemas/OfferReceivedYearMsg"
@@ -10853,6 +11289,16 @@
               {
                 "discriminator": {
                   "mapping": {
+                    "event.callRescheduled": "#/components/schemas/CallRescheduledMsg",
+                    "event.callRescheduledByMe": "#/components/schemas/CallRescheduledByMeMsg",
+                    "event.callRescheduledByMeReason": "#/components/schemas/CallRescheduledByMeReasonMsg",
+                    "event.callRescheduledByMutual": "#/components/schemas/CallRescheduledByMutualMsg",
+                    "event.callRescheduledByMutualReason": "#/components/schemas/CallRescheduledByMutualReasonMsg",
+                    "event.callRescheduledByNeither": "#/components/schemas/CallRescheduledByNeitherMsg",
+                    "event.callRescheduledByNeitherReason": "#/components/schemas/CallRescheduledByNeitherReasonMsg",
+                    "event.callRescheduledByThem": "#/components/schemas/CallRescheduledByThemMsg",
+                    "event.callRescheduledByThemReason": "#/components/schemas/CallRescheduledByThemReasonMsg",
+                    "event.callRescheduledReason": "#/components/schemas/CallRescheduledReasonMsg",
                     "event.coverLetterSent": "#/components/schemas/CoverLetterSentMsg",
                     "event.cvSent": "#/components/schemas/CvSentMsg",
                     "event.documentSent": "#/components/schemas/DocumentSentMsg",
@@ -11032,6 +11478,36 @@
                   },
                   {
                     "$ref": "#/components/schemas/RoundNewTimeNotNeededMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMeMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByThemMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMutualMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByNeitherMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMeReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByThemReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByMutualReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CallRescheduledByNeitherReasonMsg"
                   },
                   {
                     "$ref": "#/components/schemas/OfferReceivedYearMsg"
@@ -11859,7 +12335,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.8.2"
+    "version": "1.9.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -16001,6 +16477,7 @@
         ]
       },
       "patch": {
+        "description": "A new start for a booked call is a reschedule, counted as a round's is: it keeps its length\n(unless `ends_at` is sent too), and the move keeps its old and new time, `reschedule_by` and\n`reschedule_reason`. A change of status in the same PATCH isn't a move.",
         "operationId": "update_meeting_api_v1_meetings__meeting_id__patch",
         "parameters": [
           {

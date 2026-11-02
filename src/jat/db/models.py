@@ -226,6 +226,28 @@ class Meeting(IdMixin, TimestampMixin, Base):
     meeting_url: Mapped[str | None] = mapped_column(String(1000))
     agenda: Mapped[str | None] = mapped_column(Text)  # what to ask, what to say
     notes: Mapped[str | None] = mapped_column(Text)  # how it went
+    # As on a round: how often a booked call moved to another time, and the time it moved from last.
+    rescheduled_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    rescheduled_from: Mapped[datetime | None]
+    # It can't go ahead at its time and no new one is agreed yet: since when, who needed that, and
+    # the to-do made to book it (a link, no foreign key). It keeps its old time until the new one is set.
+    needs_new_time_since: Mapped[datetime | None]
+    needs_new_time_by: Mapped[str | None] = mapped_column(String(20))  # me | them | mutual | neither
+    rebook_todo_id: Mapped[str | None] = mapped_column(String(36))
+
+
+class MeetingMove(IdMixin, Base):
+    """One move of a call to another time, as it was when it happened: a call often has no
+    application, so no timeline to keep each move's who and why. `to_at` is null while it waits
+    for a new time."""
+
+    __tablename__ = "meeting_moves"
+    meeting_id: Mapped[str] = mapped_column(ForeignKey("meetings.id", ondelete="CASCADE"), index=True)
+    from_at: Mapped[datetime]
+    to_at: Mapped[datetime | None]
+    by: Mapped[str | None] = mapped_column(String(20))  # me | them | mutual | neither; null: not said
+    reason: Mapped[str | None] = mapped_column(String(500))  # your own words
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
 
 
 class Offer(IdMixin, TimestampMixin, Base):

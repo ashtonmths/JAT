@@ -373,6 +373,33 @@ def test_a_cancelled_round_says_so_when_changed_too(client, seeded):
     assert event["msg"]["key"] == "event.roundCancelled"
 
 
+CALL_CASES = [c for c in CASES if c["key"].startswith("event.call")]
+
+
+@pytest.mark.parametrize("case", CALL_CASES, ids=lambda c: c["summary"])
+def test_a_call_on_an_application_writes_its_message_when_moved(client, seeded, case):
+    app_id = _app(client, seeded)
+    params = case["params"]
+    person = post(client, "/api/v1/contacts", {"name": params["contact_name"]})
+    body = {"contact_id": person["id"], "application_id": app_id, "kind": params["kind"], "starts_at": THEN}
+    call = post(client, "/api/v1/meetings", {**body, "title": params["title"]})
+    who = case["key"].removeprefix("event.callRescheduled").removesuffix("Reason").removeprefix("By").lower()
+    change = {"starts_at": LATER, **({"reschedule_by": who} if who else {})}
+    # Spaces around and inside the reason collapse, in the summary and the message alike.
+    reason = {"reschedule_reason": f"  {params['reason'].replace(' ', '  ')}\n"} if "reason" in params else {}
+    r = client.patch(f"/api/v1/meetings/{call['id']}", json={**change, **reason})
+    assert r.status_code == 200, r.text
+    event = _last(client, app_id)
+    _assert_written(event, case)
+    assert event["kind"] == "call" and event["data"]["meeting_id"] == call["id"]
+    assert event["reschedule"] == {
+        "from_at": "2030-01-07T10:00:00Z",
+        "to_at": "2030-01-08T10:00:00Z",
+        "by": who or None,
+        "reason": params.get("reason"),
+    }
+
+
 @pytest.mark.parametrize("case", OFFER_CASES, ids=lambda c: c["summary"])
 def test_an_offer_writes_its_message(client, seeded, app, case):
     app_id = _app(client, seeded)
