@@ -88,6 +88,9 @@ def populate(session) -> dict[str, str]:
         task_repo_url="https://git.example.com/task",
         rescheduled_count=1,
         rescheduled_from=datetime(2026, 10, 1, 17, 0, tzinfo=UTC),
+        needs_new_time_since=datetime(2026, 10, 2, 9, 30, tzinfo=UTC),
+        needs_new_time_by="them",
+        rebook_todo_id="00000000-0000-4000-8000-000000000001",  # a link: the to-do may be gone
     )
     attachment = Attachment(
         entity_type="application",

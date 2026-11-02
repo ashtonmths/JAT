@@ -395,6 +395,8 @@ def _round_summary(interview: Interview) -> S.RoundSummary:
         label=interviews_svc.label(interview),
         starts_at=interview.starts_at,
         deadline_at=interview.deadline_at,
+        needs_new_time_since=interview.needs_new_time_since,
+        needs_new_time_by=interview.needs_new_time_by,
     )
 
 
@@ -402,7 +404,8 @@ def _with_rounds(session: Session, rows: list[S.ApplicationRow]) -> list[S.Appli
     """Fill in each row's current interview round (one query for all rows).
 
     An application with a round booked in the future isn't stale: you're waiting on a date,
-    not on them. (One with an undated round still counts, so it doesn't hide forever.)
+    not on them. Nor is one with a round waiting for a new time: Today lists that as yours to do.
+    (One with an undated round still counts, so it doesn't hide forever.)
     """
     current = interviews_svc.current_rounds(session, (r.id for r in rows))
     booked = interviews_svc.booked_ahead(session, (r.id for r in rows), datetime.now(UTC))
@@ -839,6 +842,8 @@ def update_app(app_id: str, body: S.ApplicationPatch, session: SessionDep, workf
     _one_reply_state(data)
     for key, value in data.items():
         setattr(app, key, value)
+    if data.get("archived"):  # it's done with: no new time left to book
+        svc.tick_rebook_todos(session, app.id)
     _note_reply(
         session,
         was_waiting,
@@ -930,7 +935,14 @@ def undo_app(app_id: str, session: SessionDep, workflow: WorkflowDep):
         svc.undo_last_move(session, app)
     except svc.TransitionError as exc:
         raise _refused(exc) from exc
+    if _stage_kind(workflow, app.stage) != "active":  # undone back to a closed stage, as a move there would
+        svc.tick_rebook_todos(session, app.id)
     return _detail(session, workflow, app_id)
+
+
+def _stage_kind(workflow: Workflow, stage: str) -> str:
+    """A stage's kind; one no longer in config.toml counts as active, as a move does."""
+    return next((s.kind for s in workflow.stages if s.id == stage), "active")
 
 
 @apps.get("/{app_id}/events", response_model=list[S.EventOut])

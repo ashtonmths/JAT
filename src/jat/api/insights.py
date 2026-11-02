@@ -381,6 +381,8 @@ class ReschedulingOut(BaseModel):
     by_mutual: int
     by_neither: int
     not_recorded: int  # saved with no who: from the Edit form, or from before the app asked
+    # Moved rounds still waiting for a new time: each is one move, with its who, and booked (it keeps its old time).
+    waiting_for_new_time: int = 0
     min_rounds_listed: int  # companies and recruiters need this many moved rounds to be listed
     companies: list[RescheduledNamed]  # most moved rounds first
     recruiters: list[RescheduledNamed]
@@ -405,6 +407,7 @@ def rescheduling(
         by_mutual=r.by["mutual"],
         by_neither=r.by["neither"],
         not_recorded=r.not_recorded,
+        waiting_for_new_time=r.waiting_for_new_time,
         min_rounds_listed=resched_svc.MIN_ROUNDS_TO_LIST,
         companies=[RescheduledNamed(**vars(n)) for n in r.companies],
         recruiters=[RescheduledNamed(**vars(n)) for n in r.recruiters],

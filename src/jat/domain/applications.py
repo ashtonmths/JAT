@@ -12,7 +12,7 @@ from typing import Any, Literal, get_args
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..db.models import Application, Event
+from ..db.models import Application, Event, Interview, Todo
 from ..db.types import utcnow
 from . import replies
 from .workflow import Workflow, WorkflowError
@@ -170,9 +170,22 @@ def move(
     app.stage = to_stage
     app.awaiting_reply_since = None
     app.reply_to_read_since = None
+    if kind != "active":  # it's over: no new time left to book
+        tick_rebook_todos(session, app.id)
     _touch(app, when)
     session.flush()
     return event
+
+
+def tick_rebook_todos(session: Session, application_id: str) -> None:
+    """Tick off the open to-dos to book a new time for this application's rounds, once it's closed
+    (moved to a closed or success stage, by a move or an undo) or archived. The rounds keep needing
+    one, so reopening it brings them back to Today, though not their to-dos."""
+    made = select(Interview.rebook_todo_id).where(
+        Interview.application_id == application_id, Interview.rebook_todo_id.is_not(None)
+    )
+    for todo in session.scalars(select(Todo).where(Todo.id.in_(made), Todo.done_at.is_(None))):
+        todo.done_at = utcnow()
 
 
 def in_time_order(moves: list[Event]) -> list[Event]:
@@ -326,6 +339,15 @@ EventMsgKey = Literal[
     "event.roundRescheduledByThemReason",
     "event.roundRescheduledByMutualReason",
     "event.roundRescheduledByNeitherReason",
+    "event.roundNeedsNewTimeByMe",
+    "event.roundNeedsNewTimeByThem",
+    "event.roundNeedsNewTimeByMutual",
+    "event.roundNeedsNewTimeByNeither",
+    "event.roundNeedsNewTimeByMeReason",
+    "event.roundNeedsNewTimeByThemReason",
+    "event.roundNeedsNewTimeByMutualReason",
+    "event.roundNeedsNewTimeByNeitherReason",
+    "event.roundNewTimeNotNeeded",
     "event.offerReceivedYear",
     "event.offerReceivedDay",
     "event.offerReceivedNoFigures",

@@ -175,6 +175,8 @@ export default {
     replyToOffer: "Reply to the offer by {{date}}",
     notBooked: "{{label}}: not booked yet",
     howDidItGo: "How did {{label}} go?",
+    // It can't go ahead at its time, with no new one agreed yet; its to-do to book one isn't listed again.
+    needsNewTime: "{{label}} needs a new time",
     // "in 3 days · 5 Mar, 09:07"
     roundWhen: "{{until}} · {{at}}",
     followUp: "Follow up",

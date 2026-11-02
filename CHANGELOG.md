@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.7.0 (2026-11-02)
+
+- **Groundwork for rounds that need a new time:** the API can mark an interview round as needing a new time (who needed it and why, the old time kept, an optional to-do to book it) and books it later as one move. A marked round shows a red badge on the board, list, quick view and Interviews, and Insights says how many are waiting. There's nothing in the app to mark one yet: that's the next release. Restarting the tracker runs migration 0015, which only adds three empty columns to interview rounds (#197).
+
 ## 1.6.0 (2026-11-02)
 
 - **A Rescheduling block on Insights:** the Applications tab shows how many booked rounds moved, and moves split by who needed the change, with older moves under *Not recorded*. Companies and recruiters show from 3 moved rounds, as plain counts. An application's rounds also say how many days their moves pushed them back or brought them forward in total. Restart the tracker to see them (#195).

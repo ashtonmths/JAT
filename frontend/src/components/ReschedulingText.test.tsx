@@ -18,6 +18,7 @@ const stats = (over: Partial<Rescheduling> = {}): Rescheduling => ({
   by_mutual: 0,
   by_neither: 0,
   not_recorded: 0,
+  waiting_for_new_time: 0,
   min_rounds_listed: 3,
   companies: [],
   recruiters: [],
@@ -126,6 +127,32 @@ describe("the Rescheduling block", () => {
         "Of 5 booked rounds, 1 moved. That's 2 moves in all: a round that moves twice is one round and two moves.",
       ),
     ).toBeTruthy();
+  });
+
+  it("says how many moved rounds are still waiting for a new time, only when some are", async () => {
+    const one = await block(
+      stats({ booked_rounds: 1, moved_rounds: 1, moves: 1, by_them: 1, waiting_for_new_time: 1 }),
+    );
+    expect(
+      screen.getByText(
+        "Of 1 booked round, 1 moved. That's 1 move. 1 moved round is still waiting for a new time: it counts as booked, and as one move.",
+      ),
+    ).toBeTruthy();
+    one.unmount();
+    const two = await block(
+      stats({ booked_rounds: 4, moved_rounds: 3, moves: 5, by_me: 5, waiting_for_new_time: 2 }),
+    );
+    expect(
+      screen.getByText(
+        "Of 4 booked rounds, 3 moved. That's 5 moves in all: a round that moves twice is one round and two moves. 2 moved rounds are still waiting for a new time: each counts as booked, and as one move.",
+      ),
+    ).toBeTruthy();
+    two.unmount();
+    // A server from before sends no count: nothing is said.
+    const older: Partial<Rescheduling> = stats({ booked_rounds: 1, moved_rounds: 1, moves: 1, by_me: 1 });
+    delete older.waiting_for_new_time;
+    await block(older as Rescheduling);
+    expect(screen.getByText("Of 1 booked round, 1 moved. That's 1 move.")).toBeTruthy();
   });
 
   it("splits moves by who, with not recorded as its own group", async () => {

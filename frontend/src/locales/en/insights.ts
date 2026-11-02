@@ -151,6 +151,11 @@ export default {
     moved_other: "Of {{count}} booked rounds, {{moved}} moved.",
     moves_one: "That's {{count}} move.",
     moves_other: "That's {{count}} moves in all: a round that moves twice is one round and two moves.",
+    // Rounds that can't go ahead at their time and have no new one yet (they keep the old time).
+    waiting_one:
+      "{{count}} moved round is still waiting for a new time: it counts as booked, and as one move.",
+    waiting_other:
+      "{{count}} moved rounds are still waiting for a new time: each counts as booked, and as one move.",
     byWho: "Who needed the change",
     movesColumn: "Moves",
     who: {

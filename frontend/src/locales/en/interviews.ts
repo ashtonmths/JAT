@@ -138,4 +138,25 @@ export default {
       separator: " · ",
     },
   },
+  // A booked round that can't go ahead at its time, with no new time agreed yet.
+  needsNewTime: {
+    badge: "Needs a new time",
+    roundBadge: "{{label}} · needs a new time",
+    // The round's old time and who needed the change, one sentence for each.
+    was: {
+      me: "Was {{when}}. You needed the change.",
+      them: "Was {{when}}. They needed the change.",
+      mutual: "Was {{when}}. You both needed the change.",
+      neither: "Was {{when}}. Not down to either of you.",
+      unsaid: "Was {{when}}.",
+    },
+    // The same once its old time has been cleared from its form.
+    noTime: {
+      me: "It has no time now. You needed the change.",
+      them: "It has no time now. They needed the change.",
+      mutual: "It has no time now. You both needed the change.",
+      neither: "It has no time now. Not down to either of you.",
+      unsaid: "It has no time now.",
+    },
+  },
 } as const;

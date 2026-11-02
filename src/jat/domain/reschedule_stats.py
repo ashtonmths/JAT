@@ -4,6 +4,10 @@ A round counts its moves as the larger of `rescheduled_count` and its readable s
 one saved before moves kept a record, or with a bad record, still counts. Any move without a who
 is `not_recorded`: nothing here guesses who an older move was down to. A move has no date of its
 own to filter on (older ones have none at all), so a period goes by when the application was added.
+
+A round waiting for a new time keeps its old one, so it's booked, and it counts as moved: one move,
+by whoever needed it. Setting the new time completes that move rather than adding one. A round
+cancelled while it waited never moved, so it isn't counted as moved.
 """
 
 from __future__ import annotations
@@ -45,6 +49,7 @@ class Rescheduling:
     moves: int = 0  # one round can move more than once
     by: Counter[str] = field(default_factory=Counter)  # me | them | mutual | neither
     not_recorded: int = 0
+    waiting_for_new_time: int = 0  # moved rounds with no new time yet
     companies: list[Named] = field(default_factory=list)  # at least MIN_ROUNDS_TO_LIST moved rounds
     recruiters: list[Named] = field(default_factory=list)
 
@@ -92,7 +97,9 @@ def rescheduling(
     recruiters: dict[str, Named] = {}
     for interview, company_id, company_name, recruiter_id, recruiter_name in rounds:
         said = saved.get(interview.id, [])
-        moves = max(interview.rescheduled_count or 0, len(said))
+        # Waiting for a new time is a move already, with who always said; setting the time doesn't add another.
+        pending = [interview.needs_new_time_by] if interview.needs_new_time_since is not None else []
+        moves = max(interview.rescheduled_count or 0, len(said)) + len(pending)
         if interview.starts_at is None and not moves:
             continue
         result.booked_rounds += 1
@@ -100,7 +107,8 @@ def rescheduling(
             continue
         result.moved_rounds += 1
         result.moves += moves
-        known = [by for by in said if by]
+        result.waiting_for_new_time += len(pending)
+        known = [by for by in [*said, *pending] if by]
         result.by.update(known)
         result.not_recorded += moves - len(known)
         for named, key, name in (
