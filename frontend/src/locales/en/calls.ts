@@ -33,6 +33,10 @@ export default {
   reschedule: {
     was: "Booked for {{when}}.",
     hint: "Who and why are kept with the call, and on its application's timeline if it's about one.",
+    // A new time isn't agreed yet: the rest of the words are the round's (interviews:needsNewTime).
+    choiceHint: "The call keeps its old time and shows as needing a new one.",
+    todoHint:
+      "The to-do stays open until the call has its new time. Setting that, with Set new time or Edit, counts as the move from the old time and ticks the to-do off for you.",
   },
   moreFor: "More for {{label}}",
   edit: "Edit",

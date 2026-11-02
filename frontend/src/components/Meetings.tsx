@@ -36,8 +36,10 @@ import {
 import { CallRescheduleButton } from "./CallReschedule";
 import { Markdown } from "./Markdown";
 import { MeetingDidntHappen } from "./OutcomeNotes";
-import { RescheduledBadge } from "./Reschedule";
+import { NeedsNewTimeBadge, RescheduledBadge, wasText } from "./Reschedule";
 import { RoleFormModal, RoleLine } from "./Roles";
+import { TodoLine } from "./Todos";
+import type { Todo } from "../api/todoHooks";
 import { useRoleSummaries } from "../api/roleHooks";
 import { i18n } from "../i18n";
 import { callLabel } from "../utils/calls";
@@ -140,6 +142,11 @@ export function MeetingFormModal({
     <Modal opened={opened} onClose={onClose} title={title} size="lg">
       <form onSubmit={submit}>
         <Stack>
+          {meeting?.needs_new_time_since && status !== "done" && (
+            <Text size="sm" c="dimmed">
+              {wasText(meeting)} {i18n.t("interviews:needsNewTime.editHint")}
+            </Text>
+          )}
           <Group grow align="flex-start">
             <Select
               label={t("form.with")}
@@ -254,15 +261,20 @@ function statusBadge(status: string): { label: string; color?: string } {
   return { label: i18n.t(badge.key), color: badge.color };
 }
 
-/** One call: what, when, who with; `action` sits on the right. */
+/**
+ * One call: what, when, who with; `action` sits on the right. One waiting for a new time says so in
+ * place of its time, with its old time and who, and the to-do to book it (`todo`), shown with it.
+ */
 export function MeetingLine({
   meeting,
   action,
   showWho = true,
+  todo,
 }: {
   meeting: Meeting;
   action?: ReactNode;
   showWho?: boolean;
+  todo?: Todo;
 }) {
   const { t } = useTranslation("calls");
   const where = meeting.agency_name ?? meeting.company_name;
@@ -305,11 +317,21 @@ export function MeetingLine({
               </Anchor>
             )}
           </Group>
+          {meeting.needs_new_time_since && (
+            <Text size="xs" c="dimmed">
+              {wasText(meeting)}
+            </Text>
+          )}
         </div>
-        <Text size="xs" c="dimmed" ta="right" style={{ whiteSpace: "nowrap" }}>
-          {formatDateTime(meeting.starts_at)}
-        </Text>
+        {meeting.needs_new_time_since ? (
+          <NeedsNewTimeBadge interview={meeting} size="xs" />
+        ) : (
+          <Text size="xs" c="dimmed" ta="right" style={{ whiteSpace: "nowrap" }}>
+            {formatDateTime(meeting.starts_at)}
+          </Text>
+        )}
       </Group>
+      {todo && <TodoLine todo={todo} showAbout={false} />}
       {action && (
         <Group gap={6} wrap="wrap">
           {action}
@@ -377,8 +399,11 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
   const { data: roles } = useRoleSummaries({ contact_id: contactId });
   const [now] = useState(() => Date.now()); // when the page opened: good enough to split ahead from past
   const all = meetings ?? [];
-  const ahead = all.filter((m) => m.status === "scheduled" && new Date(m.starts_at).getTime() >= now);
-  const toClose = all.filter((m) => m.status === "scheduled" && new Date(m.starts_at).getTime() < now);
+  // Waiting for a new time first: its old time isn't happening, so it's neither ahead nor to close.
+  const booked = all.filter((m) => m.status === "scheduled" && !m.needs_new_time_since);
+  const waiting = all.filter((m) => m.status === "scheduled" && m.needs_new_time_since);
+  const ahead = booked.filter((m) => new Date(m.starts_at).getTime() >= now);
+  const toClose = booked.filter((m) => new Date(m.starts_at).getTime() < now);
   const past = all.filter((m) => m.status !== "scheduled").reverse(); // newest first
 
   return (
@@ -400,7 +425,7 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
         </Text>
       ) : (
         <Stack gap="sm">
-          {[...ahead, ...toClose].map((m) => (
+          {[...waiting, ...ahead, ...toClose].map((m) => (
             <Stack key={m.id} gap={4}>
               <MeetingLine
                 meeting={m}

@@ -480,9 +480,11 @@ export function TodayPage() {
   // Rounds waiting for a new time (none from a server before them). Each shows with the to-do to
   // book it, so that to-do isn't listed again on its own.
   const needsNewTime = data?.needs_new_time ?? [];
+  // Calls waiting for one too (none from a server before 1.11).
+  const callsNeedNewTime = data?.meetings_needs_new_time ?? [];
   const allTodos = data?.todos ?? [];
   const rebook = new Map(
-    needsNewTime.flatMap((i) => {
+    [...needsNewTime, ...callsNeedNewTime].flatMap((i) => {
       const todo = allTodos.find((td) => td.id === i.rebook_todo_id);
       return todo ? [[i.id, todo] as const] : [];
     }),
@@ -524,6 +526,7 @@ export function TodayPage() {
     offers.length +
     (data?.awaiting_outcome.length ?? 0) +
     needsNewTime.length +
+    callsNeedNewTime.length +
     meetingsToClose.length +
     todosNow.length +
     (data?.follow_ups.length ?? 0) +
@@ -746,7 +749,7 @@ export function TodayPage() {
                 </Section>
                 <Section
                   title={t("sections.needsNewTime")}
-                  count={needsNewTime.length}
+                  count={needsNewTime.length + callsNeedNewTime.length}
                   hint={t("sections.needsNewTimeHint")}
                 >
                   {needsNewTime.map((i) => (
@@ -755,6 +758,14 @@ export function TodayPage() {
                       interview={i}
                       todo={rebook.get(i.id)}
                       action={<RescheduleButton interview={i} />}
+                    />
+                  ))}
+                  {callsNeedNewTime.map((m) => (
+                    <MeetingLine
+                      key={m.id}
+                      meeting={m}
+                      todo={rebook.get(m.id)}
+                      action={<CallRescheduleButton meeting={m} />}
                     />
                   ))}
                 </Section>
