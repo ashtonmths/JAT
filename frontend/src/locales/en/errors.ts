@@ -110,7 +110,8 @@ const codes = {
   recruiter_id_not_found: "recruiter_id: Contact {{id}} not found",
   recruiter_other_agency: "The recruiter works for a different agency than the one given.",
   referral_has_recruiter: "A referral can't have a recruiter; link the referrer as a person instead.",
-  rejection_feedback_not_rejected: "this application hasn't been rejected, so it can't have rejection feedback",
+  rejection_feedback_not_rejected:
+    "this application hasn't been rejected, so it can't have rejection feedback",
   rejection_feedback_wrong_stage: "rejection feedback only goes with a move to 'rejected', not {{to_stage}}",
   role_call_other_person: "meeting_id: that call was with someone else",
   role_has_applications_one: "{{name}} has an application. Delete it first, or archive it instead.",

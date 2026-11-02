@@ -93,7 +93,10 @@ const TEXT: Record<ErrorCode, [Record<string, string | number>, string]> = {
   recruiter_id_not_found: [{ id: "x1" }, "recruiter_id: Contact x1 not found"],
   recruiter_other_agency: [{}, "The recruiter works for a different agency than the one given."],
   referral_has_recruiter: [{}, "A referral can't have a recruiter; link the referrer as a person instead."],
-  rejection_feedback_not_rejected: [{}, "this application hasn't been rejected, so it can't have rejection feedback"],
+  rejection_feedback_not_rejected: [
+    {},
+    "this application hasn't been rejected, so it can't have rejection feedback",
+  ],
   rejection_feedback_wrong_stage: [
     { to_stage: "'withdrawn'" },
     "rejection feedback only goes with a move to 'rejected', not 'withdrawn'",
