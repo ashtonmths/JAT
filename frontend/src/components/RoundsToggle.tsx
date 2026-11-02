@@ -26,17 +26,25 @@ export function RoundsToggle({ checked, onChange }: { checked: boolean; onChange
   );
 }
 
-/** With rounds on: what they mean, or, from a server that didn't expand them (an older one), why not. */
-export function RoundsNote({ on, flow }: { on: boolean; flow?: Flow }) {
+/**
+ * With rounds on: what they mean, or, from a server that can't expand them (an older one, which
+ * sends no `rounds` at all), why not. Nothing while the last answer stands in for the next one
+ * (`placeholder`): that's the flow from before the switch was turned on.
+ */
+export function RoundsNote({ on, flow, placeholder }: { on: boolean; flow?: Flow; placeholder: boolean }) {
   const { t } = useTranslation("insights");
-  if (!on || !flow) return null;
-  return flow.rounds ? (
-    <Text size="xs" c="dimmed" mb="sm">
-      {t("rounds.hint")}
-    </Text>
-  ) : (
-    <Text size="sm" c="orange" mb="sm">
-      {t("rounds.olderServer")}
-    </Text>
-  );
+  if (!on || !flow || placeholder) return null;
+  if (flow.rounds)
+    return (
+      <Text size="xs" c="dimmed" mb="sm">
+        {t("rounds.hint")}
+      </Text>
+    );
+  if (flow.rounds === undefined)
+    return (
+      <Text size="sm" c="orange" mb="sm">
+        {t("rounds.olderServer")}
+      </Text>
+    );
+  return null;
 }

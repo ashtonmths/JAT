@@ -137,8 +137,9 @@ ROUND = "#round-"  # a round node's id: "<stage id>#round-<n>", as the board nam
 
 
 def interviewing_stage(workflow: Workflow, path: list[str]) -> str | None:
-    """The stage rounds belong to, as on the board: the first active stage in the path whose id says
-    "interview" (names are yours, and may be in any language)."""
+    """The stage rounds are drawn after: the first active stage in the path whose id says "interview"
+    (names are yours, and may be in any language). The board splits every such stage; a flow has one
+    place for the rounds, so only the first is split here."""
     active = {s.id for s in workflow.stages if s.is_active}
     return next((s for s in path if s in active and "interview" in s.lower()), None)
 

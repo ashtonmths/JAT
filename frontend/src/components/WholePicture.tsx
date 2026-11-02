@@ -13,7 +13,7 @@ import { SankeyChart } from "./SankeyChart";
 export function WholePicture({ since }: { since?: string }) {
   const { t } = useTranslation("insights");
   const [rounds, setRounds] = useShowRounds();
-  const { data: flow, isLoading, isError } = useWholeFlow(since, rounds);
+  const { data: flow, isLoading, isError, isPlaceholderData } = useWholeFlow(since, rounds);
   return (
     <Card withBorder>
       <Group justify="space-between" align="flex-start" wrap="wrap">
@@ -23,7 +23,7 @@ export function WholePicture({ since }: { since?: string }) {
       <Text size="sm" c="dimmed" mb="md">
         {flow ? t("whole.intro", { count: flow.applications }) : t("whole.introLoading")}
       </Text>
-      <RoundsNote on={rounds} flow={flow} />
+      <RoundsNote on={rounds} flow={flow} placeholder={isPlaceholderData} />
       {isLoading ? (
         <Loader />
       ) : isError || !flow ? (

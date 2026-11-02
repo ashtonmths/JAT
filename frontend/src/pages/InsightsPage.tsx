@@ -42,7 +42,7 @@ export function InsightsPage() {
     route: route === "any" ? undefined : (route as FlowFilters["route"]),
     ...(rounds ? { rounds: true as const } : {}),
   };
-  const { data: flow, isLoading, isError } = useFlow(filters);
+  const { data: flow, isLoading, isError, isPlaceholderData } = useFlow(filters);
   const { data: stats, isError: statsError } = useStats(range.since);
 
   return (
@@ -103,7 +103,7 @@ export function InsightsPage() {
                   />
                 </Group>
               </Group>
-              <RoundsNote on={rounds} flow={flow} />
+              <RoundsNote on={rounds} flow={flow} placeholder={isPlaceholderData} />
               {isLoading ? (
                 <Loader />
               ) : isError || !flow ? (

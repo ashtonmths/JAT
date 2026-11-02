@@ -656,9 +656,13 @@ to the next one there is (Round 1 → Round 3).
 A round counts as reached by the same rule as
 [which round rejections came after](#insights): it wasn't cancelled or waiting for a new time,
 and it happened (or its take-home was done) before the application moved to its next stage.
-Rounds belong to the stage whose id contains "interview", as on the board's
-[column per interview round](#applications-list-and-board). If the switch says to restart, the
-tracker is still running an older version: restart it after updating.
+The rounds are drawn after the first active stage whose id contains "interview". The board's
+[column per interview round](#applications-list-and-board) splits every such stage, but a flow
+has one place for them. As on the board, a numbered round counts wherever it was held, even
+before the application got to *Interviewing*. Rounds with no number aren't drawn.
+
+If the switch says to restart, the tracker is still running an older version: restart it after
+updating.
 
 **Applications**
 

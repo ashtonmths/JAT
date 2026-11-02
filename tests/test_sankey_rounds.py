@@ -106,6 +106,54 @@ def test_rounds_count_only_up_to_the_move_on(client, seeded):
     assert R2 not in {b for _, b in links}
 
 
+def test_nothing_is_lost_or_made_up_with_rounds_on(client, seeded):
+    """Over a mix of applications, every node passes on what reaches it, and the outcomes and
+    Interviewing's total are the same with rounds on and off."""
+    plain = _app(client, seeded)  # no rounds, rejected from Interviewing
+    _move(client, plain, "interviewing", "2026-10-01T09:00:00Z")
+    _move(client, plain, "rejected", "2026-10-03T09:00:00Z")
+    skipped = _app(client, seeded)  # Round 1, then Round 3
+    _move(client, skipped, "interviewing", "2026-10-01T09:00:00Z")
+    _round(client, skipped, "screen", "2026-10-02T09:00:00Z", round=1)
+    _round(client, skipped, "final", "2026-10-04T09:00:00Z", round=3)
+    _move(client, skipped, "rejected", "2026-10-05T09:00:00Z")
+    reopened = _app(client, seeded)  # rejected after Round 1, reopened, a second round since
+    _move(client, reopened, "interviewing", "2026-10-01T09:00:00Z")
+    _round(client, reopened, "technical", "2026-10-02T09:00:00Z")
+    _move(client, reopened, "rejected", "2026-10-03T09:00:00Z")
+    _move(client, reopened, "interviewing", "2026-10-06T09:00:00Z")
+    _round(client, reopened, "coding_task", "2026-10-07T09:00:00Z")
+    waiting = _app(client, seeded)  # still interviewing, a round booked ahead
+    _move(client, waiting, "interviewing", "2026-10-01T09:00:00Z")
+    _round(client, waiting, "technical", "2026-10-02T09:00:00Z", status="done")
+    _round(client, waiting, "final", "2099-01-01T09:00:00Z")
+    on = _app(client, seeded)  # moved on to Final, with a round held there
+    _move(client, on, "interviewing", "2026-10-01T09:00:00Z")
+    _round(client, on, "technical", "2026-10-02T09:00:00Z")
+    _move(client, on, "final", "2026-10-04T09:00:00Z")
+    _round(client, on, "final", "2026-10-06T09:00:00Z")
+
+    expanded, links = _flow(client)
+    nodes = {n["id"]: n for n in expanded["nodes"]}
+    assert any("#round-" in n for n in nodes)
+    for nid, node in nodes.items():
+        ins = sum(v for (a, b), v in links.items() if b == nid)
+        outs = sum(v for (a, b), v in links.items() if a == nid and not b.startswith("holding:"))
+        if nid.startswith("holding:"):
+            assert outs == 0 and node["reached"] == ins, nid
+            continue
+        assert (ins or node["reached"]) == node["reached"], nid  # what reaches it is what flows in
+        # What flows in flows on, or is still there (spurring off to where it's waiting, or ending).
+        assert node["reached"] == outs + node["current"], nid
+
+    folded, _ = _flow(client, rounds=False)
+    plain_nodes = {n["id"]: n for n in folded["nodes"]}
+    ends = {"rejected", "final", "holding:interviewing", "holding:final"}
+    assert {k: nodes[k]["reached"] for k in ends} == {k: plain_nodes[k]["reached"] for k in ends}
+    assert nodes["interviewing"]["reached"] == plain_nodes["interviewing"]["reached"] == 5
+    assert expanded["applications"] == folded["applications"]
+
+
 def test_the_whole_picture_expands_too(client, seeded):
     a = _app(client, seeded)
     _move(client, a, "interviewing", "2026-10-01T09:00:00Z")

@@ -83,6 +83,27 @@ describe("Show interview rounds", () => {
     expect(localStorage.getItem("jat.insights.rounds")).toBe("true");
   });
 
+  it("says nothing about restarting while a current server's rounds are still on their way", async () => {
+    showInsights(true);
+    // Hold back the answer with rounds, so the flow from before stands in for it meanwhile.
+    const answer = globalThis.fetch;
+    let release = () => {};
+    const held = new Promise<void>((done) => (release = done));
+    vi.stubGlobal("fetch", async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = input instanceof Request ? input.url : String(input);
+      if (url.includes("rounds=true")) await held;
+      return answer(input, init);
+    });
+    const toggle = await screen.findByRole("switch", { name: "Show interview rounds" });
+    await screen.findByText(/Hover over a stage or a flow/); // the flow without rounds is up
+    fireEvent.click(toggle);
+    await new Promise((done) => setTimeout(done, 100));
+    expect(screen.queryByText(/needs the tracker to be restarted/)).not.toBeInTheDocument();
+    release();
+    expect(await screen.findByText(/Interviewing splits into the rounds/)).toBeInTheDocument();
+    expect(screen.queryByText(/needs the tracker to be restarted/)).not.toBeInTheDocument();
+  });
+
   it("says to restart an older server that can't expand them", async () => {
     localStorage.setItem("jat.insights.rounds", "true");
     showInsights(false);
