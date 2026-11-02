@@ -110,7 +110,7 @@ def test_conversations_by_period(client, seeded):
     assert (recent["total"]["calls_held"], recent["total"]["pitched"]) == (1, 1)
     later = client.get("/api/v1/insights/conversations", params={"since": _at(1)}).json()
     assert later["total"]["calls_held"] == later["total"]["pitched"] == later["people_talked_to"] == 0
-    assert later["flow"] == {"applications": 0, "nodes": [], "links": []}
+    assert later["flow"] == {"applications": 0, "nodes": [], "links": [], "rounds": False}
     assert later["people"] == [] and later["agencies"] == [] and later["pass_reasons"] == []
 
 
