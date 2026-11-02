@@ -100,6 +100,9 @@ const TEXT: Record<ErrorCode, [Record<string, string | number>, string]> = {
   ],
   role_id_not_found: [{ id: "x1" }, "role_id: Role x1 not found"],
   role_not_found: [{ id: "x1" }, "Role x1 not found"],
+  round_not_booked: [{}, "only a booked round can need a new time"],
+  round_needs_new_time_already: [{}, "this round already needs a new time"],
+  round_needs_new_time_not: [{}, "this round doesn't need a new time"],
   stage_unknown: [{ stage: "'nope'" }, "unknown stage 'nope'"],
   todo_not_found: [{ id: "x1" }, "Todo x1 not found"],
   undo_inconsistent: [

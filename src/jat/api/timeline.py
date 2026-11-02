@@ -307,7 +307,8 @@ def timeline(
         on_panel[link.interview_id].append(link.contact_id)
     for i in session.scalars(select(Interview).where(Interview.status != "cancelled")):
         when = i.starts_at or i.deadline_at
-        if when is None or i.application_id not in apps:
+        # One waiting for a new time won't happen at its old one; its entry says it needs a new time.
+        if when is None or i.application_id not in apps or i.needs_new_time_since is not None:
             continue
         # A done round says so; a scheduled one is booked (a time) or due (a deadline).
         status = i.status if i.status != "scheduled" else ("due" if i.starts_at is None else "booked")

@@ -3743,6 +3743,9 @@
                   "role_has_applications",
                   "role_id_not_found",
                   "role_not_found",
+                  "round_not_booked",
+                  "round_needs_new_time_already",
+                  "round_needs_new_time_not",
                   "stage_unknown",
                   "todo_not_found",
                   "todo_text_required",
@@ -3889,6 +3892,15 @@
                     "event.roundBackOn": "#/components/schemas/RoundBackOnMsg",
                     "event.roundCancelled": "#/components/schemas/RoundCancelledMsg",
                     "event.roundDone": "#/components/schemas/RoundDoneMsg",
+                    "event.roundNeedsNewTimeByMe": "#/components/schemas/RoundNeedsNewTimeByMeMsg",
+                    "event.roundNeedsNewTimeByMeReason": "#/components/schemas/RoundNeedsNewTimeByMeReasonMsg",
+                    "event.roundNeedsNewTimeByMutual": "#/components/schemas/RoundNeedsNewTimeByMutualMsg",
+                    "event.roundNeedsNewTimeByMutualReason": "#/components/schemas/RoundNeedsNewTimeByMutualReasonMsg",
+                    "event.roundNeedsNewTimeByNeither": "#/components/schemas/RoundNeedsNewTimeByNeitherMsg",
+                    "event.roundNeedsNewTimeByNeitherReason": "#/components/schemas/RoundNeedsNewTimeByNeitherReasonMsg",
+                    "event.roundNeedsNewTimeByThem": "#/components/schemas/RoundNeedsNewTimeByThemMsg",
+                    "event.roundNeedsNewTimeByThemReason": "#/components/schemas/RoundNeedsNewTimeByThemReasonMsg",
+                    "event.roundNewTimeNotNeeded": "#/components/schemas/RoundNewTimeNotNeededMsg",
                     "event.roundRemoved": "#/components/schemas/RoundRemovedMsg",
                     "event.roundRescheduled": "#/components/schemas/RoundRescheduledMsg",
                     "event.roundRescheduledByMe": "#/components/schemas/RoundRescheduledByMeMsg",
@@ -3983,6 +3995,33 @@
                   },
                   {
                     "$ref": "#/components/schemas/RoundRescheduledByNeitherReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMeMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByThemMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMutualMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByNeitherMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMeReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByThemReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMutualReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByNeitherReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNewTimeNotNeededMsg"
                   },
                   {
                     "$ref": "#/components/schemas/OfferReceivedYearMsg"
@@ -4665,6 +4704,35 @@
             "title": "Moves",
             "type": "array"
           },
+          "needs_new_time_by": {
+            "anyOf": [
+              {
+                "enum": [
+                  "me",
+                  "them",
+                  "mutual",
+                  "neither"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Needs New Time By"
+          },
+          "needs_new_time_since": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Needs New Time Since"
+          },
           "prep": {
             "anyOf": [
               {
@@ -4686,6 +4754,17 @@
               }
             ],
             "title": "Questions"
+          },
+          "rebook_todo_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rebook Todo Id"
           },
           "rescheduled_count": {
             "title": "Rescheduled Count",
@@ -5759,6 +5838,49 @@
         "title": "MoveIn",
         "type": "object"
       },
+      "NeedsNewTimeIn": {
+        "additionalProperties": false,
+        "description": "A booked round can't go ahead at its time and no new one is agreed yet. Who needed that is\nrequired, as in the Reschedule dialog; why is optional. Both go on the timeline.",
+        "properties": {
+          "by": {
+            "enum": [
+              "me",
+              "them",
+              "mutual",
+              "neither"
+            ],
+            "title": "By",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "todo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RebookTodoIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "by"
+        ],
+        "title": "NeedsNewTimeIn",
+        "type": "object"
+      },
       "NextActions": {
         "properties": {
           "awaiting_outcome": {
@@ -5789,6 +5911,14 @@
               "$ref": "#/components/schemas/MeetingOut"
             },
             "title": "Meetings To Close",
+            "type": "array"
+          },
+          "needs_new_time": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/InterviewOut"
+            },
+            "title": "Needs New Time",
             "type": "array"
           },
           "offer_deadlines": {
@@ -7594,6 +7724,35 @@
         "title": "QuickApplicationIn",
         "type": "object"
       },
+      "RebookTodoIn": {
+        "additionalProperties": false,
+        "description": "The to-do to book a round's new time, in your words: the app suggests the text in your language.",
+        "properties": {
+          "due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due On"
+          },
+          "text": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "RebookTodoIn",
+        "type": "object"
+      },
       "RecruiterChangeAgencyParams": {
         "properties": {
           "agency": {
@@ -9122,6 +9281,168 @@
         "title": "RoundMove",
         "type": "object"
       },
+      "RoundNeedsNewTimeByMeMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundNeedsNewTimeByMe",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundNeedsNewTimeByMeMsg",
+        "type": "object"
+      },
+      "RoundNeedsNewTimeByMeReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundNeedsNewTimeByMeReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundNeedsNewTimeByMeReasonMsg",
+        "type": "object"
+      },
+      "RoundNeedsNewTimeByMutualMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundNeedsNewTimeByMutual",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundNeedsNewTimeByMutualMsg",
+        "type": "object"
+      },
+      "RoundNeedsNewTimeByMutualReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundNeedsNewTimeByMutualReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundNeedsNewTimeByMutualReasonMsg",
+        "type": "object"
+      },
+      "RoundNeedsNewTimeByNeitherMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundNeedsNewTimeByNeither",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundNeedsNewTimeByNeitherMsg",
+        "type": "object"
+      },
+      "RoundNeedsNewTimeByNeitherReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundNeedsNewTimeByNeitherReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundNeedsNewTimeByNeitherReasonMsg",
+        "type": "object"
+      },
+      "RoundNeedsNewTimeByThemMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundNeedsNewTimeByThem",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundNeedsNewTimeByThemMsg",
+        "type": "object"
+      },
+      "RoundNeedsNewTimeByThemReasonMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundNeedsNewTimeByThemReason",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundReasonParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundNeedsNewTimeByThemReasonMsg",
+        "type": "object"
+      },
+      "RoundNewTimeNotNeededMsg": {
+        "properties": {
+          "key": {
+            "const": "event.roundNewTimeNotNeeded",
+            "title": "Key",
+            "type": "string"
+          },
+          "params": {
+            "$ref": "#/components/schemas/RoundParams"
+          }
+        },
+        "required": [
+          "key",
+          "params"
+        ],
+        "title": "RoundNewTimeNotNeededMsg",
+        "type": "object"
+      },
       "RoundParams": {
         "properties": {
           "kind": {
@@ -9444,6 +9765,35 @@
             "title": "Label",
             "type": "string"
           },
+          "needs_new_time_by": {
+            "anyOf": [
+              {
+                "enum": [
+                  "me",
+                  "them",
+                  "mutual",
+                  "neither"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Needs New Time By"
+          },
+          "needs_new_time_since": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Needs New Time Since"
+          },
           "round": {
             "anyOf": [
               {
@@ -9723,6 +10073,15 @@
                     "event.roundBackOn": "#/components/schemas/RoundBackOnMsg",
                     "event.roundCancelled": "#/components/schemas/RoundCancelledMsg",
                     "event.roundDone": "#/components/schemas/RoundDoneMsg",
+                    "event.roundNeedsNewTimeByMe": "#/components/schemas/RoundNeedsNewTimeByMeMsg",
+                    "event.roundNeedsNewTimeByMeReason": "#/components/schemas/RoundNeedsNewTimeByMeReasonMsg",
+                    "event.roundNeedsNewTimeByMutual": "#/components/schemas/RoundNeedsNewTimeByMutualMsg",
+                    "event.roundNeedsNewTimeByMutualReason": "#/components/schemas/RoundNeedsNewTimeByMutualReasonMsg",
+                    "event.roundNeedsNewTimeByNeither": "#/components/schemas/RoundNeedsNewTimeByNeitherMsg",
+                    "event.roundNeedsNewTimeByNeitherReason": "#/components/schemas/RoundNeedsNewTimeByNeitherReasonMsg",
+                    "event.roundNeedsNewTimeByThem": "#/components/schemas/RoundNeedsNewTimeByThemMsg",
+                    "event.roundNeedsNewTimeByThemReason": "#/components/schemas/RoundNeedsNewTimeByThemReasonMsg",
+                    "event.roundNewTimeNotNeeded": "#/components/schemas/RoundNewTimeNotNeededMsg",
                     "event.roundRemoved": "#/components/schemas/RoundRemovedMsg",
                     "event.roundRescheduled": "#/components/schemas/RoundRescheduledMsg",
                     "event.roundRescheduledByMe": "#/components/schemas/RoundRescheduledByMeMsg",
@@ -9817,6 +10176,33 @@
                   },
                   {
                     "$ref": "#/components/schemas/RoundRescheduledByNeitherReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMeMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByThemMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMutualMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByNeitherMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMeReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByThemReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMutualReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByNeitherReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNewTimeNotNeededMsg"
                   },
                   {
                     "$ref": "#/components/schemas/OfferReceivedYearMsg"
@@ -10510,6 +10896,15 @@
                     "event.roundBackOn": "#/components/schemas/RoundBackOnMsg",
                     "event.roundCancelled": "#/components/schemas/RoundCancelledMsg",
                     "event.roundDone": "#/components/schemas/RoundDoneMsg",
+                    "event.roundNeedsNewTimeByMe": "#/components/schemas/RoundNeedsNewTimeByMeMsg",
+                    "event.roundNeedsNewTimeByMeReason": "#/components/schemas/RoundNeedsNewTimeByMeReasonMsg",
+                    "event.roundNeedsNewTimeByMutual": "#/components/schemas/RoundNeedsNewTimeByMutualMsg",
+                    "event.roundNeedsNewTimeByMutualReason": "#/components/schemas/RoundNeedsNewTimeByMutualReasonMsg",
+                    "event.roundNeedsNewTimeByNeither": "#/components/schemas/RoundNeedsNewTimeByNeitherMsg",
+                    "event.roundNeedsNewTimeByNeitherReason": "#/components/schemas/RoundNeedsNewTimeByNeitherReasonMsg",
+                    "event.roundNeedsNewTimeByThem": "#/components/schemas/RoundNeedsNewTimeByThemMsg",
+                    "event.roundNeedsNewTimeByThemReason": "#/components/schemas/RoundNeedsNewTimeByThemReasonMsg",
+                    "event.roundNewTimeNotNeeded": "#/components/schemas/RoundNewTimeNotNeededMsg",
                     "event.roundRemoved": "#/components/schemas/RoundRemovedMsg",
                     "event.roundRescheduled": "#/components/schemas/RoundRescheduledMsg",
                     "event.roundRescheduledByMe": "#/components/schemas/RoundRescheduledByMeMsg",
@@ -10604,6 +10999,33 @@
                   },
                   {
                     "$ref": "#/components/schemas/RoundRescheduledByNeitherReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMeMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByThemMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMutualMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByNeitherMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMeReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByThemReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByMutualReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNeedsNewTimeByNeitherReasonMsg"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RoundNewTimeNotNeededMsg"
                   },
                   {
                     "$ref": "#/components/schemas/OfferReceivedYearMsg"
@@ -14765,7 +15187,7 @@
     },
     "/api/v1/interviews": {
       "get": {
-        "description": "Interviews, soonest first.\n\n`upcoming` keeps scheduled ones from `since` on, plus those with no date yet. Pass the start\nof your local day as `since`; it defaults to the start of today in UTC.",
+        "description": "Interviews, soonest first.\n\n`upcoming` keeps scheduled ones from `since` on, plus those with no date yet, but not those\nwaiting for a new time. Pass the start\nof your local day as `since`; it defaults to the start of today in UTC.",
         "operationId": "list_interviews_api_v1_interviews_get",
         "parameters": [
           {
@@ -14976,6 +15398,7 @@
         ]
       },
       "patch": {
+        "description": "A new start for a round that needs one is the move it was waiting for: from its old time,\nwith the who and why it was marked with (unless new ones are sent), and its to-do is ticked off.\nCancelling such a round, or marking it done, ticks the to-do off too.",
         "operationId": "update_interview_api_v1_interviews__interview_id__patch",
         "parameters": [
           {
@@ -15021,6 +15444,100 @@
           }
         },
         "summary": "Update Interview",
+        "tags": [
+          "interviews"
+        ]
+      }
+    },
+    "/api/v1/interviews/{interview_id}/needs-new-time": {
+      "delete": {
+        "description": "It can go ahead at its time after all, or you're undoing marking it: the round keeps its\ntime, and the to-do made with the mark is deleted if it's still open. The timeline keeps both\nentries, as with any undo.",
+        "operationId": "clear_needs_new_time_api_v1_interviews__interview_id__needs_new_time_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "interview_id",
+            "required": true,
+            "schema": {
+              "title": "Interview Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
+          }
+        },
+        "summary": "Clear Needs New Time",
+        "tags": [
+          "interviews"
+        ]
+      },
+      "post": {
+        "description": "A booked round can't go ahead at its time, and no new time is agreed yet. It keeps its old\ntime, its timeline says who needed the change and why, and with `todo` an open to-do on the\napplication reminds you to book the new one. Setting the new time (PATCH `starts_at`) is the move.",
+        "operationId": "mark_needs_new_time_api_v1_interviews__interview_id__needs_new_time_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "interview_id",
+            "required": true,
+            "schema": {
+              "title": "Interview Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NeedsNewTimeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
+          }
+        },
+        "summary": "Mark Needs New Time",
         "tags": [
           "interviews"
         ]

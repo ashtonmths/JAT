@@ -46,13 +46,16 @@ def _when(interview: Interview) -> datetime:
 
 
 def booked_ahead(session: Session, application_ids: Iterable[str], now: datetime) -> set[str]:
-    """Applications with any round still scheduled for a time that hasn't come yet."""
+    """Applications with any round still scheduled for a time that hasn't come yet, or waiting for a
+    new time: that one is on Today's Your move already, so the application hasn't gone quiet."""
     ids = list(set(application_ids))
     if not ids:
         return set()
     when = func.coalesce(Interview.starts_at, Interview.deadline_at)
     stmt = select(Interview.application_id).where(
-        Interview.application_id.in_(ids), Interview.status == "scheduled", when >= now
+        Interview.application_id.in_(ids),
+        Interview.status == "scheduled",
+        (when >= now) | Interview.needs_new_time_since.is_not(None),
     )
     return set(session.scalars(stmt))
 
@@ -73,6 +76,8 @@ def current_rounds(session: Session, application_ids: Iterable[str]) -> dict[str
         Interview.starts_at,
         Interview.deadline_at,
         Interview.created_at,
+        Interview.needs_new_time_since,
+        Interview.needs_new_time_by,
     )
     for interview in session.scalars(select(Interview).options(columns).where(Interview.application_id.in_(ids))):
         by_app.setdefault(interview.application_id, []).append(interview)
@@ -96,6 +101,15 @@ _MESSAGES: dict[str, svc.EventMsgKey] = {
     "done": "event.roundDone",
     "removed": "event.roundRemoved",
     "rescheduled": "event.roundRescheduled",
+    "no longer needs a new time": "event.roundNewTimeNotNeeded",
+}
+
+# A round that can't go ahead at its time, with no new one yet: by who (always said), without and with a reason.
+_NEEDS_NEW_TIME_BY: dict[str, tuple[svc.EventMsgKey, svc.EventMsgKey]] = {
+    "me": ("event.roundNeedsNewTimeByMe", "event.roundNeedsNewTimeByMeReason"),
+    "them": ("event.roundNeedsNewTimeByThem", "event.roundNeedsNewTimeByThemReason"),
+    "mutual": ("event.roundNeedsNewTimeByMutual", "event.roundNeedsNewTimeByMutualReason"),
+    "neither": ("event.roundNeedsNewTimeByNeither", "event.roundNeedsNewTimeByNeitherReason"),
 }
 
 
@@ -127,20 +141,35 @@ def record(
     (`roundLabel` in the frontend's utils/rounds.ts matches `label` above). A reschedule also saves
     `data.reschedule`: this move's own old and new time, who and why (null when not said), so a
     round's history keeps every move. Entries from before this have none of it.
+
+    "needs a new time" (who is required) saves `data.reschedule` with `to` null: the move has started
+    and has no new time yet. Setting that time later saves a whole move, from the old time.
     """
     params: dict[str, str | int | None] = {"round": interview.round, "title": interview.title, "kind": interview.kind}
-    key = _MESSAGES[what]
+    pending = what == "needs a new time"
+    key = _MESSAGES["rescheduled" if pending else what]  # pending: replaced by who, below
     reason_key: svc.EventMsgKey = "event.roundRescheduledReason"
     summary = f"{label(interview)} {what}"
     if by:
         key, reason_key, words = _RESCHEDULED_BY[by]
+        if pending:
+            key, reason_key = _NEEDS_NEW_TIME_BY[by]
         summary = f"{summary} ({words})"
+    elif pending:
+        raise ValueError("a round needing a new time says who needed the change")
     if reason:
         key = reason_key
         params["reason"] = reason
         summary = f"{summary}: {reason}"
     data: dict[str, Any] = {"interview_id": interview.id, "round": interview.round, "status": interview.status}
-    if moved_from and interview.starts_at:
+    if pending:
+        data["reschedule"] = {
+            "from": interview.starts_at.isoformat() if interview.starts_at else None,
+            "to": None,
+            "by": by,
+            "reason": reason or None,
+        }
+    elif moved_from and interview.starts_at:
         data["reschedule"] = {
             "from": moved_from.isoformat(),
             "to": interview.starts_at.isoformat(),

@@ -881,7 +881,8 @@ export interface paths {
          * List Interviews
          * @description Interviews, soonest first.
          *
-         *     `upcoming` keeps scheduled ones from `since` on, plus those with no date yet. Pass the start
+         *     `upcoming` keeps scheduled ones from `since` on, plus those with no date yet, but not those
+         *     waiting for a new time. Pass the start
          *     of your local day as `since`; it defaults to the start of today in UTC.
          */
         get: operations["list_interviews_api_v1_interviews_get"];
@@ -928,8 +929,41 @@ export interface paths {
         delete: operations["delete_interview_api_v1_interviews__interview_id__delete"];
         options?: never;
         head?: never;
-        /** Update Interview */
+        /**
+         * Update Interview
+         * @description A new start for a round that needs one is the move it was waiting for: from its old time,
+         *     with the who and why it was marked with (unless new ones are sent), and its to-do is ticked off.
+         *     Cancelling such a round, or marking it done, ticks the to-do off too.
+         */
         patch: operations["update_interview_api_v1_interviews__interview_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/interviews/{interview_id}/needs-new-time": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Needs New Time
+         * @description A booked round can't go ahead at its time, and no new time is agreed yet. It keeps its old
+         *     time, its timeline says who needed the change and why, and with `todo` an open to-do on the
+         *     application reminds you to book the new one. Setting the new time (PATCH `starts_at`) is the move.
+         */
+        post: operations["mark_needs_new_time_api_v1_interviews__interview_id__needs_new_time_post"];
+        /**
+         * Clear Needs New Time
+         * @description It can go ahead at its time after all, or you're undoing marking it: the round keeps its
+         *     time, and the to-do made with the mark is deleted if it's still open. The timeline keeps both
+         *     entries, as with any undo.
+         */
+        delete: operations["clear_needs_new_time_api_v1_interviews__interview_id__needs_new_time_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/links": {
@@ -2431,7 +2465,7 @@ export interface components {
          */
         ErrorOut: {
             /** Code */
-            code?: ("agencies_in_use" | "application_link_not_found" | "attachment_entity_incomplete" | "attachment_entity_type_invalid" | "attachment_entity_type_required" | "companies_in_use" | "duplicates_needs_company" | "roles_in_use" | "time_zone_unknown" | "todo_entity_incomplete" | "application_document_not_found" | "attachment_file_missing" | "attachment_not_found" | "document_not_found" | "document_version_not_found" | "attachment_is_version_file" | "agency_id_not_found" | "agency_needs_agency_route" | "agency_not_found" | "agency_route_needs_agency" | "application_contact_not_found" | "application_id_not_found" | "application_not_found" | "backup_add_failed" | "backup_commit_failed" | "backup_detached_head" | "backup_git_timeout" | "backup_git_unavailable" | "backup_lock_failed" | "backup_mid_rebase" | "backup_no_remote" | "backup_not_a_repo" | "backup_push_failed" | "backup_shut_down" | "backup_snapshot_failed" | "backup_snapshots_off" | "cv_file_applications_invalid" | "cv_file_document_required" | "cv_file_missing" | "cv_file_not_found" | "document_sent" | "document_version_id_not_found" | "file_is_symlink" | "file_outside_files" | "file_too_large" | "note_changed" | "note_link_agency_not_found" | "note_link_application_not_found" | "note_link_company_not_found" | "note_link_contact_not_found" | "note_link_document_not_found" | "note_link_interview_not_found" | "note_link_invalid" | "note_link_role_not_found" | "note_not_found" | "note_path_invalid" | "note_unreadable" | "version_already_sent" | "version_label_required" | "version_sent" | "call_ends_before_start" | "company_has_applications" | "company_id_not_found" | "company_not_found" | "contact_detail_taken" | "contact_id_not_found" | "contact_not_found" | "data_conflict" | "direct_has_agency" | "direct_recruiter_has_agency" | "interview_not_found" | "interviewer_not_found" | "entity_agency_not_found" | "entity_application_not_found" | "entity_company_not_found" | "entity_contact_not_found" | "entity_document_not_found" | "entity_interview_not_found" | "link_not_found" | "entity_role_not_found" | "meeting_id_not_found" | "merge_same_person" | "meeting_not_found" | "move_not_allowed" | "move_not_allowed_none" | "offer_not_found" | "recruiter_id_not_found" | "recruiter_other_agency" | "referral_has_recruiter" | "role_call_other_person" | "role_has_applications" | "role_id_not_found" | "role_not_found" | "stage_unknown" | "todo_not_found" | "todo_text_required" | "undo_inconsistent" | "undo_nothing" | "workflow_invalid") | null;
+            code?: ("agencies_in_use" | "application_link_not_found" | "attachment_entity_incomplete" | "attachment_entity_type_invalid" | "attachment_entity_type_required" | "companies_in_use" | "duplicates_needs_company" | "roles_in_use" | "time_zone_unknown" | "todo_entity_incomplete" | "application_document_not_found" | "attachment_file_missing" | "attachment_not_found" | "document_not_found" | "document_version_not_found" | "attachment_is_version_file" | "agency_id_not_found" | "agency_needs_agency_route" | "agency_not_found" | "agency_route_needs_agency" | "application_contact_not_found" | "application_id_not_found" | "application_not_found" | "backup_add_failed" | "backup_commit_failed" | "backup_detached_head" | "backup_git_timeout" | "backup_git_unavailable" | "backup_lock_failed" | "backup_mid_rebase" | "backup_no_remote" | "backup_not_a_repo" | "backup_push_failed" | "backup_shut_down" | "backup_snapshot_failed" | "backup_snapshots_off" | "cv_file_applications_invalid" | "cv_file_document_required" | "cv_file_missing" | "cv_file_not_found" | "document_sent" | "document_version_id_not_found" | "file_is_symlink" | "file_outside_files" | "file_too_large" | "note_changed" | "note_link_agency_not_found" | "note_link_application_not_found" | "note_link_company_not_found" | "note_link_contact_not_found" | "note_link_document_not_found" | "note_link_interview_not_found" | "note_link_invalid" | "note_link_role_not_found" | "note_not_found" | "note_path_invalid" | "note_unreadable" | "version_already_sent" | "version_label_required" | "version_sent" | "call_ends_before_start" | "company_has_applications" | "company_id_not_found" | "company_not_found" | "contact_detail_taken" | "contact_id_not_found" | "contact_not_found" | "data_conflict" | "direct_has_agency" | "direct_recruiter_has_agency" | "interview_not_found" | "interviewer_not_found" | "entity_agency_not_found" | "entity_application_not_found" | "entity_company_not_found" | "entity_contact_not_found" | "entity_document_not_found" | "entity_interview_not_found" | "link_not_found" | "entity_role_not_found" | "meeting_id_not_found" | "merge_same_person" | "meeting_not_found" | "move_not_allowed" | "move_not_allowed_none" | "offer_not_found" | "recruiter_id_not_found" | "recruiter_other_agency" | "referral_has_recruiter" | "role_call_other_person" | "role_has_applications" | "role_id_not_found" | "role_not_found" | "round_not_booked" | "round_needs_new_time_already" | "round_needs_new_time_not" | "stage_unknown" | "todo_not_found" | "todo_text_required" | "undo_inconsistent" | "undo_nothing" | "workflow_invalid") | null;
             /** Detail */
             detail: string | components["schemas"]["ValidationIssue"][];
             /** Params */
@@ -2459,7 +2493,7 @@ export interface components {
             /** Kind */
             kind: string;
             /** Msg */
-            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["RoundRescheduledByMeMsg"] | components["schemas"]["RoundRescheduledByThemMsg"] | components["schemas"]["RoundRescheduledByMutualMsg"] | components["schemas"]["RoundRescheduledByNeitherMsg"] | components["schemas"]["RoundRescheduledByMeReasonMsg"] | components["schemas"]["RoundRescheduledByThemReasonMsg"] | components["schemas"]["RoundRescheduledByMutualReasonMsg"] | components["schemas"]["RoundRescheduledByNeitherReasonMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
+            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["RoundRescheduledByMeMsg"] | components["schemas"]["RoundRescheduledByThemMsg"] | components["schemas"]["RoundRescheduledByMutualMsg"] | components["schemas"]["RoundRescheduledByNeitherMsg"] | components["schemas"]["RoundRescheduledByMeReasonMsg"] | components["schemas"]["RoundRescheduledByThemReasonMsg"] | components["schemas"]["RoundRescheduledByMutualReasonMsg"] | components["schemas"]["RoundRescheduledByNeitherReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByMeMsg"] | components["schemas"]["RoundNeedsNewTimeByThemMsg"] | components["schemas"]["RoundNeedsNewTimeByMutualMsg"] | components["schemas"]["RoundNeedsNewTimeByNeitherMsg"] | components["schemas"]["RoundNeedsNewTimeByMeReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByThemReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByMutualReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByNeitherReasonMsg"] | components["schemas"]["RoundNewTimeNotNeededMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
             /**
              * Occurred At
              * Format: date-time
@@ -2625,10 +2659,16 @@ export interface components {
              * @default []
              */
             moves: components["schemas"]["RoundMove"][];
+            /** Needs New Time By */
+            needs_new_time_by?: ("me" | "them" | "mutual" | "neither") | null;
+            /** Needs New Time Since */
+            needs_new_time_since?: string | null;
             /** Prep */
             prep: string | null;
             /** Questions */
             questions: string | null;
+            /** Rebook Todo Id */
+            rebook_todo_id?: string | null;
             /** Rescheduled Count */
             rescheduled_count: number;
             /** Rescheduled From */
@@ -2889,6 +2929,21 @@ export interface components {
             /** To Stage */
             to_stage: string;
         };
+        /**
+         * NeedsNewTimeIn
+         * @description A booked round can't go ahead at its time and no new one is agreed yet. Who needed that is
+         *     required, as in the Reschedule dialog; why is optional. Both go on the timeline.
+         */
+        NeedsNewTimeIn: {
+            /**
+             * By
+             * @enum {string}
+             */
+            by: "me" | "them" | "mutual" | "neither";
+            /** Reason */
+            reason?: string | null;
+            todo?: components["schemas"]["RebookTodoIn"] | null;
+        };
         /** NextActions */
         NextActions: {
             /** Awaiting Outcome */
@@ -2905,6 +2960,11 @@ export interface components {
              * @default []
              */
             meetings_to_close: components["schemas"]["MeetingOut"][];
+            /**
+             * Needs New Time
+             * @default []
+             */
+            needs_new_time: components["schemas"]["InterviewOut"][];
             /**
              * Offer Deadlines
              * @default []
@@ -3481,6 +3541,16 @@ export interface components {
              */
             tags: string[];
         };
+        /**
+         * RebookTodoIn
+         * @description The to-do to book a round's new time, in your words: the app suggests the text in your language.
+         */
+        RebookTodoIn: {
+            /** Due On */
+            due_on?: string | null;
+            /** Text */
+            text: string;
+        };
         /** RecruiterChangeAgencyParams */
         RecruiterChangeAgencyParams: {
             /** Agency */
@@ -3937,6 +4007,87 @@ export interface components {
              */
             to_at: string;
         };
+        /** RoundNeedsNewTimeByMeMsg */
+        RoundNeedsNewTimeByMeMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundNeedsNewTimeByMe";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundNeedsNewTimeByMeReasonMsg */
+        RoundNeedsNewTimeByMeReasonMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundNeedsNewTimeByMeReason";
+            params: components["schemas"]["RoundReasonParams"];
+        };
+        /** RoundNeedsNewTimeByMutualMsg */
+        RoundNeedsNewTimeByMutualMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundNeedsNewTimeByMutual";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundNeedsNewTimeByMutualReasonMsg */
+        RoundNeedsNewTimeByMutualReasonMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundNeedsNewTimeByMutualReason";
+            params: components["schemas"]["RoundReasonParams"];
+        };
+        /** RoundNeedsNewTimeByNeitherMsg */
+        RoundNeedsNewTimeByNeitherMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundNeedsNewTimeByNeither";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundNeedsNewTimeByNeitherReasonMsg */
+        RoundNeedsNewTimeByNeitherReasonMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundNeedsNewTimeByNeitherReason";
+            params: components["schemas"]["RoundReasonParams"];
+        };
+        /** RoundNeedsNewTimeByThemMsg */
+        RoundNeedsNewTimeByThemMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundNeedsNewTimeByThem";
+            params: components["schemas"]["RoundParams"];
+        };
+        /** RoundNeedsNewTimeByThemReasonMsg */
+        RoundNeedsNewTimeByThemReasonMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundNeedsNewTimeByThemReason";
+            params: components["schemas"]["RoundReasonParams"];
+        };
+        /** RoundNewTimeNotNeededMsg */
+        RoundNewTimeNotNeededMsg: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            key: "event.roundNewTimeNotNeeded";
+            params: components["schemas"]["RoundParams"];
+        };
         /** RoundParams */
         RoundParams: {
             /** Kind */
@@ -4078,6 +4229,10 @@ export interface components {
             kind: string;
             /** Label */
             label: string;
+            /** Needs New Time By */
+            needs_new_time_by?: ("me" | "them" | "mutual" | "neither") | null;
+            /** Needs New Time Since */
+            needs_new_time_since?: string | null;
             /** Round */
             round: number | null;
             /** Starts At */
@@ -4151,7 +4306,7 @@ export interface components {
             /** Link */
             link: string;
             /** Msg */
-            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["RoundRescheduledByMeMsg"] | components["schemas"]["RoundRescheduledByThemMsg"] | components["schemas"]["RoundRescheduledByMutualMsg"] | components["schemas"]["RoundRescheduledByNeitherMsg"] | components["schemas"]["RoundRescheduledByMeReasonMsg"] | components["schemas"]["RoundRescheduledByThemReasonMsg"] | components["schemas"]["RoundRescheduledByMutualReasonMsg"] | components["schemas"]["RoundRescheduledByNeitherReasonMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
+            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["RoundRescheduledByMeMsg"] | components["schemas"]["RoundRescheduledByThemMsg"] | components["schemas"]["RoundRescheduledByMutualMsg"] | components["schemas"]["RoundRescheduledByNeitherMsg"] | components["schemas"]["RoundRescheduledByMeReasonMsg"] | components["schemas"]["RoundRescheduledByThemReasonMsg"] | components["schemas"]["RoundRescheduledByMutualReasonMsg"] | components["schemas"]["RoundRescheduledByNeitherReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByMeMsg"] | components["schemas"]["RoundNeedsNewTimeByThemMsg"] | components["schemas"]["RoundNeedsNewTimeByMutualMsg"] | components["schemas"]["RoundNeedsNewTimeByNeitherMsg"] | components["schemas"]["RoundNeedsNewTimeByMeReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByThemReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByMutualReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByNeitherReasonMsg"] | components["schemas"]["RoundNewTimeNotNeededMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
             /** Own Title */
             own_title?: string | null;
             /** Round */
@@ -4302,7 +4457,7 @@ export interface components {
              */
             kind: "stage-event" | "other-event" | "interview" | "offer-reply" | "meeting" | "role" | "role-added" | "role-passed" | "company" | "agency" | "contact" | "contact-waiting" | "contact-chased" | "contact-closed" | "contact-to-read" | "note";
             /** Msg */
-            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["RoundRescheduledByMeMsg"] | components["schemas"]["RoundRescheduledByThemMsg"] | components["schemas"]["RoundRescheduledByMutualMsg"] | components["schemas"]["RoundRescheduledByNeitherMsg"] | components["schemas"]["RoundRescheduledByMeReasonMsg"] | components["schemas"]["RoundRescheduledByThemReasonMsg"] | components["schemas"]["RoundRescheduledByMutualReasonMsg"] | components["schemas"]["RoundRescheduledByNeitherReasonMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
+            msg?: (components["schemas"]["LinkAddedMsg"] | components["schemas"]["NoteAddedMsg"] | components["schemas"]["FileAddedMsg"] | components["schemas"]["EmailMsg"] | components["schemas"]["EmailNoSubjectMsg"] | components["schemas"]["EmailUnknownSenderMsg"] | components["schemas"]["EmailNoSubjectUnknownSenderMsg"] | components["schemas"]["CvSentMsg"] | components["schemas"]["CoverLetterSentMsg"] | components["schemas"]["DocumentSentMsg"] | components["schemas"]["RoundScheduledMsg"] | components["schemas"]["RoundAddedMsg"] | components["schemas"]["RoundCancelledMsg"] | components["schemas"]["RoundBackOnMsg"] | components["schemas"]["RoundDoneMsg"] | components["schemas"]["RoundRemovedMsg"] | components["schemas"]["RoundRescheduledMsg"] | components["schemas"]["RoundRescheduledReasonMsg"] | components["schemas"]["RoundRescheduledByMeMsg"] | components["schemas"]["RoundRescheduledByThemMsg"] | components["schemas"]["RoundRescheduledByMutualMsg"] | components["schemas"]["RoundRescheduledByNeitherMsg"] | components["schemas"]["RoundRescheduledByMeReasonMsg"] | components["schemas"]["RoundRescheduledByThemReasonMsg"] | components["schemas"]["RoundRescheduledByMutualReasonMsg"] | components["schemas"]["RoundRescheduledByNeitherReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByMeMsg"] | components["schemas"]["RoundNeedsNewTimeByThemMsg"] | components["schemas"]["RoundNeedsNewTimeByMutualMsg"] | components["schemas"]["RoundNeedsNewTimeByNeitherMsg"] | components["schemas"]["RoundNeedsNewTimeByMeReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByThemReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByMutualReasonMsg"] | components["schemas"]["RoundNeedsNewTimeByNeitherReasonMsg"] | components["schemas"]["RoundNewTimeNotNeededMsg"] | components["schemas"]["OfferReceivedYearMsg"] | components["schemas"]["OfferReceivedDayMsg"] | components["schemas"]["OfferReceivedNoFiguresMsg"] | components["schemas"]["OfferBackYearMsg"] | components["schemas"]["OfferBackDayMsg"] | components["schemas"]["OfferBackNoFiguresMsg"] | components["schemas"]["OfferAcceptedYearMsg"] | components["schemas"]["OfferAcceptedDayMsg"] | components["schemas"]["OfferAcceptedNoFiguresMsg"] | components["schemas"]["OfferDeclinedYearMsg"] | components["schemas"]["OfferDeclinedDayMsg"] | components["schemas"]["OfferDeclinedNoFiguresMsg"] | components["schemas"]["OfferWithdrawnYearMsg"] | components["schemas"]["OfferWithdrawnDayMsg"] | components["schemas"]["OfferWithdrawnNoFiguresMsg"] | components["schemas"]["OfferRemovedYearMsg"] | components["schemas"]["OfferRemovedDayMsg"] | components["schemas"]["OfferRemovedNoFiguresMsg"] | components["schemas"]["FollowedUpMsg"] | components["schemas"]["NoReplyMsg"] | components["schemas"]["ReplyToReadMsg"] | components["schemas"]["ReplyReadMsg"] | components["schemas"]["RepliedWaitingMsg"] | components["schemas"]["HeardBackMsg"] | components["schemas"]["UndoMoveMsg"] | components["schemas"]["RecruiterChangedMsg"] | components["schemas"]["RecruiterSetMsg"] | components["schemas"]["RecruiterRemovedMsg"] | components["schemas"]["RecruiterChangedAgencyMsg"] | components["schemas"]["RecruiterSetAgencyMsg"] | components["schemas"]["RecruiterRemovedAgencyMsg"] | components["schemas"]["RecruiterChangedOnRoleMsg"] | components["schemas"]["RecruiterSetOnRoleMsg"] | components["schemas"]["RolePersonKeptAgencyMsg"] | components["schemas"]["RolePersonKeptUnnamedAgencyMsg"] | components["schemas"]["RolePersonKeptDirectMsg"]) | null;
             /** Note Title */
             note_title?: string | null;
             offer?: components["schemas"]["TimelineOfferFigure"] | null;
@@ -6726,6 +6881,72 @@ export interface operations {
                 "application/json": components["schemas"]["InterviewPatch"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterviewOut"];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    mark_needs_new_time_api_v1_interviews__interview_id__needs_new_time_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                interview_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NeedsNewTimeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterviewOut"];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    clear_needs_new_time_api_v1_interviews__interview_id__needs_new_time_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                interview_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

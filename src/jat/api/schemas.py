@@ -644,6 +644,26 @@ class RoundSummary(Out):
     label: str
     starts_at: datetime | None
     deadline_at: datetime | None
+    # It can't go ahead at `starts_at` and no new time is agreed yet: since when, and who needed that.
+    # Both null when it doesn't (and from servers before this).
+    needs_new_time_since: datetime | None = None
+    needs_new_time_by: RescheduleBy | None = None
+
+
+class RebookTodoIn(In):
+    """The to-do to book a round's new time, in your words: the app suggests the text in your language."""
+
+    text: str = Field(min_length=1, max_length=500)
+    due_on: date | None = None
+
+
+class NeedsNewTimeIn(In):
+    """A booked round can't go ahead at its time and no new one is agreed yet. Who needed that is
+    required, as in the Reschedule dialog; why is optional. Both go on the timeline."""
+
+    by: RescheduleBy
+    reason: str | None = Field(default=None, max_length=500)
+    todo: RebookTodoIn | None = None  # also add a to-do (open) on the application to book the new time
 
 
 class RoundMove(BaseModel):
@@ -670,6 +690,7 @@ class InterviewOut(RoundSummary):
     rescheduled_count: int  # times a booked round moved to another time
     rescheduled_from: datetime | None  # the time it moved from last (unknown for moves before 0014)
     moves: list[RoundMove] = []  # the moves with both times saved, oldest first; can be fewer than the count
+    rebook_todo_id: str | None = None  # the to-do to book its new time, if one was made (it may since be gone)
     # For lists across applications (the Interviews page).
     company_name: str
     role_title: str
@@ -881,6 +902,51 @@ class RoundRescheduledByMutualReasonMsg(BaseModel):
 class RoundRescheduledByNeitherReasonMsg(BaseModel):
     key: Literal["event.roundRescheduledByNeitherReason"]
     params: RoundReasonParams
+
+
+class RoundNeedsNewTimeByMeMsg(BaseModel):
+    key: Literal["event.roundNeedsNewTimeByMe"]
+    params: RoundParams
+
+
+class RoundNeedsNewTimeByThemMsg(BaseModel):
+    key: Literal["event.roundNeedsNewTimeByThem"]
+    params: RoundParams
+
+
+class RoundNeedsNewTimeByMutualMsg(BaseModel):
+    key: Literal["event.roundNeedsNewTimeByMutual"]
+    params: RoundParams
+
+
+class RoundNeedsNewTimeByNeitherMsg(BaseModel):
+    key: Literal["event.roundNeedsNewTimeByNeither"]
+    params: RoundParams
+
+
+class RoundNeedsNewTimeByMeReasonMsg(BaseModel):
+    key: Literal["event.roundNeedsNewTimeByMeReason"]
+    params: RoundReasonParams
+
+
+class RoundNeedsNewTimeByThemReasonMsg(BaseModel):
+    key: Literal["event.roundNeedsNewTimeByThemReason"]
+    params: RoundReasonParams
+
+
+class RoundNeedsNewTimeByMutualReasonMsg(BaseModel):
+    key: Literal["event.roundNeedsNewTimeByMutualReason"]
+    params: RoundReasonParams
+
+
+class RoundNeedsNewTimeByNeitherReasonMsg(BaseModel):
+    key: Literal["event.roundNeedsNewTimeByNeitherReason"]
+    params: RoundReasonParams
+
+
+class RoundNewTimeNotNeededMsg(BaseModel):
+    key: Literal["event.roundNewTimeNotNeeded"]
+    params: RoundParams
 
 
 class OfferReceivedYearMsg(BaseModel):
@@ -1120,6 +1186,15 @@ EventMsg = Annotated[
     | RoundRescheduledByThemReasonMsg
     | RoundRescheduledByMutualReasonMsg
     | RoundRescheduledByNeitherReasonMsg
+    | RoundNeedsNewTimeByMeMsg
+    | RoundNeedsNewTimeByThemMsg
+    | RoundNeedsNewTimeByMutualMsg
+    | RoundNeedsNewTimeByNeitherMsg
+    | RoundNeedsNewTimeByMeReasonMsg
+    | RoundNeedsNewTimeByThemReasonMsg
+    | RoundNeedsNewTimeByMutualReasonMsg
+    | RoundNeedsNewTimeByNeitherReasonMsg
+    | RoundNewTimeNotNeededMsg
     | OfferReceivedYearMsg
     | OfferReceivedDayMsg
     | OfferReceivedNoFiguresMsg

@@ -194,6 +194,12 @@ class Interview(IdMixin, TimestampMixin, Base):
     # How often a booked round moved to another time, and the time it moved from last.
     rescheduled_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     rescheduled_from: Mapped[datetime | None]
+    # It can't go ahead at its time and no new one is agreed yet: since when, and who needed that
+    # (the why is on the timeline). It keeps its old time until the new one is set, which is the move.
+    needs_new_time_since: Mapped[datetime | None]
+    needs_new_time_by: Mapped[str | None] = mapped_column(String(20))  # me | them | mutual | neither
+    # The to-do made to book the new time, ticked off when it's set. A link, like a to-do's own (no foreign key).
+    rebook_todo_id: Mapped[str | None] = mapped_column(String(36))
 
 
 class InterviewContact(IdMixin, Base):
