@@ -23,6 +23,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { InterviewOutcome } from "../components/OutcomeNotes";
+import { CallRescheduleButton } from "../components/CallReschedule";
 import { NeedsNewTimeBadge, RescheduleButton, wasText } from "../components/Reschedule";
 import { ReplyHabit } from "../components/ReplyHabit";
 import { PersonName } from "../components/GhostMark";
@@ -485,7 +486,11 @@ export function TodayPage() {
   const todosLater = todos.filter((t) => t.due_on && t.due_on > day);
   // Calls, interviews and dated to-dos in one list by time; rounds not booked yet go last.
   const comingUp = [
-    ...meetings.map((m) => ({ key: m.id, at: m.starts_at, node: <MeetingLine key={m.id} meeting={m} /> })),
+    ...meetings.map((m) => ({
+      key: m.id,
+      at: m.starts_at,
+      node: <MeetingLine key={m.id} meeting={m} action={<CallRescheduleButton meeting={m} />} />,
+    })),
     ...(data?.upcoming ?? []).map((i) => ({
       key: i.id,
       at: i.starts_at ?? i.deadline_at ?? "9999",
@@ -724,6 +729,7 @@ export function TodayPage() {
                       action={
                         <Group gap={6} className={classes.actions}>
                           <MeetingOutcome meeting={m} />
+                          <CallRescheduleButton meeting={m} />
                         </Group>
                       }
                     />

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import UTC, date, datetime, time
-from typing import Annotated, Literal
+from typing import Annotated, Literal, get_args
 
 from fastapi import APIRouter, Query, Request
 from pydantic import AwareDatetime, BaseModel
@@ -26,6 +26,7 @@ from ..db.models import (
     Interview,
     InterviewContact,
     Meeting,
+    MeetingMove,
     NoteIndex,
     Offer,
     Role,
@@ -35,8 +36,9 @@ from ..domain import offers as offers_svc
 from ..domain.applications import STAGE_CHANGE, is_call_move, is_implied
 from .deps import SessionDep, WorkflowDep
 from .meetings import label as meeting_label
+from .meetings import move_message as meeting_move_message
 from .notes import _sync
-from .schemas import EventMsg, RoundMove, read_event_msg, read_round_move
+from .schemas import EventMsg, RescheduleBy, RoundMove, read_event_msg, read_round_move
 
 router = APIRouter(tags=["timeline"])
 
@@ -280,10 +282,14 @@ def timeline(
         )
 
     items: list[TimelineItem] = []
+    # Calls' moves already on an application's timeline, so the call's own record doesn't show them again.
+    logged_moves: set[tuple[str, datetime, datetime]] = set()
 
     for e in session.scalars(select(Event).order_by(Event.occurred_at, Event.seq)):
         if e.kind == STAGE_CHANGE and e.from_stage is None and is_implied(e):
             continue  # the app filled in the first stage: its move on reads "Added at …"
+        if is_call_move(e.kind, e.data) and (logged := read_round_move(e.kind, e.data)) is not None:
+            logged_moves.add((str(e.data.get("meeting_id")), logged.from_at, logged.to_at))
         if e.application_id in apps:
             items.append(
                 on_app(
@@ -372,6 +378,34 @@ def timeline(
             detail=m.notes or m.agenda,
             roles=from_call[m.id],
             call=TimelineCall(kind=m.kind, title=m.title, status=status, contact_name=c.name),
+        )
+        if m.application_id in apps:
+            item = on_app(m.application_id, **fields)
+            if all(p.id != c.id for p in item.people):
+                item.people.insert(0, TimelinePerson(id=c.id, name=c.name))
+            items.append(item)
+        else:
+            items.append(about_contact(c, **fields))
+
+    # Each move of a call, when it was made, worded like the entry a call about an application gets: a
+    # call without one has no timeline of its own. Moves already there (that entry) aren't shown twice.
+    meetings = {m.id: m for m in session.scalars(select(Meeting).where(Meeting.id.in_(select(MeetingMove.meeting_id))))}
+    for mv in session.scalars(select(MeetingMove).where(MeetingMove.to_at.is_not(None))):
+        m = meetings.get(mv.meeting_id)
+        c = contacts.get(m.contact_id) if m else None
+        if m is None or c is None or (m.id, mv.from_at, mv.to_at) in logged_moves:
+            continue
+        by = mv.by if mv.by in get_args(RescheduleBy) else None  # a hand-edited export: not said
+        key, params, summary = meeting_move_message(m, c.name, by, mv.reason)
+        fields = dict(
+            id=f"meeting-move:{mv.id}",
+            at=mv.created_at,
+            all_day=False,
+            category="meeting",
+            kind="other-event",
+            title=summary,
+            msg=read_event_msg({"msg": {"key": key, "params": params}}),
+            reschedule=RoundMove(from_at=mv.from_at, to_at=mv.to_at, by=by, reason=mv.reason or None),
         )
         if m.application_id in apps:
             item = on_app(m.application_id, **fields)

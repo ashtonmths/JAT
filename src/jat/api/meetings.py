@@ -167,20 +167,29 @@ def _record_move(session: Session, meeting: Meeting, moved_from: datetime, by: s
     if app is None:
         return
     contact = session.get(Contact, meeting.contact_id)
-    params: dict[str, str | int | None] = {"kind": meeting.kind, "title": meeting.title, "contact_name": contact.name}
+    key, params, summary = move_message(meeting, contact.name, by, reason)
+    move = {"from": moved_from.isoformat(), "to": meeting.starts_at.isoformat(), "by": by, "reason": reason or None}
+    data = {"meeting_id": meeting.id, "status": meeting.status, "reschedule": move}
+    app_svc.log_message(session, app, "call", key=key, params=params, summary=summary, data=data)
+
+
+def move_message(
+    meeting: Meeting, contact_name: str, by: str | None, reason: str | None
+) -> tuple[app_svc.EventMsgKey, dict[str, str | int | None], str]:
+    """A call's move in words: its message key and raw parts, and the English, "Call with Alex
+    Morgan rescheduled (they needed the change): why". A `by` the app doesn't know is left unsaid."""
+    params: dict[str, str | int | None] = {"kind": meeting.kind, "title": meeting.title, "contact_name": contact_name}
     key: app_svc.EventMsgKey = "event.callRescheduled"
     reason_key: app_svc.EventMsgKey = "event.callRescheduledReason"
-    summary = f"{label(meeting, contact.name)} rescheduled"
-    if by:
+    summary = f"{label(meeting, contact_name)} rescheduled"
+    if by in _RESCHEDULED_BY:
         key, reason_key, words = _RESCHEDULED_BY[by]
         summary = f"{summary} ({words})"
     if reason:
         key = reason_key
         params["reason"] = reason
         summary = f"{summary}: {reason}"
-    move = {"from": moved_from.isoformat(), "to": meeting.starts_at.isoformat(), "by": by, "reason": reason or None}
-    data = {"meeting_id": meeting.id, "status": meeting.status, "reschedule": move}
-    app_svc.log_message(session, app, "call", key=key, params=params, summary=summary, data=data)
+    return key, params, summary
 
 
 @router.patch("/meetings/{meeting_id}", response_model=S.MeetingOut)
