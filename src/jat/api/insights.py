@@ -455,6 +455,44 @@ def rejection_feedback(
     ]
 
 
+class RejectionKind(BaseModel):
+    kind: str  # a round's kind: coding_task, technical…
+    count: int
+
+
+class RejectionRound(BaseModel):
+    round: int
+    count: int
+
+
+class RejectionRoundsOut(BaseModel):
+    """Rejections that stand, by the last round reached before each (see domain/rejections.py)."""
+
+    rejections: int
+    no_rounds: int  # rejected before reaching any round
+    unnumbered: int  # came after a round with no number (counted by kind, not by number)
+    by_kind: list[RejectionKind]  # most first, then by kind
+    by_number: list[RejectionRound]  # by round number
+
+
+@router.get("/rejections/rounds", response_model=RejectionRoundsOut)
+def rejection_rounds(
+    session: SessionDep,
+    since: AwareDatetime | None = None,
+    until: AwareDatetime | None = None,
+):
+    """Which round rejections came after, for rejections in [since, until) by their date: plain
+    counts by the last round's kind and number, and how many came before any round."""
+    r = rejections_svc.by_round(session, since=since, until=until)
+    return RejectionRoundsOut(
+        rejections=r.rejections,
+        no_rounds=r.no_rounds,
+        unnumbered=r.unnumbered,
+        by_kind=[RejectionKind(kind=k, count=n) for k, n in sorted(r.by_kind.items(), key=lambda kn: (-kn[1], kn[0]))],
+        by_number=[RejectionRound(round=k, count=n) for k, n in sorted(r.by_number.items())],
+    )
+
+
 class ConversationTally(BaseModel):
     calls_held: int  # marked Happened
     calls_booked: int  # still to come

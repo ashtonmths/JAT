@@ -8695,6 +8695,24 @@
         "title": "RejectionFeedbackIn",
         "type": "object"
       },
+      "RejectionKind": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "count"
+        ],
+        "title": "RejectionKind",
+        "type": "object"
+      },
       "RejectionOut": {
         "description": "One application's rejection feedback, with what's needed to list it (lighter than an application row).",
         "properties": {
@@ -8803,6 +8821,64 @@
           "added_at_rejected"
         ],
         "title": "RejectionOut",
+        "type": "object"
+      },
+      "RejectionRound": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "round": {
+            "title": "Round",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "round",
+          "count"
+        ],
+        "title": "RejectionRound",
+        "type": "object"
+      },
+      "RejectionRoundsOut": {
+        "description": "Rejections that stand, by the last round reached before each (see domain/rejections.py).",
+        "properties": {
+          "by_kind": {
+            "items": {
+              "$ref": "#/components/schemas/RejectionKind"
+            },
+            "title": "By Kind",
+            "type": "array"
+          },
+          "by_number": {
+            "items": {
+              "$ref": "#/components/schemas/RejectionRound"
+            },
+            "title": "By Number",
+            "type": "array"
+          },
+          "no_rounds": {
+            "title": "No Rounds",
+            "type": "integer"
+          },
+          "rejections": {
+            "title": "Rejections",
+            "type": "integer"
+          },
+          "unnumbered": {
+            "title": "Unnumbered",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "rejections",
+          "no_rounds",
+          "unnumbered",
+          "by_kind",
+          "by_number"
+        ],
+        "title": "RejectionRoundsOut",
         "type": "object"
       },
       "RepliedWaitingMsg": {
@@ -12743,7 +12819,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.16.0"
+    "version": "1.17.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -15923,6 +15999,74 @@
           }
         },
         "summary": "Rejection Feedback",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/api/v1/insights/rejections/rounds": {
+      "get": {
+        "description": "Which round rejections came after, for rejections in [since, until) by their date: plain\ncounts by the last round's kind and number, and how many came before any round.",
+        "operationId": "rejection_rounds_api_v1_insights_rejections_rounds_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectionRoundsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
+          }
+        },
+        "summary": "Rejection Rounds",
         "tags": [
           "insights"
         ]

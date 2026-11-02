@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.17.0 (2026-11-02)
+
+- **Which round rejections came after:** the Rejections tab on Insights now counts every rejection by the last round it came after, by kind (for example "4 of 6 rejections came after a coding task") and by round number, with those before any round on their own. Only rounds that had happened count: a round booked for later, cancelled, waiting for a new time, or marked done after the rejection doesn't. Plain counts, not a pattern. Restart the tracker and rebuild the frontend to see it (#213).
+
 ## 1.16.0 (2026-11-02)
 
 - **All your rejection feedback in one place:** a new *Rejections* tab on Insights lists every application with feedback, newest first: company and role, the recruiter, when it was rejected and from which stage, where it is now if it's moved since, and the feedback as you wrote it. The period goes by when it was rejected. Restart the tracker and rebuild the frontend to see it (#212).

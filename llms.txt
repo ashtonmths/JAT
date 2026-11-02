@@ -20,7 +20,8 @@ What it does:
 - Rejection feedback: moving to Rejected asks what they said (optional), kept as written on the
   application and editable later (`rejection_feedback` on a move,
   `PUT /api/v1/applications/{id}/rejection-feedback`); all of it in one place on Insights'
-  Rejections tab, newest first (`GET /api/v1/insights/rejections`).
+  Rejections tab, newest first (`GET /api/v1/insights/rejections`), with counts of which round
+  (type and number) rejections came after (`GET /api/v1/insights/rejections/rounds`).
 - Recruiter CRM: agencies and people (one person per email address and LinkedIn profile;
   merge two records, `POST /api/v1/contacts/{id}/merge`), person pages with booked and logged
   calls and meetings (`/api/v1/meetings`; rescheduled with who and why, each move kept, or

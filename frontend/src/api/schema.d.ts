@@ -827,6 +827,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights/rejections/rounds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Rejection Rounds
+         * @description Which round rejections came after, for rejections in [since, until) by their date: plain
+         *     counts by the last round's kind and number, and how many came before any round.
+         */
+        get: operations["rejection_rounds_api_v1_insights_rejections_rounds_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/insights/rescheduling": {
         parameters: {
             query?: never;
@@ -4045,6 +4066,13 @@ export interface components {
             /** Feedback */
             feedback: string | null;
         };
+        /** RejectionKind */
+        RejectionKind: {
+            /** Count */
+            count: number;
+            /** Kind */
+            kind: string;
+        };
         /**
          * RejectionOut
          * @description One application's rejection feedback, with what's needed to list it (lighter than an application row).
@@ -4076,6 +4104,29 @@ export interface components {
             stage: string;
             /** Stage Name */
             stage_name: string;
+        };
+        /** RejectionRound */
+        RejectionRound: {
+            /** Count */
+            count: number;
+            /** Round */
+            round: number;
+        };
+        /**
+         * RejectionRoundsOut
+         * @description Rejections that stand, by the last round reached before each (see domain/rejections.py).
+         */
+        RejectionRoundsOut: {
+            /** By Kind */
+            by_kind: components["schemas"]["RejectionKind"][];
+            /** By Number */
+            by_number: components["schemas"]["RejectionRound"][];
+            /** No Rounds */
+            no_rounds: number;
+            /** Rejections */
+            rejections: number;
+            /** Unnumbered */
+            unnumbered: number;
         };
         /** RepliedWaitingMsg */
         RepliedWaitingMsg: {
@@ -7089,6 +7140,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RejectionOut"][];
+                };
+            };
+            /** @description An error, with a code when people can see it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorOut"];
+                };
+            };
+        };
+    };
+    rejection_rounds_api_v1_insights_rejections_rounds_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectionRoundsOut"];
                 };
             };
             /** @description An error, with a code when people can see it */
