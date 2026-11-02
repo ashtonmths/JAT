@@ -48,7 +48,8 @@ What it does:
   (`GET /api/v1/timeline`; `/timeline?about=contact:<id>&period=all`, or `company:`, `agency:`).
 - Insights: the whole picture, one Sankey diagram from each role's source (through a
   recruiter, referred, found yourself) to passed, deciding, its stages and what's still
-  waiting (`GET /api/v1/insights/whole-flow`); stage flows by date and route; conversion and
+  waiting (`GET /api/v1/insights/whole-flow`); stage flows by date and route (both can expand
+  Interviewing into its rounds with `?rounds=true`); conversion and
   median time per stage; direct vs recruiter outcomes; weekly activity; a recruiter and
   agency scorecard; recruiter conversations (`GET /api/v1/insights/conversations`); how many
   booked rounds moved and who needed it (`GET /api/v1/insights/rescheduling`).

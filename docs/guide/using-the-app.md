@@ -646,6 +646,20 @@ It counts roles and applications added in the date range; a role you applied to 
 twice. As in *Where applications go*, an application moved back counts at the furthest stage it
 reached.
 
+**Show interview rounds**, a switch on both Sankey diagrams, splits *Interviewing* into the
+rounds each application reached before it moved on, so the flow reads *Interviewing → Round 1 →
+Round 2 → Rejected*. It's off at first, and the app remembers your choice for both diagrams. An
+application still interviewing waits after its last round (*Still interviewing*), and one with no
+rounds goes straight on from *Interviewing*. If round numbers skip, the flow goes from one round
+to the next one there is (Round 1 → Round 3).
+
+A round counts as reached by the same rule as
+[which round rejections came after](#insights): it wasn't cancelled or waiting for a new time,
+and it happened (or its take-home was done) before the application moved to its next stage.
+Rounds belong to the stage whose id contains "interview", as on the board's
+[column per interview round](#applications-list-and-board). If the switch says to restart, the
+tracker is still running an older version: restart it after updating.
+
 **Applications**
 
 - **Where applications go**: a Sankey diagram of applications flowing through the stages,
