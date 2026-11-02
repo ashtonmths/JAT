@@ -83,6 +83,36 @@ def test_a_take_home_handed_in_early_counts(client, seeded):
     )
 
 
+def _sql(app, statement, **values):
+    """Reach a state the API won't make (older data, or a round added long ago)."""
+    engine = make_engine(db_path(app.state.jat.data_dir))
+    with engine.begin() as conn:
+        conn.execute(text(statement), values)
+    engine.dispose()
+
+
+def test_a_take_home_handed_in_after_a_reopening_doesnt_count_against_the_first_rejection(app, client, seeded):
+    a = _app(client, seeded)
+    task = _round(client, a, "coding_task", deadline_at="2099-03-01T17:00:00Z")
+    _sql(app, "UPDATE interviews SET created_at = '2026-01-01T09:00:00Z' WHERE id = :id", id=task)
+    _move(client, a, "rejected", "2026-02-01T09:00:00Z")
+    _move(client, a, "interviewing", "2026-02-10T09:00:00Z")  # they came back
+    r = client.patch(f"/api/v1/interviews/{task}", json={"status": "done"})  # handed in now, after the rejection
+    assert r.status_code == 200, r.text
+    counts = _counts(client)
+    assert (counts["rejections"], counts["no_rounds"], counts["by_kind"]) == (1, 1, [])
+
+
+def test_a_round_done_with_nothing_on_its_timeline_goes_by_when_it_was_added(app, client, seeded):
+    a = _app(client, seeded)
+    task = _round(client, a, "system_design", status="done")
+    # Older data: no timeline entry says it was done, and it was added before the rejection.
+    _sql(app, "UPDATE interviews SET created_at = '2026-01-01T09:00:00Z' WHERE id = :id", id=task)
+    _sql(app, "DELETE FROM events WHERE kind = 'interview' AND application_id = :id", id=a)
+    _move(client, a, "rejected", "2026-02-01T09:00:00Z")
+    assert _counts(client)["by_kind"] == [{"kind": "system_design", "count": 1}]
+
+
 def test_a_round_waiting_for_a_new_time_wasnt_reached(client, seeded):
     a = _app(client, seeded)
     _round(client, a, "screen", "2099-01-01T09:00:00Z", status="done")
@@ -98,10 +128,7 @@ def test_a_round_with_no_number_counts_by_kind(app, client, seeded):
     a = _app(client, seeded)
     unnumbered = _round(client, a, "pairing", "2026-10-01T09:00:00Z")
     _move(client, a, "rejected", "2026-10-02T09:00:00Z")
-    engine = make_engine(db_path(app.state.jat.data_dir))
-    with engine.begin() as conn:  # a state the API won't make: rounds get a number when added
-        conn.execute(text("UPDATE interviews SET round = NULL WHERE id = :id"), {"id": unnumbered})
-    engine.dispose()
+    _sql(app, "UPDATE interviews SET round = NULL WHERE id = :id", id=unnumbered)  # rounds get a number when added
     counts = _counts(client)
     assert (counts["unnumbered"], counts["by_kind"], counts["by_number"]) == (
         1,

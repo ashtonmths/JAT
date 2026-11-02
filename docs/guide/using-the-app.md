@@ -747,11 +747,12 @@ feedback or not, by the last interview round each one *reached* before you were 
 
 A round counts as reached if it wasn't cancelled and its time (or a take-home's deadline) was at
 or before the rejection. A round with no time, or a take-home due after the rejection, counts if
-it's marked done and was added before then (handed in early). The app doesn't keep when a round
-was marked done, so it goes by when the round was added. These don't count:
+it was marked done by then (handed in early). When it was marked done comes from the
+application's timeline. A round with no such entry, from before the timeline recorded it, goes by
+when the round was added. These don't count:
 - a round waiting for a new time when you were turned down;
 - a round booked for after the rejection;
-- a round added after the application was reopened.
+- a round marked done after the rejection, for example after the application was reopened.
 
 These are plain counts, not rates. With only a few rejections, one more can change the picture.
 
