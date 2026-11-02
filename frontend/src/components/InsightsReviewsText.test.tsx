@@ -155,6 +155,59 @@ describe("recruiter conversations", () => {
     expect(screen.getByText("2 people")).toBeInTheDocument();
   });
 
+  it("counts calls moved and who needed it, in whole sentences, one and many", async () => {
+    const moved = {
+      calls_moved: 3,
+      call_moves: 4,
+      calls_waiting: 2,
+      moves_by_me: 1,
+      moves_by_them: 2,
+      moves_by_mutual: 0,
+      moves_by_neither: 0,
+      moves_not_recorded: 1,
+    };
+    await openIt(conversations({ total: tally(moved) }));
+    expect(
+      await screen.findByText(
+        "3 calls were moved to another time. That's 4 moves in all: a call that moves twice is one call and two moves. 2 calls are waiting for a new time: each counts as moved, but not as held or booked ahead.",
+      ),
+    ).toBeInTheDocument();
+    const table = screen.getByRole("table", { name: "Calls moved" });
+    const rows = within(table)
+      .getAllByRole("row")
+      .map((r) => r.textContent);
+    expect(rows).toEqual([
+      "Who needed the changeMoves",
+      "Me1",
+      "Them2",
+      "Both of us0",
+      "Neither of us0",
+      "Not recorded1",
+    ]);
+    expect(
+      screen.getByText(
+        "Not recorded means the app doesn't know who: the time was changed on the call's Edit form.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("says one call moved once and waiting, and nothing when none moved", async () => {
+    const one = { calls_moved: 1, call_moves: 1, calls_waiting: 1, moves_by_them: 1 };
+    await openIt(conversations({ total: tally(one) }));
+    expect(
+      await screen.findByText(
+        "1 call was moved to another time. That's 1 move. 1 call is waiting for a new time: it counts as moved, but not as held or booked ahead.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/^Not recorded means/)).toBeNull();
+  });
+
+  it("shows no calls moved from a server before calls could move", async () => {
+    await openIt(conversations());
+    await screen.findByText(/^No roles pitched in this period\./);
+    expect(screen.queryByText("Calls moved")).toBeNull();
+  });
+
   it("says why you passed, with whatever's known", async () => {
     const reason = (id: string, person_name: string | null, decided_on: string | null) => ({
       role_id: id,

@@ -659,7 +659,14 @@ the role); roles you found yourself aren't counted here.
   towards the time to decide), interviews and offers that came
   from pitched roles, ghosted applications from pitches, and the median time to decide (from
   adding the role to applying or passing; a backdated application counts from its first
-  stage).
+  stage). A call waiting for a new time counts as neither held nor booked ahead.
+- **Calls moved**: when any have, how many calls moved to another time and how many moves that
+  was, split by who needed the change, as plain counts like *Rescheduling* on the Applications
+  tab. A call waiting for a new time counts as moved, one move by whoever needed it; setting the
+  new time completes that move rather than adding another. *Not recorded* holds times changed on
+  the call's Edit form. Calls count by when they happen, as the rest of this tab does.
+  *Rescheduling* on the Applications tab stays about rounds, counted by when their application was
+  added, so the two blocks can't be added together.
 - **Where pitched roles go**: a Sankey diagram from *Pitched to you* to *Applied*, *Decided
   not to apply* or *Deciding whether to apply*, and from *Applied* to *In progress*, *Offer*,
   *Closed* or *Ghosted* (a role's best application counts once). As in the other diagrams,

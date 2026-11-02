@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.13.0 (2026-11-02)
+
+- **Calls moved, on Insights:** the Recruiter conversations tab counts calls moved to another time and their moves, split by who needed the change, as plain counts. A call waiting for a new time counts as moved, but not as held or booked ahead. Restart the tracker and rebuild the frontend to see it (#208).
+
 ## 1.12.0 (2026-11-02)
 
 - **When a call can't go ahead and no new time is agreed yet:** tick *A new time isn't agreed yet* in the call's Reschedule dialog, say who needed the change and why, and add a to-do to book the new time (on by default, due today; it starts open). The call shows *Needs a new time* on the person's page and in Today's *Your move*, with its to-do beside it. *Set new time* books it as one move and ticks the to-do off; Undo, or *Keep the old time*, takes the mark back. Rebuild the frontend after updating (#207).

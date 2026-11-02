@@ -203,6 +203,21 @@ export default {
       ghosted: "Ghosted",
       ghostedHint: "applications from pitches",
     },
+    // Calls moved to another time, as plain counts: like Rescheduling on the Applications tab, no rates.
+    moved: {
+      title: "Calls moved",
+      calls_one: "{{count}} call was moved to another time.",
+      calls_other: "{{count}} calls were moved to another time.",
+      moves_one: "That's {{count}} move.",
+      moves_other: "That's {{count}} moves in all: a call that moves twice is one call and two moves.",
+      // Calls that can't go ahead at their time and have no new one yet.
+      waiting_one:
+        "{{count}} call is waiting for a new time: it counts as moved, but not as held or booked ahead.",
+      waiting_other:
+        "{{count}} calls are waiting for a new time: each counts as moved, but not as held or booked ahead.",
+      notRecordedHint:
+        "Not recorded means the app doesn't know who: the time was changed on the call's Edit form.",
+    },
     flow: "Where pitched roles go",
     noPitched:
       "No roles pitched in this period. On someone's page, <b>Add roles from this call</b> for each role they mention.",

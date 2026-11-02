@@ -419,6 +419,17 @@ class ConversationTally(BaseModel):
     calls_booked: int  # still to come
     calls_cancelled: int
     last_call: datetime | None
+    # Calls that can't go ahead at their time, with no new one yet: neither held nor booked ahead.
+    calls_waiting: int = 0
+    # Calls moved to another time, and their moves by who needed the change (a waiting call's started
+    # move counts, with its who). Defaults: none from a server before calls could move.
+    calls_moved: int = 0
+    call_moves: int = 0
+    moves_by_me: int = 0
+    moves_by_them: int = 0
+    moves_by_mutual: int = 0
+    moves_by_neither: int = 0
+    moves_not_recorded: int = 0  # changed on the call's Edit form, which doesn't ask who
     pitched: int  # roles they told you about
     applied: int  # of those, ones you applied for
     passed: int  # ones you passed on
@@ -472,6 +483,14 @@ def _tally(t: conv_svc.Tally) -> dict:
         calls_booked=t.calls_booked,
         calls_cancelled=t.calls_cancelled,
         last_call=t.last_call,
+        calls_waiting=t.calls_waiting,
+        calls_moved=t.calls_moved,
+        call_moves=t.call_moves,
+        moves_by_me=t.moves_by["me"],
+        moves_by_them=t.moves_by["them"],
+        moves_by_mutual=t.moves_by["mutual"],
+        moves_by_neither=t.moves_by["neither"],
+        moves_not_recorded=t.moves_by["not_recorded"],
         pitched=t.pitched,
         applied=t.applied,
         passed=t.passed,
