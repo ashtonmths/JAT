@@ -110,6 +110,20 @@ test.describe("what it shows", () => {
     await expect(card(page, "Fabrikam", "Staff Platform Engineer")).toContainText("Reply to read");
   });
 
+  test("a direct card names its in-house recruiter, and one without shows no one", async ({
+    page,
+    request,
+  }) => {
+    const made = await request.post("/api/v1/applications/quick", {
+      data: { company_name: "In-house Card Co", role_title: "Card Role", recruiter_name: "Ellis Varga" },
+    });
+    expect(made.ok()).toBe(true);
+    // Another role at the same company, with no recruiter: their name mustn't leak onto it.
+    await addCard(page, request, "In-house Card Co", "Other Card Role");
+    await expect(card(page, "In-house Card Co", "Card Role")).toContainText("Ellis Varga");
+    await expect(card(page, "In-house Card Co", "Other Card Role")).not.toContainText("Ellis Varga");
+  });
+
   test("a filter applies to the board too", async ({ page }) => {
     await expect(card(page, "Litware", "Senior Software Engineer")).toBeVisible();
     await page.getByPlaceholder("Search company, role, recruiter…").fill("Contoso");

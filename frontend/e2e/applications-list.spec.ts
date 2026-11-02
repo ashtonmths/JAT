@@ -32,6 +32,25 @@ test.describe("the list", () => {
     await expect(row(page, ...ADVENTURE)).toContainText("Direct");
   });
 
+  test("a direct one names its in-house recruiter, and one without just says Direct", async ({
+    page,
+    request,
+  }) => {
+    for (const [company, recruiter_name] of [
+      ["In-house List Co", "Dana Whitlock"],
+      ["Plain List Co", undefined],
+    ]) {
+      const made = await request.post("/api/v1/applications/quick", {
+        data: { company_name: company, role_title: "List Role", recruiter_name },
+      });
+      expect(made.ok()).toBe(true);
+    }
+    await page.reload();
+    const route = (company: string) => row(page, "List Role", company).getByRole("cell").nth(1);
+    await expect(route("In-house List Co")).toHaveText("Direct · Dana Whitlock");
+    await expect(route("Plain List Co")).toHaveText("Direct");
+  });
+
   test("flags what needs chasing and what has a reply to read", async ({ page }) => {
     await expect(row(page, ...LITWARE)).toContainText("needs chasing");
     await expect(row(page, "Staff Platform Engineer", "Fabrikam")).toContainText("reply to read");

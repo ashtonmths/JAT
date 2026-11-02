@@ -67,7 +67,7 @@ function CardBody({ row }: { row: ApplicationRow }) {
       ? row.recruiter_name || row.agency_name
       : row.route === "referral"
         ? t("routes.referral")
-        : null;
+        : row.recruiter_name; // an in-house recruiter
   return (
     <>
       <Text fw={600} size="sm" lineClamp={1}>
@@ -92,7 +92,9 @@ function CardBody({ row }: { row: ApplicationRow }) {
         </Text>
         {via && (
           <Text size="xs" c="dimmed" lineClamp={1}>
-            {row.route === "agency" && row.recruiter_name && <PersonMarks id={row.recruiter_id} size={12} />}
+            {row.route !== "referral" && row.recruiter_name && (
+              <PersonMarks id={row.recruiter_id} size={12} />
+            )}
             {via}
           </Text>
         )}

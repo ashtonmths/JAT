@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Response
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
-from ..db.models import Application, Company, Offer, Role
+from ..db.models import Application, Company, Contact, Offer, Role
 from ..domain import offers as svc
 from . import schemas as S
 from .crud import values
@@ -16,18 +16,22 @@ from .errors import CodedError
 router = APIRouter(tags=["offers"])
 
 
+Recruiter = aliased(Contact)
+
+
 def _query():
     return (
-        select(Offer, Role.title, Company.name, Application.stage)
+        select(Offer, Role.title, Company.name, Application.stage, Recruiter.id, Recruiter.name)
         .join(Application, Offer.application_id == Application.id)
         .join(Role, Application.role_id == Role.id)
         .join(Company, Role.company_id == Company.id)
+        .outerjoin(Recruiter, Application.recruiter_id == Recruiter.id)
     )
 
 
 def _outs(found) -> list[S.OfferOut]:
     outs = []
-    for offer, role_title, company_name, stage in found:
+    for offer, role_title, company_name, stage, recruiter_id, recruiter_name in found:
         value, basis = svc.annual_value(offer)
         outs.append(
             S.OfferOut(
@@ -37,6 +41,8 @@ def _outs(found) -> list[S.OfferOut]:
                 company_name=company_name,
                 role_title=role_title,
                 stage=stage,
+                recruiter_id=recruiter_id,
+                recruiter_name=recruiter_name,
             )
         )
     return outs

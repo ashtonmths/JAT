@@ -5109,6 +5109,28 @@
             ],
             "title": "Rebook Todo Id"
           },
+          "recruiter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Id"
+          },
+          "recruiter_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Name"
+          },
           "rescheduled_count": {
             "title": "Rescheduled Count",
             "type": "integer"
@@ -7195,6 +7217,28 @@
               }
             ],
             "title": "Received On"
+          },
+          "recruiter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Id"
+          },
+          "recruiter_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Name"
           },
           "respond_by": {
             "anyOf": [
@@ -12335,7 +12379,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.9.0"
+    "version": "1.9.1"
   },
   "openapi": "3.1.0",
   "paths": {

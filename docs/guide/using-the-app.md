@@ -127,6 +127,12 @@ wide screen *Your move* is on the left and the other two sit beside it:
 **Coming up**: nothing to do yet. Interviews, task deadlines, [calls](#calls-and-meetings) and
 to-dos with a later date, soonest first, then rounds not booked yet.
 
+Rows about an application name its recruiter after the company and role, in grey. Interview and
+offer rows show "Contoso · Backend Engineer · Alex Morgan", with the name linked to their page;
+application rows show "Backend Engineer · Alex Morgan" under the company. The Interviews and Offers
+pages and a person's page do the same. With no recruiter (you found it yourself, or a referral) a
+row shows just "Contoso · Backend Engineer".
+
 **Waiting on them**: who you're waiting for.
 
 - **Waiting to hear back**: applications and people you've replied to (see
@@ -226,6 +232,11 @@ The **board** shows a column per stage. Drag a card to move it; the usual next s
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
 switch on *Show closed stages*, but appear while you drag so you can drop a card on them. Cards show the current interview round.
 
+The list's *Route* column and each board card name the application's recruiter. Through an agency,
+the list shows "Alex Morgan · Northwind Talent" and the card "Alex Morgan". Applied directly
+with an in-house recruiter who reached out, the list and the company's page show "Direct · Riley
+Chen" and the card "Riley Chen". With no recruiter, the list shows "Direct" or "Referral".
+
 **A column per interview round** (a switch above the board, remembered) splits *Interviewing*
 into *No round yet*, then *Round 1*, *Round 2*… up to the furthest any application has got
 (empty ones in between up to Round 6), so you can see how far each one is. A card's round is its
@@ -324,7 +335,7 @@ Today, and at the top of their page:
   *Not interested*, with the date. Someone who ghosted you gets a ghost: in place of the
   person icon on their page, and before their name on their tile, on the applications they
   brought you (the list, the board, the quick view, the People card, company, agency and role
-  pages), on calls, Today, Timeline entries and per-person rows, search results, and
+  pages, the Interviews and Offers pages, other people's pages), on calls, Today, Timeline entries and per-person rows, search results, and
   Insights (*Who you talk to* and the recruiter scorecard). Role lines say *(ghosted)* after
   the name.
   To take it off, whenever you like (a week later, say, when they were just slow), press

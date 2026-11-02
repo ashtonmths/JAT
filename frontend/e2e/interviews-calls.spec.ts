@@ -580,6 +580,26 @@ test.describe("the Interviews page", () => {
     await expect(ahead.getByText("Long ago")).toBeHidden();
   });
 
+  test("names the application's recruiter, when it has one", async ({ page, request }) => {
+    const via = await post<{ id: string }>(request, "applications/quick", {
+      company_name: "Recruiter Rows Co",
+      role_title: "Tested Role",
+      route: "direct",
+      recruiter_name: "Rowan Ashdown",
+    });
+    await addRound(request, via.id, { title: "With a recruiter", starts_at: inDays(4) });
+    const alone = await application(request, "No Recruiter Rows Co");
+    await addRound(request, alone.id, { title: "Without a recruiter", starts_at: inDays(4) });
+    await openInterviews(page);
+    const ahead = section(page, "Coming up");
+    const withOne = ahead.getByRole("row").filter({ hasText: "With a recruiter" });
+    await expect(withOne).toContainText("Tested Role · Rowan Ashdown");
+    await expect(withOne.getByRole("link", { name: "Rowan Ashdown" })).toHaveAttribute("href", /^\/people\//);
+    const without = ahead.getByRole("row").filter({ hasText: "Without a recruiter" });
+    await expect(without.getByText("Tested Role", { exact: true })).toBeVisible();
+    await expect(without).not.toContainText("Tested Role ·");
+  });
+
   test("only a booked round can be rescheduled", async ({ page, request }) => {
     const app = await application(request, "Offer Move Co");
     await addRound(request, app.id, { title: "Booked", starts_at: inDays(5) });
