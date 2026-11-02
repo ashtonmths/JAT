@@ -8695,6 +8695,116 @@
         "title": "RejectionFeedbackIn",
         "type": "object"
       },
+      "RejectionOut": {
+        "description": "One application's rejection feedback, with what's needed to list it (lighter than an application row).",
+        "properties": {
+          "added_at_rejected": {
+            "title": "Added At Rejected",
+            "type": "boolean"
+          },
+          "application_id": {
+            "title": "Application Id",
+            "type": "string"
+          },
+          "company_id": {
+            "title": "Company Id",
+            "type": "string"
+          },
+          "company_name": {
+            "title": "Company Name",
+            "type": "string"
+          },
+          "feedback": {
+            "title": "Feedback",
+            "type": "string"
+          },
+          "recruiter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Id"
+          },
+          "recruiter_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recruiter Name"
+          },
+          "rejected_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejected At"
+          },
+          "rejected_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejected From"
+          },
+          "rejected_from_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejected From Name"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          },
+          "stage": {
+            "title": "Stage",
+            "type": "string"
+          },
+          "stage_name": {
+            "title": "Stage Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "application_id",
+          "company_id",
+          "company_name",
+          "role_title",
+          "recruiter_id",
+          "recruiter_name",
+          "stage",
+          "stage_name",
+          "feedback",
+          "rejected_at",
+          "rejected_from",
+          "rejected_from_name",
+          "added_at_rejected"
+        ],
+        "title": "RejectionOut",
+        "type": "object"
+      },
       "RepliedWaitingMsg": {
         "properties": {
           "key": {
@@ -12633,7 +12743,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.15.0"
+    "version": "1.16.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -15741,6 +15851,78 @@
           }
         },
         "summary": "Stage Flow",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/api/v1/insights/rejections": {
+      "get": {
+        "description": "Every application with rejection feedback, newest rejection first. With a period, those\nrejected in [since, until); an application whose move to Rejected was undone has no rejection\ndate, so it's listed only without one.",
+        "operationId": "rejection_feedback_api_v1_insights_rejections_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RejectionOut"
+                  },
+                  "title": "Response Rejection Feedback Api V1 Insights Rejections Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorOut"
+                }
+              }
+            },
+            "description": "An error, with a code when people can see it"
+          }
+        },
+        "summary": "Rejection Feedback",
         "tags": [
           "insights"
         ]

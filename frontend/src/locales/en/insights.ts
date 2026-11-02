@@ -21,6 +21,27 @@ export default {
     applications: "Applications",
     conversations: "Recruiter conversations",
     documents: "CVs and cover letters",
+    rejections: "Rejections",
+  },
+  // Every application's rejection feedback, newest first.
+  rejections: {
+    heading: "Rejection feedback",
+    intro: "What they said when they turned you down, newest first, whatever has happened since.",
+    introPeriod:
+      "What they said when they turned you down, for applications rejected in this period, newest first.",
+    loadFailed: "Couldn't load the rejection feedback. If you've just updated the tracker, restart it.",
+    none: "No rejection feedback yet. When you move an application to Rejected, you can say what they told you.",
+    noneInPeriod: "No rejection feedback for applications rejected in this period.",
+    count_one: "{{count}} application has feedback.",
+    count_other: "{{count}} applications have feedback.",
+    title: "{{company}} · {{role}}",
+    // Each entry's name for screen readers.
+    itemLabel: "{{company}}: {{role}}",
+    // {{stage}} is a stage's name: "Screen", or yours.
+    rejectedFrom: "Rejected from {{stage}} on {{date}}.",
+    addedAt: "Added as rejected on {{date}}.",
+    nowAt: "It's at {{stage}} now.",
+    undone: "Its move to Rejected was undone. It's at {{stage}} now.",
   },
   flow: {
     title: "Where applications go",

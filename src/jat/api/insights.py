@@ -12,6 +12,7 @@ from pydantic import AwareDatetime, BaseModel
 from ..domain import conversations as conv_svc
 from ..domain import document_performance as doc_svc
 from ..domain import insights as svc
+from ..domain import rejections as rejections_svc
 from ..domain import reschedule_stats as resched_svc
 from ..domain import scorecard as score_svc
 from ..domain import stats as stats_svc
@@ -412,6 +413,46 @@ def rescheduling(
         companies=[RescheduledNamed(**vars(n)) for n in r.companies],
         recruiters=[RescheduledNamed(**vars(n)) for n in r.recruiters],
     )
+
+
+class RejectionOut(BaseModel):
+    """One application's rejection feedback, with what's needed to list it (lighter than an application row)."""
+
+    application_id: str
+    company_id: str
+    company_name: str
+    role_title: str
+    recruiter_id: str | None
+    recruiter_name: str | None
+    stage: str  # where it is now: Rejected, or another stage if reopened or the move was undone
+    stage_name: str  # as you wrote it in config.toml (the id, if it's no longer there)
+    feedback: str  # as written
+    rejected_at: datetime | None  # the latest move to Rejected that stands; null: that move was undone
+    rejected_from: str | None  # the stage it was rejected from
+    rejected_from_name: str | None
+    added_at_rejected: bool  # added straight at Rejected: there's no real stage it came from
+
+
+@router.get("/rejections", response_model=list[RejectionOut])
+def rejection_feedback(
+    session: SessionDep,
+    workflow: WorkflowDep,
+    since: AwareDatetime | None = None,
+    until: AwareDatetime | None = None,
+):
+    """Every application with rejection feedback, newest rejection first. With a period, those
+    rejected in [since, until); an application whose move to Rejected was undone has no rejection
+    date, so it's listed only without one."""
+
+    def name(stage: str | None) -> str | None:
+        if stage is None:
+            return None
+        return workflow.stage(stage).name if workflow.has(stage) else stage
+
+    return [
+        RejectionOut(**vars(r), stage_name=name(r.stage) or r.stage, rejected_from_name=name(r.rejected_from))
+        for r in rejections_svc.rejections(session, since=since, until=until)
+    ]
 
 
 class ConversationTally(BaseModel):

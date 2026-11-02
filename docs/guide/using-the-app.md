@@ -626,9 +626,9 @@ so you can also write and edit them in any editor. Tables, checklists and links 
 
 ## Insights
 
-How the search is going, for all time or the last 30 or 90 days. Four tabs: **The whole
-picture**, **Applications**, **Recruiter conversations** and **CVs and cover letters**;
-**Weekly activity** sits under all of them.
+How the search is going, for all time or the last 30 or 90 days. Five tabs: **The whole
+picture**, **Applications**, **Recruiter conversations**, **CVs and cover letters** and
+**Rejections**; **Weekly activity** sits under all of them.
 
 **The whole picture** (the tab Insights opens on) is everything in one Sankey diagram: every
 role, from where it came from to where it is now.
@@ -737,6 +737,23 @@ attached to applications as plain files can be made versions in one go: see
   small numbers. It starts on your two most-sent versions. A CV can't be compared with one of
   its own versions (they share applications); two versions sent with the same application
   share it too, so record the one you actually sent.
+
+**Rejections** lists every application with [rejection feedback](#rejection-feedback) in one
+place, newest rejection first. Each shows:
+- the company and role, linked to the application, and the recruiter;
+- when it was rejected and the stage it was rejected from ("Rejected from Screen on 3 Oct
+  2026."), or *Added as rejected* for one you added straight at Rejected;
+- the feedback, as you wrote it.
+
+An application stays listed whatever happens after, so nothing you wrote drops out of sight. If
+it was reopened, the line also says where it is now. If its move to Rejected was undone, it says
+so and where it is now. Rejected more than once, it shows the latest rejection that still stands
+(by when it happened), with the one piece of feedback it keeps.
+
+The period goes by **when it was rejected**. The whole picture goes by when applications and
+roles were added, the Applications and CVs tabs by when an application was added, and Recruiter
+conversations by when calls happened and roles were pitched. An application whose move to Rejected was undone has no rejection date,
+so it shows only under *All time*.
 
 - **Weekly activity**: applications added and sent, stage moves, interviews, calls held and
   roles pitched per week.
