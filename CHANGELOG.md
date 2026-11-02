@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.9.0 (2026-11-02)
+
+- **Calls remember their moves:** changing a booked call's time now records it as a move, with who needed the change and why when they're sent, and a call keeps its length when it moves (moving one later from its Edit form no longer fails). A call with an application gets an entry on that application's timeline. The API takes `reschedule_by` and `reschedule_reason` on `PATCH /meetings/{id}`, and calls gain `rescheduled_count`, `rescheduled_from` and `moves`. Restart the tracker to run migration 0016, which only adds empty columns and a table; the dialog for calls comes in the next release (#201).
+
 ## 1.8.2 (2026-11-02)
 
 - **Developers:** the rescheduling text is ready for other languages: the moved count on Insights has its own plural forms, and each timeline move line is one whole sentence a translator can reorder. The English is unchanged (#199).
