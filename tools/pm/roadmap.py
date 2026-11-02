@@ -176,13 +176,14 @@ class Roadmap:
         return [t for t in self.queued() if self.deps_done(t)]
 
     def queue_problems(self) -> list[str]:
-        """Tasks up next that wait on a backlog task: nothing queued would ever start that one."""
+        """Tasks up next that wait on a backlog task or a bug nobody is fixing: nothing queued starts those."""
+        stuck = {"planned": "which is in the backlog", "bug": "a bug not being fixed"}
         return [
-            f"{t.id} is up next but depends on {dep}, which is in the backlog"
+            f"{t.id} is up next but depends on {dep}, {stuck[d.status]}"
             for t in self.tasks
             if t.status == "next"
             for dep in t.depends
-            if (d := self.task(dep)) is not None and d.status == "planned"
+            if (d := self.task(dep)) is not None and d.status in stuck
         ]
 
     def open_bugs(self) -> list[Task]:

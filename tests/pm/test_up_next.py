@@ -164,6 +164,30 @@ class OverviewTests(unittest.TestCase):
         building = apply_live(from_data(data), Live(branches_ahead={"worktree-idea": 1}))
         self.assertEqual(building.queue_problems(), [])  # live status counts: it's being built
 
+    def test_up_next_on_an_unfixed_bug_is_a_problem_and_in_the_json(self):
+        data = {
+            "phases": [
+                {"id": "P", "tasks": [{"id": "asked", "status": "next", "depends": ["fix-it"]}]},
+                {"id": "B", "tasks": [{"id": "fix-it", "type": "bug", "severity": "low"}]},
+            ]
+        }
+        rm = apply_live(from_data(data), Live())
+        problem = "asked is up next but depends on fix-it, a bug not being fixed"
+        self.assertEqual(rm.queue_problems(), [problem])
+        self.assertIn(problem, render.as_json(rm, Snapshot(live=Live()))["warnings"])
+        fixing = apply_live(from_data(data), Live(branches_ahead={"worktree-fix-it": 1}))
+        self.assertEqual(fixing.queue_problems(), [])
+
+    def test_the_panel_shows_eight_without_details_and_links_to_the_rest(self):
+        tasks = [{"id": f"t{i}", "name": f"Task {i}", "status": "next", "detail": f"Long words {i}"} for i in range(10)]
+        html = self.html(apply_live(from_data({"phases": [{"id": "P", "tasks": tasks}]}), Live()))
+        panel = html[html.index("<h2>Up next · 10</h2>") :]
+        panel = panel[: panel.index("</ul>")]
+        self.assertIn("Task 7", panel)
+        self.assertNotIn("Task 8", panel)
+        self.assertNotIn("Long words", panel)
+        self.assertIn('<a href="/board">+2 more on the Board</a>', panel)
+
     def test_nothing_queued_says_how_much_is_in_the_backlog(self):
         rm = from_data({"phases": [{"id": "P", "tasks": [{"id": "a"}, {"id": "b"}]}]})
         html = self.html(apply_live(rm, Live()))

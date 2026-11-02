@@ -122,13 +122,15 @@ def task_links(roadmap: Roadmap, task: Task) -> str:
     return " · ".join(parts)
 
 
-def task_line(roadmap: Roadmap, task: Task, show_status: bool = True, suffix: str = "") -> str:
+def task_line(
+    roadmap: Roadmap, task: Task, show_status: bool = True, suffix: str = "", show_detail: bool = True
+) -> str:
     """A task as a list item. `suffix` is HTML added to the end of its small line."""
     # A bug not started shows its tag instead of a second "bug" pill.
     status = pill(task.status) + " " if show_status and task.status != "bug" else ""
     links = task_links(roadmap, task)
     owner = ' <span class="pill blocked">Kai</span>' if task.owner == "kai" else ""
-    detail = f'<br><span class="small">{escape(task.detail)}</span>' if task.detail else ""
+    detail = f'<br><span class="small">{escape(task.detail)}</span>' if task.detail and show_detail else ""
     return (
         f"<li>{status}{task_tags(task)}<b>{escape(task.name)}</b>{owner}{detail}<br>"
         f'<span class="small muted">{task_link(task.id)} · {escape(task.phase)} · {task.estimate_h:g} h'
@@ -222,6 +224,7 @@ def phase_rows(roadmap: Roadmap, snapshot: Snapshot) -> str:
 
 
 UNKNOWN_GITHUB = "GitHub hasn't answered"
+UP_NEXT_SHOWN = 8  # on the Overview; the Board has the rest
 UNKNOWN_GIT = "git hasn't answered"
 # The Overview's pipeline holds only work under way or merged; a task page adds a first, not-started stage.
 PIPELINE_STAGES = tuple((STATUS_LABELS[s], s) for s in ("building", "review", "done"))
@@ -298,7 +301,9 @@ live from branches and PRs</p>{pipeline_table(roadmap, snapshot)}</div></div>
             f'<ul class="plain">{bugs}</ul></details>'
         )
     queued = roadmap.queued()
-    nxt = "".join(task_line(roadmap, t, False, waits_on(roadmap, t)) for t in queued)
+    nxt = "".join(task_line(roadmap, t, False, waits_on(roadmap, t), show_detail=False) for t in queued[:UP_NEXT_SHOWN])
+    if len(queued) > UP_NEXT_SHOWN:
+        nxt += f'<li><a href="/board">+{len(queued) - UP_NEXT_SHOWN} more on the Board</a></li>'
     backlog = sum(t.status == "planned" for t in roadmap.tasks)
     nxt = nxt or f'<li class="muted">Nothing queued. {backlog} in the <a href="/board">backlog</a>.</li>'
     blocked = [t for t in roadmap.tasks if t.status == "blocked"]
@@ -422,7 +427,7 @@ def as_json(roadmap: Roadmap, snapshot: Snapshot) -> dict:
         "repo": roadmap.repo,
         "summary": roadmap.summary(),
         "errors": roadmap.errors,
-        "warnings": snapshot.live.warnings,
+        "warnings": [*snapshot.live.warnings, *roadmap.queue_problems()],
         "next_up": [t.id for t in roadmap.next_up()],
         "phases": [
             {
