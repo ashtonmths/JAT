@@ -47,6 +47,7 @@ def test_nothing_at_all(client):
         "by_mutual": 0,
         "by_neither": 0,
         "not_recorded": 0,
+        "waiting_for_new_time": 0,
         "min_rounds_listed": 3,
         "companies": [],
         "recruiters": [],

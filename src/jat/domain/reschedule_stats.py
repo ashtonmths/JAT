@@ -49,6 +49,7 @@ class Rescheduling:
     moves: int = 0  # one round can move more than once
     by: Counter[str] = field(default_factory=Counter)  # me | them | mutual | neither
     not_recorded: int = 0
+    waiting_for_new_time: int = 0  # moved rounds with no new time yet
     companies: list[Named] = field(default_factory=list)  # at least MIN_ROUNDS_TO_LIST moved rounds
     recruiters: list[Named] = field(default_factory=list)
 
@@ -106,6 +107,7 @@ def rescheduling(
             continue
         result.moved_rounds += 1
         result.moves += moves
+        result.waiting_for_new_time += len(pending)
         known = [by for by in [*said, *pending] if by]
         result.by.update(known)
         result.not_recorded += moves - len(known)

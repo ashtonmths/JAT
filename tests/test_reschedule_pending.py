@@ -218,8 +218,9 @@ def test_insights_count_a_waiting_round_as_booked_and_moved_once(client, seeded)
     _mark(client, made, by="me")
     stats = client.get(url).json()
     assert (stats["booked_rounds"], stats["moved_rounds"], stats["moves"], stats["by_me"]) == (1, 1, 1, 1)
-    assert stats["not_recorded"] == 0
+    assert (stats["not_recorded"], stats["waiting_for_new_time"]) == (0, 1)
     client.patch(f"/api/v1/interviews/{made['id']}", json={"starts_at": _iso(9)})
+    stats["waiting_for_new_time"] = 0
     assert client.get(url).json() == stats  # booking completes the same move
     other = _round(client, app, days=4)
     _mark(client, other)

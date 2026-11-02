@@ -3725,6 +3725,11 @@ export interface components {
             not_recorded: number;
             /** Recruiters */
             recruiters: components["schemas"]["RescheduledNamed"][];
+            /**
+             * Waiting For New Time
+             * @default 0
+             */
+            waiting_for_new_time: number;
         };
         /** RoleIn */
         RoleIn: {
