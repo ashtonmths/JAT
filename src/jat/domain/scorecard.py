@@ -34,6 +34,12 @@ from .workflow import Workflow
 CONTACT_KINDS = ("call", "email", "message")
 
 
+def call_moved(event: Event) -> bool:
+    """A booked call moved to another time (the app's "call" entry, with the call's id): it isn't
+    contact about the application, so it's no sign of life."""
+    return event.kind == "call" and isinstance(event.data, dict) and "meeting_id" in event.data
+
+
 @dataclass
 class Score:
     id: str
@@ -87,7 +93,8 @@ def scorecard(
             .where(Event.application_id.in_(ids), Event.kind.in_((STAGE_CHANGE, *CONTACT_KINDS)))
             .order_by(Event.seq)
         ):
-            events[ev.application_id].append(ev)
+            if not call_moved(ev):
+                events[ev.application_id].append(ev)
         interviewed = set(
             session.scalars(
                 select(Interview.application_id).where(

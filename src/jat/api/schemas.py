@@ -949,6 +949,68 @@ class RoundNewTimeNotNeededMsg(BaseModel):
     params: RoundParams
 
 
+class CallParams(BaseModel):
+    """A call's raw parts, so a language builds its own name ("Call with Alex Morgan: catch-up")."""
+
+    kind: str
+    title: str | None
+    contact_name: str
+
+
+class CallReasonParams(CallParams):
+    reason: str
+
+
+class CallRescheduledMsg(BaseModel):
+    key: Literal["event.callRescheduled"]
+    params: CallParams
+
+
+class CallRescheduledReasonMsg(BaseModel):
+    key: Literal["event.callRescheduledReason"]
+    params: CallReasonParams
+
+
+class CallRescheduledByMeMsg(BaseModel):
+    key: Literal["event.callRescheduledByMe"]
+    params: CallParams
+
+
+class CallRescheduledByThemMsg(BaseModel):
+    key: Literal["event.callRescheduledByThem"]
+    params: CallParams
+
+
+class CallRescheduledByMutualMsg(BaseModel):
+    key: Literal["event.callRescheduledByMutual"]
+    params: CallParams
+
+
+class CallRescheduledByNeitherMsg(BaseModel):
+    key: Literal["event.callRescheduledByNeither"]
+    params: CallParams
+
+
+class CallRescheduledByMeReasonMsg(BaseModel):
+    key: Literal["event.callRescheduledByMeReason"]
+    params: CallReasonParams
+
+
+class CallRescheduledByThemReasonMsg(BaseModel):
+    key: Literal["event.callRescheduledByThemReason"]
+    params: CallReasonParams
+
+
+class CallRescheduledByMutualReasonMsg(BaseModel):
+    key: Literal["event.callRescheduledByMutualReason"]
+    params: CallReasonParams
+
+
+class CallRescheduledByNeitherReasonMsg(BaseModel):
+    key: Literal["event.callRescheduledByNeitherReason"]
+    params: CallReasonParams
+
+
 class OfferReceivedYearMsg(BaseModel):
     key: Literal["event.offerReceivedYear"]
     params: MoneyParams
@@ -1195,6 +1257,16 @@ EventMsg = Annotated[
     | RoundNeedsNewTimeByMutualReasonMsg
     | RoundNeedsNewTimeByNeitherReasonMsg
     | RoundNewTimeNotNeededMsg
+    | CallRescheduledMsg
+    | CallRescheduledReasonMsg
+    | CallRescheduledByMeMsg
+    | CallRescheduledByThemMsg
+    | CallRescheduledByMutualMsg
+    | CallRescheduledByNeitherMsg
+    | CallRescheduledByMeReasonMsg
+    | CallRescheduledByThemReasonMsg
+    | CallRescheduledByMutualReasonMsg
+    | CallRescheduledByNeitherReasonMsg
     | OfferReceivedYearMsg
     | OfferReceivedDayMsg
     | OfferReceivedNoFiguresMsg
@@ -1257,8 +1329,12 @@ def _aware(value: Any) -> datetime | None:
 
 
 def read_round_move(kind: str, data: Any) -> RoundMove | None:
-    """An interview event's saved move. A bad shape (a hand-edited export) is null, never a 500."""
-    saved = data.get("reschedule") if kind == "interview" and isinstance(data, dict) else None
+    """An interview event's saved move, or a call's (on its application's timeline, with its
+    `meeting_id`). A bad shape (a hand-edited export) is null, never a 500."""
+    if not isinstance(data, dict):
+        return None
+    ours = kind == "interview" or (kind == "call" and isinstance(data.get("meeting_id"), str))
+    saved = data.get("reschedule") if ours else None
     if not isinstance(saved, dict):
         return None
     from_at, to_at = _aware(saved.get("from")), _aware(saved.get("to"))
@@ -1408,6 +1484,19 @@ class MeetingPatch(Patch):
     meeting_url: HttpUrl | None = None
     agenda: str | None = None
     notes: str | None = None
+    # Why it moved and who needed that, when this PATCH reschedules it (a new time for a booked
+    # call): saved with that move, so each move keeps its own. Ignored by any other change.
+    reschedule_reason: str | None = Field(default=None, max_length=500)
+    reschedule_by: RescheduleBy | None = None
+
+
+class CallMove(BaseModel):
+    """One move of a call to another time, as it was when it happened."""
+
+    from_at: datetime
+    to_at: datetime | None  # null: it's waiting for a new time
+    by: RescheduleBy | None = None  # not said
+    reason: str | None = None  # the person's own words
 
 
 class MeetingOut(Out):
@@ -1425,6 +1514,10 @@ class MeetingOut(Out):
     notes: str | None
     created_at: datetime
     updated_at: datetime
+    # Defaults, so a reader of an older server's calls gets "never moved".
+    rescheduled_count: int = 0  # times a booked call moved to another time
+    rescheduled_from: datetime | None = None  # the time it moved from last
+    moves: list[CallMove] = []  # oldest first
     # Who it's with, and the application if there is one, for lists across people.
     label: str  # "Call with Alex Morgan: market catch-up"
     contact_name: str

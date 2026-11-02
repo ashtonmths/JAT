@@ -144,14 +144,16 @@ def next_actions(
     to_read_people = _contact_outs(session, replied)
     booked_meetings = _meeting_query().where(Meeting.status == "scheduled")
     meetings = _meeting_outs(
+        session,
         session.execute(
             booked_meetings.where(
                 Meeting.starts_at >= now, Meeting.starts_at < start + timedelta(days=UPCOMING_DAYS)
             ).order_by(Meeting.starts_at, Meeting.id)
-        )
+        ),
     )
     meetings_to_close = _meeting_outs(
-        session.execute(booked_meetings.where(Meeting.starts_at < now).order_by(Meeting.starts_at.desc(), Meeting.id))
+        session,
+        session.execute(booked_meetings.where(Meeting.starts_at < now).order_by(Meeting.starts_at.desc(), Meeting.id)),
     )
     return NextActions(
         waiting=waiting,
