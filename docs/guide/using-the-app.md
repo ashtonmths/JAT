@@ -738,7 +738,19 @@ attached to applications as plain files can be made versions in one go: see
   its own versions (they share applications); two versions sent with the same application
   share it too, so record the one you actually sent.
 
-**Rejections** lists every application with [rejection feedback](#rejection-feedback) in one
+**Rejections** starts with **which round rejections came after**, to answer questions such as
+"do I keep getting rejected after a coding task?". It counts every rejection that stands, with
+feedback or not, by the last interview round each one *reached* before you were turned down:
+- by the round's type: "4 of 6 rejections came after a coding task.";
+- by its number: "3 of 6 rejections came after round 2.";
+- and how many came before any round.
+
+A round counts as reached if it wasn't cancelled and its time (or a take-home's deadline) was at
+or before the rejection. A round with no time counts if it was marked done before then. A round
+booked for after the rejection, or added after the application was reopened, doesn't count. These
+are plain counts, not rates. With only a few rejections, one more can change the picture.
+
+Below that, the tab lists every application with [rejection feedback](#rejection-feedback) in one
 place, newest rejection first. Each shows:
 - the company and role, linked to the application, and the recruiter;
 - when it was rejected and the stage it was rejected from ("Rejected from Screen on 3 Oct
@@ -750,7 +762,7 @@ it was reopened, the line also says where it is now. If its move to Rejected was
 so and where it is now. Rejected more than once, it shows the latest rejection that still stands
 (by when it happened), with the one piece of feedback it keeps.
 
-The period goes by **when it was rejected**. The whole picture goes by when applications and
+On this tab, both the counts and the list take the period by **when it was rejected**. The whole picture goes by when applications and
 roles were added, the Applications and CVs tabs by when an application was added, and Recruiter
 conversations by when calls happened and roles were pitched. An application whose move to Rejected was undone has no rejection date,
 so it shows only under *All time*.
