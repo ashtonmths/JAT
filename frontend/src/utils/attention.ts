@@ -114,7 +114,12 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
 
   // Your own to-dos, whatever the stage (Today lists every open one): due by today,
   // then undated; later ones are coming up.
-  const openTodos = todos.filter((t) => !t.done_at);
+  // A round waiting for a new time stands for its to-do to book one (as on Today), so it's said once.
+  const waitingRounds = open
+    ? interviews.filter((round) => round.status === "scheduled" && round.needs_new_time_since)
+    : [];
+  const rebooking = new Set(waitingRounds.map((round) => round.rebook_todo_id));
+  const openTodos = todos.filter((t) => !t.done_at && !rebooking.has(t.id));
   for (const todo of openTodos.filter((t) => t.due_on)) {
     const dueOn = todo.due_on as string;
     const d = due(dueOn, today);
@@ -151,7 +156,14 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
     for (const round of interviews) {
       if (round.status !== "scheduled") continue;
       const at = round.starts_at ?? round.deadline_at;
-      if (!at) {
+      if (round.needs_new_time_since) {
+        attention.push({
+          key: `round-${round.id}`,
+          label: t("today:glance.needsNewTime", { label: roundLabel(round) }),
+          when: since(daysBetween(dayOf(round.needs_new_time_since), today)),
+          tone: "orange",
+        });
+      } else if (!at) {
         comingUp.push({
           key: `round-${round.id}`,
           label: t("today:glance.notBooked", { label: roundLabel(round) }),

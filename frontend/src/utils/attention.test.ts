@@ -97,6 +97,28 @@ describe("glance", () => {
     ]);
   });
 
+  it("says a round needs a new time once, standing for the to-do to book it", () => {
+    const g = run({
+      todos: [
+        todo({ id: "t1", text: "Book a new time for Round 2 · System design", due_on: "2026-10-13" }),
+        todo({ id: "t2", text: "Send portfolio", due_on: "2026-10-13" }),
+      ] as unknown as Todo[],
+      interviews: [
+        round({
+          starts_at: "2026-10-20T10:00:00",
+          needs_new_time_since: "2026-10-10T09:00:00",
+          needs_new_time_by: "them",
+          rebook_todo_id: "t1",
+        }),
+      ],
+    });
+    expect(g.attention.map((i) => [i.label, i.when])).toEqual([
+      ["To-do: Send portfolio", "due today"],
+      ["Round 2 · System design needs a new time", "3 days ago"],
+    ]);
+    expect(g.comingUp).toEqual([]);
+  });
+
   it("puts a due follow-up first among chasers, and hides quiet and waiting behind it", () => {
     const g = run({
       app: app({ follow_up_on: "2026-10-12", stale: true, awaiting_reply_since: "2026-10-01" }),

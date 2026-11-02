@@ -66,9 +66,12 @@ const londonParts = (iso: string | null | undefined) => {
   }).formatToParts(new Date(iso ?? ""));
   const part = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
   return {
-    ...Object.fromEntries(parts.map((p) => [p.type, p.value])),
+    weekday: part("weekday"),
     day: String(Number(part("day"))), // "5", not "05"
     month: MONTHS[Number(part("month")) - 1],
+    year: part("year"),
+    hour: part("hour"),
+    minute: part("minute"),
   };
 };
 /** "Tue 3 Nov, 10:00", as a move's timeline line writes a time. */

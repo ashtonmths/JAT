@@ -473,7 +473,8 @@ or cancelled. On each row:
 
 A round that needs a new time shows at the top of this page under **Needs a new time**, with its
 old time and who needed the change; on Today it's in **Your move** (not *Coming up*), with its
-to-do, so it's counted once, and the application doesn't show as gone quiet. The board, the list,
+to-do, so it's counted once (the application's *At a glance* does the same), and the application
+doesn't show as gone quiet. The board, the list,
 the quick view and the application's page say "Round 2 · … · needs a new time". Cancelling the
 round, marking it done or removing it ticks its to-do off, as there's nothing left to book.
 Moving the application to a closed stage, or an offer, ticks the to-do off too; the round keeps
