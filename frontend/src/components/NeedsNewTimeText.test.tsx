@@ -6,8 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { mockApi } from "../test/mockApi";
 import { formatDateTime } from "../utils/time";
-import { RoundBadge, roundStatus } from "./Interviews";
-import { RescheduleButton, RescheduleModal, wasText } from "./Reschedule";
+import { RescheduleButton, RescheduleModal } from "./Reschedule";
 
 // A round that can't go ahead at its time, with no new one agreed yet: what it says, word for word.
 
@@ -121,27 +120,8 @@ describe("the Reschedule dialog, with no new time yet", () => {
   });
 });
 
+// Its sentences, status and round badge are in RoundWaitingText.test.tsx.
 describe("a round waiting for a new time", () => {
-  it.each([
-    ["me", `Was ${OLD}. You needed the change.`],
-    ["them", `Was ${OLD}. They needed the change.`],
-    ["mutual", `Was ${OLD}. You both needed the change.`],
-    ["neither", `Was ${OLD}. Not down to either of you.`],
-    [null, `Was ${OLD}.`],
-  ] as const)("says its old time, and who needed the change (%s)", (by, text) => {
-    expect(wasText({ starts_at: round.starts_at, needs_new_time_by: by })).toBe(text);
-  });
-
-  it.each([
-    ["me", "It has no time now. You needed the change."],
-    ["them", "It has no time now. They needed the change."],
-    ["mutual", "It has no time now. You both needed the change."],
-    ["neither", "It has no time now. Not down to either of you."],
-    [null, "It has no time now."],
-  ] as const)("says so in a whole sentence once its old time is cleared (%s)", (by, text) => {
-    expect(wasText({ starts_at: null, needs_new_time_by: by })).toBe(text);
-  });
-
   it("still offers Set new time once its old time is cleared, with no old time to keep", async () => {
     mockApi({});
     wrap(<RescheduleButton interview={{ ...waiting, starts_at: null }} />);
@@ -151,12 +131,6 @@ describe("a round waiting for a new time", () => {
     });
     expect(within(dialog).getByText("It has no time now. They needed the change.")).toBeInTheDocument();
     expect(within(dialog).queryByRole("button", { name: "Keep the old time" })).toBeNull();
-  });
-
-  it("is marked so in its status and its badge on the board, list and quick view", () => {
-    expect(roundStatus(waiting)).toEqual({ label: "Needs a new time", color: "red" });
-    wrap(<RoundBadge round={waiting} stageKind="active" />);
-    expect(screen.getByText("Round 2 · System design test · needs a new time")).toBeInTheDocument();
   });
 
   it("offers Set new time, or keeping the old time", async () => {
