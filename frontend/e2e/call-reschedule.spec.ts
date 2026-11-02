@@ -60,7 +60,10 @@ const moveOneDay = async (page: Page, dialog: Locator) => {
 const moveTwoDaysOn = async (page: Page, dialog: Locator) => {
   await dialog.getByLabel("New time", { exact: true }).first().click();
   const days = page.locator('[class*="DateTimePicker-day"]:not([data-outside])');
+  // evaluateAll doesn't wait: let the calendar open on the current day first.
+  await expect(page.locator('[class*="DateTimePicker-day"][data-selected]')).toBeVisible();
   const selected = await days.evaluateAll((all) => all.findIndex((d) => d.hasAttribute("data-selected")));
+  expect(selected).toBeGreaterThanOrEqual(0);
   const count = await days.count();
   if (selected + 2 < count) {
     await days.nth(selected + 2).click();
