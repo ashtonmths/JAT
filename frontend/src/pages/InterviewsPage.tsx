@@ -20,6 +20,7 @@ import { useInterviews, type Interview } from "../api/interviewHooks";
 import { InterviewFormModal } from "../components/InterviewFormModal";
 import { roundStatus } from "../components/Interviews";
 import { RescheduleButton, RescheduledBadge, wasText } from "../components/Reschedule";
+import { RecruiterLine } from "../components/RecruiterLine";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 
@@ -97,7 +98,9 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
                     {i.company_name}
                   </Anchor>
                   <Text size="xs" c="dimmed">
-                    {i.role_title}
+                    <RecruiterLine id={i.recruiter_id} name={i.recruiter_name}>
+                      {i.role_title}
+                    </RecruiterLine>
                   </Text>
                 </Table.Td>
                 <Table.Td>

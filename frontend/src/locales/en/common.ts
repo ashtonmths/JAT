@@ -147,4 +147,7 @@ export default {
     // Between the parts of a line: "via Northwind Talent · now Applied · archived".
     separator: " · ",
   },
+  // A card's line about a role or application, then its recruiter's name (components/RecruiterLine.tsx):
+  // "Contoso · Backend Engineer · Alex Morgan". Both are filled in by the app.
+  recruiterLine: "<line/> · <person/>",
 } as const;

@@ -1110,6 +1110,41 @@ test.describe("deleting a person", () => {
 });
 
 test.describe("a person's page", () => {
+  test("names who brought each application and round, but not themselves", async ({ page, request }) => {
+    const sitter = await create(request, "contacts", { name: "Panel Sitter Quinby" });
+    const via = await create(request, "applications/quick", {
+      company_name: "Sitter Via Co",
+      role_title: "Sat Role",
+      recruiter_name: "Casey Brookfield",
+    });
+    const own = await create(request, "applications/quick", {
+      company_name: "Sitter Own Co",
+      role_title: "Sat Role",
+      recruiter_id: sitter.id,
+    });
+    for (const app of [via, own]) {
+      await create(request, `applications/${app.id}/contacts`, {
+        contact_id: sitter.id,
+        relation: "interviewer",
+      });
+      await create(request, `applications/${app.id}/interviews`, {
+        title: "Panel",
+        interviewer_ids: [sitter.id],
+      });
+    }
+    await page.goto(`/people/${sitter.id}`);
+    const card = (name: string) =>
+      page.locator(".mantine-Card-root").filter({ has: page.getByRole("heading", { name, exact: true }) });
+    const line = card("Applications").locator("p").filter({ hasText: "Sitter Via Co · Sat Role" });
+    await expect(line).toHaveText("Sitter Via Co · Sat Role · Casey Brookfield");
+    await expect(line.getByRole("link", { name: "Casey Brookfield" })).toHaveAttribute("href", /^\/people\//);
+    const ownLine = card("Applications").locator("p").filter({ hasText: "Sitter Own Co · Sat Role" });
+    await expect(ownLine).toHaveText("Sitter Own Co · Sat Role");
+    const round = (company: string) => card("Interviews").locator("p").filter({ hasText: company });
+    await expect(round("Sitter Via Co")).toHaveText("Sitter Via Co · Sat Role · Casey Brookfield");
+    await expect(round("Sitter Own Co")).toHaveText("Sitter Own Co · Sat Role");
+  });
+
   test("lists their applications, roles and details, and links to them", async ({ page, request }) => {
     const agency = await create(request, "agencies", { name: "Show Agency" });
     const made = await create(request, "contacts", {

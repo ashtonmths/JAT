@@ -2805,6 +2805,10 @@ export interface components {
             questions: string | null;
             /** Rebook Todo Id */
             rebook_todo_id?: string | null;
+            /** Recruiter Id */
+            recruiter_id?: string | null;
+            /** Recruiter Name */
+            recruiter_name?: string | null;
             /** Rescheduled Count */
             rescheduled_count: number;
             /** Rescheduled From */
@@ -3425,6 +3429,10 @@ export interface components {
             pension_percent: number | null;
             /** Received On */
             received_on: string | null;
+            /** Recruiter Id */
+            recruiter_id?: string | null;
+            /** Recruiter Name */
+            recruiter_name?: string | null;
             /** Respond By */
             respond_by: string | null;
             /** Role Title */

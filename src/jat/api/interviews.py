@@ -8,7 +8,7 @@ from typing import Any, Literal
 from fastapi import APIRouter, Response
 from pydantic import AwareDatetime
 from sqlalchemy import delete, func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from ..db.models import Application, Company, Contact, Event, Interview, InterviewContact, Role, Todo
 from ..db.types import utcnow
@@ -21,14 +21,16 @@ from .errors import CodedError
 router = APIRouter(tags=["interviews"])
 
 _WHEN = func.coalesce(Interview.starts_at, Interview.deadline_at, Interview.created_at)
+Recruiter = aliased(Contact)
 
 
 def _query():
     return (
-        select(Interview, Role.title, Company.name)
+        select(Interview, Role.title, Company.name, Recruiter.id, Recruiter.name)
         .join(Application, Interview.application_id == Application.id)
         .join(Role, Application.role_id == Role.id)
         .join(Company, Role.company_id == Company.id)
+        .outerjoin(Recruiter, Application.recruiter_id == Recruiter.id)
     )
 
 
@@ -51,7 +53,7 @@ def _saved_moves(session: Session, app_ids: set[str]) -> dict[str, list[S.RoundM
 
 def _outs(session: Session, found) -> list[S.InterviewOut]:
     found = list(found)
-    ids = [interview.id for interview, _, _ in found]
+    ids = [row[0].id for row in found]
     people: dict[str, list[str]] = {}
     if ids:
         links = session.execute(
@@ -61,7 +63,7 @@ def _outs(session: Session, found) -> list[S.InterviewOut]:
         )
         for interview_id, contact_id in links:
             people.setdefault(interview_id, []).append(contact_id)
-    moves = _saved_moves(session, {interview.application_id for interview, _, _ in found})
+    moves = _saved_moves(session, {row[0].application_id for row in found})
     return [
         S.InterviewOut(
             **{f: getattr(interview, f) for f in S.InterviewOut.model_fields if hasattr(Interview, f)},
@@ -70,8 +72,10 @@ def _outs(session: Session, found) -> list[S.InterviewOut]:
             moves=moves.get(interview.id, []),
             role_title=role_title,
             company_name=company_name,
+            recruiter_id=recruiter_id,
+            recruiter_name=recruiter_name,
         )
-        for interview, role_title, company_name in found
+        for interview, role_title, company_name, recruiter_id, recruiter_name in found
     ]
 
 

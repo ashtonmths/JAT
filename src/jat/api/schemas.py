@@ -696,6 +696,9 @@ class InterviewOut(RoundSummary):
     # For lists across applications (the Interviews page).
     company_name: str
     role_title: str
+    # The application's recruiter, for the name on its rows (absent from servers before this).
+    recruiter_id: str | None = None
+    recruiter_name: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -1605,5 +1608,7 @@ class OfferOut(BaseModel):
     company_name: str
     role_title: str
     stage: str  # the application's stage
+    recruiter_id: str | None = None  # the application's recruiter (absent from servers before this)
+    recruiter_name: str | None = None
     created_at: datetime
     updated_at: datetime

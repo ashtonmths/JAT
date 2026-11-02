@@ -17,6 +17,7 @@ import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { RecruiterLine } from "../components/RecruiterLine";
 import { ReplyHabit } from "../components/ReplyHabit";
 import { stageLookup, useWorkflow } from "../api/hooks";
 import { relationLabel, useContactSummary } from "../api/peopleHooks";
@@ -144,9 +145,17 @@ export function PersonPage() {
                     {applications.map((a) => (
                       <Table.Tr key={a.id}>
                         <Table.Td>
-                          <Anchor component={Link} to={`/applications/${a.id}`} size="sm" fw={600}>
-                            {a.company_name} · {a.role_title}
-                          </Anchor>
+                          <Text size="sm">
+                            {/* Who brought it, unless that's this person (it says so underneath). */}
+                            <RecruiterLine
+                              id={a.recruiter_id}
+                              name={a.recruiter_id === contact.id ? null : a.recruiter_name}
+                            >
+                              <Anchor component={Link} to={`/applications/${a.id}`} inherit fw={600}>
+                                {a.company_name} · {a.role_title}
+                              </Anchor>
+                            </RecruiterLine>
+                          </Text>
                           <Text size="xs" c="dimmed">
                             {a.relations
                               .map((r) => (r === "source" ? t("person.broughtIt") : relationLabel(r)))
@@ -180,7 +189,12 @@ export function PersonPage() {
                           {roundLabel(i)}
                         </Anchor>
                         <Text size="xs" c="dimmed">
-                          {i.company_name} · {i.role_title}
+                          <RecruiterLine
+                            id={i.recruiter_id}
+                            name={i.recruiter_id === contact.id ? null : i.recruiter_name}
+                          >
+                            {i.company_name} · {i.role_title}
+                          </RecruiterLine>
                           {i.starts_at ? ` · ${formatDateTime(i.starts_at)}` : ""}
                         </Text>
                       </div>

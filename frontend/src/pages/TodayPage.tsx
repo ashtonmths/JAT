@@ -27,6 +27,7 @@ import { CallRescheduleButton } from "../components/CallReschedule";
 import { NeedsNewTimeBadge, RescheduleButton, wasText } from "../components/Reschedule";
 import { ReplyHabit } from "../components/ReplyHabit";
 import { PersonName } from "../components/GhostMark";
+import { RecruiterLine } from "../components/RecruiterLine";
 import { api, unwrap, type ApplicationRow, type Contact } from "../api/client";
 import {
   stageLookup,
@@ -256,9 +257,13 @@ function InterviewLine({
           <Text fw={600} size="sm" truncate="end">
             {roundLabel(interview)}
           </Text>
-          <Anchor component={Link} to={`/applications/${interview.application_id}`} size="xs">
-            {t("rows.where", { company: interview.company_name, role: interview.role_title })}
-          </Anchor>
+          <Text size="xs" c="dimmed">
+            <RecruiterLine id={interview.recruiter_id} name={interview.recruiter_name}>
+              <Anchor component={Link} to={`/applications/${interview.application_id}`} inherit>
+                {t("rows.where", { company: interview.company_name, role: interview.role_title })}
+              </Anchor>
+            </RecruiterLine>
+          </Text>
           {interview.needs_new_time_since && (
             <Text size="xs" c="dimmed">
               {wasText(interview)}
@@ -294,9 +299,13 @@ function OfferLine({ offer, today }: { offer: Offer; today: string }) {
         <Text fw={600} size="sm" truncate="end">
           {headline(offer)}
         </Text>
-        <Anchor component={Link} to={`/applications/${offer.application_id}`} size="xs">
-          {t("rows.where", { company: offer.company_name, role: offer.role_title })}
-        </Anchor>
+        <Text size="xs" c="dimmed">
+          <RecruiterLine id={offer.recruiter_id} name={offer.recruiter_name}>
+            <Anchor component={Link} to={`/applications/${offer.application_id}`} inherit>
+              {t("rows.where", { company: offer.company_name, role: offer.role_title })}
+            </Anchor>
+          </RecruiterLine>
+        </Text>
       </div>
       <Text size="xs" c={overdue ? "red" : "orange"} ta="right" style={{ whiteSpace: "nowrap" }}>
         {t(overdue ? "rows.replyWasDue" : "rows.replyBy", { date: formatDate(offer.respond_by) })}

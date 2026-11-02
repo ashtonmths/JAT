@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.9.1 (2026-11-02)
+
+- **The recruiter on every card:** interview and offer rows (Today, Interviews, Offers and a person's page) now name the application's recruiter, linked to their page with the star and ghost, and a direct application's in-house recruiter shows on the board, the list and its company's page. Restart the tracker to see the names on interview and offer rows (#202).
+
 ## 1.9.0 (2026-11-02)
 
 - **Calls remember their moves:** changing a booked call's time now records it as a move, with who needed the change and why when they're sent, and a call keeps its length when it moves (moving one later from its Edit form no longer fails). A call with an application gets an entry on that application's timeline. The API takes `reschedule_by` and `reschedule_reason` on `PATCH /meetings/{id}`, and calls gain `rescheduled_count`, `rescheduled_from` and `moves`. Restart the tracker to run migration 0016, which only adds empty columns and a table; the dialog for calls comes in the next release (#201).

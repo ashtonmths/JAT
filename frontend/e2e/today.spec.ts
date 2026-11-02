@@ -490,3 +490,42 @@ test.describe("roles to decide", () => {
     await expect(page.getByRole("heading", { name: "Senior Frontend Engineer" })).toBeVisible();
   });
 });
+
+test.describe("the recruiter on a row", () => {
+  // Two applications made here, one through an in-house recruiter: their rounds and offers show
+  // "Company · Role · Recruiter", and the other's just "Company · Role".
+  const send = async (request: APIRequestContext, path: string, data: object) => {
+    const made = await request.post(`/api/v1/${path}`, { data });
+    expect(made.ok(), path).toBe(true);
+    return (await made.json()) as { id: string };
+  };
+  const inDays = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
+
+  test("shows on rounds to close, rounds needing a new time and offers", async ({ page, request }) => {
+    const make = async (company: string, recruiter?: string) => {
+      const { id } = await send(request, "applications/quick", {
+        company_name: company,
+        role_title: "Card Role",
+        route: "direct",
+        recruiter_name: recruiter,
+      });
+      await send(request, `applications/${id}/interviews`, { title: "Past round", starts_at: yesterday() });
+      const moving = await send(request, `applications/${id}/interviews`, { starts_at: inDays(3) });
+      await send(request, `interviews/${moving.id}/needs-new-time`, { by: "them" });
+      await send(request, `applications/${id}/offers`, { respond_by: inDays(3).slice(0, 10) });
+    };
+    await make("Recruited Cards Co", "Harper Quill");
+    await make("Unrecruited Cards Co");
+    await page.reload();
+    for (const name of ["How did it go?", "Needs a new time", "Offers to answer"]) {
+      const line = (company: string) =>
+        section(page, name)
+          .locator("p")
+          .filter({ has: page.getByRole("link", { name: `${company} · Card Role`, exact: true }) });
+      await expect(line("Recruited Cards Co")).toHaveText("Recruited Cards Co · Card Role · Harper Quill");
+      const person = line("Recruited Cards Co").getByRole("link", { name: "Harper Quill" });
+      await expect(person).toHaveAttribute("href", /^\/people\/.+/);
+      await expect(line("Unrecruited Cards Co")).toHaveText("Unrecruited Cards Co · Card Role");
+    }
+  });
+});
