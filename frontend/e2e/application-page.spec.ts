@@ -165,6 +165,109 @@ test.describe("moving it", () => {
   });
 });
 
+test.describe("rejection feedback", () => {
+  const asking = (page: Page) => page.getByRole("dialog", { name: "Moving to Rejected: any feedback?" });
+  const shown = (page: Page) => page.getByTestId("rejection-feedback");
+  const feedbackOf = async (app: { read: () => Promise<Detail> }) =>
+    ((await app.read()) as Detail & { rejection_feedback: string | null }).rejection_feedback;
+
+  test("Move to Rejected asks for it; left empty, it moves without any", async ({ page, request }) => {
+    const app = await openNew(page, request);
+    await move(page, "Rejected");
+    await expect(asking(page).getByText(`${app.role} at ${app.company}`)).toBeVisible();
+    await asking(page).getByRole("button", { name: "Move to Rejected" }).click();
+    await expect.poll(async () => (await app.read()).stage).toBe("rejected");
+    expect(await feedbackOf(app)).toBeNull();
+    await expect(page.getByText("No feedback yet.")).toBeVisible();
+  });
+
+  test("Cancel leaves it where it was", async ({ page, request }) => {
+    const app = await openNew(page, request);
+    await move(page, "Rejected");
+    await asking(page).getByLabel("What did they say?").fill("Not saved");
+    await asking(page).getByRole("button", { name: "Cancel" }).click();
+    await expect(asking(page)).toBeHidden();
+    expect((await app.read()).stage).toBe("applied");
+    expect(await feedbackOf(app)).toBeNull();
+    await expect(page.getByText("Rejection feedback")).toBeHidden();
+  });
+
+  test("saved with the move, shown as written, then edited and cleared", async ({ page, request }) => {
+    const app = await openNew(page, request);
+    await move(page, "Rejected");
+    await asking(page).getByLabel("What did they say?").fill("Strong design ✓\n\nWanted more Go.");
+    await asking(page).getByRole("button", { name: "Move to Rejected" }).click();
+    await expect.poll(() => feedbackOf(app)).toBe("Strong design ✓\n\nWanted more Go.");
+    await expect(shown(page)).toHaveText("Strong design ✓\n\nWanted more Go.", { useInnerText: true });
+
+    await page.getByRole("button", { name: "Edit feedback" }).click();
+    const edit = page.getByRole("dialog", { name: "Edit rejection feedback" });
+    await expect(edit.getByLabel("What did they say?")).toHaveValue("Strong design ✓\n\nWanted more Go.");
+    await edit.getByLabel("What did they say?").fill("Went with someone local.");
+    await edit.getByRole("button", { name: "Save feedback" }).click();
+    await expect.poll(() => feedbackOf(app)).toBe("Went with someone local.");
+    await expect(shown(page)).toHaveText("Went with someone local.");
+
+    await page.getByRole("button", { name: "Edit feedback" }).click();
+    await edit.getByLabel("What did they say?").fill("");
+    await edit.getByRole("button", { name: "Save feedback" }).click();
+    await expect.poll(() => feedbackOf(app)).toBeNull();
+    await expect(page.getByText("No feedback yet.")).toBeVisible();
+    expect((await app.read()).stage).toBe("rejected");
+  });
+
+  test("over-long feedback isn't cut: the dialog says why it wasn't saved and keeps it", async ({
+    page,
+    request,
+    problems,
+  }) => {
+    problems.allow(/\/move/);
+    const app = await openNew(page, request);
+    const long = "é".repeat(10_001); // one over, counted in characters as the server counts them
+    await move(page, "Rejected");
+    const box = asking(page).getByLabel("What did they say?");
+    await box.fill(long);
+    await expect(asking(page).getByText("10,001 of 10,000 characters")).toBeVisible();
+    await asking(page).getByRole("button", { name: "Move to Rejected" }).click();
+    const alert = asking(page).getByRole("alert");
+    await expect(alert).toContainText("Not saved");
+    await expect(alert).toContainText("at most 10000 characters");
+    await expect(box).toHaveValue(long);
+    expect((await app.read()).stage).toBe("applied");
+    // Back under the limit, it saves.
+    await box.fill(long.slice(1));
+    await asking(page).getByRole("button", { name: "Move to Rejected" }).click();
+    await expect.poll(() => feedbackOf(app)).toBe(long.slice(1));
+  });
+
+  test("added later to one moved there without any", async ({ page, request }) => {
+    const app = await openNew(page, request, { stage: "rejected" });
+    await page.getByRole("button", { name: "Add feedback" }).click();
+    const add = page.getByRole("dialog", { name: "Add rejection feedback" });
+    await add.getByLabel("What did they say?").fill("Heard back by phone");
+    await add.getByRole("button", { name: "Save feedback" }).click();
+    await expect.poll(() => feedbackOf(app)).toBe("Heard back by phone");
+  });
+
+  test("rejected again, it opens with what's there; emptying it clears it", async ({ page, request }) => {
+    const app = await openNew(page, request);
+    await move(page, "Rejected");
+    await asking(page).getByLabel("What did they say?").fill("First time");
+    await asking(page).getByRole("button", { name: "Move to Rejected" }).click();
+    await expect.poll(async () => (await app.read()).stage).toBe("rejected");
+    await move(page, "Interviewing"); // they came back
+    await expect.poll(async () => (await app.read()).stage).toBe("interviewing");
+    await expect(shown(page)).toHaveText("First time"); // kept, and still shown while it's open again
+
+    await move(page, "Rejected");
+    await expect(asking(page).getByLabel("What did they say?")).toHaveValue("First time");
+    await asking(page).getByLabel("What did they say?").fill("");
+    await asking(page).getByRole("button", { name: "Move to Rejected" }).click();
+    await expect.poll(async () => (await app.read()).stage).toBe("rejected");
+    expect(await feedbackOf(app)).toBeNull();
+  });
+});
+
 test.describe("waiting and replies", () => {
   test("I've replied, then They've replied, then Read it", async ({ page, request }) => {
     const app = await openNew(page, request);

@@ -17,6 +17,9 @@ What it does:
 - Applications list and Kanban board (move between any stages; optionally a column per
   interview round), application pages with an "At a glance" card (what needs attention, for
   how long, key dates as "3 weeks ago"), duplicate-submission warnings, renaming, deleting.
+- Rejection feedback: moving to Rejected asks what they said (optional), kept as written on the
+  application and editable later (`rejection_feedback` on a move,
+  `PUT /api/v1/applications/{id}/rejection-feedback`).
 - Recruiter CRM: agencies and people (one person per email address and LinkedIn profile;
   merge two records, `POST /api/v1/contacts/{id}/merge`), person pages with booked and logged
   calls and meetings (`/api/v1/meetings`; rescheduled with who and why, each move kept, or

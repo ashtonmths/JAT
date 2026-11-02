@@ -21,7 +21,8 @@ import { useTranslation } from "react-i18next";
 import { PersonMarks } from "./GhostMark";
 import type { ApplicationRow } from "../api/client";
 import { i18n } from "../i18n";
-import { useMoveApplication, type Workflow } from "../api/hooks";
+import { type Workflow } from "../api/hooks";
+import { useMoveAsking } from "./RejectionFeedback";
 import {
   buildColumns,
   canDrop,
@@ -202,7 +203,7 @@ export function Board({
     defaultValue: false,
     getInitialValueInEffect: false,
   });
-  const move = useMoveApplication();
+  const move = useMoveAsking(); // a drop on Rejected asks for feedback first; cancelling puts the card back
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), // clicks still open the card
     useSensor(KeyboardSensor, { keyboardCodes: KEYBOARD_CODES }),
@@ -230,8 +231,12 @@ export function Board({
     if (plan.do === "refuse")
       notifications.show({ color: "orange", title: plan.title, message: plan.message });
     if (plan.do !== "move") return;
-    move.mutate({ id: row.id, to_stage: plan.to, stageName: names.get(plan.to) });
-    if (plan.notice) notifications.show({ message: plan.notice });
+    const notice = plan.notice;
+    move.request(
+      { id: row.id, to_stage: plan.to, stageName: names.get(plan.to) },
+      row,
+      notice ? () => notifications.show({ message: notice }) : undefined,
+    );
   };
 
   return (
@@ -287,6 +292,7 @@ export function Board({
           )}
         </DragOverlay>
       </DndContext>
+      {move.dialog}
     </Stack>
   );
 }

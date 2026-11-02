@@ -174,6 +174,7 @@ the [releases](https://github.com/waddington/job-application-tracker/releases) a
 | 📋 | **Applications list** with search (company, role, recruiter) and filters (stage, route, agency, "needs chasing", archived) |
 | 🗂️ | **Kanban board**: drag applications between any stages, with the usual next stages highlighted |
 | 🔁 | **Flexible workflow**: move from any stage to any stage (or switch on Jira-style allowed transitions), full timestamped history and undo |
+| 💬 | **Rejection feedback**: moving to Rejected asks what they said (optional), kept as you wrote it on the application and editable later |
 | 🧑‍💼 | **Recruiter CRM**: agencies, recruiters, multiple contact details, every role they've sent |
 | 🪪 | **People pages**: a page per person (agency recruiter, in-house recruiter, hiring manager…) with contact details, calls, the roles they've mentioned, notes and every application they're part of; one person per email address and LinkedIn profile, and **merge** two records of the same person in one click |
 | 🗑️ | **Rename and delete** companies, roles, agencies, people and applications (or archive them) |

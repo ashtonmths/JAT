@@ -36,6 +36,9 @@ file and reload the page.
   outcomes.
 - Any active stage can move to a closed one, and **Ghosted** can be reopened (sometimes they
   do get back to you).
+- Moving to the stage whose id is `rejected` asks for
+  [rejection feedback](using-the-app.md#rejection-feedback). Keep that id (rename it as you like)
+  if you want to be asked.
 - A stage that still has its default id and name shows in your language. One you rename or add
   shows as you wrote it, and `config.toml` never changes.
 

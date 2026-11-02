@@ -236,11 +236,45 @@ test.describe("dragging with the mouse", () => {
     request,
   }) => {
     await addCard(page, request, "Drag Closed Ltd", "Drag Closed");
-    await expect(column(page, "Rejected")).toBeHidden();
-    await drag(page, card(page, "Drag Closed Ltd", "Drag Closed"), "Rejected", "Drag Closed Ltd");
-    await expect(page.getByText("Drag Closed Ltd moved to Rejected")).toBeVisible();
-    await expect.poll(() => stageOf(request, "Drag Closed")).toBe("rejected");
+    await expect(column(page, "Withdrawn")).toBeHidden();
+    await drag(page, card(page, "Drag Closed Ltd", "Drag Closed"), "Withdrawn", "Drag Closed Ltd");
+    await expect(page.getByText("Drag Closed Ltd moved to Withdrawn")).toBeVisible();
+    await expect.poll(() => stageOf(request, "Drag Closed")).toBe("withdrawn");
     await expect(card(page, "Drag Closed Ltd", "Drag Closed")).toBeHidden();
+    await expect(page.getByRole("dialog")).toBeHidden(); // only Rejected asks for feedback
+  });
+
+  test("dropping on Rejected asks for feedback, and saves it with the move", async ({ page, request }) => {
+    await addCard(page, request, "Drag Reject Ltd", "Drag Reject");
+    const moves = watchMoves(page);
+    await drag(page, card(page, "Drag Reject Ltd", "Drag Reject"), "Rejected", "Drag Reject Ltd");
+    const dialog = page.getByRole("dialog", { name: "Moving to Rejected: any feedback?" });
+    await expect(dialog.getByText("Drag Reject at Drag Reject Ltd")).toBeVisible();
+    expect(moves).toEqual([]); // nothing saved yet
+    await dialog.getByLabel("What did they say?").fill("  Wanted more Go ✓\nNice take-home.");
+    await dialog.getByRole("button", { name: "Move to Rejected" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText("Drag Reject Ltd moved to Rejected")).toBeVisible();
+    const saved = (await rows(request)).find((r) => r.role_title === "Drag Reject") as Row & {
+      rejection_feedback: string | null;
+    };
+    expect([saved.stage, saved.rejection_feedback]).toEqual([
+      "rejected",
+      "  Wanted more Go ✓\nNice take-home.",
+    ]);
+  });
+
+  test("cancelling the feedback puts the card back, unmoved", async ({ page, request }) => {
+    await addCard(page, request, "Drag Unreject Ltd", "Drag Unreject");
+    const moves = watchMoves(page);
+    await drag(page, card(page, "Drag Unreject Ltd", "Drag Unreject"), "Rejected", "Drag Unreject Ltd");
+    const dialog = page.getByRole("dialog", { name: "Moving to Rejected: any feedback?" });
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(column(page, "Applied").getByLabel("Drag Unreject Ltd: Drag Unreject")).toBeVisible();
+    await settled(page);
+    expect(moves).toEqual([]);
+    expect(await stageOf(request, "Drag Unreject")).toBe("applied");
   });
 
   test("a short drag that comes back to its own column doesn't open the card", async ({ page, request }) => {

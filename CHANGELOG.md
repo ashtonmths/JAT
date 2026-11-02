@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.15.0 (2026-11-02)
+
+- **Feedback when you're rejected:** moving an application to Rejected (a board drop, or Move to… on the application page or quick view) asks for any feedback first; it's optional, kept exactly as written, and filled in if you reject it again. Cancel leaves the application where it was. Add, edit or clear it later under *Rejection feedback* on the application page and quick view. Rebuild the frontend after updating (#211).
+
 ## 1.14.0 (2026-11-02)
 
 - **Groundwork for rejection feedback:** the API can keep feedback on a rejected application (one per application, editable any time, kept as written), sent with the move to Rejected or saved later with `PUT /applications/{id}/rejection-feedback`, and applications gain `rejection_feedback`. Feedback works with the stage whose id is `rejected`. The dialog and the Insights view come in the next releases. Restarting the tracker runs migration 0017, which only adds an empty column (#209).

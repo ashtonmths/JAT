@@ -262,11 +262,37 @@ as an update from a recruiter or as a reply, and there's nothing to undo. On the
 before this came in got the same step when you upgraded (with the `initial` stage in your
 `config.toml` at the time; ones at a stage you've since removed were left as they were).
 
+### Rejection feedback
+
+Moving an application to **Rejected**, whether you drop a card on the board or use **Move to…** on its
+page or in the quick view, first asks *any feedback?*: what they said when they turned you
+down. It's optional. Leave it empty and **Move to Rejected** moves it without any. Nothing is
+saved until you press that button, and **Cancel** (or closing the dialog) leaves the
+application where it was, with the card going back to its column.
+
+Only a move asks. Adding an application straight at Rejected (with **New application** or from
+a role) doesn't, and neither does **Undo last move** back to Rejected. For those, add the
+feedback from the *Rejection feedback* block (below).
+
+The feedback is kept exactly as you wrote it, line breaks and all, up to 10,000 characters.
+Near the limit a count shows under the box. Text over the limit isn't cut: the dialog says
+why it wasn't saved and keeps what you wrote.
+
+The feedback shows under *Rejection feedback* on the application's page and in the quick view, where
+**Add feedback** or **Edit feedback** changes it later. Emptying it there clears it.
+**Undo last move** and reopening the application keep it. If it's rejected again, the
+dialog opens with what's there, so you can add to it, replace it, or empty it to clear it.
+
+Feedback goes with the stage whose id is `rejected` in `config.toml`, which is the default
+*Rejected*. Renaming that stage keeps it working. A workflow without a `rejected` stage
+doesn't ask (see [Customising](customising.md)).
+
 ## An application's page
 
 Everything about one application:
 
 - **Move to…**, **Undo last move**, and its stage, current round and tags.
+- **Rejection feedback**, once it's been rejected (see [above](#rejection-feedback)).
 - **Route**: how it came about (through a recruiter at an agency, directly, a referral), with
   the recruiter, agency or company linked to their page.
 - **At a glance**: what this application needs, by the same rules as
