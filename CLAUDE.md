@@ -186,7 +186,8 @@ the call, note the assumption in the PR, and keep going.
 3. `docs/ROADMAP.yaml`: the first task with status `next` whose `depends` are all `done` (earliest
    phase first). Backlog (`planned`) tasks aren't started without Kai's go-ahead. Run independent
    tasks in parallel (worktree and PR each).
-4. `var/RESUME.md` "Next" items that aren't on the roadmap yet: add them to the roadmap first.
+4. `var/RESUME.md` "Next" items that aren't on the roadmap yet: add them to the roadmap first, as
+   `next` if Kai asked for them, else `planned`.
 
 ### Delivering an item
 - Big or unclear items get a PRD and an RFC first (`docs/prd`, `docs/rfc`), linked from the
@@ -198,7 +199,7 @@ the call, note the assumption in the PR, and keep going.
 - The lead session merges (subagents can't). Then fast-forward main, restart anything running
   so it loads the new code, try the change for real, and fix anything that shows up.
 - Keep `docs/ROADMAP.yaml` honest: set a task to `done` when it merges, and add any follow-ups
-  as new tasks. Work that comes from Kai's feedback goes on the roadmap as `next`: the PR that builds it adds
+  as new tasks. Work that comes from Kai's feedback goes on the roadmap as `next`, or `building` when its own PR adds it: the PR that builds it adds
   a task (in the latest feedback phase) whose id is the branch name minus `worktree-`, so the
   PM dashboard shows it while it's being built. Anything that slipped through gets backfilled. Update `var/RESUME.md` at every milestone.
 
@@ -218,7 +219,7 @@ doing something else), goes on the roadmap straight away, like an issue in Jira:
   standing instruction covers it. A bug Kai has OK'd to fix is set to `next`.
 
 ### When the roadmap runs out
-The roadmap has run out when no `next` task is ready. Then, without waiting to be asked, run an
+The roadmap has run out when no `next` task is left that isn't done or blocked on Kai. Then, without waiting to be asked, run an
 ideation round against Kai's brief above, deduplicate against `docs/IDEAS.md`, and add the
 survivors to `docs/ROADMAP.yaml` as a new phase in the backlog (`planned`), for Kai to pick from
 rather than to start. Tell Kai in a line or two what was added and why.
