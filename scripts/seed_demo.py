@@ -35,8 +35,9 @@ from jat.db.models import (
     Role,
     Todo,
 )
-from jat.domain.applications import create_application, history, log_activity, move
+from jat.domain.applications import create_application, history, log_activity, log_message, move
 from jat.domain.interviews import record
+from jat.domain.offers import record as record_offer
 from jat.domain.workflow import DEFAULT_WORKFLOW as W
 from jat.storage.files import FileStore
 from jat.storage.notes import NoteStore
@@ -547,6 +548,17 @@ def seed(path: Path) -> None:
                     created_at=days_ago(2),
                 )
             )
+            if entity_type == "application":  # as uploading one does: "File added" on its timeline
+                log_message(
+                    s,
+                    lead,
+                    "file",
+                    key="event.fileAdded",
+                    params={"name": name},
+                    summary=f"File added: {name}",
+                    occurred_at=days_ago(2),
+                    data={"attachment_id": stored.id},
+                )
         # Links on an application, a role, a company and a person.
         s.add_all(
             [
@@ -575,30 +587,44 @@ def seed(path: Path) -> None:
                 ),
             ]
         )
-        # Two offers that ended: one you turned down, one the company took back.
-        s.add_all(
-            [
+        # Two offers that ended: one you turned down before withdrawing, one the company took back
+        # before rejecting you. Each on its application's timeline, as the app records it.
+        for title, ended_ago, offer in [
+            (
+                "Site Reliability Engineer",
+                41,
                 Offer(
-                    application_id=by_title["Site Reliability Engineer"].id,
                     status="declined",
                     employment_type="permanent",
                     currency="GBP",
                     salary=88_000,
                     holiday_days=25,
-                    received_on=date.today() - timedelta(days=42),
+                    received_on=date.today() - timedelta(days=43),
                     notes="Five days in the office",
                 ),
+            ),
+            (
+                "Engineering Manager",
+                21,
                 Offer(
-                    application_id=by_title["Engineering Manager"].id,
                     status="withdrawn",
                     employment_type="fixed_term",
                     currency="GBP",
                     salary=105_000,
                     contract_months=12,
-                    received_on=date.today() - timedelta(days=22),
+                    received_on=date.today() - timedelta(days=23),
                 ),
-            ]
-        )
+            ),
+        ]:
+            app = by_title[title]
+            offer.application_id = app.id
+            s.add(offer)
+            s.flush()
+            before = app.last_activity_at
+            record_offer(s, app, offer, offer.status)
+            event = s.query(Event).filter_by(application_id=app.id).order_by(Event.seq.desc()).first()
+            event.occurred_at = days_ago(ended_ago)
+            app.last_activity_at = max(before, event.occurred_at)
     engine.dispose()
     print(f"Seeded {len(APPLICATIONS)} demo applications in {path}")
 

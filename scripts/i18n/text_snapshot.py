@@ -321,14 +321,13 @@ with sync_playwright() as p:
     )
     page.keyboard.press("Escape")
     time.sleep(0.4)
-    # The CV file waiting to be adopted: making it a version (closed unsaved), and hiding it as
-    # not a CV (kept in the browser only) with its Show button.
+    # The CV file waiting to be adopted: making it a version (closed unsaved). Hiding it as not a CV
+    # comes last, since the browser remembers that and Insights' CV alert reads it.
     visit(page, "/documents")
     make = page.get_by_role("button", name="Make it a version").first
     step("documents+make-version", lambda: make.click(timeout=3000))
     page.keyboard.press("Escape")
     time.sleep(0.4)
-    step("documents+not-cv", lambda: page.get_by_role("button", name="Not a CV").first.click(timeout=3000))
 
     # Files and links: pages that have them in the demo, found by name through the API. An
     # application with its own files and its role's, one with only its role's, one with a link;
@@ -427,6 +426,10 @@ with sync_playwright() as p:
     step("timeline+everything", lambda: page.get_by_role("button", name="Everything", exact=True).click(timeout=3000))
     step("timeline+none", lambda: page.get_by_role("button", name="None", exact=True).click(timeout=3000))
     step("timeline+only-files", lambda: page.get_by_text("Files", exact=True).click(timeout=3000))
+
+    # Last, as it's remembered in the browser: hiding the CV file as not a CV, with its Show button.
+    visit(page, "/documents")
+    step("documents+not-cv", lambda: page.get_by_role("button", name="Not a CV").first.click(timeout=3000))
     browser.close()
 
 with open(OUT, "w") as f:
