@@ -79,11 +79,14 @@ pnpm --dir frontend format:check
 pnpm --dir frontend e2e
 ```
 
-**Test runs stay out of your way.** `pnpm test` and `pnpm e2e` use a quarter of your cores (3 on
-a 12-core machine; each browser-test worker also runs its own app server and Chrome), at the
-lowest CPU priority and, on Linux, the lowest disk priority. Only one runs at a time: a second,
-from any checkout or worktree, waits for the first and says so. Set `TEST_WORKERS=6` for more
-workers, or `TEST_LOCK=off` to skip the wait. The wrapper is `frontend/scripts/test-run.mjs`.
+**Test runs stay out of your way.** `pnpm test` and `pnpm e2e` use a quarter of your CPU threads
+(3 where there are 12; each browser-test worker also runs its own app server and Chrome), at the
+lowest CPU priority. On Linux they also ask for idle disk priority, which only the BFQ disk
+scheduler honours. Only one runs at a time: a second, from any checkout or worktree, waits for
+the first and says so (a quick `pnpm test` waits behind a long `pnpm e2e` too). Set
+`TEST_WORKERS=6` for more workers, or `TEST_LOCK=off` to skip the wait. The wrapper is
+`frontend/scripts/test-run.mjs`; running `vitest` or `playwright` yourself keeps the worker limit
+but skips the wait and the low priority.
 
 **Browser tests** (`frontend/e2e/`, [Playwright](https://playwright.dev/)) open the real app in
 the Chrome on your machine and use it, so they need Chrome installed and nothing downloaded.

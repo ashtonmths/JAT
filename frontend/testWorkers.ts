@@ -1,8 +1,8 @@
 import { availableParallelism } from "node:os";
 
 /**
- * How many workers Vitest and Playwright may use: a quarter of the cores (3 on a 12-core machine,
- * at least 1), so a test run leaves the rest of the computer usable. Each Playwright worker also
+ * How many workers Vitest and Playwright may use: a quarter of the CPU threads (3 where there are
+ * 12, at least 1), so a test run leaves the rest of the computer usable. Each Playwright worker also
  * starts its own app server and Chrome, so the default stays low. Set TEST_WORKERS to change it.
  */
 export function testWorkers(
