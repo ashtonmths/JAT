@@ -1,7 +1,7 @@
 # Job Application Tracker
 
 > An open-source (Apache-2.0), self-hosted, local-first web app for tracking a job search,
-> built for software engineers. No account, no cloud, no AI and no tracking or telemetry: it
+> built for software engineers. No AI, no cloud, no account and no tracking or telemetry: it
 > runs on localhost (Linux or macOS), never scrapes job boards or contacts anyone, and keeps
 > all data in one local directory outside the code (SQLite plus a plain-text JSON Lines and
 > Markdown export), with optional automatic git snapshots as backups.

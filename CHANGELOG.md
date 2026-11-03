@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.18.8 (2026-11-03)
+
+- The tagline now leads with No AI: "No AI. No cloud. No account. No tracking." on the social preview card, the README and the website (#227).
+
 ## 1.18.7 (2026-11-03)
 
 - A CV attached on a role's or person's page now shows on Documents straight away (#220).

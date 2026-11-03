@@ -1,7 +1,7 @@
 {
   "name": "jat-website",
   "private": true,
-  "version": "1.18.7",
+  "version": "1.18.8",
   "type": "module",
   "engines": {
     "node": ">=22.12"

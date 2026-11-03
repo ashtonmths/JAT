@@ -3,7 +3,7 @@
 # 🎯 Job Application Tracker
 
 **A self-hosted job application tracker for software engineers.<br>
-No account. No cloud. No AI. No tracking.**
+No AI. No cloud. No account. No tracking.**
 
 Kanban board, recruiter CRM, interview rounds, follow-up reminders, offers side by side and a
 Sankey diagram of your whole search. Your data lives in a folder on your own disk, with
@@ -51,9 +51,9 @@ way tech hiring actually works:
 
 ## 🔒 Yours, and only yours
 
-- **No account, no cloud.** It runs on `localhost`. There's nothing to sign up for and no
-  server of ours your data goes to.
 - **No AI.** Nothing reads, summarises, scores or uploads your notes, CVs or emails.
+- **No cloud, no account.** It runs on `localhost`. There's no server of ours your data goes
+  to and nothing to sign up for.
 - **No tracking.** No telemetry and no analytics. The app never sends email, never contacts
   anyone and never calls out to the web.
 - **Your files, in open formats.** One folder outside the code: a SQLite database plus a
@@ -209,8 +209,8 @@ The full plan is in the [product requirements](docs/prd/tracker.md) and the
 | | Spreadsheet or Notion | Hosted trackers (Huntr, Teal, …) | **Job Application Tracker** |
 |---|---|---|---|
 | Your data stays on your machine | Sometimes | ❌ | ✅ |
-| No account or sign-up | Depends | ❌ | ✅ |
 | No AI features | Depends | ❌ | ✅ |
+| No account or sign-up | Depends | ❌ | ✅ |
 | No tracking or analytics | Depends | ❌ | ✅ |
 | Works offline | Sometimes | ❌ | ✅ |
 | Export you can read and diff | CSV | Partial | ✅ JSON Lines + Markdown, in git |

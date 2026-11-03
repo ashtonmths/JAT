@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   The GitHub social preview (docs/social-preview.png), 1280x640. Rendered by make_card.py.
-  ?layout=b (default): "No account. No cloud. No AI. No tracking." as the headline.
+  ?layout=b (default): "No AI. No cloud. No account. No tracking." as the headline.
   ?layout=a: the name as the headline, with a checklist of eight points.
   Text sizes are chosen to stay readable when GitHub and chat apps shrink the card to ~400px wide:
   nothing important below 32px, and nothing within 48px of an edge.
@@ -85,13 +85,14 @@
       }
       .b h1 {
         margin-top: 44px;
-        font-size: 84px;
+        font-size: 76px; /* "No account. No tracking." on one line inside the 900px column */
         line-height: 1.05;
         font-weight: 900;
         letter-spacing: -0.035em;
       }
       .b h1 span {
         display: block;
+        white-space: nowrap;
       }
       .b .sub {
         margin-top: 34px;
@@ -188,7 +189,7 @@
       <div class="shot"><img src="../../docs/screenshots/insights.png" alt="" /></div>
       <div class="text">
         <div class="brand"><span data-icon></span><span class="name">Job Application Tracker</span></div>
-        <h1><span>No account. No cloud.</span><span>No AI. No tracking.</span></h1>
+        <h1><span>No AI. No cloud.</span><span>No account. No tracking.</span></h1>
         <p class="sub">Your job search in a folder on your own machine,<br />with optional git backups.</p>
       </div>
       <p class="foot muted">Self-hosted · Open source · Free</p>
@@ -200,9 +201,9 @@
         <div class="brand"><span data-icon></span><span class="name">Job Application<br />Tracker</span></div>
         <p class="tag muted">Your job search, on your own machine.</p>
         <ul>
-          <li>No account</li>
-          <li>No cloud</li>
           <li>No AI</li>
+          <li>No cloud</li>
+          <li>No account</li>
           <li>No tracking</li>
           <li>Open formats</li>
           <li>Git backups</li>
