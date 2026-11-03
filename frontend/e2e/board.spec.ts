@@ -147,6 +147,46 @@ test.describe("opening a card", () => {
       page.getByRole("dialog").getByRole("heading", { name: "Senior Backend Engineer" }),
     ).toBeVisible();
   });
+
+  test("the recruiter's name opens their page, not the quick view, and moves nothing", async ({ page }) => {
+    const moves = watchMoves(page);
+    await card(page, "Contoso", "Senior Backend Engineer").getByRole("link", { name: "Alex Morgan" }).click();
+    await expect(page).toHaveURL(/\/people\/[^/]+$/);
+    await expect(page.getByRole("heading", { name: "Alex Morgan", level: 2 })).toBeVisible();
+    await expect(page.getByRole("dialog")).toBeHidden();
+    expect(moves).toEqual([]);
+  });
+
+  test("Enter on the recruiter's name opens their page too", async ({ page }) => {
+    await card(page, "Contoso", "Senior Backend Engineer").getByRole("link", { name: "Alex Morgan" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/people\/[^/]+$/);
+    await expect(page.getByRole("dialog")).toBeHidden();
+  });
+
+  test("with only an agency, its name opens the agency's page", async ({ page, request }) => {
+    const made = await request.post("/api/v1/applications/quick", {
+      data: {
+        company_name: "Agency Card Co",
+        role_title: "Agency Card Role",
+        route: "agency",
+        agency_name: "Card Agency Ltd",
+        stage: "applied",
+        tags: [],
+      },
+    });
+    expect(made.ok()).toBe(true);
+    await page.reload();
+    await card(page, "Agency Card Co", "Agency Card Role")
+      .getByRole("link", { name: "Card Agency Ltd" })
+      .click();
+    await expect(page).toHaveURL(/\/agencies\/[^/]+$/);
+    await expect(page.getByRole("dialog")).toBeHidden();
+  });
+
+  test("a referral's card has no link where the recruiter would be", async ({ page }) => {
+    await expect(card(page, "Litware", "Senior Software Engineer").getByRole("link")).toHaveCount(0);
+  });
 });
 
 test.describe("dragging with the mouse", () => {

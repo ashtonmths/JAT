@@ -238,6 +238,8 @@ The list's *Route* column and each board card name the application's recruiter. 
 the list shows "Alex Morgan · Northwind Talent" and the card "Alex Morgan". Applied directly
 with an in-house recruiter who reached out, the list and the company's page show "Direct · Riley
 Chen" and the card "Riley Chen". With no recruiter, the list shows "Direct" or "Referral".
+On a board card, click the recruiter's name to open their page (or the agency's name, when the
+card shows only the agency); that doesn't open the quick view or move the card.
 
 **A column per interview round** (a switch above the board, remembered) splits *Interviewing*
 into *No round yet*, then *Round 1*, *Round 2*… up to the furthest any application has got

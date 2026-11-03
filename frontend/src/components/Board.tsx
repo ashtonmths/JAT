@@ -12,9 +12,10 @@ import {
   type Announcements,
   type UniqueIdentifier,
 } from "@dnd-kit/core";
-import { Badge, Card, Group, Paper, ScrollArea, Stack, Switch, Text } from "@mantine/core";
+import { Anchor, Badge, Card, Group, Paper, ScrollArea, Stack, Switch, Text } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -61,7 +62,30 @@ export function announcements(rows: ApplicationRow[], titles: Map<string, string
   };
 }
 
-function CardBody({ row }: { row: ApplicationRow }) {
+/**
+ * Who a card came through, linked to their page: the recruiter's, or the agency's when only the agency
+ * is known. The link keeps its click, press and Enter to itself, so following it doesn't also open the
+ * card's quick view or start a drag.
+ */
+function ViaLink({ to, children }: { to: string; children: React.ReactNode }) {
+  const keep = (e: React.SyntheticEvent) => e.stopPropagation();
+  return (
+    <Anchor
+      component={Link}
+      to={to}
+      inherit
+      c="dimmed"
+      underline="hover"
+      onClick={keep}
+      onPointerDown={keep}
+      onKeyDown={keep}
+    >
+      {children}
+    </Anchor>
+  );
+}
+
+function CardBody({ row, link = true }: { row: ApplicationRow; link?: boolean }) {
   const { t } = useTranslation("applications");
   const via =
     row.route === "agency"
@@ -69,6 +93,13 @@ function CardBody({ row }: { row: ApplicationRow }) {
       : row.route === "referral"
         ? t("routes.referral")
         : row.recruiter_name; // an in-house recruiter
+  const viaTo = !link
+    ? null
+    : row.route !== "referral" && row.recruiter_name && row.recruiter_id
+      ? `/people/${row.recruiter_id}`
+      : row.route === "agency" && !row.recruiter_name && row.agency_name && row.agency_id
+        ? `/agencies/${row.agency_id}`
+        : null;
   return (
     <>
       <Text fw={600} size="sm" lineClamp={1}>
@@ -96,7 +127,7 @@ function CardBody({ row }: { row: ApplicationRow }) {
             {row.route !== "referral" && row.recruiter_name && (
               <PersonMarks id={row.recruiter_id} size={12} />
             )}
-            {via}
+            {viaTo ? <ViaLink to={viaTo}>{via}</ViaLink> : via}
           </Text>
         )}
       </Group>
@@ -287,7 +318,7 @@ export function Board({
         <DragOverlay dropAnimation={null}>
           {active && (
             <Card withBorder padding="xs" radius="md" shadow="md" w={228}>
-              <CardBody row={active} />
+              <CardBody row={active} link={false} />
             </Card>
           )}
         </DragOverlay>
