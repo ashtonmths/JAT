@@ -155,8 +155,7 @@ test.describe("creating an agency", () => {
     expect(await agencies(request, "Twin Agency")).toHaveLength(1);
   });
 
-  // KNOWN BUG (fix-new-agency-keeps-draft on the roadmap): expected to fail until it is fixed.
-  test.fail("closing it leaves nothing behind for next time", async ({ page }) => {
+  test("closing it leaves nothing behind for next time", async ({ page }) => {
     await openPage(page);
     await page.getByRole("button", { name: "New agency" }).click();
     const dialog = page.getByRole("dialog");
