@@ -132,8 +132,8 @@ export function useUnsendDocument(appId: string) {
 
 export type CvFile = Schemas["CvFile"];
 
-/** CV files attached to applications, not yet recorded as versions sent with them. Refreshed
- * when an application's files or any document changes. */
+/** CV files attached to applications, roles and people, not yet recorded as versions sent with
+ * them. Refreshed when their files or any document changes. */
 export function useCvFiles() {
   return useQuery({
     queryKey: ["attachments", "cv-files"],
