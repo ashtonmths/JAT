@@ -59,8 +59,9 @@ function useRefreshFiles() {
     void qc.invalidateQueries({ queryKey: ["search"] });
     if (entityType === "application") invalidateApplicationViews(qc); // "File added" on the timeline
     // A CV file to make a version: GET /cv-files reads files on applications, roles and people.
-    if (["application", "role", "contact"].includes(entityType))
+    if (["application", "role", "contact"].includes(entityType)) {
       void qc.invalidateQueries({ queryKey: ["attachments", "cv-files"] });
+    }
   };
 }
 
