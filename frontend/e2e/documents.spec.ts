@@ -700,8 +700,7 @@ test.describe("more of what could go out of step", () => {
     ["role", "role"],
     ["contact", "person"],
   ] as const) {
-    // KNOWN BUG (fix-cv-files-stale on the roadmap): expected to fail until it is fixed.
-    test.fail(`a CV attached on a ${label}'s page is here without a reload`, async ({ page, request }) => {
+    test(`a CV attached on a ${label}'s page is here without a reload`, async ({ page, request }) => {
       const name = `on-${label}-cv.pdf`;
       let path: string;
       if (kind === "role") {
