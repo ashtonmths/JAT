@@ -48,7 +48,8 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
 ## 4. Non-goals
 
 - Searching for jobs, scraping, job-board imports or any external job feed.
-- Quick-add from a pasted URL, an MCP server, and `.ics` calendar export (Kai, 2026-09-30).
+- Quick-add from a pasted URL, and `.ics` calendar export (Kai, 2026-09-30). An MCP server was
+  cut here too, and later brought back at Kai's request: `docs/rfc/mcp.md`.
 - Sending email or messages, or submitting applications.
 - Multi-user use, authentication, hosting or cloud sync. It is one person on localhost.
 - Obsidian integration. This is a standalone web app.
@@ -182,7 +183,8 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
 - **FR22:** The data is readable without the app: open formats, with attachments as normal
   files.
 - **FR23:** Every action is available through a local JSON API, so Claude can fill in data
-  when Kai asks. There is no MCP server.
+  when Kai asks. A local MCP server over that API, read-only unless started with writes on, is
+  planned in `docs/rfc/mcp.md`.
 - **FR24:** The app runs as a single terminal process on localhost with no installed
   services.
 

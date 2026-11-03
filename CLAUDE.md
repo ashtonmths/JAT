@@ -159,6 +159,11 @@ PR.** PRs that only touch internal files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `doc
 - API changes: after changing routes or schemas run `uv run python -m jat.openapi` and
   `pnpm --dir frontend gen:api`, and commit `frontend/openapi.json` and `src/api/schema.d.ts`
   (`tests/test_openapi.py` fails on drift). Use the typed client in `frontend/src/api/client.ts`.
+- The MCP server (`jat mcp`, planned in `docs/rfc/mcp.md`) wraps the same API. Once it exists, every new or
+  changed route also needs an entry in `src/jat/mcp/registry.py`, as a tool or under `NOT_EXPOSED` with a reason,
+  and `uv run python -m jat.mcp.surface` re-run; a test fails until it has one (RFC §9). Changing what an existing
+  tool takes or returns follows the RFC's version table (§9.4). Until then, a PR that adds an API feature says in
+  its body whether an agent would want it over MCP, so the plan stays current.
 - After merging a PR that changes the app, rebuild the frontend in the main checkout and
   restart `jat serve`.
 - Once they exist, start with `docs/OVERVIEW.md` (the map: processes, data flow, state) and

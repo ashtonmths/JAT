@@ -13,5 +13,5 @@ proposed again).
 - Job searching, scraping and job-board imports: all data comes from Kai or from Claude on
   request.
 - Quick-add from a pasted job ad or URL.
-- An MCP server.
+- An MCP server (since brought back at Kai's request: `docs/rfc/mcp.md`).
 - Obsidian as the front end: it's a web app.
