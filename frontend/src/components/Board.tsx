@@ -97,7 +97,7 @@ function CardBody({ row, link = true }: { row: ApplicationRow; link?: boolean })
     ? null
     : row.route !== "referral" && row.recruiter_name && row.recruiter_id
       ? `/people/${row.recruiter_id}`
-      : row.route === "agency" && row.agency_name && row.agency_id
+      : row.route === "agency" && !row.recruiter_name && row.agency_name && row.agency_id
         ? `/agencies/${row.agency_id}`
         : null;
   return (
