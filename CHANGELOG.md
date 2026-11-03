@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.18.7 (2026-11-03)
+
+- A CV attached on a role's or person's page now shows on Documents straight away (#220).
+
 ## 1.18.6 (2026-11-03)
 
 - Closing the New agency dialog now clears what you typed, so it opens empty next time (#221).
