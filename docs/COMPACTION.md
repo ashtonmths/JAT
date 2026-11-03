@@ -107,7 +107,8 @@ next action.
   into the repo, commits or PRs.
 - **Scope cuts.** No job searching or scraping, no quick-add from URLs, no `.ics` export.
   The MCP cut is reversed: Kai asked for "mcp or smt so local agents can query the status and
-  perhaps make changes" (roadmap `mcp-server`, #101). Dropped on request: Search Console and
+  perhaps make changes" (#101; planned in detail in `docs/rfc/mcp.md`, roadmap `mcp-plan` and the
+  `mcp-*` build tasks, 2026-11-03). Dropped on request: Search Console and
   Google Analytics ("lets forget search console and GA"), a test CI workflow ("skip the CI
   tests workflow"), a coined phrase ("forget it"), and a Chinese README for now ("leave it for
   now", it comes with `multi-language`).
@@ -635,8 +636,8 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
   file per component next to it with React Testing Library, shared render helpers in
   `src/test/`, `@testing-library/user-event`, backend tests by module, a Testing section in
   CONTRIBUTING); `docker-image` (plan in `docs/rfc/docker.md`), `docker-image-publish`,
-  `windows-support`, `packaged-install`, `desktop-app`, `hosted-version`, `demo-site`,
-  `mcp-server`.
+  `windows-support`, `packaged-install`, `desktop-app`, `hosted-version`, `demo-site`, and the
+  MCP server's `mcp-*` tasks (`docs/rfc/mcp.md`, waiting on Kai's decisions in its §14).
 - **Offered, waiting on Kai:**
   - The GitHub description and topics proposed in #96 (description "Self-hosted job
     application tracker for software engineers. No account, no cloud, no AI, no tracking.
