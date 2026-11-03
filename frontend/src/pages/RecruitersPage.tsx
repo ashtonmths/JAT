@@ -55,19 +55,16 @@ function NewAgencyModal({ opened, onClose }: { opened: boolean; onClose: () => v
       website: (v) => (!v || WEB_LINK.test(v) ? null : t("places.linkStart")),
     },
   });
+  // Every way of closing (Escape, the X, clicking outside, saving) clears the draft.
+  const close = () => {
+    form.reset();
+    onClose();
+  };
   return (
-    <Modal opened={opened} onClose={onClose} title={t("recruiters.newAgency")}>
+    <Modal opened={opened} onClose={close} title={t("recruiters.newAgency")}>
       <form
         onSubmit={form.onSubmit((v) =>
-          create.mutate(
-            { name: v.name.trim(), website: v.website || null },
-            {
-              onSuccess: () => {
-                form.reset();
-                onClose();
-              },
-            },
-          ),
+          create.mutate({ name: v.name.trim(), website: v.website || null }, { onSuccess: close }),
         )}
       >
         <Stack>
