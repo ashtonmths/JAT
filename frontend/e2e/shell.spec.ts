@@ -361,8 +361,7 @@ test.describe("wide screens", () => {
 });
 
 test.describe("more of the frame", () => {
-  // KNOWN BUG (fix-menu-prefix-active on the roadmap): expected to fail until it is fixed.
-  test.fail("an address that only starts like a section marks nothing", async ({ page }) => {
+  test("an address that only starts like a section marks nothing", async ({ page }) => {
     await page.goto("/notes-old");
     await expect(page.getByRole("heading", { name: "Page not found", level: 2 })).toBeVisible();
     await expect(menu(page).locator('a[data-active="true"]')).toHaveCount(0);
