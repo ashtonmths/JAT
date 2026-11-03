@@ -15,6 +15,11 @@ export default tseslint.config(
     rules: { ...reactHooks.configs.recommended.rules },
   },
   {
+    // Node scripts (the test-run wrapper).
+    files: ["scripts/**/*.mjs"],
+    languageOptions: { globals: globals.node },
+  },
+  {
     // Playwright fixtures call their callback `use`, which isn't React's.
     files: ["e2e/**"],
     rules: { "react-hooks/rules-of-hooks": "off" },

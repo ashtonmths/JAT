@@ -1,4 +1,5 @@
 import { defineConfig } from "@playwright/test";
+import { testWorkers } from "./testWorkers";
 
 // Browser tests: the real app, in the Chrome already on this machine, on seeded demo data.
 // e2e/fixtures.ts starts a server per test file. `pnpm e2e` builds the frontend first.
@@ -6,6 +7,8 @@ export default defineConfig({
   testDir: "./e2e",
   outputDir: "./test-results",
   fullyParallel: false, // tests in a file share its server; files run side by side
+  // Each worker runs its own app server and Chrome: a quarter of the cores, or TEST_WORKERS.
+  workers: testWorkers(),
   forbidOnly: !!process.env.CI,
   retries: 0,
   reporter: [["list"]],
