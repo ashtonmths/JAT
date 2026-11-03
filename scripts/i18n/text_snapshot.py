@@ -276,7 +276,7 @@ with sync_playwright() as p:
     page.keyboard.press("Escape")
     time.sleep(0.4)
 
-    # Offers: the page with the closed switch on (the demo has none closed), an application's
+    # Offers: the page with the closed switch on (one declined, one withdrawn), an application's
     # card, and the form for each kind with its currency error. Each closed unsaved.
     visit(page, "/offers")
     step("offers+closed", lambda: page.get_by_label("Show declined and withdrawn").click(timeout=3000))
@@ -321,6 +321,44 @@ with sync_playwright() as p:
     )
     page.keyboard.press("Escape")
     time.sleep(0.4)
+    # The CV file waiting to be adopted: making it a version (closed unsaved), and hiding it as
+    # not a CV (kept in the browser only) with its Show button.
+    visit(page, "/documents")
+    make = page.get_by_role("button", name="Make it a version").first
+    step("documents+make-version", lambda: make.click(timeout=3000))
+    page.keyboard.press("Escape")
+    time.sleep(0.4)
+    step("documents+not-cv", lambda: page.get_by_role("button", name="Not a CV").first.click(timeout=3000))
+
+    # Files and links: pages that have them in the demo, found by name through the API. An
+    # application with its own files and its role's, one with only its role's, one with a link;
+    # the roles, a company and people with files or links.
+    FIND = {  # what's asked for -> (list endpoint, the field holding its name, page path)
+        "application": ("applications", "role_title", "/applications/"),
+        "role": ("roles", "title", "/roles/"),
+        "company": ("companies", "name", "/companies/"),
+        "person": ("contacts", "name", "/people/"),
+    }
+
+    def find(kind, text):
+        endpoint, field, path = FIND[kind]
+        rows = page.request.get(f"{BASE}/api/v1/{endpoint}").json()
+        ids = [row["id"] for row in rows if row[field] == text]
+        if not ids:
+            raise LookupError(text)
+        visit(page, path + ids[0])
+
+    for name, kind, text in [
+        ("files+application-own", "application", "Lead Engineer"),
+        ("files+application-role", "application", "Staff Platform Engineer"),
+        ("links+application", "application", "Senior Backend Engineer"),
+        ("files+role", "role", "Lead Engineer"),
+        ("links+role", "role", "Founding Backend Engineer"),
+        ("links+company", "company", "Contoso"),
+        ("links+person", "person", "Alex Morgan"),
+        ("files+person", "person", "Sam Patel"),
+    ]:
+        step(name, lambda kind=kind, text=text: find(kind, text))
 
     # Notes: General only, the editor with its error and preview. Search: no words,
     # words that find things (a round, a call, a done to-do), and words that don't. None saved.
