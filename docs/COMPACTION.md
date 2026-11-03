@@ -951,6 +951,22 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   - **The PM dashboard parses branch roadmaps:** a new status on an unmerged branch shows under Problems on the old
     dashboard until the PR merges and the dashboard restarts.
   - **A forked Claude can't use EnterWorktree** from the main checkout; it works in the worktree by absolute paths.
+- **Learned 2026-11-03:**
+  - **Never give a one-off reviewer or builder a `name`.** A named agent starts as a long-lived teammate in its own pane,
+    and it doesn't report back by itself: five reviewers sat idle for about an hour with their findings until asked
+    (SendMessage), then needed TaskStop. Leave `name` off so the agent reports when it's done.
+  - **Kai: handle PRs one at a time** ("handle PRs sequentially, review-fix cycle then merge, then handle the next PR").
+    Don't review PRs ahead of their turn. After merging main into the next one, compare its own diff (`git diff
+    origin/main --stat` before and after); only a changed diff needs a fresh review. Kai declined combining fixes into one PR.
+  - **`!` commands run in this session's current folder,** which may be a worktree: a `playwright test --ui` that Kai ran
+    with `!` cleared a worktree's `test-results` mid-check and failed three tests on missing trace files. Tell Kai to run
+    such things in their own terminal, in the main checkout. UI mode needs a display, which `!` doesn't have.
+  - **The test lock** (`frontend/scripts/test-run.mjs`, `/tmp/jat-test-run.lock`) runs `pnpm test` and `pnpm e2e` one
+    at a time across worktrees: parallel builders queue for it, so more builders doesn't mean faster tests.
+  - **A flaky `test.fail` blocks merges:** `fix-offer-kind-pin-flaky` passed by luck once. Rerun only the browser suite on
+    the same commit (`<tmp>/deps/e2e_only.sh`) when everything else passed and the failure isn't the PR's.
+  - **`pm_checks.sh` keeps only the last 25 lines** of a failing check: read the failures' `error-context.md` under
+    `frontend/test-results/` for the rest.
 
 ### 8a. How Kai works
 
