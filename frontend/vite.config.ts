@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
+import { testWorkers } from "./testWorkers";
 
 // In development Vite serves the UI on :5173 and proxies the API to FastAPI (jat serve --dev).
 // In production FastAPI serves the built files from dist/ on a single port.
@@ -58,8 +59,9 @@ export default defineConfig({
   build: { outDir: "dist", sourcemap: true },
   test: {
     environment: "jsdom",
-    include: ["src/**/*.test.{ts,tsx}"], // e2e/ is Playwright's
+    include: ["src/**/*.test.{ts,tsx}", "testWorkers.test.ts"], // e2e/ is Playwright's
     setupFiles: ["./src/test/setup.ts"],
     css: false,
+    maxWorkers: testWorkers(), // a quarter of the cores, or TEST_WORKERS
   },
 });

@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.18.1 (2026-11-03)
+
+- Test runs no longer max out the computer: `pnpm test` and `pnpm e2e` use a quarter of the CPU threads (`TEST_WORKERS` changes it), run at the lowest CPU priority, and run one at a time across worktrees (`TEST_LOCK=off` skips the wait) (#217).
+
 ## 1.18.0 (2026-11-02)
 
 - **See the rounds in the Sankeys:** a *Show interview rounds* switch on The whole picture and the Applications flow splits Interviewing into the rounds each application reached, so you can follow Round 1 → Round 2 → Rejected. It's off at first and remembered. Restart the tracker and rebuild the frontend to use it (#214).
