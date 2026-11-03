@@ -499,7 +499,8 @@ test.describe("CVs and cover letters", () => {
       request,
       "insights/documents",
     );
-    expect(data.kinds.map((k) => k.kind)).toEqual(["cv", "cover_letter"]);
+    // The demo's Portfolio, with no versions yet, is the "other" kind.
+    expect(data.kinds.map((k) => k.kind)).toEqual(["cv", "cover_letter", "other"]);
     await openInsights(page);
     await tab(page, "CVs and cover letters");
     await expect(page.getByRole("heading", { name: "Which CV works best" })).toBeVisible();

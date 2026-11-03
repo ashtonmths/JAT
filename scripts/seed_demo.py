@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import sys
 from datetime import UTC, date, datetime, timedelta
+from io import BytesIO
 from pathlib import Path
 
 from jat.datadir import init_data_dir
@@ -19,6 +20,7 @@ from jat.db.models import (
     Agency,
     Application,
     ApplicationDocument,
+    Attachment,
     Company,
     Contact,
     ContactDetail,
@@ -26,18 +28,44 @@ from jat.db.models import (
     DocumentVersion,
     Event,
     Interview,
+    Link,
     Meeting,
     Offer,
     Reply,
     Role,
     Todo,
 )
-from jat.domain.applications import create_application, history, log_activity, move
+from jat.domain.applications import create_application, history, log_activity, log_message, move
 from jat.domain.interviews import record
+from jat.domain.offers import record as record_offer
 from jat.domain.workflow import DEFAULT_WORKFLOW as W
+from jat.storage.files import FileStore
 from jat.storage.notes import NoteStore
 
 NOW = datetime.now(UTC).replace(microsecond=0)
+
+
+def tiny_pdf(text: str) -> bytes:
+    """A one-page PDF saying `text`, small and made up, for demo attachments."""
+    stream = f"BT /F1 24 Tf 72 720 Td ({text}) Tj ET".encode()
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R "
+        b"/Resources << /Font << /F1 5 0 R >> >> >>",
+        b"<< /Length %d >>\nstream\n" % len(stream) + stream + b"\nendstream",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ]
+    out = bytearray(b"%PDF-1.4\n")
+    offsets = []
+    for n, body in enumerate(objects, start=1):
+        offsets.append(len(out))
+        out += b"%d 0 obj\n" % n + body + b"\nendobj\n"
+    xref = len(out)
+    out += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objects) + 1)
+    out += b"".join(b"%010d 00000 n \n" % o for o in offsets)
+    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (len(objects) + 1, xref)
+    return bytes(out)
 
 
 def days_ago(n: float) -> datetime:
@@ -493,6 +521,110 @@ def seed(path: Path) -> None:
         for version, titles in sent.items():
             for title in titles:
                 s.add(ApplicationDocument(application_id=by_title[title].id, document_version_id=version.id))
+        # A document with no versions yet, so its empty state shows.
+        s.add(Document(kind="other", name="Portfolio"))
+        # Files: a CV attached to an application with none recorded and to its role (waiting to be
+        # adopted on Documents), a job description on a role (shown on its application too), and
+        # a rate card from a recruiter. Tiny made-up PDFs.
+        files = FileStore(path)
+        lead = by_title["Lead Engineer"]
+        for entity_type, entity_id, name, text in [
+            ("application", lead.id, "CV 2026.pdf", "CV"),
+            ("role", lead.role_id, "CV 2026.pdf", "CV"),
+            ("role", by_title["Staff Platform Engineer"].role_id, "Job description.pdf", "Job description"),
+            ("contact", recruiters["Sam Patel"].id, "Contract rates.pdf", "Rates"),
+        ]:
+            stored = files.save(BytesIO(tiny_pdf(text)), name)
+            s.add(
+                Attachment(
+                    id=stored.id,
+                    entity_type=entity_type,
+                    entity_id=entity_id,
+                    path=stored.path,
+                    original_name=name,
+                    content_type="application/pdf",
+                    size=stored.size,
+                    sha256=stored.sha256,
+                    created_at=days_ago(2),
+                )
+            )
+            if entity_type == "application":  # as uploading one does: "File added" on its timeline
+                log_message(
+                    s,
+                    lead,
+                    "file",
+                    key="event.fileAdded",
+                    params={"name": name},
+                    summary=f"File added: {name}",
+                    occurred_at=days_ago(2),
+                    data={"attachment_id": stored.id},
+                )
+        # Links on an application, a role, a company and a person.
+        s.add_all(
+            [
+                Link(
+                    entity_type="application",
+                    entity_id=by_title["Senior Backend Engineer"].id,
+                    url="https://careers.contoso.example.com/jobs/1234",
+                    title="Job ad",
+                ),
+                Link(
+                    entity_type="role",
+                    entity_id=s.query(Role).filter_by(title="Founding Backend Engineer").one().id,
+                    url="https://pay.northwind.example.com/careers",
+                ),
+                Link(
+                    entity_type="company",
+                    entity_id=companies["Contoso"].id,
+                    url="https://contoso.example.com/engineering",
+                    title="Engineering blog",
+                ),
+                Link(
+                    entity_type="contact",
+                    entity_id=recruiters["Alex Morgan"].id,
+                    url="https://northwindtalent.example.com/team/alex-morgan",
+                    title="Profile",
+                ),
+            ]
+        )
+        # Two offers that ended: one you turned down before withdrawing, one the company took back
+        # before rejecting you. Each on its application's timeline, as the app records it.
+        for title, ended_ago, offer in [
+            (
+                "Site Reliability Engineer",
+                41,
+                Offer(
+                    status="declined",
+                    employment_type="permanent",
+                    currency="GBP",
+                    salary=88_000,
+                    holiday_days=25,
+                    received_on=date.today() - timedelta(days=43),
+                    notes="Five days in the office",
+                ),
+            ),
+            (
+                "Engineering Manager",
+                21,
+                Offer(
+                    status="withdrawn",
+                    employment_type="fixed_term",
+                    currency="GBP",
+                    salary=105_000,
+                    contract_months=12,
+                    received_on=date.today() - timedelta(days=23),
+                ),
+            ),
+        ]:
+            app = by_title[title]
+            offer.application_id = app.id
+            s.add(offer)
+            s.flush()
+            before = app.last_activity_at
+            record_offer(s, app, offer, offer.status)
+            event = s.query(Event).filter_by(application_id=app.id).order_by(Event.seq.desc()).first()
+            event.occurred_at = days_ago(ended_ago)
+            app.last_activity_at = max(before, event.occurred_at)
     engine.dispose()
     print(f"Seeded {len(APPLICATIONS)} demo applications in {path}")
 
