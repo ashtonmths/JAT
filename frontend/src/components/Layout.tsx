@@ -100,7 +100,11 @@ export function Layout() {
                   to={item.path}
                   label={t(item.labelKey)}
                   leftSection={<item.icon size={18} stroke={1.6} />}
-                  active={item.path === "/" ? pathname === "/" : pathname.startsWith(item.path)}
+                  active={
+                    item.path === "/"
+                      ? pathname === "/"
+                      : pathname === item.path || pathname.startsWith(`${item.path}/`)
+                  }
                   onClick={close}
                 />
               ))}

@@ -35,16 +35,20 @@ function NewCompanyModal({ opened, onClose }: { opened: boolean; onClose: () => 
       website: (v) => (!v || WEB_LINK.test(v) ? null : t("places.linkStart")),
     },
   });
+  // The dialog stays mounted while hidden, so clear what was typed whenever it closes.
+  const close = () => {
+    form.reset();
+    onClose();
+  };
   return (
-    <Modal opened={opened} onClose={onClose} title={t("companies.new")}>
+    <Modal opened={opened} onClose={close} title={t("companies.new")}>
       <form
         onSubmit={form.onSubmit((values) =>
           create.mutate(
             { name: values.name.trim(), website: values.website || null, description: null },
             {
               onSuccess: (company) => {
-                form.reset();
-                onClose();
+                close();
                 void navigate({ to: `/companies/${company.id}` });
               },
             },

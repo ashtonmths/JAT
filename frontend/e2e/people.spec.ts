@@ -1065,12 +1065,7 @@ test.describe("deleting a person", () => {
     expect(await people(request, "Delete Cancel")).toHaveLength(1);
   });
 
-  test("removes them and their calls, unlinking the rest, which stay", async ({
-    page,
-    request,
-    problems,
-  }) => {
-    problems.allow(/\/summary/); // KNOWN BUG, fix-deleted-person-404: a refetch after the delete
+  test("removes them and their calls, unlinking the rest, which stay", async ({ page, request }) => {
     const agency = await create(request, "agencies", { name: "Gone Agency" });
     const made = await create(request, "contacts", { name: "Gone Person", agency_id: agency.id });
     const co = await create(request, "companies", { name: "Gone Co" });
