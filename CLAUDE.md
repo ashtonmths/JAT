@@ -65,8 +65,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   `docs/ROADMAP.yaml`, run `uv run pytest -q tests/pm`.
 - **Don't max out Kai's PC** (Kai, 2026-11-02). `pnpm test` and `pnpm e2e` limit their workers,
   run at low priority and wait for each other across worktrees (CONTRIBUTING, *Checks*): run them
-  through `pnpm` (a single spec: `pnpm e2e e2e/<file>`), not `vitest` or `playwright` directly, and don't raise `TEST_WORKERS` or turn
-  `TEST_LOCK` off unless Kai asks.
+  through `pnpm` (a single spec: `pnpm e2e e2e/<file>`), not `vitest` or `playwright` directly,
+  and don't raise `TEST_WORKERS` or turn `TEST_LOCK` off unless Kai asks.
 - **Merging and releasing:** once a PR has been through the iterative review-fix cycle, Claude merges
   it and makes the release if it has a version bump, without asking (Kai, 2026-10-31). The cycle: a
   reviewer pass (a plain reviewer subagent or `/code-review`), fix the findings, and review again until

@@ -10,7 +10,7 @@
 //   node scripts/test-run.mjs <command> [args...]
 import { spawn, spawnSync } from "node:child_process";
 import { linkSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { setPriority, tmpdir } from "node:os";
+import { constants, setPriority, tmpdir } from "node:os";
 import { join } from "node:path";
 
 const LOCK = join(tmpdir(), "jat-test-run.lock");
@@ -140,12 +140,12 @@ const child = WINDOWS
   : spawn(command, args, { stdio: "inherit", env: { ...process.env, [NESTED]: "1" } });
 
 // Ctrl+C reaches the whole process group from the terminal already: wait for the run to stop
-// (Playwright takes a second Ctrl+C as "quit now", skipping its clean-up). Pass on the others.
+// (Playwright takes a second Ctrl+C as "quit now", skipping its clean-up). So `kill -INT` sent to
+// this wrapper alone does nothing: use SIGTERM, which is passed on, as is SIGHUP.
 process.on("SIGINT", () => {});
 if (!WINDOWS) {
   for (const signal of ["SIGTERM", "SIGHUP"]) process.on(signal, () => child.kill(signal));
 }
-const SIGNAL_CODES = { SIGHUP: 1, SIGINT: 2, SIGTERM: 15 };
 child.on("error", (error) => {
   if (locking) unlock();
   console.error(`Couldn't start ${command}: ${error.message}`);
@@ -153,5 +153,5 @@ child.on("error", (error) => {
 });
 child.on("exit", (code, signal) => {
   if (locking) unlock();
-  process.exit(code ?? 128 + (SIGNAL_CODES[signal] ?? 0));
+  process.exit(code ?? 128 + (constants.signals[signal] ?? 0));
 });
