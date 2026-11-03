@@ -60,10 +60,10 @@ next action.
   PRs each. Dependency updates: "it might be best to do only a couple of version updates per PR in case
   something breaks"; "be sure to run e2e tests for this as these updates have a high risk of breaking
   some behaviour".
-- **Don't max out Kai's PC.** "you are maxing out my PC": every heavy test command goes through
-  `flock /tmp/jat-heavy-tests.lock nice -n 19 ionice -c 3`, Vitest `--maxWorkers=3`, Playwright
-  `--workers=3` (in `<tmp>/deps/pm_checks.sh` and every agent brief). A proper repo-level cap is the backlog task
-  `test-resource-limits`.
+- **Don't max out Kai's PC.** "you are maxing out my PC": since `test-resource-limits` (#217, v1.18.1) `pnpm test` and
+  `pnpm e2e` cap their workers, run at low priority and take one lock across worktrees (`/tmp/jat-test-run.lock`;
+  CLAUDE.md and CONTRIBUTING *Checks*). `<tmp>/deps/pm_checks.sh` still also wraps a whole run in the older
+  `flock /tmp/jat-heavy-tests.lock nice -n 19 ionice -c 3`; the two locks don't wait on each other.
 - **Plan before building when asked.** "lets plan it firtst and dont start building until i say
   so" (Docker); "dont build yet, just commit the plan"; "noooo noo no no, dont buikld antyhing
   eyt … undo all of that. i want to know what each PR would be". When Kai asks for a plan,
@@ -467,8 +467,8 @@ and released (section 4). Before trusting anything here, re-read `docs/ROADMAP.y
 2026-11-02), with nothing up next I tell Kai what's in the backlog and wait for Kai to pick; nothing from the backlog starts
 without Kai's go-ahead. Kai: "those things youre waiting on me for, leave them on the roadmap. we wont be doing thme this
 session". So don't raise these again this session; they wait in the Backlog:
-- `notes-documents-improve`, `timeline-improve`, `people-you-meet` (all "to be planned with Kai first"),
-  `test-resource-limits` (the stopgap limiter in section 1 stays until then).
+- `notes-documents-improve`, `timeline-improve`, `people-you-meet` (all "to be planned with Kai first").
+  (`test-resource-limits` was on this list; Kai asked for it on 2026-11-03 and it shipped in #217.)
 - `security-alerts`: minimatch #32 stays open until eslint and redocly take minimatch 11, or Kai dismisses it.
 - Older backlog: `i18n-search`, `multi-language`, the speed-up ideas in `docs/rfc/delivery-speed.md`, P11 "Test gaps",
   `tests-reorganise`, Docker and the rest of section 5.
@@ -961,8 +961,9 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   - **`!` commands run in this session's current folder,** which may be a worktree: a `playwright test --ui` that Kai ran
     with `!` cleared a worktree's `test-results` mid-check and failed three tests on missing trace files. Tell Kai to run
     such things in their own terminal, in the main checkout. UI mode needs a display, which `!` doesn't have.
-  - **The test lock** (`frontend/scripts/test-run.mjs`, `/tmp/jat-test-run.lock`) runs `pnpm test` and `pnpm e2e` one
-    at a time across worktrees: parallel builders queue for it, so more builders doesn't mean faster tests.
+  - **The test lock** (`frontend/scripts/test-run.mjs`, `/tmp/jat-test-run.lock`, from `test-resource-limits`) runs
+    `pnpm test` and `pnpm e2e` one at a time across worktrees: parallel builders queue for it, so more builders doesn't
+    mean faster tests. It's separate from `pm_checks.sh`'s older `flock` (section 1).
   - **A flaky `test.fail` blocks merges:** `fix-offer-kind-pin-flaky` passed by luck once. Rerun only the browser suite on
     the same commit (`<tmp>/deps/e2e_only.sh`) when everything else passed and the failure isn't the PR's.
   - **`pm_checks.sh` keeps only the last 25 lines** of a failing check: read the failures' `error-context.md` under
