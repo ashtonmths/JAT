@@ -9,7 +9,7 @@ export const GUIDE = `${REPO}/blob/main/docs/guide/`;
 // "job application tracker"), then what sets it apart. Keep the description near 160 characters.
 export const TITLE = "Free Job Application Tracker: private, no sign-up, open source";
 export const DESCRIPTION =
-  "A free, private job application tracker. Track applications, recruiters, interviews, follow-ups and offers on your own computer. No account, no cloud, no tracking.";
+  "A free, private job application tracker. Track applications, recruiters, interviews, follow-ups and offers on your own computer. No cloud, no account, no tracking.";
 
 export const ROTATING = ["application", "recruiter", "interview round", "follow-up", "offer", "ghosting"];
 

@@ -139,8 +139,8 @@ next action.
   job-seekers, job-seeker, interview-tracker, offer-comparison, job-offers, recruiter-crm,
   recruiters, self-hosted, local-first). Website field:
   https://waddington.github.io/job-application-tracker/. Social preview:
-  `docs/social-preview.png`, indigo, layout B since #96: "No account. No cloud. / No AI. No
-  tracking." beside the whole-picture Sankey (Kai: the board is what every competitor shows).
+  `docs/social-preview.png`, indigo, layout B since #96: "No AI. No cloud. / No account. No
+  tracking." (that order since `tagline-reorder`) beside the whole-picture Sankey (Kai: the board is what every competitor shows).
   Rebuilt by `python3 scripts/social_preview/make_card.py [--layout a|b]` from `card.html`
   (layout A is a checklist). 9 stars as of 2026-11-02.
 - **Website** (`website/`, Astro 7, one landing page, PR #64): published by
@@ -793,7 +793,8 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   touched; role/person files only claim applications without a CV; you tick the applications.
 - **Website:** one landing page, paper palette, docs on GitHub, no analytics; it speaks to
   non-developers, the README to developers.
-- **Positioning:** "No account. No cloud. No AI. No tracking." (no "no external dependencies",
+- **Positioning:** "No AI. No cloud. No account. No tracking." (Kai reordered it on 2026-11-03 to lead with
+  no AI; use that order wherever the four are listed) (no "no external dependencies",
   which isn't true; "plain files" only with the SQLite caveat; git backups are *optional*).
   The app never calls out to the web (a linked image in a note loads from where it's linked).
   No new coined phrase. Keep the repo name `job-application-tracker`.
