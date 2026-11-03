@@ -649,8 +649,6 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
     Jobfolio). Keep the repo name either way.
   - Tile rows on other pages; dropping *Screen* from the default workflow; post drafts (Kai
     posts); rebuilding `demo.gif` (preview first).
-  - `docs/IDEAS.md` still lists "An MCP server" as rejected (reversed in #101); a one-line fix
-    was offered.
 - **Noticed, not promised:**
   - i18n: labels computed outside components re-render on the pages #177 checked (20, not dialogs or
     menus); `test-gaps-language-switch` covers the rest. Calendar names can't be pseudo-accented (they're dayjs locale data).

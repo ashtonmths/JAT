@@ -23,8 +23,8 @@ What Kai asked:
 > updated
 
 This reverses the scope cut in the PRD ("an MCP server", §4 Non-goals and FR23), as the roadmap's old `mcp-server`
-task already recorded (#101); that task is now split into the build tasks in §13. Three planners looked at it separately: how it would be used and what can go wrong, what to expose,
-and how to build and maintain it. This RFC merges their work; where they disagreed, it says so and picks one.
+task already recorded (#101); that task is now split into the build tasks in §13. Three planners looked at it
+separately: how it would be used and what can go wrong, what to expose, and how to build and maintain it. This RFC merges their work; where they disagreed, it says so and picks one.
 
 ## 0. In short
 
@@ -35,10 +35,11 @@ and how to build and maintain it. This RFC merges their work; where they disagre
 - **Read-only unless started with `--write`.** Without the flag, write tools don't exist: they aren't listed and can't
   be called, and the server refuses any request that isn't a read (§7.1).
 - **Nothing is ever deleted** through it, nothing is sent to anyone, and backups are never pushed (§7, §8).
-- **About 25 read tools, not 109.** A curated set, with composite tools that answer an agent's real question in one
+- **About 30 read tools, not 109.** A curated set, with composite tools that answer an agent's real question in one
   call: "everything about this application", "which CV did I send where", "what's my move today" (§6).
-- **It can't fall out of step with the API.** A test fails when a route has no MCP decision, the tool schemas are
-  generated from the API's own, and the surface is committed so every change shows in the diff (§9).
+- **It can't fall out of step with the API.** A test fails when a route has no MCP decision; single-route tools take
+  their inputs from the API's schema, and a test fails when an API response gains a field the MCP hasn't mapped or
+  deliberately dropped; the surface is committed so every change shows in the diff (§9).
 - **One new dependency, optional:** the official `mcp` Python SDK as an extra (`jat[mcp]`), so the app itself
   installs nothing new (§11). **Kai decides.**
 
@@ -144,7 +145,7 @@ These suggest the composite tools in §6.4:
 | **(c)** generated from `openapi.json`, one tool per operation | – | – | – | – | 109 tools named like `list_items_api_v1_agencies_get` swamp an agent's context; no composite answers |
 | **(d)** streamable HTTP mounted on the app at `/mcp` | No | One | Fine | A localhost port: needs Origin checks against DNS rebinding, which `security.py` guards against for the UI | A later add-on for Docker or remote clients |
 
-### 4.2 The recommendation: (b), using (c)'s schemas
+### 4.2 The recommendation: (b), with (c)'s input schemas where they fit
 
 The first planner preferred (a), for one writer; the third preferred (b). **(b) wins** because your CV agent would
 otherwise fail whenever the tracker isn't open, which is most of the time. The two-writer cost is real but small, and
@@ -159,7 +160,8 @@ How it works:
 - The caller sets a key in the ASGI scope (`scope["jat.via"] = "mcp"`) that no HTTP request can set; §7.6 uses it.
 - Each tool maps to one or more (method, path) calls, through a **hand-curated registry** (§9.1), not generated
   wholesale.
-- Tool **schemas** are generated from the OpenAPI operations behind them (the useful part of (c)).
+- A single-route tool's **input schema** is generated from the OpenAPI operation behind it (the useful part of
+  (c)); outputs are the MCP's own models, checked against the API's fields (§9.2).
 - (d) can come later, sharing the same registry (`mcp-http`, §13).
 
 ### 4.3 Running beside `jat serve`
@@ -169,8 +171,9 @@ Both can run at once: you in the browser, the agent over MCP.
 - **The database:** SQLite is already in WAL mode with `busy_timeout=5000` (`src/jat/db/engine.py:41-42`), which
   makes a writer wait for another. One case doesn't wait: a transaction that reads first and then writes, while the
   other process has written in between, fails at once with "database is locked" (`SQLITE_BUSY_SNAPSHOT`). The MCP
-  caller retries a write that fails that way, a few times with a short pause; idempotency keys (§7.6) make the
-  retry safe.
+  caller retries a write that fails that way, a few times with a short pause. To make that safe it always sends a
+  generated `request_id` on a create (§7.6), whether or not the agent gave one; and it never retries a route that
+  writes a file before its database commit (creating a note, uploading a file), returning the error instead.
 - **The notes index: a real race, fixed first.** `_INDEX_LOCK` in `src/jat/api/notes.py` is a `threading.Lock`, so it
   only works inside one process. If `serve` and `mcp` both rebuild the index at the same moment, both can insert the
   same `note_index` row and one fails. Fix: run `_sync` and `_index` in a transaction that starts with
@@ -276,7 +279,7 @@ give the CV agent only `jat`, and your client's per-server permission prompts th
 
 ### 6.3 Read tools
 
-About 25, each with a resource twin where that makes sense (many clients use tools far more readily than
+About 30, each with a resource twin where that makes sense (many clients use tools far more readily than
 resources). Two do a little work the API doesn't: `search` filters by kind, since `/search` has no kind filter,
 and `find_application` ranks candidates. Both are shaping of what the API returns, not new rules; if either grows,
 the API gets the feature instead (principle 1).
@@ -338,7 +341,7 @@ versions. It answers "which CV did I send where?", the CV agent's other main que
 **`changes_since(since)`:** the Timeline since a time, grouped by application and person, for a daily catch-up.
 
 **An interview brief** (`get_round_brief(round_id)`: earlier rounds, prep, the task and deadline, the people) is a
-nice-to-have for the second build PR, if A and B show it's needed.
+nice-to-have for `mcp-context`, if A and B show it's needed.
 
 ### 6.5 Resources
 
@@ -360,7 +363,8 @@ agent isn't handed thousands of entries.
 
 Notes are Markdown files with YAML front matter (`src/jat/storage/notes.py`). `read_note` returns `{id, title,
 links: [{type, id, name}], created, updated, path, body}`, with the front matter stripped from `body`. The API's
-`path` is relative to `notes/`; the MCP layer makes it absolute, so an agent sees where the source of truth lives. The API runs `_sync` before reading,
+`path` is relative to `notes/`; the MCP layer makes it absolute, so an agent sees where the source of truth
+lives. The API runs `_sync` before reading,
 so a note edited outside the app is current.
 
 ### 6.7 Files
@@ -449,8 +453,9 @@ to auto-approve. That's why destructive tools don't exist at all, rather than ex
 | `log_call` | `POST /meetings` with status done | in the app |
 | `add_todo` | `POST /todos` | in the app |
 | `complete_todo`, `reopen_todo` | `PATCH /todos/{id}` `done` | each other |
-| `record_debrief` | `PATCH /interviews/{id}`: debrief and questions only when empty (or on a round the agent added), status to done, with the expected old values | status: set it back; text: in the app |
-| `set_waiting`, `mark_heard_back`, `mark_reply_to_read` | `PATCH` on the application or person, those date fields only, with the expected old values | the matching opposite tool |
+| `record_debrief` | `PATCH /interviews/{id}`: debrief and questions only when empty (or on a round the agent added), status to done, with the expected old values | in the app |
+| `set_waiting` / `mark_heard_back` | `PATCH` on the application or person: `awaiting_reply_since` set / cleared, with the expected old value | each other |
+| `mark_reply_to_read` / `mark_reply_read` | `PATCH` on the application or person: `reply_to_read_since` set / cleared, with the expected old value | each other |
 | `add_link` | `POST /links` | in the app |
 | `move_stage` | `POST /applications/{id}/move` (the API checks the move) | `undo_last_move` (below) |
 | `record_cv_sent` | `POST /applications/{id}/documents` | in the app |
@@ -473,8 +478,8 @@ in this session (§7.6).
   `DELETE` by name), `upload_file` from an allowed folder only (§8.5).
 - **Held back:** editing roles, companies or people's details; moving or renaming files; editing documents; adopting
   CV files; anything in bulk.
-- **Never:** every `DELETE` of a record, merging people, `/backup/snapshot`, `/backup/push`, `/backup/archive`, `config.toml` and
-  stage edits, raw SQL, reading arbitrary files.
+- **Never:** every `DELETE` of a record, merging people, `/backup/snapshot`, `/backup/push`, `/backup/archive`,
+  `config.toml` and stage edits, raw SQL, reading arbitrary files.
 
 ### 7.5 Bulk changes: propose, then apply (later)
 
@@ -494,7 +499,9 @@ tasks (§13) add:
 - **On every record, not just events.** Events belong to applications, and most of an agent's writes (notes,
   to-dos, links, calls, a person's state, document versions) don't always make one. So each record the agent
   creates or changes is noted in a small `changes` table: the record's kind and id, created or changed, which
-  fields, the old values, the MCP session, and when. Moves also keep `data.via = "mcp"` on their event. A note's
+  fields, the old values, the MCP session, and when. It's an ordinary table, exported to `export/*.jsonl` and
+  committed like the rest (unlike `note_index` and the idempotency ids), so a `jat restore` keeps who changed what
+  and the in-app undo still works. Moves also keep `data.via = "mcp"` on their event. A note's
   `via: mcp` front matter is a convenience only: you can edit the file, so the table is what counts.
 - **The Timeline shows it:** a small mark on agent changes, and an "Agent changes" filter.
 - **Undo for what an agent did, in the app:** notes, to-dos, activities, calls, links and versions an agent created
