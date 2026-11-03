@@ -270,8 +270,7 @@ test.describe("creating a company", () => {
     expect(await companies(request, "Cancelled Co")).toHaveLength(0);
   });
 
-  // KNOWN BUG (fix-new-company-keeps-draft on the roadmap): expected to fail until it is fixed.
-  test.fail("closing it leaves nothing behind for next time", async ({ page }) => {
+  test("closing it leaves nothing behind for next time", async ({ page }) => {
     await openCompanies(page);
     const dialog = await newCompany(page);
     await dialog.getByLabel("Name").fill("Draft Co");
