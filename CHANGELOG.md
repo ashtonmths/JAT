@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.18.5 (2026-11-03)
+
+- Deleting a person no longer makes a failed request for their page (#222).
+
 ## 1.18.4 (2026-11-03)
 
 - The menu no longer marks a section for an address that only starts like it (such as a mistyped one) (#224).
