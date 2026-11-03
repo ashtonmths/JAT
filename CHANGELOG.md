@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.18.3 (2026-11-03)
+
+- Closing the New company dialog now clears what you typed, so it opens empty next time (#223).
+
 ## 1.18.2 (2026-11-03)
 
 - The demo data (`scripts/seed_demo.py`) now has files, links, a declined and a withdrawn offer, a CV file waiting to be made a version and a document with no versions, each on its timeline as the app records them; the text snapshot (`scripts/i18n/text_snapshot.py`) opens those pages (#218).
