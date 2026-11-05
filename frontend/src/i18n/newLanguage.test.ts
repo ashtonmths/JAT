@@ -72,6 +72,12 @@ describe("new_language.mjs", () => {
     expect(existsSync(join(out, "xx-YY", "common.json"))).toBe(true);
   });
 
+  it("makes the folder it's told to write into (the guide's draft steps)", () => {
+    const start = join(out, "pl-start");
+    expect(run("pl", start).status).toBe(0);
+    expect(existsSync(join(start, "pl", "insights.json"))).toBe(true);
+  });
+
   it.each([["en"], ["../xx"], ["xx/yy"], ["XX"], [""]])("refuses the code %j and writes nothing", (code) => {
     expect(run(code, out).status).toBe(1);
     expect(readdirSync(out)).toEqual([]);

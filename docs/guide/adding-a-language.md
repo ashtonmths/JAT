@@ -4,8 +4,9 @@ You know a language the app doesn't speak yet, and you'd like to add it. This gu
 and you don't need to be a developer: most of the work is translating text files, and the rest is
 copying a few lines and running some commands. The examples use Polish (code `pl`).
 
-A language goes in once someone who speaks it well has read all of it. A machine translation can
-be your first draft, but read every line: a wrong translation is worse than English.
+A machine translation is a fine place to start, and languages may go in machine-translated. Read
+as much as you can in the app before you open your pull request. Anyone who later spots a line that
+reads badly can open an issue or a pull request to fix it.
 
 If the set-up below is more than you want to take on,
 [open an issue](https://github.com/waddington/job-application-tracker/issues/new?template=feature_request.yml)
@@ -215,6 +216,41 @@ and of more.
 still plain there skipped translation altogether: that's a bug in the app, not your text, so
 please mention it in your pull request.
 
+## Translating in parts (a draft language)
+
+The whole app is about 2,800 lines of text, which is a lot to translate and review in one pull
+request. You can add a language a few areas at a time instead, as a **draft**. A draft is offered
+to nobody: only the dev server shows it, so people never see it half done. The areas you haven't
+translated yet show in English.
+
+1. Make the files somewhere else, so you can copy in only the ones you're translating now:
+
+   ```bash
+   node --experimental-strip-types scripts/i18n/new_language.mjs pl /tmp/pl-start
+   ```
+
+   Make the folder `frontend/src/locales/pl/`. Copy the files for the areas you're translating
+   (say `insights.json` and `stages.json`) into it from `/tmp/pl-start/pl/`, and translate them
+   as in step 3.
+2. Copy `/tmp/pl-start/pl/index.ts` there too. Each file has two lines in it, its `import` at the
+   top and its name in the list below: delete both for every file you didn't copy. It has to list
+   exactly the files in the folder, or the checks fail.
+3. Make step 5's edits, except one: in `i18n/language.ts`, put the language in `DRAFT_LANGUAGES`,
+   not `LANGUAGES` and `LANGUAGE_NAMES`. A code with a hyphen needs quotes:
+
+   ```ts
+   export const DRAFT_LANGUAGES: Readonly<Record<string, string>> = { pl: "Polski" };
+   // or, for Simplified Chinese: { "zh-CN": "简体中文" }
+   ```
+
+4. Try it as in step 6: choose *Polski (draft)* from the language button, or add `?lang=pl` to the
+   address. Only the dev server offers it, and it isn't remembered after a reload.
+
+The checks in step 7 pass with areas missing, but every file that's there must be complete, with
+every line translated. Later pull requests add more areas to the folder and to its `index.ts`. When
+every area is in, move the language from `DRAFT_LANGUAGES` to `LANGUAGES` and `LANGUAGE_NAMES`. From
+then on the checks need every file.
+
 ## 7. Run the checks
 
 ```bash
@@ -307,8 +343,8 @@ on one day, since the demo data is dated to the day it's used.
 git push -u origin add-polish
 ```
 
-GitHub then offers a link to open the pull request. Say which language it is, that you read all of it, how
-well you know the language, and what you tried. Screenshots are welcome, of the demo data only:
+GitHub then offers a link to open the pull request. Say which language it is, how much of it you read in
+the app, how well you know the language, and what you tried. Screenshots are welcome, of the demo data only:
 never your own job search. Don't change version numbers or the changelog; those are done at merge.
 
 Afterwards, when someone adds English text, the same test fails until your language has it too, so

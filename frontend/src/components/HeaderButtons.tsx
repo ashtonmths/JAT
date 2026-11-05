@@ -14,6 +14,8 @@ import { useTranslation } from "react-i18next";
 
 import {
   ADD_LANGUAGE_GUIDE,
+  DRAFT_LANGUAGES,
+  isDraft,
   isLanguage,
   LANGUAGE_NAMES,
   LANGUAGES,
@@ -88,14 +90,20 @@ export function NewApplicationButton({
 /**
  * Change the language by hand (docs/rfc/i18n.md §6): the shipped languages by their own names,
  * then "Coming soon!" until a second one ships. The choice is kept in this browser. In dev, the
- * pseudo-language is offered too. Last, a plain link to the guide for adding a language: the app
- * fetches nothing, and the browser only goes there if you open it.
+ * pseudo-language and any draft languages are offered too, and never kept. Last, a plain link to
+ * the guide for adding a language: the app fetches nothing, and the browser only goes there if
+ * you open it.
  */
 export function LanguageSwitch() {
   const { t, i18n } = useTranslation();
   const [opened, setOpened] = useState(false);
   const shown = i18n.resolvedLanguage ?? "";
-  const name = isLanguage(shown) ? LANGUAGE_NAMES[shown] : t("language.pseudo");
+  const draftName = (lang: string) => t("language.draft", { name: DRAFT_LANGUAGES[lang] ?? lang });
+  const name = isLanguage(shown)
+    ? LANGUAGE_NAMES[shown]
+    : isDraft(shown)
+      ? draftName(shown)
+      : t("language.pseudo");
   const choose = (lang: string) => {
     void i18n.changeLanguage(lang);
     if (isLanguage(lang)) saveLanguage(lang);
@@ -141,6 +149,12 @@ export function LanguageSwitch() {
             {t("language.pseudo")}
           </Menu.Item>
         )}
+        {import.meta.env.DEV &&
+          Object.keys(DRAFT_LANGUAGES).map((lang) => (
+            <Menu.Item key={lang} lang={lang} onClick={() => choose(lang)} {...current(lang)}>
+              {draftName(lang)}
+            </Menu.Item>
+          ))}
         <Menu.Divider />
         <Menu.Item
           component="a"

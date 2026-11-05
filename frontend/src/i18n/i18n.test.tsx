@@ -105,6 +105,19 @@ describe("fallback", () => {
     expect(make("fr").t("fx:plain")).toBe("Hello");
   });
 
+  it("shows a draft's missing namespaces in English, even in strict mode", () => {
+    // A draft language translated one namespace at a time: the app's real namespaces, only one
+    // of them in "xx". Strict mode (dev and tests) only throws for text no language has.
+    const instance = createI18n({
+      lng: "xx",
+      resources: { xx: { common: { app: { name: "Xx tracker" } } } },
+      strict: true,
+    });
+    const t = instance.t as unknown as LooseT;
+    expect(t("common:app.name")).toBe("Xx tracker");
+    expect(t("today:waitingOn.title")).toBe("Waiting on them");
+  });
+
   it("fills in values in English text when the language lacks the key", () => {
     // zh has no greeting: English's text, with the value filled in.
     expect(make("zh").t("fx:greeting", { name: "Jordan" })).toBe("Hello Jordan");
@@ -288,6 +301,19 @@ describe("pickLanguage", () => {
     expect(pickLanguage({ search: "?lang=en-XA", dev: true })).toBe(PSEUDO);
     expect(pickLanguage({ search: "?lang=pseudo", dev: false })).toBe("en");
     expect(pickLanguage({ search: "?lang=EN-gb", dev: true })).toBe("en");
+  });
+
+  it("shows a draft language only for ?lang= on a dev server", () => {
+    const drafts = ["zh-CN"];
+    expect(pickLanguage({ search: "?lang=zh-CN", dev: true, drafts })).toBe("zh-CN");
+    expect(pickLanguage({ search: "?lang=zh-cn", dev: true, drafts })).toBe("zh-CN");
+    // Never in a built app, and never from a saved choice or the browser: a draft isn't offered.
+    expect(pickLanguage({ search: "?lang=zh-CN", dev: false, drafts })).toBe("en");
+    expect(pickLanguage({ stored: "zh-CN", browser: ["zh-CN"], dev: true, drafts })).toBe("en");
+    // Not a draft (yet): the URL asks for nothing the app has.
+    expect(pickLanguage({ search: "?lang=zh-CN", dev: true, drafts: [] })).toBe("en");
+    // An exact draft wins over a shipped language's prefix: "en-XB" is a draft, not "en".
+    expect(pickLanguage({ search: "?lang=en-XB", dev: true, drafts: ["en-XB"] })).toBe("en-XB");
   });
 });
 

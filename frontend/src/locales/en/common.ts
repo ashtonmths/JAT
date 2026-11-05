@@ -48,6 +48,8 @@ export default {
     current: "Language: {{name}}",
     comingSoon: "Coming soon!",
     pseudo: "Pseudo-language (dev)",
+    // A language still being translated, shown only on a dev server: its name in itself.
+    draft: "{{name}} (draft)",
     // A link to the guide for adding a language; the second is what a screen reader hears.
     addYours: "Don't see your language?",
     addYoursLabel: "Don't see your language? Opens a guide on GitHub in a new tab.",
