@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.18.10 (2026-11-05)
 
-- Translators can add a language a few areas at a time, as a draft that only a dev server shows (?lang=<code> or the language switch); the checks pass with areas missing, and a language needs every area once it's switched on. The guide's "Translating in parts" has the steps. (#237).
+- Translators can add a language a few areas at a time, as a draft that only a dev server shows (?lang=<code> or the language switch); the checks pass with areas missing, and a language needs every area once it's switched on. The guide's "Translating in parts" has the steps (#237).
 
 ## 1.18.9 (2026-11-03)
 
