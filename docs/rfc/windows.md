@@ -24,11 +24,12 @@ thing: a file lock in `src/jat/snapshot/git.py` around its **snapshots**.
 
 A snapshot is the tracker's automatic git commit. When the data folder is a git repo, about a
 minute after your last change the app writes the database out to `export/` as readable JSON
-Lines, then commits `export/`, `notes/`, `files/` and `config.toml` with git. It never pushes;
-that's `jat push`. The lock makes sure two processes (the running app and a `jat snapshot` or
-`jat push` in another terminal) never snapshot at the same moment. That file imports `fcntl` at the top, and the CLI, the app, the backup
-API and the archive download all import that file, so the whole program stops before it
-starts.
+Lines, then commits `export/`, `notes/`, `files/`, `config.toml` and `.gitignore` with git.
+It never pushes; that's `jat push`. The lock makes sure two processes (the running app and a
+`jat snapshot` or `jat push` in another terminal) never snapshot at the same moment.
+
+That file imports `fcntl` at the top, and the CLI, the app, the backup API and the archive
+download all import that file, so the whole program stops before it starts.
 
 ## 2. What else differs on Windows
 
@@ -56,9 +57,10 @@ that's off on Windows, so the rest of the code never imports it:
 - automatic git snapshots, even when the data folder is a git repo;
 - the commit `jat init` makes.
 
-The sidebar says snapshots are off on Windows, next to its **Download a backup** link. That
-link writes a fresh export and zips your data (`export/`, `notes/`, `files/` and
-`config.toml`, with instructions for restoring), and it works without git. Copying the data
+The sidebar's status dot, which today says "backups on" for any data folder that's a git repo,
+will say snapshots are off on Windows. Just below it, the **Download a backup** link writes a
+fresh export and zips your data (`export/`, `notes/`, `files/`, `config.toml` and
+`.gitignore`, with instructions for restoring), and it works without git. Copying the data
 folder while the app is stopped is also a complete backup.
 
 With snapshots off, `export/` isn't rewritten as you work, so between backups the database is
@@ -66,8 +68,8 @@ the only up-to-date copy. That's already the case today for any data folder that
 repo.
 
 The download still writes its export under the lock. With no snapshots, the only thing that
-lock would guard against is two downloads in different processes at once, so letting it do
-nothing on Windows is safe. On Linux and macOS nothing changes.
+lock would guard against is two backups in different processes at once (a download from the
+app while `jat archive` runs in a terminal), so letting it do nothing on Windows is safe. On Linux and macOS nothing changes.
 
 ### Small fixes, in any order
 
