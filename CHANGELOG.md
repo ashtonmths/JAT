@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.18.12 (2026-11-05)
+
+- Quicker checks: test runs use half the CPU threads by default (up from a quarter), and CONTRIBUTING lists the changes that can skip the browser tests, which test a production build (#243).
+
 ## 1.18.11 (2026-11-05)
 
 - Translation helpers for adding a language with AI agents, a string file at a time: scripts in scripts/i18n/translate/ and translate, review and re-review workflows for Claude Code; the guide on adding a language points to them (#242).
