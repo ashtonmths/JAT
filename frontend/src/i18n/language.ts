@@ -2,7 +2,7 @@
 // the header), else the browser's own languages, else English. In dev, ?lang= overrides both,
 // including the pseudo-language.
 
-/** Languages the app ships. Add one here when its translation is reviewed. */
+/** Languages the app ships. A language moves here from DRAFT_LANGUAGES when every namespace is translated. */
 export const LANGUAGES = ["en"] as const;
 export type Language = (typeof LANGUAGES)[number];
 /** Each language's name in itself, as the switch lists it: never translated. */

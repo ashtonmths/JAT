@@ -343,8 +343,8 @@ on one day, since the demo data is dated to the day it's used.
 git push -u origin add-polish
 ```
 
-GitHub then offers a link to open the pull request. Say which language it is, that you read all of it, how
-well you know the language, and what you tried. Screenshots are welcome, of the demo data only:
+GitHub then offers a link to open the pull request. Say which language it is, how much of it you read in
+the app, how well you know the language, and what you tried. Screenshots are welcome, of the demo data only:
 never your own job search. Don't change version numbers or the changelog; those are done at merge.
 
 Afterwards, when someone adds English text, the same test fails until your language has it too, so
