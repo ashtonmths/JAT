@@ -8,8 +8,8 @@ import { STORAGE_KEY } from "../i18n/language";
 import { makeRouter } from "../router";
 import { mockApi } from "../test/mockApi";
 
-// A draft language (DRAFT_LANGUAGES) in the language switch. No real draft exists yet, so the
-// list is mocked with a made-up "xx" that has only its app name translated.
+// A draft language (DRAFT_LANGUAGES) in the language switch. The list is mocked with a made-up
+// "xx" that has only its app name translated, so the test doesn't depend on the real drafts.
 vi.mock("../i18n/language", async (original) => ({
   ...(await original<typeof import("../i18n/language")>()),
   DRAFT_LANGUAGES: { xx: "Xx" },

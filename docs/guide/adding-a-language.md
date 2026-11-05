@@ -223,6 +223,9 @@ request. You can add a language a few areas at a time instead, as a **draft**. A
 to nobody: only the dev server shows it, so people never see it half done. The areas you haven't
 translated yet show in English.
 
+Simplified Chinese is on its way in like this already (`frontend/src/locales/zh-CN/`), following a
+[glossary](../i18n/zh-CN.md). To help with it, open an issue rather than starting it again.
+
 1. Make the files somewhere else, so you can copy in only the ones you're translating now:
 
    ```bash

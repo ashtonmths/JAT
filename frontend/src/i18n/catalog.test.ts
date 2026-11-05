@@ -306,8 +306,8 @@ describe("the app's text", () => {
     }
   });
 
-  // Passes trivially until a second language has JSON files (multi-language). Then a missing
-  // key, namespace or plural form fails the build, rather than quietly showing English. A draft
+  // A missing key, namespace or plural form in another language's JSON files fails the build,
+  // rather than quietly showing English. A draft
   // may leave whole namespaces out (they show in English), but what it has must be complete.
   it("has every key, namespace and plural form in every language, and nothing English lacks", () => {
     for (const [lang, files] of byLanguage) {
