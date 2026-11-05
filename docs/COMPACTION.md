@@ -486,8 +486,9 @@ without Kai's go-ahead. Waiting on Kai in particular:
   main one: approving the official `mcp` SDK as an optional dependency) and a go-ahead. Nothing is built.
 - **Issue #230, "Windows Support?"** (opened 2026-11-04 by an outside GitHub user, no reply yet): they point at
   `fcntl` (used in `src/jat/snapshot/git.py`), suggest `msvcrt` on Windows, and ask whether contributions towards Windows
-  support would be welcome. Replying is outward-facing: Kai decides whether and what to answer (the roadmap has
-  `windows-support`, planned). Don't reply on Kai's behalf.
+  support would be welcome. Replying is outward-facing: Kai decides whether and what to answer. Don't reply on Kai's
+  behalf. Since #232 the roadmap splits Windows into planned tasks, basic support first (`windows-starts`: the Windows-unsafe
+  parts behind one switch and off there), `tzdata` on all platforms (Kai's yes), and Kai tests on Windows (`windows-testing`).
 - **Offered and not taken up:** linking the recruiter in the Applications *list* too (its rows open on click, so the
   name is plain there; #229's reviewer noted it); a roadmap item only if Kai says.
 - **Backlog added this session:** `delivery-speed-improvements`, `recruiter-open-application-mark` (its icon and what
@@ -688,7 +689,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
   file per component next to it with React Testing Library, shared render helpers in
   `src/test/`, `@testing-library/user-event`, backend tests by module, a Testing section in
   CONTRIBUTING); `docker-image` (plan in `docs/rfc/docker.md`), `docker-image-publish`,
-  `windows-support`, `packaged-install`, `desktop-app`, `hosted-version`, `demo-site`, and the
+  the `windows-*` tasks (#232; `windows-starts` first), `packaged-install`, `desktop-app`, `hosted-version`, `demo-site`, and the
   MCP server's `mcp-*` tasks (`docs/rfc/mcp.md`, waiting on Kai's decisions in its §14).
 - **Offered, waiting on Kai:**
   - The GitHub description and topics proposed in #96 (put its four claims in the
