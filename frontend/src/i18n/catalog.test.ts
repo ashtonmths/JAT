@@ -296,8 +296,14 @@ describe("the app's text", () => {
       "a language is either shipped or a draft",
     ).toEqual([]);
     expect([...byLanguage.keys()].sort()).toEqual([...shipped, ...drafts].sort());
-    // A language's index.ts gathers its files; the app loads it in i18n/index.ts.
-    for (const lang of [...shipped, ...drafts]) expect(i18n.options.resources?.[lang], lang).toBeDefined();
+    // A language's index.ts gathers its files, and the app loads it in i18n/index.ts. A file
+    // index.ts leaves out would be checked here but never shown, so it must list exactly the folder.
+    for (const lang of [...shipped, ...drafts]) {
+      expect({ lang, loaded: Object.keys(i18n.options.resources?.[lang] ?? {}).sort() }).toEqual({
+        lang,
+        loaded: [...(byLanguage.get(lang)?.keys() ?? [])].sort(),
+      });
+    }
   });
 
   // Passes trivially until a second language has JSON files (multi-language). Then a missing

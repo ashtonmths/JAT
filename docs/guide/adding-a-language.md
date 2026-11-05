@@ -4,8 +4,9 @@ You know a language the app doesn't speak yet, and you'd like to add it. This gu
 and you don't need to be a developer: most of the work is translating text files, and the rest is
 copying a few lines and running some commands. The examples use Polish (code `pl`).
 
-A language goes in once someone who speaks it well has read all of it. A machine translation can
-be your first draft, but read every line: a wrong translation is worse than English.
+A machine translation is a fine place to start, and languages may go in machine-translated. Read
+as much as you can in the app before you open your pull request. Anyone who later spots a line that
+reads badly can open an issue or a pull request to fix it.
 
 If the set-up below is more than you want to take on,
 [open an issue](https://github.com/waddington/job-application-tracker/issues/new?template=feature_request.yml)
@@ -228,15 +229,18 @@ translated yet show in English.
    node --experimental-strip-types scripts/i18n/new_language.mjs pl /tmp/pl-start
    ```
 
-   Copy the files for the areas you're translating (say `insights.json` and `stages.json`) from
-   `/tmp/pl-start/pl/` to `frontend/src/locales/pl/`, and translate them as in step 3.
-2. Copy `/tmp/pl-start/pl/index.ts` there too, and delete the lines for the files you didn't copy.
-   It has to list exactly the files that are in the folder.
+   Make the folder `frontend/src/locales/pl/`. Copy the files for the areas you're translating
+   (say `insights.json` and `stages.json`) into it from `/tmp/pl-start/pl/`, and translate them
+   as in step 3.
+2. Copy `/tmp/pl-start/pl/index.ts` there too. Each file has two lines in it, its `import` at the
+   top and its name in the list below: delete both for every file you didn't copy. It has to list
+   exactly the files in the folder, or the checks fail.
 3. Make step 5's edits, except one: in `i18n/language.ts`, put the language in `DRAFT_LANGUAGES`,
-   not `LANGUAGES` and `LANGUAGE_NAMES`:
+   not `LANGUAGES` and `LANGUAGE_NAMES`. A code with a hyphen needs quotes:
 
    ```ts
    export const DRAFT_LANGUAGES: Readonly<Record<string, string>> = { pl: "Polski" };
+   // or, for Simplified Chinese: { "zh-CN": "简体中文" }
    ```
 
 4. Try it as in step 6: choose *Polski (draft)* from the language button, or add `?lang=pl` to the

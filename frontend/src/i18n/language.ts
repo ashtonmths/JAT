@@ -64,7 +64,8 @@ export function pickLanguage({
   if (dev) {
     const asked = new URLSearchParams(search).get("lang");
     if (asked === PSEUDO_ALIAS || asked === PSEUDO) return PSEUDO;
-    const fromUrl = shipped(asked) ?? match(drafts, asked);
+    // One list, so an exact draft ("pt-BR") wins over a shipped language's prefix ("pt").
+    const fromUrl = match([...LANGUAGES, ...drafts], asked);
     if (fromUrl) return fromUrl;
   }
   return shipped(stored) ?? browser.map(shipped).find(Boolean) ?? FALLBACK;

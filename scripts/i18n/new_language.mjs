@@ -15,7 +15,9 @@ if (!code || !/^[a-z]{2,3}(-[A-Za-z0-9]+)*$/.test(code) || code === "en") {
   process.exit(1);
 }
 const locales = join(dirname(fileURLToPath(import.meta.url)), "../../frontend/src/locales");
-// A second argument writes somewhere else; only the test uses it.
+// A second argument writes to <that folder>/<code> instead, made if it isn't there: the test uses
+// it, and so does a draft language, translated a few namespaces at a time (the guide's
+// "Translating in parts").
 const target = join(process.argv[3] ?? locales, code);
 if (existsSync(target)) {
   console.error(`${target} is already there, so nothing was changed.`);
@@ -46,7 +48,7 @@ const namespaces = readdirSync(join(locales, "en"))
   .filter((name) => name !== "index" && name !== "selftest")
   .sort();
 
-mkdirSync(target);
+mkdirSync(target, { recursive: true });
 for (const name of namespaces) {
   const { default: text } = await import(pathToFileURL(join(locales, "en", `${name}.ts`)).href);
   writeFileSync(join(target, `${name}.json`), `${JSON.stringify(toTranslate(text), null, 2)}\n`);

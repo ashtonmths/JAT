@@ -312,6 +312,8 @@ describe("pickLanguage", () => {
     expect(pickLanguage({ stored: "zh-CN", browser: ["zh-CN"], dev: true, drafts })).toBe("en");
     // Not a draft (yet): the URL asks for nothing the app has.
     expect(pickLanguage({ search: "?lang=zh-CN", dev: true, drafts: [] })).toBe("en");
+    // An exact draft wins over a shipped language's prefix: "en-XB" is a draft, not "en".
+    expect(pickLanguage({ search: "?lang=en-XB", dev: true, drafts: ["en-XB"] })).toBe("en-XB");
   });
 });
 
