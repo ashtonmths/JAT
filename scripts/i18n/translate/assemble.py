@@ -30,7 +30,9 @@ def collect(result: dict, fixes: list[dict]) -> dict[str, str]:
 def main(lang: str, ns: str, *fix_files: str) -> None:
     work = work_dir(lang, ns)
     english = read_json(work / "flat.json")
-    texts = collect(read_json(work / "translate.json"), [read_json(Path(f)) for f in fix_files])
+    # A bare name is looked up in the work folder.
+    paths = [Path(f) if Path(f).exists() else work / f for f in fix_files]
+    texts = collect(read_json(work / "translate.json"), [read_json(p) for p in paths])
     found = problems(english, texts)
     if found:
         sys.exit("not written:\n  " + "\n  ".join(found))

@@ -1,13 +1,14 @@
 """Get one string file ready to translate. Usage: uv run python scripts/i18n/translate/prepare.py <lang> <ns>
 
-- Copies the marked starting file into frontend/src/locales/<lang>/<ns>.json (from new_language.mjs,
-  run into var/i18n/<lang>/start/ the first time), and lists it in that folder's index.ts.
+- Copies the marked starting file into frontend/src/locales/<lang>/<ns>.json (new_language.mjs makes
+  them afresh in var/i18n/<lang>/start/ each run), and lists it in that folder's index.ts.
 - Writes var/i18n/<lang>/<ns>/: flat.json (key -> English), areas.json, areas/<id>.json.
 
 Areas are what the translators and reviewers each take: the file's top-level groups, merged in order
 up to MAX_AREA keys, so a reviewer sees one part of the screen at a time.
 """
 
+import re
 import shutil
 import subprocess
 import sys
@@ -47,7 +48,10 @@ def index_ts(names: list[str]) -> str:
 
 
 def main(lang: str, ns: str) -> None:
-    if not (EN / f"{ns}.ts").exists():
+    # The code new_language.mjs accepts, checked here too since a folder named by it is deleted below.
+    if lang == "en" or not re.fullmatch(r"[a-z]{2,3}(-[A-Za-z0-9]+)*", lang):
+        sys.exit(f"not a language code: {lang!r}")
+    if not re.fullmatch(r"[a-z]+", ns) or not (EN / f"{ns}.ts").exists():
         sys.exit(f"no English file {ns}.ts")
     # Made fresh every time, so keys English gained since the last file are there.
     start = start_file(lang, ns)

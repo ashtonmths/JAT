@@ -47,7 +47,8 @@ From the repo root, with `<lang>` such as `zh-CN` and `<ns>` such as `stages`:
    `uv run python scripts/i18n/translate/assemble.py <lang> <ns> var/i18n/<lang>/<ns>/review-fixes.json`.
 8. **Re-review:** the `i18n-rereview` workflow with `{lang, language, ns, wt}` checks only the strings in
    `changed.json`. Save it as `rereview-1.json`, run `apply_review.py <lang> <ns> rereview-1`, then `assemble.py` with
-   every fixes file so far, oldest first (`review-fixes.json rereview-1-fixes.json`): later ones win. Repeat with
+   every fixes file so far, oldest first (`assemble.py <lang> <ns> review-fixes.json rereview-1-fixes.json`; a bare
+   name is looked up in the work folder): later ones win. Repeat with
    `rereview-2` and so on until no `must_fix` is left.
 9. The usual checks and review for the pull request (CLAUDE.md *Git*). Its body lists the agents and tokens used and
    the tables.
