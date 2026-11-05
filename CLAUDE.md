@@ -63,10 +63,17 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   merge on a failure. Merging main into the branch makes a new commit, so run them again. A PR that
   only touches docs and planning files can skip these, and the PR says so; if it touches
   `docs/ROADMAP.yaml`, run `uv run pytest -q tests/pm`.
+- **Browser tests only when the production build can change** (Kai, 2026-11-05). `pnpm e2e` tests a
+  production build, so a PR that can't change one skips it and runs every other check: one that
+  touches only a draft language's files (`DRAFT_LANGUAGES`, which only a dev server loads, so
+  `locales/<draft>/` and the glossary), scripts outside the app (`scripts/`, `.claude/workflows/`),
+  Python tests, or docs. The PR says it skipped and why. Anything the app imports in production
+  (`frontend/src` beyond a draft's folder, `src/jat`) runs it; so does switching a draft on.
 - **Don't max out Kai's PC** (Kai, 2026-11-02). `pnpm test` and `pnpm e2e` limit their workers,
   run at low priority and wait for each other across worktrees (CONTRIBUTING, *Checks*): run them
   through `pnpm` (a single spec: `pnpm e2e e2e/<file>`), not `vitest` or `playwright` directly,
-  and don't raise `TEST_WORKERS` or turn `TEST_LOCK` off unless Kai asks.
+  and don't raise `TEST_WORKERS` or turn `TEST_LOCK` off unless Kai asks. They use half the CPU
+  threads by default (Kai, 2026-11-05: up from a quarter, so the browser tests take about half as long).
 - **Merging and releasing:** once a PR has been through the iterative review-fix cycle, Claude merges
   it and makes the release if it has a version bump, without asking (Kai, 2026-10-31). The cycle: a
   reviewer pass (a plain reviewer subagent or `/code-review`), fix the findings, and review again until

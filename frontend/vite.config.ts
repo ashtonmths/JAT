@@ -62,6 +62,6 @@ export default defineConfig({
     include: ["src/**/*.test.{ts,tsx}", "testWorkers.test.ts"], // e2e/ is Playwright's
     setupFiles: ["./src/test/setup.ts"],
     css: false,
-    maxWorkers: testWorkers(), // a quarter of the cores, or TEST_WORKERS
+    maxWorkers: testWorkers(), // half the cores, or TEST_WORKERS
   },
 });
