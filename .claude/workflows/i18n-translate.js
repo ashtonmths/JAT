@@ -29,9 +29,9 @@ Your area: ${a.desc} (${a.count} keys of the "${ns}" namespace).
 1. Keys and English: ${W}/areas/${a.id}.json (dotted key -> English).
 2. The English source with comments explaining each string: ${wt}/frontend/src/locales/en/${ns}.ts.
 3. For EVERY key, find where the code uses it: grep under ${wt}/frontend/src excluding locales (t("key"), t("${ns}:key"), <Trans i18nKey>, keys built from a prefix or held in a map, so also grep the last segment). Read the code around each use: what element it is (button, heading, tooltip, aria-label, toast), what fills each placeholder, what sits next to it. List keys you can't find in unused_keys and translate them from their comment.
-4. See where it shows (English, demo data): Read ${a.shots.map(s => `${W}/shots-en/${s}.png`).join(', ')}.
+4. See where it shows (English, demo data): ${a.shots.length ? 'Read ' + a.shots.map(s => `${W}/shots-en/${s}.png`).join(', ') : 'no screenshots for this file; rely on the code'}.
 5. Translate every key; a short note only where a choice needs explaining. Propose a new glossary term only for a recurring concept the glossary lacks.
-Return all ${a.count} keys exactly as given, the translation in "text".`, { label: `translate:${a.id}`, phase: 'Translate', schema: TR })))
+Return all ${a.count} keys exactly as given, the translation in "text".`, { label: `translate:${a.id}`, phase: 'Translate', model: 'opus', schema: TR })))
 
 const ok = results.map((r, i) => ({ area: areas[i].id, ...(r || {}) }))
 const dropped = ok.filter(r => !r.translations).map(r => r.area)
@@ -52,6 +52,6 @@ const consistency = await agent(`${COMMON}
 Below is the whole "${ns}" namespace translated area by area, with proposed new terms. Check it as one file and against the files already translated: the same concept uses the same term (and matches the glossary), same tone, button style, punctuation and spacing; placeholders and tags intact versus the English (${wt}/frontend/src/locales/en/${ns}.ts). Only change what's inconsistent or wrong. Decide which proposed terms join the glossary (only ones not already in it).
 
 Translations: ${JSON.stringify(ok.flatMap(r => (r.translations || []).map(t => ({ area: r.area, ...t }))))}
-Proposed terms: ${JSON.stringify(ok.map(r => ({ area: r.area, terms: r.new_terms || [], unused: r.unused_keys || [] })))}`, { label: 'consistency', phase: 'Consistency', schema: CONS })
+Proposed terms: ${JSON.stringify(ok.map(r => ({ area: r.area, terms: r.new_terms || [], unused: r.unused_keys || [] })))}`, { label: 'consistency', phase: 'Consistency', model: 'opus', schema: CONS })
 
 return { results: ok, consistency }

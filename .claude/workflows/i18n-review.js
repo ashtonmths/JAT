@@ -5,7 +5,8 @@ export const meta = {
   phases: [{ title: 'Review' }, { title: 'Judge' }],
 }
 // args: lang, language, ns, wt, areas (areas.json), shots (the page names from pages.json).
-const { lang, language, ns, wt, areas, shots } = args
+const { lang, language, ns, wt, areas } = args
+const shots = args.shots ?? areas[0]?.shots ?? []
 const W = `${wt}/var/i18n/${lang}/${ns}`
 const MODELS = ['sonnet', 'opus']
 const COMMON = `You are reviewing a ${language} (${lang}) translation of the UI of an open-source, self-hosted job application tracker for software engineers. Reader: a software engineer tracking their own job search, in their own language. Do NOT edit any file; only report.
@@ -33,7 +34,7 @@ const textJobs = areas.flatMap(a => MODELS.map(m => () => agent(`${COMMON}
 Review area ${a.id}: ${a.desc}.
 1. English and translation pairs: ${W}/areas/${a.id}.pairs.json.
 2. For each key, find where the code uses it (grep under ${wt}/frontend/src excluding locales) and read the code around it: what element it is, what fills each placeholder (and in what language), what sits next to it.
-3. Where it shows, English then translated: ${a.shots.map(s => `${W}/shots-en/${s}.png and ${W}/shots-${lang}/${s}.png`).join('; ')}.
+3. Where it shows, English then translated: ${a.shots.length ? a.shots.map(s => `${W}/shots-en/${s}.png and ${W}/shots-${lang}/${s}.png`).join('; ') : 'no screenshots for this file; rely on the code'}.
 Check each string: faithful meaning in context, natural UI language, glossary terms, placeholders/tags intact and well placed, punctuation and spacing per the style rules, consistency with the other translated files.`,
   { label: `text:${a.id}:${m}`, phase: 'Review', model: m, schema: FIND })))
 const shotJobs = shots.flatMap(s => MODELS.map(m => () => agent(`${COMMON}
@@ -59,6 +60,7 @@ const JUDGE = {
       final: { type: 'string', description: 'the final string (the current one if keep)' },
       severity: { type: 'string', enum: ['must_fix', 'should_fix', 'nit'] },
       agreed: { type: 'boolean', description: 'true if both models raised the same problem' },
+      raised_by: { type: 'string', description: 'which reviewers raised it: sonnet, opus or both, and text or screen' },
       disagreement: { type: 'string' },
       why: { type: 'string' },
     }, required: ['key', 'verdict', 'final', 'agreed', 'why'] } },
@@ -75,7 +77,7 @@ const judged = await parallel(areas.map((a, ai) => () => {
 You are the judge for area ${a.id} (${a.desc}). Pairs: ${W}/areas/${a.id}.pairs.json. Screenshots: ${W}/shots-${lang}/.
 Sonnet and Opus reviewed the text separately, and reviewers looked at screenshots. For every key any of them flagged, decide change (final string) or keep. Both models agreeing: accept unless clearly wrong. Disagreeing: check the code and context yourself, decide, and record both views in "disagreement". Placeholders and tags stay intact. LAYOUT-only items: keep unless shorter wording fixes it without losing meaning. A key outside this area: still decide it.
 Text reviews: ${JSON.stringify(byModel.map(b => ({ model: b.model, findings: b.text?.findings || [], overall: b.text?.overall })))}
-Screen reviews: ${JSON.stringify(screen)}`, { label: `judge:${a.id}`, phase: 'Judge', schema: JUDGE }).then(r => ({ area: a.id, ...(r || {}) }))
+Screen reviews: ${JSON.stringify(screen)}`, { label: `judge:${a.id}`, phase: 'Judge', model: 'opus', schema: JUDGE }).then(r => ({ area: a.id, ...(r || {}) }))
 }))
 
 return {

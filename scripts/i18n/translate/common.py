@@ -6,6 +6,7 @@ screenshots, the workflow results. Nothing there is committed; it's rebuilt from
 
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -47,9 +48,17 @@ def fill(tree: dict, texts: dict[str, str], prefix: tuple = ()) -> dict:
     }
 
 
-def tokens(text: str) -> set[str]:
-    """Placeholders and tags, less {{count}}: a language may write the number in words."""
-    return {t.replace(" ", "") for t in PLACEHOLDER.findall(text)} - {"{{count}}"}
+def tokens(text: str) -> Counter:
+    """Each placeholder and tag, counted: a tag used twice must stay twice."""
+    return Counter(t.replace(" ", "") for t in PLACEHOLDER.findall(text))
+
+
+def tokens_differ(english: str, translated: str) -> bool:
+    """True if a placeholder or tag was dropped, added or changed. {{count}} may be dropped (a language may
+    write the number in words) but not added."""
+    en, tr = tokens(english), tokens(translated)
+    en["{{count}}"] = min(en["{{count}}"], tr["{{count}}"])
+    return +en != +tr
 
 
 def problems(english: dict[str, str], translated: dict[str, str]) -> list[str]:
@@ -61,9 +70,10 @@ def problems(english: dict[str, str], translated: dict[str, str]) -> list[str]:
     found += [f"not in English: {k}" for k in translated if k not in english]
     found += [f"still marked: {k}" for k, v in translated.items() if "[TRANSLATE]" in v]
     found += [
-        f"placeholders or tags differ in {k}: {sorted(tokens(english[k]))} vs {sorted(tokens(translated[k]))}"
+        f"placeholders or tags differ in {k}: {sorted(tokens(english[k]).elements())} vs "
+        f"{sorted(tokens(translated[k]).elements())}"
         for k in english
-        if k in translated and tokens(english[k]) != tokens(translated[k])
+        if k in translated and tokens_differ(english[k], translated[k])
     ]
     return found
 

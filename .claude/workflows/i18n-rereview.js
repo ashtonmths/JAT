@@ -15,6 +15,6 @@ const flagged = reviews.flatMap(r => (r.findings || []).filter(f => f.severity !
 let judge = null
 if (flagged.length) {
   phase('Judge')
-  judge = await agent(`${P}\n\nYou are the judge. For each flagged key decide change (final string) or keep, noting where the models disagreed. Reviews: ${JSON.stringify(reviews)}`, { label: 'judge', phase: 'Judge', schema: { type: 'object', properties: { decisions: { type: 'array', items: { type: 'object', properties: { key: { type: 'string' }, verdict: { type: 'string', enum: ['change', 'keep'] }, final: { type: 'string' }, severity: { type: 'string' }, why: { type: 'string' } }, required: ['key', 'verdict', 'final', 'why'] } } }, required: ['decisions'] } })
+  judge = await agent(`${P}\n\nYou are the judge. For each flagged key decide change (final string) or keep, noting where the models disagreed. Reviews: ${JSON.stringify(reviews)}`, { label: 'judge', phase: 'Judge', model: 'opus', schema: { type: 'object', properties: { decisions: { type: 'array', items: { type: 'object', properties: { key: { type: 'string' }, verdict: { type: 'string', enum: ['change', 'keep'] }, final: { type: 'string' }, severity: { type: 'string' }, raised_by: { type: 'string', description: 'sonnet, opus or both' }, why: { type: 'string' } }, required: ['key', 'verdict', 'final', 'why'] } } }, required: ['decisions'] } })
 }
 return { reviews, judge }

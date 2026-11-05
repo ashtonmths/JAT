@@ -8,6 +8,7 @@ Areas are what the translators and reviewers each take: the file's top-level gro
 up to MAX_AREA keys, so a reviewer sees one part of the screen at a time.
 """
 
+import shutil
 import subprocess
 import sys
 
@@ -48,13 +49,14 @@ def index_ts(names: list[str]) -> str:
 def main(lang: str, ns: str) -> None:
     if not (EN / f"{ns}.ts").exists():
         sys.exit(f"no English file {ns}.ts")
+    # Made fresh every time, so keys English gained since the last file are there.
     start = start_file(lang, ns)
-    if not start.exists():
-        subprocess.run(
-            ["node", "--experimental-strip-types", "scripts/i18n/new_language.mjs", lang, str(start.parents[1])],
-            cwd=ROOT,
-            check=True,
-        )
+    shutil.rmtree(start.parents[1], ignore_errors=True)
+    subprocess.run(
+        ["node", "--experimental-strip-types", "scripts/i18n/new_language.mjs", lang, str(start.parents[1])],
+        cwd=ROOT,
+        check=True,
+    )
     folder = LOCALES / lang
     target = folder / f"{ns}.json"
     if target.exists() and "[TRANSLATE]" not in target.read_text():

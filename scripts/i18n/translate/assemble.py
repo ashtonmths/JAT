@@ -19,7 +19,7 @@ def collect(result: dict, fixes: list[dict]) -> dict[str, str]:
     texts: dict[str, str] = {}
     for area in result["results"]:
         for t in area.get("translations") or []:
-            texts[t["key"]] = t["zh"] if "zh" in t else t["text"]
+            texts[t["key"]] = t["text"]
     for change in (result.get("consistency") or {}).get("changes") or []:
         texts[change["key"]] = change["to"]
     for f in fixes:
