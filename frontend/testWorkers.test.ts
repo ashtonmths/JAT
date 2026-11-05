@@ -5,10 +5,10 @@ describe("testWorkers", () => {
   it("uses half the cores", () => {
     expect(testWorkers({}, 12)).toBe(6);
     expect(testWorkers({}, 16)).toBe(8);
-    expect(testWorkers({}, 3)).toBe(1);
   });
 
   it("never goes below one", () => {
+    expect(testWorkers({}, 3)).toBe(1);
     expect(testWorkers({}, 1)).toBe(1);
   });
 

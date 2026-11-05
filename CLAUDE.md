@@ -64,11 +64,13 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   only touches docs and planning files can skip these, and the PR says so; if it touches
   `docs/ROADMAP.yaml`, run `uv run pytest -q tests/pm`.
 - **Browser tests only when the production build can change** (Kai, 2026-11-05). `pnpm e2e` tests a
-  production build, so a PR that can't change one skips it and runs every other check: one that
-  touches only a draft language's files (`DRAFT_LANGUAGES`, which only a dev server loads, so
-  `locales/<draft>/` and the glossary), scripts outside the app (`scripts/`, `.claude/workflows/`),
-  Python tests, or docs. The PR says it skipped and why. Anything the app imports in production
-  (`frontend/src` beyond a draft's folder, `src/jat`) runs it; so does switching a draft on.
+  production build on demo data, so a PR whose every changed file is in this list skips it and runs
+  every other check: a draft language's text (`frontend/src/locales/<draft>/` for a code in
+  `DRAFT_LANGUAGES`, which only a dev server loads, and its glossary `docs/i18n/<draft>.md`),
+  `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`, `.claude/workflows/`, Python tests
+  (`tests/`), and docs. Anything else runs it, including `scripts/seed_demo.py` (the browser tests'
+  demo data), `frontend/e2e/`, any config or lockfile, `frontend/src/i18n/` and `DRAFT_LANGUAGES`
+  itself, and switching a draft on. The PR says it skipped and why.
 - **Don't max out Kai's PC** (Kai, 2026-11-02). `pnpm test` and `pnpm e2e` limit their workers,
   run at low priority and wait for each other across worktrees (CONTRIBUTING, *Checks*): run them
   through `pnpm` (a single spec: `pnpm e2e e2e/<file>`), not `vitest` or `playwright` directly,
