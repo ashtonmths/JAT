@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.18.11 (2026-11-05)
+
+- Translation helpers for adding a language with AI agents, a string file at a time: scripts in scripts/i18n/translate/ and translate, review and re-review workflows for Claude Code; the guide on adding a language points to them (#242).
+
 ## 1.18.10 (2026-11-05)
 
 - Translators can add a language a few areas at a time, as a draft that only a dev server shows (?lang=<code> or the language switch); the checks pass with areas missing, and a language needs every area once it's switched on. The guide's "Translating in parts" has the steps (#237).
