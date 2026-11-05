@@ -14,7 +14,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = { en: "English" };
  * English. Move it to LANGUAGES when every namespace is translated (catalog.test.ts checks this;
  * docs/guide/adding-a-language.md "Translating in parts").
  */
-export const DRAFT_LANGUAGES: Readonly<Record<string, string>> = {};
+export const DRAFT_LANGUAGES: Readonly<Record<string, string>> = { "zh-CN": "简体中文" };
 export const FALLBACK: Language = "en";
 /** The guide the switch links to. A test checks the file is there, so don't move it without this. */
 export const ADD_LANGUAGE_GUIDE =

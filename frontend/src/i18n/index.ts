@@ -11,6 +11,7 @@ import { createInstance, type i18n as I18n, type Resource } from "i18next";
 import { initReactI18next } from "react-i18next";
 
 import en from "../locales/en";
+import zhCN from "../locales/zh-CN";
 import { FALLBACK, PSEUDO, pickLanguage, storedLanguage } from "./language";
 import { pseudoTree } from "./pseudo";
 
@@ -108,6 +109,7 @@ export const i18n = createI18n({
           dev: env.DEV,
         }),
   strict: isStrict(env),
+  resources: { "zh-CN": zhCN },
   pseudo: env.DEV,
   react: true,
 });
