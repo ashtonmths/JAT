@@ -3,7 +3,7 @@
   "overdue": "已逾期 · {{date}}",
   "today": "今天",
   "tomorrow": "明天",
-  "by": "{{date}} 前",
+  "by": "{{date}}前",
   "whatNeedsDoing": "要做什么",
   "due": "截止日期",
   "noDate": "无日期",
@@ -15,7 +15,7 @@
   "about": {
     "label": "关联对象",
     "placeholder": "关联对象（可选）",
-    "nothingFound": "找不到这个名称",
+    "nothingFound": "没有匹配的结果",
     "applications": "申请",
     "roles": "待决定的职位",
     "people": "联系人",
@@ -24,7 +24,7 @@
     "companyRole": "{{company}} · {{role}}"
   },
   "new": "新建待办",
-  "newPlaceholder": "回复对方的消息、了解一下这家公司…",
+  "newPlaceholder": "回复对方消息、了解这家公司…",
   "dueOptional": "截止日期（可选）",
   "byOptional": "截止日期（可选）",
   "add": "添加",

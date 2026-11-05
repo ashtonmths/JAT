@@ -181,7 +181,7 @@
   "sent": {
     "title": "已发送的文档",
     "open": "打开",
-    "kindSent": "{{kind}} · {{date}} 发送",
+    "kindSent": "{{kind}} · {{date}}发送",
     "notSent": "并未随这份申请发送",
     "remove": "移除 {{document}} {{version}}",
     "none": "记下你发送了哪份简历和求职信，这样就知道对方看过什么。",

@@ -42,7 +42,7 @@ open an issue or a pull request.*
 **中文与数字、拉丁字母之间的空格。** 采用现代中国大陆界面的通行做法：中文与阿拉伯数字、拉丁字母之间加一个半角空格。
 - `第 2 轮`、`{{count}} 天前`、`简历 v3`、`IR35 范围外`、`用 Markdown 书写`、`已获 Offer`。
 - 中文字符之间不加空格。全角标点前后不加空格。数字与 `%`、货币符号之间不加空格。
-- 占位符一律当作拉丁字母或数字处理：与相邻中文之间加一个空格（`{{count}} 天`、`与 {{name}} 通话`、`{{company}} 的 {{role}}`）。占位符紧挨全角标点、引号或 `·` 分隔符时，不再加空格。
+- 占位符一律当作拉丁字母或数字处理：与相邻中文之间加一个空格（`{{count}} 天`、`与 {{name}} 通话`、`{{company}} 的 {{role}}`）。占位符紧挨全角标点、引号或 `·` 分隔符时，不再加空格。日期占位符（`{{date}}`、`{{when}}`、`{{at}}`）例外：应用插入的是“2026年10月12日”这样以汉字结尾的中文日期，所以后面紧跟中文时不加空格（`{{date}}前`、`{{date}}发送`）；前面是中文时照常加空格（`投递于 {{date}}`），因为日期以数字开头。
 - 例外是阶段名：`{{stage}}`、`{{what}}`、`{{to}}` 这类会渲染成中文阶段名的占位符，在句子中间用 “” 括起来，不加空格，例如 `移至“{{stage}}”`、`将 {{company}} 标为“{{stage}}”`。在只有占位符和分隔符的短标签里（例如看板列标题 `{{stage}} · 第 {{round}} 轮`、时间线 `{{from}} → {{to}}`），保持原样，不加引号。
 
 **占位符与标签。**
@@ -53,7 +53,7 @@ open an issue or a pull request.*
 
 **复数。** 中文只有一种形式。只翻译 `_other` 键（`_one` 键如果存在，内容与 `_other` 相同），写成自然的中文，例如 `"{{count}} 天"`、`"{{count}} 位联系人"`。量词要正确：人用“位”，申请用“份”，轮次用“轮”，次数用“次”，天数用“天”，项目用“项”或“个”。
 
-**日期、时间和金额。** `{{date}}`、`{{when}}`、`{{at}}`、`{{amount}}`、`{{rate}}`、`{{size}}` 都由应用按 zh-CN 区域格式化后插入，例如“2026年10月12日”“£650”。译文不要另加“年”“月”“日”“号”或货币单位，只翻译周围的文字。例如 `"Applied on {{date}}"` 译为 `"{{date}} 投递"`，`"{{rate}} a day"` 译为 `"{{rate}}/天"`。
+**日期、时间和金额。** `{{date}}`、`{{when}}`、`{{at}}`、`{{amount}}`、`{{rate}}`、`{{size}}` 都由应用按 zh-CN 区域格式化后插入，例如“2026年10月12日”“£650”。译文不要另加“年”“月”“日”“号”或货币单位，只翻译周围的文字。例如 `"Applied on {{date}}"` 译为 `"{{date}}投递"`，`"{{rate}} a day"` 译为 `"{{rate}}/天"`。
 
 **相对时间**（`common.time`）。`今天`、`昨天`、`明天`、`{{count}} 天前`、`{{count}} 天后`、`{{count}} 周前`、`{{count}} 个月前`、`今天到期`、`已逾期 {{count}} 天`。“今天”作为相对时间时用“今天”，作为页面名时用“今日”（见术语表）。
 
@@ -124,7 +124,7 @@ open an issue or a pull request.*
 | Deciding (offer status) | 考虑中 | |
 | revised offer | 更新后的 Offer | |
 | Offers to answer | 待答复的 Offer | |
-| Reply by | 答复截止 | “Reply by {{date}}”译为“{{date}} 前答复” |
+| Reply by | 答复截止 | “Reply by {{date}}”译为“{{date}}前答复” |
 | salary / base salary / day rate | 薪资 / 基本工资 / 日薪 | “{{rate}} a day”译为“{{rate}}/天”，“{{amount}} a year”译为“{{amount}}/年” |
 | bonus / equity / employer pension / holiday / benefits | 奖金 / 股权 / 雇主养老金 / 年假 / 福利 | |
 | Worth a year | 年度总值 | |
@@ -132,7 +132,7 @@ open an issue or a pull request.*
 | Permanent / Contract / Fixed term | 正式岗 / 合同工 / 固定期限 | |
 | IR35 / Outside / Inside | IR35 / IR35 范围外 / IR35 范围内 | 英国税务规则名，不翻译 |
 | Remote / Hybrid / In office | 远程 / 混合办公 / 线下办公 | 英文为小写的场景（`line.workModes`）在中文里用同样的词 |
-| follow up | 跟进 | 指按计划日期跟进。“Follow up on {{date}}”译为“{{date}} 跟进”，“Remind me to follow up”译为“提醒我跟进” |
+| follow up | 跟进 | 指按计划日期跟进。“Follow up on {{date}}”译为“{{date}}跟进”，“Remind me to follow up”译为“提醒我跟进” |
 | chase / chased | 催问 / 已催问 | 指在对方迟迟不回复时去问。“time to chase”译为“该催问了”，“{{count}} to chase”译为“{{count}} 个待催问” |
 | Needs chasing | 待催问 | 用作筛选器和标记，与“跟进”区分 |
 | Snooze / Snoozed until | 延后 / 延后至 | 与 Gmail 中文版一致 |
@@ -194,5 +194,5 @@ open an issue or a pull request.*
 | move along (a card advancing through rounds) | 推进 | 例如“随之推进”，不用“前移” |
 | View (List/Board switch) | 视图 | Label of the segmented control that switches between List (列表) and Board (看板). |
 | Picked up / drop (keyboard drag-and-drop) | 拿起 / 放下 | Used in screen-reader messages during keyboard dragging: 已拿起 {{card}}。, 按空格键放下, {{card}} 已放下。 |
-| Sent on | 发送日期 | Date-field label, following the same pattern as 投递日期 (Applied on). In a line with a date, 'sent {{date}}' is written {{date}} 发送. |
+| Sent on | 发送日期 | Date-field label, following the same pattern as 投递日期 (Applied on). In a line with a date, 'sent {{date}}' is written {{date}}发送 (no space: the date ends in 日). |
 | As (relation of a contact to an application) | 身份 | Label of the relation select (面试官, 用人经理, 猎头顾问…). Also used in hints that mention 'the role chosen above' when it means this relation, not a job role (职位). |
