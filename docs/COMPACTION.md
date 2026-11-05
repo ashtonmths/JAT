@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4, 4a and 5 are a snapshot (2026-11-05, after PR #229, main at `6703be4`, v1.18.9), and 4a is the live plan;
+Sections 3, 4, 4a and 5 are a snapshot (2026-11-05, after PR #237, main at `5ed8f46`, v1.18.10), and 4a is the live plan;
 refresh them before each compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
 
@@ -235,6 +235,9 @@ next action.
   Every date picker rings today (#82) and shows "D MMM YYYY" (`theme.ts` `valueFormat`);
   calendars follow the language (`DatesProvider` in `App.tsx`, weeks from Monday).
 - **Translations (i18n; the cutover is done, English only so far; `docs/rfc/i18n.md`).** i18next + react-i18next.
+  - **Draft languages** (#237): `DRAFT_LANGUAGES` in `i18n/language.ts` (code → own name), shown only on a dev server
+    (`?lang=<code>`, or "<name> (draft)" in the switch), never saved; may miss whole namespaces (English shows), but each
+    file must be complete; its `index.ts` must load exactly its files. Moves to `LANGUAGES` when every namespace is in.
   - `frontend/src/i18n/`: `index.ts` (`createI18n`, the app's `i18n`, strict mode throws
     `MissingValueError`/`MissingKeyError` in dev and tests), `language.ts` (`LANGUAGES`,
     `LANGUAGE_NAMES`, `pickLanguage`, `saveLanguage`, `isLanguage`, `PSEUDO` = `en-XA`,
@@ -404,100 +407,109 @@ next action.
   `search`, `workflow`, `backup` (+ `/archive`, `/snapshot`, `/push`); `interviews/{id}/needs-new-time`,
   `meetings/{id}/needs-new-time`, `applications/{id}/rejection-feedback`.
 
-### 4. Current state (snapshot 2026-11-05, after #229)
+### 4. Current state (snapshot 2026-11-05, after #237)
 
-- **main at `6703be4`** (merge of #229), plus this doc's PR until it merges. No other open PRs; one
-  worktree (the main checkout); only `main` locally and on GitHub. Version **1.18.9**, released as v1.18.9.
-- **Merged since the last snapshot (#214), all through the review-fix cycle,** one PR at a time. Every released PR
-  was merged after a full `<tmp>/deps/pm_checks.sh` run on its final commit (twice the browser suite alone was rerun on
-  the same commit after a failure that wasn't the PR's: #222, after a `!` run cleared its test results, and #221,
-  after the flaky pin; see 4a and section 8); the roadmap-only PRs ran `uv run pytest -q tests/pm`:
-  - #215, #216 the previous refresh of this doc.
-  - #217 `test-resource-limits` (v1.18.1): `pnpm test` and `pnpm e2e` go through `frontend/scripts/test-run.mjs`
-    (one run at a time across worktrees via `/tmp/jat-test-run.lock`, lowest CPU priority, idle disk priority on
-    Linux, which only BFQ honours and this machine's disks don't use); Vitest and Playwright use a quarter of the CPU
-    threads (`frontend/testWorkers.ts`, `TEST_WORKERS`); `TEST_LOCK=off` skips the wait.
-  - #218 `test-gaps-demo-data` (v1.18.2): the demo seed has files (tiny PDFs), links, a declined and a withdrawn
-    offer (on their timelines via `offers.record`), a CV file waiting to be made a version, and an empty Portfolio
-    document; `text_snapshot.py` opens those states (142 views).
-  - #219 roadmap: the five bugs I chose at Kai's ask set to `next`.
-  - Five bug fixes, built by five parallel agents and merged one at a time: #223 `fix-new-company-keeps-draft`
-    (v1.18.3), #224 `fix-menu-prefix-active` (v1.18.4), #222 `fix-deleted-person-404` (v1.18.5), #221
-    `fix-new-agency-keeps-draft` (v1.18.6), #220 `fix-cv-files-stale` (v1.18.7).
-  - #225 roadmap: `delivery-speed-improvements` (planned).
-  - #226 roadmap: `tagline-reorder`, `recruiter-open-application-mark`, the bug `fix-offer-kind-pin-flaky`, and
-    section 8's lessons of 2026-11-03.
-  - #227 `tagline-reorder` (v1.18.8): "No AI. No cloud. No account. No tracking." on the social card (headline 76px),
-    the README, the website, `llms.txt` and section 7 here.
-  - #228 `mcp-plan` (no release): `docs/rfc/mcp.md`, the MCP server planned in detail; the old `mcp-server` task split
-    into ten planned build tasks; a CLAUDE.md rule; the PRD and IDEAS updated.
-  - #229 `board-recruiter-link` (v1.18.9): the name on a board card links to the recruiter's page, or the agency's.
-- **Tests on main** (the lead's full run on #229's final commit, `8317a54`): pytest 1,284, browser 711 (a few
-  `test.fail` for known bugs pass by failing). The unit count isn't printed by `pm_checks.sh`; the builders reported
-  1,134 on 2026-11-03.
-- **Kai's tracker** answered on 8770. Every change since v1.18.0 is frontend, tooling or docs, so a page refresh shows
-  it; but each release bumps the server's version, so the sidebar note asks for a restart until Kai restarts, and a
-  restart also picks up v1.18.0's Sankey rounds filter if that one is still pending.
-- **Kai's messages since #214, in order** (word for word where quoted):
-  - "i wonder if this can be generalised (a diff version) to general todo list / life crm" → answered (a separate app
-    reusing Today's groups, reply habits and the data folder; nothing built or recorded).
-  - "work on this, test runs" (the `test-resource-limits` card) → #217; "then after that do this one"
-    (`test-gaps-demo-data`) → #218.
-  - "then choose 5 bugs to fix, lmk which ones you choose. i want quick/easy/simple/safe fixes first to get the bug
-    count down" → the five above; "which bugs will you fix" (answered); "shouldnt there have been something to update
-    this column" (Up next was empty) → #219; "once the test gaps item is done is it possible to do the bugs in
-    paralel? you can decide suitable number of agetns"; "there are 5 bugs" → five agents.
-  - "most of those fixes say 0.25h, youve spent a lot lognger than that on eahc of them" (answered: the time is the
-    checks and queueing, not the fixes); offered combining them: "no dont ocmbine them".
-  - "i thought there was some investigation about why these things take so logn and a doc produced, is there a
-    corresponding roadmap item"; "create a roadmap item to investigate deliery speeds, output of that item will be
-    actionable imprvoemts" → #225.
-  - "sitrep" (twice), "how far from anything being merged?", "i see a bunch of review agents open, are they needed,
-    theyve been running for over an hour" (named reviewers had gone idle as teammates; section 8).
-  - "your priority is to get the PRs merged, after correctrly hanfling tthe review-fix cycles. handle PRs
-    sequentially, review-fix cycle then merge, then handle the next PR. theres no point running reviews for PRs that
-    will need ot be reviewed again ocne another PR merges".
-  - "how long do the browser tests take? is there a way i can watch in not-headless mode?" (answered: 7–9.5 min;
-    `--headed` or `--ui` in Kai's own terminal; a `!` run in the session cleared a worktree's test results, section 8);
-    "i ran a test and i saw teh playwright window but never saw the app" (answered: click a step, or Settings → Show
-    browser).
-  - "new feature idea for roadmap: if a recruiter is associated with an application that is active … have an icon
-    next to their name, similar to VIP/fav but not that special" → #226.
-  - The social card: "new roadmap item, put this one near the top of the list / reorder the text / No AI. No Cloud /
-    No account. No tracking …" → #226; "do the tagline change next" → #227; "lmk when the new social preview image is
-    generated and ill upload it" (told; Kai uploads it in Settings → General → Social preview).
-  - "then after that use an agent or several agent to plan out the MCP feature …" (the full ask is quoted at the top
-    of `docs/rfc/mcp.md`); "for now we are just planning it, but in a lot of detail / Im happy for this to be a bigger
-    PR as it is just docs" → #228.
-  - "new fature … from this screen i should be able to click on recruiter name on each card" → #229.
-  - "update the compaction doc" → this PR.
+- **main at `5ed8f46`** (merge of #237), plus this doc's PR until it merges. No other open PRs; one worktree (the main
+  checkout); only `main` locally and on GitHub. Version **1.18.10**, released as v1.18.10.
+- **Merged since the last snapshot (#231), all through the review-fix cycle, one PR at a time:**
+  - #231 the previous refresh of this doc.
+  - #232 roadmap: `windows-support` split into nine planned tasks (section 4a), with Kai's answers.
+  - #233 `windows-rfc` (no release): `docs/rfc/windows.md`, the path to Windows support, fact-checked twice; the tasks
+    and the PRD (FR24) link to it. Written to link from issue #230.
+  - #234 (no release): `packaged-install` and `desktop-app` taken out of the Windows plan (Kai: "we dont need
+    packaged-install and desktop-app as part of this windows work").
+  - #235 (no release): the testing switch `JAT_WINDOWS_SNAPSHOTS=1` added to the plan (Kai: "testing switch, good idea.
+    add it to the plan").
+  - #236 `language-research` (no release): `docs/rfc/i18n.md` 13a, the human languages offered by up to 20 most-starred
+    repos in each of the repo's 20 GitHub topics (299 repos, 20 agents): Simplified Chinese first (72 repos, 16 topics),
+    then Spanish, French, German, Russian, Japanese. Data in `<tmp>/lang/` (`results.json`, `aggregate.py`).
+  - #237 `i18n-draft-languages` (v1.18.10): draft languages. `DRAFT_LANGUAGES` in `frontend/src/i18n/language.ts`
+    (code → own name, empty for now): only a dev server shows one (`?lang=<code>` or the switch, "<name> (draft)"), never
+    saved or picked from the browser. The catalog test lets a draft miss whole namespaces (English shows) but each file
+    must be complete; a shipped language needs all; every `locales/<code>/` folder must be shipped or a draft and its
+    `index.ts` must load exactly its files (`namespaceProblems` in `catalog.ts`). `new_language.mjs <code> <dir>` makes
+    `<dir>` if needed. Guide: "Translating in parts". RFC: Kai's AI-translation decision and the Chinese decisions.
+- **Tests on main** (the lead's full run on #237's final commit): pytest 1284, browser 711; unit 1,142
+  passed one commit earlier, and the last fixes added one test.
+- **Kai's tracker** answered on 8770. Everything since v1.18.0 is frontend, tooling or docs; the sidebar keeps asking for
+  a restart until Kai restarts (each release bumps the server's version).
+- **Kai's messages since #231, in order** (word for word where quoted):
+  - Issue #230: "evaluate what he said, and the effort required to do it, and the risks of him doing it hmself and
+    contributing it / also, at some ppint i want to dockerize, would that solve it / also first explain to me why this
+    wont work on windows atm / also check his fork and see his approach" → answered after three agents (audit, fork
+    review, Docker). The fork is `ashtonmths/JAT` (12 ahead: 7 Windows commits, plus an unrequested "colleges" route
+    with migration 0018, a margin change, a version bump; Kai: "i wont incorporate them").
+  - "feel free to fan out" (agents used); four questions (isolate and disable on Windows; what tzdata is; the colleges
+    commits; fork vs Docker) → answered.
+  - "the various issues you mentioned, perhaps its worth splitting those things out as their own PRs also" → #232; then
+    "1. that sounds like a plan, add it to the roadmap to get basic windows support. on windows we can simply globaly
+    disable the parts that would be an issue after isolating them and minimising the problematic surface, that as a
+    first step 2. this is reasonable to include and then use same dependency on all platforms 3. nice 4. i can test on
+    windows" → folded into #232.
+  - "so what does the path to windows support look like now?", "how much of this does the other persons fork cover?"
+    (about a quarter), "so their dependency change instead of fcntl, our plan would still do that" (yes, msvcrt in step
+    2; it's stdlib) → answered.
+  - "okay so is our roadmap up to date with our path to windows support? perhaps create a separate md file about this
+    that we can later link to, explaining our path / afterwards, dont do it until i say so, we will draft a reply." →
+    #233; "is git snapshot correct? really its just making a commit isnt it?" → answered (export + commit, never
+    pushes) and written into the RFC; "we dont need packaged-install and desktop-app as part of this windows work" → #234.
+  - The #230 reply: Kai's six points; "1. testing switch, good idea. add it to the plan 2. I will post / keep PRs
+    targetting 500 lines, max 1k / dont mention rebase vs merge / dont mention the 3rd ntoe" → #235 and the final
+    Markdown given; "give me the message as markdown so i can copy and paste" → given. **Kai posts it.** Only Kai can
+    merge (sole collaborator; the `main` ruleset blocks deletion and force pushes only).
+  - "i want to add a second language! scour every tag … find the languages in the top-20 starred repos for each tag" and
+    "fan out massively" → a 20-agent workflow, ranked list; "put these findings in the roadmap" → #236.
+  - "then lets say i want to add a language, i assume thats 1 pr because of the checks?" → yes as built; the
+    draft-language change splits it. "i will have AI do the translations, people can open an issue/pr if the think
+    something should change / dont do anything yet, give me a PR plan for adding simplified chinese" → the 11-PR plan
+    (section 4a). "what is the draft-language change? you didnt explain it to me, file changes got in the way" →
+    explained. "i like the draft-language plan, implenebt tgat change but dont create the new language yet" → #237.
+    Kai's decisions: "1. i dont know, recommended 2. recommended 3. keep but change to more coming soon 5. leave it".
+  - "after that update the compaction doc" → this PR.
 
 ### 4a. Current work, 2026-11-05 (read this first; it overrides 4 and 5 where they differ)
 
 Keep this whole section word for word in the summary: it is the live plan.
 
-**Versions and main.** Released up to v1.18.9 (#229); main at `6703be4`. Everything Kai asked for is merged and released
-(section 4). Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
+**Versions and main.** Released up to v1.18.10 (#237); main at `5ed8f46`. Everything Kai asked for is merged and
+released (section 4). Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 
 **Nothing is up next: report and wait.** No roadmap task is `next` or `building`. By `CLAUDE.md` ("Report and wait", Kai,
 2026-11-02), with nothing up next I tell Kai what's in the backlog and wait for Kai to pick; nothing from the backlog starts
 without Kai's go-ahead. Waiting on Kai in particular:
+- **Simplified Chinese** (Kai: "dont create the new language yet"). The PR plan Kai was given, none on the roadmap yet (add
+  them as tasks when Kai says go; each its own PR, all patch but the switch-on, which is minor):
+  1. ~~Draft languages~~ (done, #237).
+  2. A glossary, `docs/i18n/zh-CN.md`: the fixed Chinese for key terms (application, role, recruiter, agency, round,
+     stage, offer, ghosted, Today, Your move…), tone, and how dates, numbers and money read. Every translation PR follows it.
+  3–8. Six translation PRs of ~500 lines, by namespace: `insights`+`stages`+`files`; `errors`+`common`+`todos`;
+     `people`+`applications`; `today`+`roles`+`calls`; `interviews`+`offers`+`timeline`+`events`; `notes`+`documents`
+     (the first adds `zh-CN` to `DRAFT_LANGUAGES` as "简体中文", its `index.ts` and the loader line in `i18n/index.ts`).
+     Each checked by the catalog test and `?lang=zh-CN` screenshots of its pages.
+  9. Chinese layout: system CJK fonts (PingFang SC, Microsoft YaHei, Noto Sans CJK SC) and clipped labels, at desktop
+     and 375 px.
+  10. Switch it on (minor): `LANGUAGES`/`LANGUAGE_NAMES`, `dayjs/locale/zh-cn`, a `PATTERNS` row (`YYYY年M月D日`…),
+      `NUMBER_LOCALE`, "Coming soon!" → "More coming soon", a browser test that switches and finds no English, guide,
+      README row, `llms.txt`, changelog.
+  11. `README.zh-CN.md`, linked from the README. The website in Chinese is separate and later, if Kai wants it.
+  Kai's decisions (RFC i18n 13a): code `zh-CN`; Traditional Chinese browsers stay on English; "More coming soon"; search
+  left as is (`i18n-search` not first); AI translation, corrections by issue or PR (no native-speaker review).
+- **Windows** (`docs/rfc/windows.md`, all planned): `windows-starts` (basic support: the Windows-unsafe parts behind one
+  is-Windows check, off there; `JAT_WINDOWS_SNAPSHOTS=1` turns snapshots on for testing on a test data folder), then
+  `utf8-everywhere`, `windows-time-zones` (tzdata on every platform, Kai's yes), `static-file-types`,
+  `data-gitattributes`, `locked-file-retry`, `windows-testing` (Kai tests on Windows), then `windows-support` (docs);
+  later `windows-snapshots` (msvcrt lock, then the switch goes). Issue #230's author may contribute: Kai posts the reply
+  (drafted, given as Markdown); don't post or reply for Kai. Their PRs: ~500 lines, max 1k; one task each.
 - **The MCP server:** the ten `mcp-*` build tasks wait on Kai's answers to the 11 decisions in `docs/rfc/mcp.md` §14 (the
   main one: approving the official `mcp` SDK as an optional dependency) and a go-ahead. Nothing is built.
-- **Issue #230, "Windows Support?"** (opened 2026-11-04 by an outside GitHub user, no reply yet): they point at
-  `fcntl` (used in `src/jat/snapshot/git.py`), suggest `msvcrt` on Windows, and ask whether contributions towards Windows
-  support would be welcome. Replying is outward-facing: Kai decides whether and what to answer. Don't reply on Kai's
-  behalf. Since #232 the roadmap splits Windows into planned tasks, basic support first (`windows-starts`: the Windows-unsafe
-  parts behind one switch and off there), `tzdata` on all platforms (Kai's yes), and Kai tests on Windows (`windows-testing`).
-- **Offered and not taken up:** linking the recruiter in the Applications *list* too (its rows open on click, so the
-  name is plain there; #229's reviewer noted it); a roadmap item only if Kai says.
-- **Backlog added this session:** `delivery-speed-improvements`, `recruiter-open-application-mark` (its icon and what
+- **Offered and not taken up:** linking the recruiter in the Applications *list* too; a roadmap item only if Kai says.
+- **Backlog added recently:** `delivery-speed-improvements`, `recruiter-open-application-mark` (its icon and what
   counts are Kai's to decide).
 - From 2026-11-02, still left alone ("leave them on the roadmap. we wont be doing thme this session"):
   `notes-documents-improve`, `timeline-improve`, `people-you-meet`.
 - `security-alerts`: minimatch #32 stays open until eslint and redocly take minimatch 11, or Kai dismisses it.
-- Older backlog: `i18n-search`, `multi-language`, P11 "Test gaps" (less `test-gaps-demo-data`, done), `tests-reorganise`,
-  Docker and the rest of section 5.
+- Older backlog: `i18n-search`, P11 "Test gaps" (less `test-gaps-demo-data`, done), `tests-reorganise`, Docker and the
+  rest of section 5.
 
 **Kai's latest word on how to work** (also section 1):
 - **One PR at a time** (2026-11-03): "handle PRs sequentially, review-fix cycle then merge, then handle the next PR.
@@ -506,15 +518,17 @@ without Kai's go-ahead. Waiting on Kai in particular:
   origin/main...HEAD --stat`, then `git diff origin/main --stat`); only a changed diff needs a fresh review. Don't start
   reviews ahead of their turn.
 - **Don't combine fixes into one PR** to save check time: "no dont ocmbine them". Small PRs, one per bug or task.
-- **Fan out when Kai asks:** "there are 5 bugs" meant one agent per bug. Their test runs queue on the test lock, so more
-  agents doesn't mean faster tests (the 0.25 h estimates count the fix, not the ~10-minute full check per PR).
+- **Fan out when Kai asks:** "there are 5 bugs" meant one agent per bug; "fan out massively" meant a Workflow of 20
+  agents. Their test runs queue on the test lock, so more agents doesn't mean faster tests.
 - "if you followed the iterative review-fix cycle then i give you permission to merge and release"; a major still needs
   Kai's explicit yes each time.
-- Split a feature into ~500-line tasks before building; a docs-only plan may be bigger when Kai says so ("Im happy for
-  this to be a bigger PR as it is just docs").
+- Split a feature into ~500-line tasks before building (max 1k); a docs-only plan may be bigger when Kai says so.
+- When Kai asks for a plan, give the PR plan and build nothing ("dont do anything yet, give me a PR plan"); explain a
+  change in plain words before the file details ("you didnt explain it to me, file changes got in the way").
 - When Kai asks for a roadmap item, add it as `planned` (Backlog) unless Kai says to build it; a request to build makes
-  it `next` (or `building` in its own PR). Kai noticed an empty Up next column once: set `next` as soon as Kai queues work.
-- Images go to Kai before they're applied (the social card was shown first, then applied on Kai's "lmk when … generated").
+  it `next` (or `building` in its own PR). Set `next` as soon as Kai queues work.
+- Outward text (an issue reply) is drafted for Kai and given as Markdown to paste; Kai posts it.
+- Images go to Kai before they're applied.
 - Mid-turn "sitrep" questions get a short honest answer straight away, then carry on.
 - When Kai asks a question, check the code or the running thing and answer plainly before proposing work.
 
@@ -681,7 +695,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
 
 - **In flight:** none (after this doc's PR merges). **Up next:** nothing. **Backlog:** Kai picks (section 4a); the MCP
   build waits on the RFC's §14 decisions.
-- **Left of the i18n work, P8** (when Kai says; see 4a): `i18n-search` and `multi-language` (Chinese, a native-speaker review;
+- **Left of the i18n work, P8** (when Kai says; see 4a): `i18n-search` and `multi-language` (Simplified Chinese as `zh-CN`, AI-translated, in the 11 PRs of section 4a;
   also percent and number formats, brackets and separators).
 - **Noticed, for later:** long text clips on Today's Waiting rows, the call form's How and the offer form's kind (for
   `multi-language`); README screenshots showing the header still have the old language icon (no open task: the `readme-refresh-*` tasks are done, so retaking them needs a new one).
@@ -892,6 +906,13 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   time, and its start (or a take-home's deadline) at or before the cutoff, or marked done by then (from its latest `done`
   timeline entry, else when it was added). The Sankeys split only the first active stage with "interview" in its id.
 - **Up next / Backlog and "Report and wait"** (section 1, `CLAUDE.md`).
+- **Windows** (`docs/rfc/windows.md`): basic support first, the Windows-unsafe parts (fcntl lock, git snapshots,
+  `jat init`'s commit) isolated behind one is-Windows check and off there; Download a backup is the backup;
+  `JAT_WINDOWS_SNAPSHOTS=1` (env or `.env`, off by default) for testing; `tzdata` on every platform; Kai tests on
+  Windows (no CI job unless Kai asks); msvcrt lock in step 2. Not part of it: `packaged-install`, `desktop-app`.
+  Docker doesn't replace it (it's for self-hosters).
+- **Translations:** AI-translated, corrections by issue or PR, no native-speaker review; a big language goes in as a
+  draft a few namespaces per PR. Chinese: `zh-CN`; Traditional browsers stay English; "More coming soon"; search as is.
 
 ### 8. Gotchas already learned
 
@@ -1022,6 +1043,17 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
     the same commit (`<tmp>/deps/e2e_only.sh`) when everything else passed and the failure isn't the PR's.
   - **`pm_checks.sh` keeps only the last 25 lines** of a failing check: read the failures' `error-context.md` under
     `frontend/test-results/` for the rest.
+- **Learned 2026-11-05:**
+  - **Fact-check public docs before linking them.** The Windows RFC's first fact-check found a "Backup page" that
+    doesn't exist (it's the sidebar's "Download a backup" link) and a fork "linked from the issue" that wasn't.
+  - **Agents disagree; check the code.** The audit said `git push` holds the snapshot lock; it doesn't
+    (`push()` runs outside `_process_lock`). A reviewer looked for the fork under the wrong name (it's `ashtonmths/JAT`).
+  - **A Workflow's result** is in its task output file as JSON (`.result`); big `args` lists pass fine.
+  - **A worktree-isolated session can't `cd` to the main checkout** for git: read files there by path, or exit the
+    worktree first.
+  - **`pnpm exec vitest run <files>`** skips the test lock: only for a quick look at one or two files; full runs go
+    through `pnpm test` / `pm_checks.sh`.
+  - **New commits make running checks stale:** stop `pm_checks.sh` (TaskStop) and start it again on the final commit.
 
 ### 8a. How Kai works
 
