@@ -100,6 +100,23 @@ describe("formatNumber", () => {
   it("falls back to English for a language it doesn't know", () => {
     expect(formatNumber(85000, "xx")).toBe("85,000");
   });
+
+  it("writes Simplified Chinese numbers as zh-CN does", () => {
+    expect(formatNumber(85000, "zh-CN")).toBe("85,000");
+  });
+});
+
+describe("Simplified Chinese dates", () => {
+  it("are year, month, day with their characters", () => {
+    expect(formatDay(AT, "dayMonthYear", "zh-CN")).toBe("2026年3月5日");
+    expect(formatDay(AT, "dayMonthYearTime", "zh-CN")).toBe("2026年3月5日 09:07");
+    expect(formatDay(AT, "monthYear", "zh-CN")).toBe("2026年3月");
+  });
+
+  it("use Chinese weekday names", () => {
+    expect(formatDay(AT, "weekdayDayMonth", "zh-CN")).toBe("3月5日 星期四");
+    expect(formatDay(AT, "shortWeekdayDayMonth", "zh-CN")).toBe("3月5日 周四");
+  });
 });
 
 describe("formatMoney", () => {

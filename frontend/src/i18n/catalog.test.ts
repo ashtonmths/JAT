@@ -307,8 +307,8 @@ describe("the app's text", () => {
   });
 
   // A missing key, namespace or plural form in another language's JSON files fails the build,
-  // rather than quietly showing English. A draft
-  // may leave whole namespaces out (they show in English), but what it has must be complete.
+  // rather than quietly showing English. A draft may leave whole namespaces out (they show in
+  // English), but what it has must be complete.
   it("has every key, namespace and plural form in every language, and nothing English lacks", () => {
     for (const [lang, files] of byLanguage) {
       expect({ lang, ...namespaceProblems(englishNamespaces, [...files.keys()], isDraft(lang)) }).toEqual({

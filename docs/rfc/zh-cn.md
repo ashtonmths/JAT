@@ -44,7 +44,7 @@ One Workflow per string file, `locales/en/<file>.ts` → `locales/zh-CN/<file>.j
    New key terms go into the glossary.
 4. **Consistency pass:** one agent reads the whole file for terms and tone that differ between areas.
 5. **Checks:** the catalog test (every key and placeholder intact, the plural forms, no `[TRANSLATE]` left; it doesn't
-   check tags like `<b>`, so the assembly script and the reviewers do); then the same pages are
+   check tags like `<b>`, so the translation workflow and the reviewers do); then the same pages are
    screenshotted in `?lang=zh-CN`, at desktop width and 375 px.
 6. **Text review, per area:** Sonnet and Opus each review the area separately, with the same context and screenshots, and
    report `must_fix`, `should_fix` or `nit` per string with a suggestion.
