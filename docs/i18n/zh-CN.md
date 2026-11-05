@@ -1,5 +1,9 @@
 # 求职申请追踪器：简体中文（zh-CN）术语表
 
+*The Simplified Chinese glossary and style rules every translation of this app follows (written in Chinese for its
+translators; the table's first column is the English). How it's used: `docs/rfc/zh-cn.md`. To suggest a better term,
+open an issue or a pull request.*
+
 本文是 Job Application Tracker 界面简体中文（中国大陆）翻译的参考依据。所有译者都按这份术语表和下面的风格规则翻译，这样同一个概念在任何页面上都只有一种说法。英文原文在 `frontend/src/locales/en/*.ts`，源文件中的注释说明了每条文本的使用场景。翻译前请先读注释，并查阅 `docs/guide/using-the-app.md`，弄清每个功能的含义。
 
 目标读者是在中国大陆求职的软件工程师，用这个应用管理自己的求职进度。这是一个运行在自己电脑上的私人工具，不是面向客户的服务。
