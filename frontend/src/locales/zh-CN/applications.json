@@ -1,0 +1,240 @@
+{
+  "title": "申请",
+  "view": {
+    "label": "视图",
+    "list": "列表",
+    "board": "看板"
+  },
+  "filters": {
+    "search": "搜索",
+    "searchPlaceholder": "搜索公司、职位、招聘顾问…",
+    "stages": "阶段",
+    "allStages": "全部阶段",
+    "route": "渠道",
+    "anyRoute": "全部渠道",
+    "agency": "猎头公司",
+    "anyAgency": "全部猎头公司",
+    "needsChasing": "待催问",
+    "archived": "已归档"
+  },
+  "empty": {
+    "noMatch": "没有符合筛选条件的申请",
+    "clearFilter": "试试清除某个筛选条件。",
+    "none": "还没有申请",
+    "addFirst": "添加第一份申请：公司、职位和投递方式。",
+    "newApplication": "新建申请"
+  },
+  "columns": {
+    "companyRole": "公司 / 职位",
+    "route": "渠道",
+    "stage": "阶段",
+    "lastActivity": "最后动态",
+    "tags": "标签"
+  },
+  "openRow": "打开 {{company}} 的 {{role}}",
+  "needsChasing": "待催问",
+  "replyToRead": "待读回复",
+  "routes": {
+    "direct": "直投",
+    "agency": "猎头",
+    "recruiter": "猎头",
+    "referral": "内推",
+    "separator": " · "
+  },
+  "board": {
+    "showClosed": "显示已结束的阶段",
+    "byRound": "每个面试轮次一列",
+    "noRoundYet": "{{stage}} · 尚无轮次",
+    "round": "{{stage}} · 第 {{round}} 轮",
+    "column": "{{title}} 列",
+    "card": "{{company}}：{{role}}",
+    "replyToRead": "待读回复",
+    "roundsInOrder": "轮次需按顺序推进",
+    "roundFromInterviews": "卡片所在的轮次由面试决定：在申请中添加或完成一轮面试，卡片就会随之推进。",
+    "dropOnNoRound": "把它放到“{{column}}”，添加面试轮次后它会随之推进。",
+    "notAllowed": "不能这样移动",
+    "cantGo": "无法从“{{from}}”移至“{{to}}”。",
+    "moved": "已将 {{company}} 移至“{{stage}}”",
+    "drag": {
+      "application": "申请",
+      "pickedUp": "已拿起 {{card}}。用方向键移动，按空格键放下。",
+      "over": "{{card}} 当前在 {{column}} 列中。",
+      "notOver": "{{card}} 当前不在任何阶段列中。",
+      "droppedOn": "{{card}} 已放到 {{column}}。",
+      "dropped": "{{card}} 已放下。",
+      "cancelled": "已取消。{{card}} 留在原处。"
+    }
+  },
+  "summary": {
+    "drawerTitle": "申请",
+    "needsChasing": "待催问",
+    "archived": "已归档",
+    "alsoApplied": "你还投递过这个职位",
+    "moveTo": "移至…",
+    "usualNext": "常规下一步",
+    "otherStages": "其他阶段",
+    "undoMove": "撤销上次移动",
+    "route": "<b>渠道：</b><route/>",
+    "appliedOn": "<b>投递日期：</b>{{date}}",
+    "lastActivity": "<b>最后动态：</b>{{ago}}",
+    "followUpOn": "<b>跟进日期：</b>{{date}}",
+    "openFullPage": "打开完整页面",
+    "loadFailed": "无法加载这份申请",
+    "somethingWrong": "出了点问题。"
+  },
+  "rejection": {
+    "moveTitle": "移至“{{stage}}”：有什么反馈吗？",
+    "moveConfirm": "移至“{{stage}}”",
+    "where": "{{company}} 的 {{role}}",
+    "label": "对方怎么说？",
+    "description": "可选：留空则直接移动，不记录反馈。之后可以随时添加或修改。",
+    "placeholder": "拒绝原因、对方认可的地方、需要改进的方面…",
+    "heading": "被拒反馈",
+    "none": "暂无反馈。",
+    "add": "添加反馈",
+    "edit": "编辑反馈",
+    "addTitle": "添加被拒反馈",
+    "editTitle": "编辑被拒反馈",
+    "save": "保存反馈",
+    "count": "{{used}} / {{max}} 个字符",
+    "notSaved": "未保存"
+  },
+  "routeLine": {
+    "throughAgency": "通过猎头",
+    "throughBoth": "通过 <agency/> 的 <person/>",
+    "throughOne": "通过 <who/>",
+    "referral": "内推",
+    "directly": "直接投递",
+    "directlyVia": "直接投递，通过 <company/> 的 <person/>"
+  },
+  "log": {
+    "title": "记录动态",
+    "kinds": {
+      "call": "通话",
+      "email": "邮件",
+      "message": "消息",
+      "note": "笔记"
+    },
+    "placeholder": "发生了什么？",
+    "submit": {
+      "call": "记录通话",
+      "email": "记录邮件",
+      "message": "记录消息",
+      "note": "记录笔记"
+    }
+  },
+  "timeline": {
+    "title": "时间线",
+    "added": "添加为“{{stage}}”",
+    "undone": "已撤销：退回“{{stage}}”",
+    "moved": "{{from}} → {{to}}",
+    "kinds": {
+      "call": "通话",
+      "email": "邮件",
+      "message": "消息",
+      "note": "笔记",
+      "file": "文件",
+      "interview": "面试",
+      "manual": "手动"
+    }
+  },
+  "page": {
+    "back": "全部申请",
+    "deleteConfirm": "删除你投递 {{company}}（{{role}}）的申请？它的面试、Offer、时间线和已发送的文档记录会一并删除；笔记和文件会保留。如果只想隐藏而不删除，改为归档即可。",
+    "deleteName": "{{company}} · {{role}}",
+    "fromRole": "来自该职位"
+  },
+  "details": {
+    "title": "详情",
+    "appliedOn": "投递日期",
+    "followUpOn": "跟进日期",
+    "followUpHint": "当天会出现在“今日”页的“轮到你”中",
+    "snoozeUntil": "延后至",
+    "snoozeHint": "在这之前不会被标为久无进展",
+    "tags": "标签",
+    "archived": "已归档",
+    "save": "保存详情"
+  },
+  "role": {
+    "title": "职位",
+    "jobAd": "招聘信息",
+    "workModes": {
+      "remote": "远程",
+      "hybrid": "混合办公",
+      "office": "线下办公"
+    }
+  },
+  "people": {
+    "title": "联系人",
+    "none": "还没有关联任何联系人。可以添加招聘顾问、用人经理和面试官。",
+    "unknown": "未知联系人",
+    "remove": "移除 {{name}}",
+    "removeUnknown": "移除联系人",
+    "relationEmail": "{{relation}} · {{email}}",
+    "add": "添加联系人",
+    "choose": "选择联系人",
+    "as": "身份",
+    "link": "关联联系人",
+    "newPerson": "新建联系人",
+    "newHint": "是新联系人？<b>新建联系人</b>会添加此人（公司默认为 <company/>，可以修改），并按上面选择的身份关联到这份申请。"
+  },
+  "sent": {
+    "title": "已发送的文档",
+    "open": "打开",
+    "kindSent": "{{kind}} · {{date}} 发送",
+    "notSent": "并未随这份申请发送",
+    "remove": "移除 {{document}} {{version}}",
+    "none": "记下你发送了哪份简历和求职信，这样就知道对方看过什么。",
+    "addFirst": "先<docs>在“文档”页添加你的简历</docs>。",
+    "group": "{{document}}（{{kind}}）",
+    "option": "{{document}} · {{version}}",
+    "version": "版本",
+    "pick": "选择简历或求职信",
+    "sentOn": "发送日期",
+    "add": "添加"
+  },
+  "new": {
+    "title": "新建申请",
+    "intro": "直接输入名称即可：尚未添加的公司、猎头公司或联系人会自动创建。",
+    "company": "公司",
+    "companyPlaceholder": "Contoso",
+    "newCompany": "新公司：将自动添加",
+    "pickOrType": "选择已有的，或输入新名称",
+    "role": "职位",
+    "rolePlaceholder": "高级后端工程师",
+    "maybeApplied": "你可能已经投递过这个职位",
+    "jobAd": "职位链接",
+    "jobAdPlaceholder": "https://…",
+    "how": "你是怎么投递的？",
+    "routes": {
+      "direct": "直接投递",
+      "agency": "通过猎头",
+      "referral": "内推"
+    },
+    "whoReachedOut": "谁联系的你？（可选）",
+    "newPersonAtCompany": "该公司的新联系人",
+    "inHouseHint": "如果有企业内部招聘或人才负责人联系过你，填在这里",
+    "personPlaceholder": "Riley Chen",
+    "agency": "猎头公司",
+    "agencyPlaceholder": "Northwind Talent",
+    "newAgency": "新猎头公司：将自动添加",
+    "recruiter": "招聘顾问",
+    "recruiterPlaceholder": "Alex Recruiter",
+    "newRecruiter": "新联系人：将自动添加",
+    "optional": "可选",
+    "stage": "阶段",
+    "appliedOn": "投递日期",
+    "notYet": "尚未投递",
+    "tags": "标签",
+    "tagsPlaceholder": "python, 金融科技, 远程…",
+    "add": "添加申请",
+    "added": "已添加申请",
+    "addedBody": "{{company}} 的 {{role}}",
+    "errors": {
+      "company": "哪家公司？",
+      "role": "什么职位？",
+      "link": "链接需以 http:// 或 https:// 开头",
+      "agency": "填写猎头公司或招聘顾问"
+    }
+  }
+}

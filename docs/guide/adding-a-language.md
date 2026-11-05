@@ -136,12 +136,13 @@ import pl from "../locales/pl";
 
 ```ts
   strict: isStrict(env),
-  resources: { pl },
+  resources: { pl, ...(import.meta.env.DEV ? { "zh-CN": zhCN } : {}) },
   pseudo: env.DEV,
 ```
 
-A code with a hyphen needs a name without one: `import ptBR from "../locales/pt-BR"`, then
-`resources: { "pt-BR": ptBR }`.
+Keep what's already on that line: languages still being translated (drafts, below) sit inside
+the `import.meta.env.DEV ? … : {}` part, so only a dev server loads them. A code with a hyphen
+needs a name without one: `import ptBR from "../locales/pt-BR"`, then `"pt-BR": ptBR`.
 
 **`utils/format.ts`** holds dates and numbers. Import the calendar's month and day names under the
 `dayjs` import. [The list of names is here](https://github.com/iamkun/dayjs/tree/dev/src/locale),
@@ -223,6 +224,9 @@ request. You can add a language a few areas at a time instead, as a **draft**. A
 to nobody: only the dev server shows it, so people never see it half done. The areas you haven't
 translated yet show in English.
 
+Simplified Chinese is on its way in like this already (`frontend/src/locales/zh-CN/`), following a
+[glossary](../i18n/zh-CN.md). To help with it, open an issue rather than starting it again.
+
 1. Make the files somewhere else, so you can copy in only the ones you're translating now:
 
    ```bash
@@ -235,8 +239,10 @@ translated yet show in English.
 2. Copy `/tmp/pl-start/pl/index.ts` there too. Each file has two lines in it, its `import` at the
    top and its name in the list below: delete both for every file you didn't copy. It has to list
    exactly the files in the folder, or the checks fail.
-3. Make step 5's edits, except one: in `i18n/language.ts`, put the language in `DRAFT_LANGUAGES`,
-   not `LANGUAGES` and `LANGUAGE_NAMES`. A code with a hyphen needs quotes:
+3. Make step 5's edits, with two differences. In `i18n/index.ts`, put it inside the dev-only part,
+   `import.meta.env.DEV ? { "zh-CN": zhCN, pl } : {}`, so production builds don't carry it. In
+   `i18n/language.ts`, put the language in `DRAFT_LANGUAGES`, not `LANGUAGES` and
+   `LANGUAGE_NAMES`. A code with a hyphen needs quotes:
 
    ```ts
    export const DRAFT_LANGUAGES: Readonly<Record<string, string>> = { pl: "Polski" };
@@ -248,7 +254,8 @@ translated yet show in English.
 
 The checks in step 7 pass with areas missing, but every file that's there must be complete, with
 every line translated. Later pull requests add more areas to the folder and to its `index.ts`. When
-every area is in, move the language from `DRAFT_LANGUAGES` to `LANGUAGES` and `LANGUAGE_NAMES`. From
+every area is in, move the language from `DRAFT_LANGUAGES` to `LANGUAGES` and `LANGUAGE_NAMES`, and
+in `i18n/index.ts` out of the dev-only part. From
 then on the checks need every file.
 
 ## 7. Run the checks

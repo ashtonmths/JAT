@@ -10,6 +10,7 @@
 // Dates sent to the API stay `YYYY-MM-DD` and don't go through here.
 
 import dayjs, { type ConfigType } from "dayjs";
+import "dayjs/locale/zh-cn";
 
 import { FALLBACK } from "../i18n/language";
 
@@ -55,10 +56,29 @@ const PATTERNS = new Map<string, Patterns>([
       time: "HH:mm",
     },
   ],
+  [
+    "zh-cn",
+    {
+      weekdayDayMonth: "M[月]D[日] dddd",
+      shortWeekdayDayMonth: "M[月]D[日] ddd",
+      shortWeekdayDayMonthTime: "M[月]D[日] ddd HH:mm",
+      shortWeekdayDayMonthYearTime: "YYYY[年]M[月]D[日] ddd HH:mm",
+      shortWeekdayDayMonthYear: "YYYY[年]M[月]D[日] ddd",
+      dayMonth: "M[月]D[日]",
+      dayMonthYear: "YYYY[年]M[月]D[日]",
+      dayMonthYearTime: "YYYY[年]M[月]D[日] HH:mm",
+      monthYear: "YYYY[年]M[月]",
+      dayMonthTime: "M[月]D[日] HH:mm",
+      time: "HH:mm",
+    },
+  ],
 ]);
 
 /** Locale for numbers. */
-const NUMBER_LOCALE = new Map<string, string>([["en", "en-GB"]]);
+const NUMBER_LOCALE = new Map<string, string>([
+  ["en", "en-GB"],
+  ["zh-cn", "zh-CN"],
+]);
 
 /** "en-GB" → its row, else "en"'s, else English's. */
 function lookup<T>(table: Map<string, T>, lang: string): T {
