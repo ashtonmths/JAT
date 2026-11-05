@@ -1,9 +1,11 @@
 import applications from "./applications.json";
 import files from "./files.json";
 import stages from "./stages.json";
+import todos from "./todos.json";
 
 export default {
   applications,
   files,
   stages,
+  todos,
 };
