@@ -79,6 +79,11 @@ pnpm --dir frontend format:check
 pnpm --dir frontend e2e
 ```
 
+**When you can skip the browser tests.** `pnpm e2e` tests a production build. If your change can't
+alter one, because it touches only a draft language's files (a language in `DRAFT_LANGUAGES`, which
+only a dev server loads), scripts outside the app, Python tests or docs, skip it, run the rest, and
+say so in the pull request.
+
 **Test runs stay out of your way.** `pnpm test` and `pnpm e2e` use half your CPU threads
 (6 where there are 12; each browser-test worker also runs its own app server and Chrome), at the
 lowest CPU priority. On Linux they also ask for idle disk priority, which only the BFQ disk
