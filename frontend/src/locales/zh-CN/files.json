@@ -1,0 +1,35 @@
+{
+  "size": {
+    "bytes": "{{size}} B",
+    "kb": "{{size}} KB",
+    "mb": "{{size}} MB"
+  },
+  "attachments": {
+    "title": "文件",
+    "upload": "上传",
+    "empty": "把文件拖到这里：你投递的简历、职位简介、导出的邮件。每个文件最大 50 MB，保存在你的数据文件夹中。",
+    "noSubject": "（无主题）",
+    "sizeDate": "{{size}} · {{date}}",
+    "delete": "删除文件",
+    "deleteNamed": "删除 {{name}}",
+    "deleteConfirm": "删除 {{name}}？（它仍会保留在你数据仓库的 git 历史中。）"
+  },
+  "links": {
+    "title": "链接",
+    "empty": "招聘信息、Google 文档、代码仓库：有网址就行。",
+    "urlError": "粘贴以 https:// 开头的链接",
+    "url": "链接网址",
+    "urlPlaceholder": "https://docs.google.com/…",
+    "titleOptional": "链接标题（可选）",
+    "titlePlaceholder": "标题（可选）",
+    "add": "添加",
+    "linkTitle": "链接标题",
+    "defaultPlaceholder": "留空则使用默认标题",
+    "saveTitle": "保存标题",
+    "cancel": "取消",
+    "rename": "重命名",
+    "renameNamed": "重命名 {{label}}",
+    "remove": "删除",
+    "removeNamed": "删除 {{label}}"
+  }
+}
