@@ -1,0 +1,13 @@
+{
+  "interested": "感兴趣",
+  "applied": "已投递",
+  "screen": "初筛",
+  "interviewing": "面试中",
+  "final": "终面",
+  "offer": "已获 Offer",
+  "accepted": "已接受",
+  "declined": "已婉拒",
+  "rejected": "未通过",
+  "withdrawn": "已撤回",
+  "ghosted": "已失联"
+}
