@@ -69,7 +69,8 @@ repo.
 
 The download still writes its export under the lock. With no snapshots, the only thing that
 lock would guard against is two backups in different processes at once (a download from the
-app while `jat archive` runs in a terminal), so letting it do nothing on Windows is safe. On Linux and macOS nothing changes.
+app while `jat archive` runs in a terminal), so letting it do nothing on Windows is safe. On
+Linux and macOS nothing changes.
 
 ### Small fixes, in any order
 
