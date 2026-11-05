@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4, 4a and 5 are a snapshot (2026-11-02, after PR #214, main at `e811280`, v1.18.0), and 4a is the live plan;
+Sections 3, 4, 4a and 5 are a snapshot (2026-11-05, after PR #229, main at `6703be4`, v1.18.9), and 4a is the live plan;
 refresh them before each compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
 
@@ -52,8 +52,9 @@ next action.
   `next` (Up next: work Kai has asked for, queued) and `planned` (Backlog: ideas and things to plan with
   Kai first). Only `next` work is started; work from Kai's feedback goes on as `next` (or `building` when
   its own PR adds it). With nothing up next, "Report and wait" (Kai's pick): tell Kai what's in the
-  backlog and wait for Kai to pick. And: "those things youre waiting on me for, leave them on the
-  roadmap. we wont be doing thme this session".
+  backlog and wait for Kai to pick. And (2026-11-02, about `notes-documents-improve`, `timeline-improve`,
+  `people-you-meet`): "those things youre waiting on me for, leave them on the roadmap. we wont be doing
+  thme this session".
 - **Small PRs, split before building.** "they are big PRs, way over the 1k line target. This time I
   will allow it" (#196/#197). Since then a feature is split into ~500-line roadmap tasks before any
   code (API first, then screens, then insights): calls rescheduling and rejection feedback were five
@@ -94,7 +95,7 @@ next action.
   every PR: "most are patch unless its new feature then it would be minor. it should be very
   explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
-  Released: v1.0.0 up to v1.18.0 (section 4a). Kai: "yes add release for each change"
+  Released: v1.0.0 up to v1.18.9 (section 4a). Kai: "yes add release for each change"
   (each i18n PR is its own patch release; the switcher was minor). Only internal planning
   files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `var/`) and the PM dashboard skip
   the bump.
@@ -335,6 +336,11 @@ next action.
   says "interview" splits into *No round yet*, then Round 1… up to the furthest (empty gaps
   only up to Round 6); a card's round is `current_round` (next booked, else last done). Only
   *No round yet* takes drops (`isRoundColumn`, keys `<stage>#round-<n>`, `stageOfColumn`).
+  A card's recruiter name links to their page, or the agency's when only the agency shows (`ViaLink`, #229); the link
+  stops click, pointerdown and keydown so it doesn't open the quick view or start a drag. The list view's name isn't linked.
+- **Test runs** (#217): `pnpm test` / `pnpm e2e` go through `frontend/scripts/test-run.mjs` (one at a time across
+  worktrees on `/tmp/jat-test-run.lock`, low priority) with workers from `frontend/testWorkers.ts`.
+- **The MCP server** is planned, not built: `docs/rfc/mcp.md` (#228), the `mcp-*` tasks.
 - **Interviews page** (`pages/InterviewsPage.tsx`, #90): a pencil per row (the round's form)
   and **Reschedule** for booked rounds. `interviews.rescheduled_count` / `rescheduled_from` (migration 0014,
   backfilled count); a *Rescheduled* badge.
@@ -398,100 +404,128 @@ next action.
   `search`, `workflow`, `backup` (+ `/archive`, `/snapshot`, `/push`); `interviews/{id}/needs-new-time`,
   `meetings/{id}/needs-new-time`, `applications/{id}/rejection-feedback`.
 
-### 4. Current state (snapshot 2026-11-02, after #214)
+### 4. Current state (snapshot 2026-11-05, after #229)
 
-- **main at `e811280`** (merge of #214), plus this doc's PR until it merges. No other open PRs; one
-  worktree (the main checkout); only `main` locally and on GitHub. Version **1.18.0**, released as v1.18.0.
-- **Merged since the last snapshot (#185), all through the review-fix cycle.** From #186 on, each released
-  PR was merged after a full `<tmp>/deps/pm_checks.sh` run (every CLAUDE.md check, the whole browser suite
-  included) on its final commit, run by the lead session at merge time; the roadmap and dashboard PRs ran
-  `uv run pytest -q tests/pm`, as CLAUDE.md allows. The PR bodies record the builders' own, smaller runs;
-  the full results were in the session, not the PRs:
-  - Security (Dependabot), split two packages per PR at Kai's ask: #187 certifi + opentelemetry-api
-    (v1.2.44), #188 vite + seroval (v1.2.45), #186 website undici + fast-uri (v1.2.46), #190 frontend
-    undici + zod (v1.2.47). All patch or minor moves, no majors. 27 of 28 open alerts closed; minimatch
-    #32 stays open (eslint and redocly can't take minimatch 11; dev tools only).
-  - #189 install page made short and welcoming (v1.2.48), in Kai's friendly writing style.
-  - Rescheduling: #191 who and why (v1.3.0), #192 timelines (v1.4.0), #194 API counts (v1.5.0), #195
-    Insights block (v1.6.0; replaced #193, closed when its stacked base branch was deleted), #197 and #196
-    "a new time isn't agreed yet" for rounds (v1.7.0, v1.8.0).
-  - #200 version in the sidebar (v1.8.1), #199 reschedule i18n fixes and pseudo pass (v1.8.2).
-  - Calls rescheduling: #201 API + migration 0016 (v1.9.0), #205 Reschedule button (v1.10.0), #206
-    needs-a-new-time API (v1.11.0), #207 its screens (v1.12.0), #208 Insights (v1.13.0).
-  - #202 the recruiter on every card (v1.9.1).
-  - Rejection feedback: #209 API + migration 0017 (v1.14.0), #211 dialog and edit (v1.15.0), #212
-    Rejections tab (v1.16.0), #213 which round rejections came after (v1.17.0), #214 Sankey rounds
-    switch (v1.18.0).
-  - Roadmap and dashboard, no releases: #198 (notes/documents and Timeline items), #203 (people you
-    meet, a stage error bug), #204 (test resource limits), #210 (Backlog / Up next columns and the
-    "Report and wait" rule in `CLAUDE.md`).
-- **Tests on main** (the lead's full `pm_checks.sh` run on #214's final commit, `580c9d2`, not in the PR
-  body): pytest 1,284, unit 1,131, browser 707 (a few `test.fail` for known bugs pass by failing).
-- **Kai's tracker** answered on 8770 at v1.17.0 (schema 0017) at the last check: Kai must restart it
-  (Ctrl+C, `uv run jat serve`) for v1.18.0's server changes.
-- **Kai's messages since #185, in order** (word for word where quoted):
-  - "simplify this doc … install.md. this is what a few people first see" (style file given) → #189.
-  - "Github ui shows some security issues. fan out, fix the easy ones as release patches. if something
-    is going to be difficult to fix, or requier changes to the app dont do it, report it to me, and move
-    on"; "it might be best to do only a couple of version updates per PR in case something breaks";
-    "be sure to run e2e tests for this…"; "lmk if the fixes involve any major updates" (none did).
-  - Rescheduling: "an interview/etc is scheduled, then it has to be rescheduled … a reschedule button,
-    it needs a reason text box and also a blame drop down for things like me/them/mutual/neither … then
-    in timelines and insights and durations … dont forget e2e tests" → #191–#195. Then "sometimes you
-    need to reschedule … but yuou cant yet choose the new date/time … mark as "wotn attend, needs to be
-    rescheduled", create a to-do item to book the rescheduled item" → #196/#197; "why would the todo be
-    ticked by default?" (the checkbox is "Add a to-do…", the to-do starts open).
-  - "did it create new text? did it support i18n properly?" then "fix both now and do a pseudo pass" → #199.
-  - "need a new patch item … show the version number of the app" → #200; asked whether a mismatch can
-    happen (yes: dist is rebuilt on main, the server runs old code until restarted).
-  - "whereever we show a role/application card I also want to see the recruiter name" → #202.
-  - "I want to be able to reschedule calls too" → #201, #205–#208.
-  - Roadmap items: notes/documents and the Timeline (#198); people you meet (#203); "you are maxing out
-    my PC … make it a roadmap item" (#204).
-  - "new feature, when something is rejected be able to add some feedback, then on insights a way to see
-    all rejection feedback in one place"; "also would be nice to see which round or round type rejections
-    happen at, perhaps wth a toggle to exapnd stages" → #209, #211–#214.
-  - "perhaps it needs another column, e.g. backlog+todo" → #210; empty queue: "Report and wait".
-  - The branch-protection banner: Kai created the ruleset (deletion and force push only).
-  - "those things youre waiting on me for, leave them on the roadmap. we wont be doing thme this session".
-  - "what are github self hosted runners … are they useful to us here" → no (public repo, PC load, a
-    service); GitHub-hosted CI offered; Kai: "nvm".
+- **main at `6703be4`** (merge of #229), plus this doc's PR until it merges. No other open PRs; one
+  worktree (the main checkout); only `main` locally and on GitHub. Version **1.18.9**, released as v1.18.9.
+- **Merged since the last snapshot (#214), all through the review-fix cycle,** one PR at a time. Every released PR
+  was merged after a full `<tmp>/deps/pm_checks.sh` run on its final commit (twice the browser suite alone was rerun on
+  the same commit after a failure that wasn't the PR's: #222, after a `!` run cleared its test results, and #221,
+  after the flaky pin; see 4a and section 8); the roadmap-only PRs ran `uv run pytest -q tests/pm`:
+  - #215, #216 the previous refresh of this doc.
+  - #217 `test-resource-limits` (v1.18.1): `pnpm test` and `pnpm e2e` go through `frontend/scripts/test-run.mjs`
+    (one run at a time across worktrees via `/tmp/jat-test-run.lock`, lowest CPU priority, idle disk priority on
+    Linux, which only BFQ honours and this machine's disks don't use); Vitest and Playwright use a quarter of the CPU
+    threads (`frontend/testWorkers.ts`, `TEST_WORKERS`); `TEST_LOCK=off` skips the wait.
+  - #218 `test-gaps-demo-data` (v1.18.2): the demo seed has files (tiny PDFs), links, a declined and a withdrawn
+    offer (on their timelines via `offers.record`), a CV file waiting to be made a version, and an empty Portfolio
+    document; `text_snapshot.py` opens those states (142 views).
+  - #219 roadmap: the five bugs I chose at Kai's ask set to `next`.
+  - Five bug fixes, built by five parallel agents and merged one at a time: #223 `fix-new-company-keeps-draft`
+    (v1.18.3), #224 `fix-menu-prefix-active` (v1.18.4), #222 `fix-deleted-person-404` (v1.18.5), #221
+    `fix-new-agency-keeps-draft` (v1.18.6), #220 `fix-cv-files-stale` (v1.18.7).
+  - #225 roadmap: `delivery-speed-improvements` (planned).
+  - #226 roadmap: `tagline-reorder`, `recruiter-open-application-mark`, the bug `fix-offer-kind-pin-flaky`, and
+    section 8's lessons of 2026-11-03.
+  - #227 `tagline-reorder` (v1.18.8): "No AI. No cloud. No account. No tracking." on the social card (headline 76px),
+    the README, the website, `llms.txt` and section 7 here.
+  - #228 `mcp-plan` (no release): `docs/rfc/mcp.md`, the MCP server planned in detail; the old `mcp-server` task split
+    into ten planned build tasks; a CLAUDE.md rule; the PRD and IDEAS updated.
+  - #229 `board-recruiter-link` (v1.18.9): the name on a board card links to the recruiter's page, or the agency's.
+- **Tests on main** (the lead's full run on #229's final commit, `8317a54`): pytest 1,284, browser 711 (a few
+  `test.fail` for known bugs pass by failing). The unit count isn't printed by `pm_checks.sh`; the builders reported
+  1,134 on 2026-11-03.
+- **Kai's tracker** answered on 8770. Every change since v1.18.0 is frontend, tooling or docs, so a page refresh shows
+  it; but each release bumps the server's version, so the sidebar note asks for a restart until Kai restarts, and a
+  restart also picks up v1.18.0's Sankey rounds filter if that one is still pending.
+- **Kai's messages since #214, in order** (word for word where quoted):
+  - "i wonder if this can be generalised (a diff version) to general todo list / life crm" → answered (a separate app
+    reusing Today's groups, reply habits and the data folder; nothing built or recorded).
+  - "work on this, test runs" (the `test-resource-limits` card) → #217; "then after that do this one"
+    (`test-gaps-demo-data`) → #218.
+  - "then choose 5 bugs to fix, lmk which ones you choose. i want quick/easy/simple/safe fixes first to get the bug
+    count down" → the five above; "which bugs will you fix" (answered); "shouldnt there have been something to update
+    this column" (Up next was empty) → #219; "once the test gaps item is done is it possible to do the bugs in
+    paralel? you can decide suitable number of agetns"; "there are 5 bugs" → five agents.
+  - "most of those fixes say 0.25h, youve spent a lot lognger than that on eahc of them" (answered: the time is the
+    checks and queueing, not the fixes); offered combining them: "no dont ocmbine them".
+  - "i thought there was some investigation about why these things take so logn and a doc produced, is there a
+    corresponding roadmap item"; "create a roadmap item to investigate deliery speeds, output of that item will be
+    actionable imprvoemts" → #225.
+  - "sitrep" (twice), "how far from anything being merged?", "i see a bunch of review agents open, are they needed,
+    theyve been running for over an hour" (named reviewers had gone idle as teammates; section 8).
+  - "your priority is to get the PRs merged, after correctrly hanfling tthe review-fix cycles. handle PRs
+    sequentially, review-fix cycle then merge, then handle the next PR. theres no point running reviews for PRs that
+    will need ot be reviewed again ocne another PR merges".
+  - "how long do the browser tests take? is there a way i can watch in not-headless mode?" (answered: 7–9.5 min;
+    `--headed` or `--ui` in Kai's own terminal; a `!` run in the session cleared a worktree's test results, section 8);
+    "i ran a test and i saw teh playwright window but never saw the app" (answered: click a step, or Settings → Show
+    browser).
+  - "new feature idea for roadmap: if a recruiter is associated with an application that is active … have an icon
+    next to their name, similar to VIP/fav but not that special" → #226.
+  - The social card: "new roadmap item, put this one near the top of the list / reorder the text / No AI. No Cloud /
+    No account. No tracking …" → #226; "do the tagline change next" → #227; "lmk when the new social preview image is
+    generated and ill upload it" (told; Kai uploads it in Settings → General → Social preview).
+  - "then after that use an agent or several agent to plan out the MCP feature …" (the full ask is quoted at the top
+    of `docs/rfc/mcp.md`); "for now we are just planning it, but in a lot of detail / Im happy for this to be a bigger
+    PR as it is just docs" → #228.
+  - "new fature … from this screen i should be able to click on recruiter name on each card" → #229.
   - "update the compaction doc" → this PR.
 
-### 4a. Current work, 2026-11-02 (read this first; it overrides 4 and 5 where they differ)
+### 4a. Current work, 2026-11-05 (read this first; it overrides 4 and 5 where they differ)
 
 Keep this whole section word for word in the summary: it is the live plan.
 
-**Versions and main.** Released up to v1.18.0 (#214); main at `e811280`. Everything Kai asked for this session is merged
-and released (section 4). Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
+**Versions and main.** Released up to v1.18.9 (#229); main at `6703be4`. Everything Kai asked for is merged and released
+(section 4). Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 
-**Nothing is up next: report and wait.** No roadmap task has status `next`. By `CLAUDE.md` ("Report and wait", Kai,
+**Nothing is up next: report and wait.** No roadmap task is `next` or `building`. By `CLAUDE.md` ("Report and wait", Kai,
 2026-11-02), with nothing up next I tell Kai what's in the backlog and wait for Kai to pick; nothing from the backlog starts
-without Kai's go-ahead. Kai: "those things youre waiting on me for, leave them on the roadmap. we wont be doing thme this
-session". So don't raise these again this session; they wait in the Backlog:
-- `notes-documents-improve`, `timeline-improve`, `people-you-meet` (all "to be planned with Kai first").
-  (`test-resource-limits` was on this list; Kai asked for it on 2026-11-03 and it shipped in #217.)
+without Kai's go-ahead. Waiting on Kai in particular:
+- **The MCP server:** the ten `mcp-*` build tasks wait on Kai's answers to the 11 decisions in `docs/rfc/mcp.md` §14 (the
+  main one: approving the official `mcp` SDK as an optional dependency) and a go-ahead. Nothing is built.
+- **Issue #230, "Windows Support?"** (opened 2026-11-04 by an outside GitHub user, no reply yet): they point at
+  `fcntl` (used in `src/jat/snapshot/git.py`), suggest `msvcrt` on Windows, and ask whether contributions towards Windows
+  support would be welcome. Replying is outward-facing: Kai decides whether and what to answer (the roadmap has
+  `windows-support`, planned). Don't reply on Kai's behalf.
+- **Offered and not taken up:** linking the recruiter in the Applications *list* too (its rows open on click, so the
+  name is plain there; #229's reviewer noted it); a roadmap item only if Kai says.
+- **Backlog added this session:** `delivery-speed-improvements`, `recruiter-open-application-mark` (its icon and what
+  counts are Kai's to decide).
+- From 2026-11-02, still left alone ("leave them on the roadmap. we wont be doing thme this session"):
+  `notes-documents-improve`, `timeline-improve`, `people-you-meet`.
 - `security-alerts`: minimatch #32 stays open until eslint and redocly take minimatch 11, or Kai dismisses it.
-- Older backlog: `i18n-search`, `multi-language`, the speed-up ideas in `docs/rfc/delivery-speed.md`, P11 "Test gaps",
-  `tests-reorganise`, Docker and the rest of section 5.
+- Older backlog: `i18n-search`, `multi-language`, P11 "Test gaps" (less `test-gaps-demo-data`, done), `tests-reorganise`,
+  Docker and the rest of section 5.
 
 **Kai's latest word on how to work** (also section 1):
-- Kai later restated the merge permission (section 1 has the 2026-10-31 wording): "if you followed the iterative
-  review-fix cycle then i give you permission to merge and release"; a major still needs Kai's explicit yes each time. The permission check can still block a merge; asking was right.
-- Split a feature into ~500-line tasks before building ("they are big PRs, way over the 1k line target. This time I will allow
-  it"). Calls and rejection feedback ran as five PRs each: one long-lived builder agent did them in turn (resumed with
-  `SendMessage` after each merge), with a fresh reviewer per PR and fixes sent back to the builder.
-- Only a couple of dependency updates per PR, and the whole browser suite before merging any of them.
-- "i want you to fan out and work in parallel" when Kai says so; parallel agents queue their heavy runs on the shared lock.
+- **One PR at a time** (2026-11-03): "handle PRs sequentially, review-fix cycle then merge, then handle the next PR.
+  theres no point running reviews for PRs that will need ot be reviewed again ocne another PR merges". When several PRs
+  are already built and reviewed: merge main into the next, compare its own diff before and after (`git diff
+  origin/main...HEAD --stat`, then `git diff origin/main --stat`); only a changed diff needs a fresh review. Don't start
+  reviews ahead of their turn.
+- **Don't combine fixes into one PR** to save check time: "no dont ocmbine them". Small PRs, one per bug or task.
+- **Fan out when Kai asks:** "there are 5 bugs" meant one agent per bug. Their test runs queue on the test lock, so more
+  agents doesn't mean faster tests (the 0.25 h estimates count the fix, not the ~10-minute full check per PR).
+- "if you followed the iterative review-fix cycle then i give you permission to merge and release"; a major still needs
+  Kai's explicit yes each time.
+- Split a feature into ~500-line tasks before building; a docs-only plan may be bigger when Kai says so ("Im happy for
+  this to be a bigger PR as it is just docs").
+- When Kai asks for a roadmap item, add it as `planned` (Backlog) unless Kai says to build it; a request to build makes
+  it `next` (or `building` in its own PR). Kai noticed an empty Up next column once: set `next` as soon as Kai queues work.
+- Images go to Kai before they're applied (the social card was shown first, then applied on Kai's "lmk when … generated").
 - Mid-turn "sitrep" questions get a short honest answer straight away, then carry on.
-- When Kai asks a question ("does it support i18n properly?", "did the frontend merge … come with a release?"), check the
-  code or the running thing and answer plainly before proposing work.
+- When Kai asks a question, check the code or the running thing and answer plainly before proposing work.
 
-**Open bugs (phase B; 69, none to fix without a go-ahead).** The 62 rated in #184 plus seven found this session, all low;
-all but `fix-escape-closes-quick-view` and `fix-phone-header-overlap` have the rating fields (those two need rating):
-`fix-init-git-identity-traceback`, `fix-archive-lock-not-ignored`,
-`fix-escape-closes-quick-view`, `fix-phone-header-overlap`, `fix-today-recent-phone-column`, `fix-move-not-allowed-text`,
-`fix-deleted-application-rebook-todo`. High 1 (`fix-applied-date-wipe`), medium 18, low 50. A bug Kai OKs is set to `next`.
+**Open bugs (phase B; 65, none to fix without a go-ahead).** High 1 (`fix-applied-date-wipe`), medium 18, low 46. Fixed
+this session: `fix-new-company-keeps-draft`, `fix-new-agency-keeps-draft`, `fix-menu-prefix-active`,
+`fix-deleted-person-404`, `fix-cv-files-stale`. Added: `fix-offer-kind-pin-flaky` (low, trivial; its `test.fail` waits a
+fixed 1.5 s instead of holding the request, so it passed by luck once in #221's full check). Still missing their rating
+fields: `fix-escape-closes-quick-view`, `fix-phone-header-overlap` (likely a duplicate of `fix-phone-header-overflow`).
+A bug Kai OKs is set to `next`. Next-easiest by the ratings, if Kai asks for more quick ones: `fix-rename-drops-unsaved-about`,
+`fix-archive-lock-not-ignored`, `fix-backup-same-site` (low, trivial), `fix-add-another-role-carries-over` (medium,
+trivial), then the
+trivial display-only ones (`fix-company-page-blank-route`, `fix-search-stale-after-rename`, `fix-hidden-link-kept`…).
 - Medium, easy or trivial: `fix-add-another-role-carries-over`, `fix-call-delete-no-confirm`, `fix-didnt-happen-notes-hidden`,
   `fix-link-rename-tick-error`, `fix-link-rename-cancel-saves`, `fix-timeline-load-error-silent`,
   `fix-agency-delete-blocks-application-save`, `fix-emptied-agency-kept`, `fix-stale-edit-after-save`, `fix-hidden-link-blocks-save`,
@@ -505,14 +539,30 @@ all but `fix-escape-closes-quick-view` and `fix-phone-header-overlap` have the r
 **Settled:** two people can share a name. Kai: "yes there can be 2 people with the same name". Keep that test pinned; it
 isn't a bug.
 
-**The running tracker** on 8770 needs a restart by Kai (Ctrl+C, `uv run jat serve`) to pick up v1.18.0's server changes (the
-Sankey rounds filter); I've told Kai. Until then the switch says to restart. The sidebar version note says so too. Leave it alone.
+**The running tracker** on 8770 answers. It may still need Kai's restart (Ctrl+C, `uv run jat serve`) for v1.18.0's server
+change (the Sankey rounds filter; the switch and the sidebar version note say so). Everything since is frontend, tooling or
+docs, so a page refresh shows it, but the sidebar note keeps asking for a restart until Kai restarts, since each release
+bumps the server's version. Leave it alone.
 
-**How a feature ran this session:** one builder agent (`isolation: "worktree"`) builds part 1, opens a draft and stops;
-a fresh reviewer per PR; findings go back to the builder by `SendMessage`, or I fix small ones; then I merge main, bump with
-`<tmp>/deps/finish_deps.py <task> "<changelog>" "<title>" [minor]`, run `pm_checks.sh`, `merge.sh`, and `ship.sh` with a dummy
-worktree name so the builder's worktree survives, and resume the builder for the next part. Parallel work (separate features)
-uses separate builders and queues heavy runs on the shared lock. Give each server its own port and reviewers their own, or one's test data shows up in another's snapshot.
+**How work ran this session:**
+- **A feature in parts** (as before): one builder agent (`isolation: "worktree"`) builds part 1, opens a draft and stops;
+  a fresh reviewer per PR; findings go back to the builder by `SendMessage`, or I fix small ones; then I merge main, bump with
+  `<tmp>/deps/finish_deps.py <task> "<changelog>" "<title>" [minor]`, run `pm_checks.sh`, `merge.sh`, and `ship.sh` with a
+  dummy worktree name so the builder's worktree survives, and resume the builder for the next part.
+- **A batch of small bugs** (2026-11-03): one builder per bug (`isolation: "worktree"`, no `name`), briefed by
+  `<tmp>/deps/bug-brief.md` (fix only that bug, smallest change, unpin its `test.fail` or add a test proven to fail
+  without the fix, run only `pnpm test` and its own spec through pnpm, no bump, draft PR). Then, one PR at a time: review
+  (an unnamed reviewer), fixes, merge main, compare the diff, `finish_deps.py`, `pm_checks.sh`, `merge.sh`, `ship.sh
+  <version> <pr> <agent worktree folder> <branch>`. An agent's worktree is named `agent-<id>` with the branch renamed to
+  `worktree-<bug id>`; it stays locked, so `git worktree remove -f -f` it after the merge.
+- **Small things I build myself** (the tagline, the board link): worktree, roadmap task `building`, draft PR, build,
+  one unnamed reviewer, fix, bump, full checks, merge, release.
+- **A plan** (the MCP RFC): three planning agents with different angles, merged by me into one RFC, then a fact-check
+  reviewer told to check every claim against the code. It found 15 must_fix in a 650-line plan, so always fact-check a
+  plan before merging it.
+- Give each server its own port and reviewers their own, or one's test data shows up in another's snapshot.
+- Reviewers' `Bash` can be refused when my session sits in a worktree: save the diff (`gh pr diff N > <tmp>/prN.diff`)
+  and tell them to Read it.
 
 **The loop for an i18n change:**
 - Read the area and the last entry in `docs/rfc/i18n.md`. If it won't fit in about 500 changed lines (1,000 at most,
@@ -628,7 +678,8 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
 
 ### 5. Work in flight and candidates
 
-- **In flight:** none (after this doc's PR merges). **Up next:** nothing. **Backlog this session:** leave it (section 4a).
+- **In flight:** none (after this doc's PR merges). **Up next:** nothing. **Backlog:** Kai picks (section 4a); the MCP
+  build waits on the RFC's §14 decisions.
 - **Left of the i18n work, P8** (when Kai says; see 4a): `i18n-search` and `multi-language` (Chinese, a native-speaker review;
   also percent and number formats, brackets and separators).
 - **Noticed, for later:** long text clips on Today's Waiting rows, the call form's How and the offer form's kind (for
