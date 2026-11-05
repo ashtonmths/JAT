@@ -69,7 +69,8 @@ repo.
 
 The download still writes its export under the lock. With no snapshots, the only thing that
 lock would guard against is two backups in different processes at once (a download from the
-app while `jat archive` runs in a terminal), so letting it do nothing on Windows is safe. On Linux and macOS nothing changes.
+app while `jat archive` runs in a terminal), so letting it do nothing on Windows is safe. On
+Linux and macOS nothing changes.
 
 ### Small fixes, in any order
 
@@ -112,11 +113,6 @@ lock has to:
 It needs `utf8-everywhere` and `data-gitattributes` first, so snapshots on Windows don't
 change line endings or misread git's output.
 
-### Afterwards
-
-`packaged-install` (one install command, no Node or git clone) and `desktop-app` (a
-double-click app for Windows and macOS) build on Windows support.
-
 ## 4. Decisions
 
 - **Basic support first, by switching the problem parts off.** Kai: on Windows "simply
@@ -153,6 +149,8 @@ not under `/mnt/c`. This hasn't been tested.
 
 ## 6. Not covered
 
+- A one-command install (`packaged-install`) and a double-click desktop app (`desktop-app`).
+  They're separate roadmap work, not part of Windows support.
 - The project's own development tools: the PM dashboard (`tools/pm`), the demo GIF and social
   card scripts, and the frontend's test runner. The test runner already handles Windows
   (`frontend/scripts/test-run.mjs`); the rest are maintainer-only.
