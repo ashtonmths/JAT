@@ -98,7 +98,7 @@ export function LanguageSwitch() {
   const { t, i18n } = useTranslation();
   const [opened, setOpened] = useState(false);
   const shown = i18n.resolvedLanguage ?? "";
-  const draftName = (lang: string) => t("language.draft", { name: DRAFT_LANGUAGES[lang] });
+  const draftName = (lang: string) => t("language.draft", { name: DRAFT_LANGUAGES[lang] ?? lang });
   const name = isLanguage(shown)
     ? LANGUAGE_NAMES[shown]
     : isDraft(shown)

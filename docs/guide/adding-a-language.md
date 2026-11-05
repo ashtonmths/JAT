@@ -215,6 +215,38 @@ and of more.
 still plain there skipped translation altogether: that's a bug in the app, not your text, so
 please mention it in your pull request.
 
+## Translating in parts (a draft language)
+
+The whole app is about 2,800 lines of text, which is a lot to translate and review in one pull
+request. You can add a language a few areas at a time instead, as a **draft**. A draft is offered
+to nobody: only the dev server shows it, so people never see it half done. The areas you haven't
+translated yet show in English.
+
+1. Make the files somewhere else, so you can copy in only the ones you're translating now:
+
+   ```bash
+   node --experimental-strip-types scripts/i18n/new_language.mjs pl /tmp/pl-start
+   ```
+
+   Copy the files for the areas you're translating (say `insights.json` and `stages.json`) from
+   `/tmp/pl-start/pl/` to `frontend/src/locales/pl/`, and translate them as in step 3.
+2. Copy `/tmp/pl-start/pl/index.ts` there too, and delete the lines for the files you didn't copy.
+   It has to list exactly the files that are in the folder.
+3. Make step 5's edits, except one: in `i18n/language.ts`, put the language in `DRAFT_LANGUAGES`,
+   not `LANGUAGES` and `LANGUAGE_NAMES`:
+
+   ```ts
+   export const DRAFT_LANGUAGES: Readonly<Record<string, string>> = { pl: "Polski" };
+   ```
+
+4. Try it as in step 6: choose *Polski (draft)* from the language button, or add `?lang=pl` to the
+   address. Only the dev server offers it, and it isn't remembered after a reload.
+
+The checks in step 7 pass with areas missing, but every file that's there must be complete, with
+every line translated. Later pull requests add more areas to the folder and to its `index.ts`. When
+every area is in, move the language from `DRAFT_LANGUAGES` to `LANGUAGES` and `LANGUAGE_NAMES`. From
+then on the checks need every file.
+
 ## 7. Run the checks
 
 ```bash

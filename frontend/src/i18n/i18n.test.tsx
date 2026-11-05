@@ -105,6 +105,19 @@ describe("fallback", () => {
     expect(make("fr").t("fx:plain")).toBe("Hello");
   });
 
+  it("shows a draft's missing namespaces in English, even in strict mode", () => {
+    // A draft language translated one namespace at a time: the app's real namespaces, only one
+    // of them in "xx". Strict mode (dev and tests) only throws for text no language has.
+    const instance = createI18n({
+      lng: "xx",
+      resources: { xx: { common: { app: { name: "Xx tracker" } } } },
+      strict: true,
+    });
+    const t = instance.t as unknown as LooseT;
+    expect(t("common:app.name")).toBe("Xx tracker");
+    expect(t("today:waitingOn.title")).toBe("Waiting on them");
+  });
+
   it("fills in values in English text when the language lacks the key", () => {
     // zh has no greeting: English's text, with the value filled in.
     expect(make("zh").t("fx:greeting", { name: "Jordan" })).toBe("Hello Jordan");
