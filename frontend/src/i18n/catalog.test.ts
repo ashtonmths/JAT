@@ -5,6 +5,7 @@ import {
   baseKey,
   compare,
   flatten,
+  namespaceProblems,
   placeholders,
   pluralCategories,
   TO_TRANSLATE,
@@ -12,7 +13,8 @@ import {
   unusedKeys,
   usedKeys,
 } from "./catalog";
-import { DEFAULT_NS } from ".";
+import { DEFAULT_NS, i18n } from ".";
+import { DRAFT_LANGUAGES, isDraft, LANGUAGES } from "./language";
 
 describe("helpers", () => {
   it("flattens nested keys", () => {
@@ -116,6 +118,34 @@ describe("compare another language with English", () => {
       { key: "greeting", dropped: ["name"], unknown: [] },
       { key: "nested.a", dropped: [], unknown: ["who"] },
     ]);
+  });
+});
+
+describe("namespaceProblems", () => {
+  const english = ["common", "insights", "today"];
+
+  it("needs every namespace from a shipped language", () => {
+    expect(namespaceProblems(english, ["common", "today"], false)).toEqual({
+      missing: ["insights"],
+      extra: [],
+    });
+    expect(namespaceProblems(english, ["today", "insights", "common"], false)).toEqual({
+      missing: [],
+      extra: [],
+    });
+  });
+
+  it("lets a draft have only some, since the rest show in English", () => {
+    expect(namespaceProblems(english, ["insights"], true)).toEqual({ missing: [], extra: [] });
+    expect(namespaceProblems(english, [], true)).toEqual({ missing: [], extra: [] });
+  });
+
+  it("refuses a namespace English doesn't have, draft or not", () => {
+    expect(namespaceProblems(english, ["insights", "insight"], true)).toEqual({
+      missing: [],
+      extra: ["insight"],
+    });
+    expect(namespaceProblems(english, [...english, "old"], false)).toEqual({ missing: [], extra: ["old"] });
   });
 });
 
@@ -250,21 +280,35 @@ const sources = import.meta.glob<string>(["../**/*.{ts,tsx}", "!../**/*.test.{ts
   import: "default",
 });
 
+const byLanguage = new Map<string, Map<string, Record<string, string>>>();
+for (const [path, tree] of Object.entries(others)) {
+  const [lang, file] = path.split("/").slice(-2) as [string, string];
+  byLanguage.set(lang, (byLanguage.get(lang) ?? new Map()).set(file.replace(".json", ""), tree));
+}
+const englishNamespaces = Object.keys(en).filter((n) => n !== "selftest");
+
 describe("the app's text", () => {
-  // Passes trivially until a second language ships JSON files (multi-language). Then a missing
-  // key, namespace or plural form fails the build, rather than quietly showing English.
+  it("has a folder for every language, shipped or draft, and every folder is one of them", () => {
+    const shipped = LANGUAGES.filter((lang) => lang !== "en");
+    const drafts = Object.keys(DRAFT_LANGUAGES);
+    expect(
+      shipped.filter((lang) => drafts.includes(lang)),
+      "a language is either shipped or a draft",
+    ).toEqual([]);
+    expect([...byLanguage.keys()].sort()).toEqual([...shipped, ...drafts].sort());
+    // A language's index.ts gathers its files; the app loads it in i18n/index.ts.
+    for (const lang of [...shipped, ...drafts]) expect(i18n.options.resources?.[lang], lang).toBeDefined();
+  });
+
+  // Passes trivially until a second language has JSON files (multi-language). Then a missing
+  // key, namespace or plural form fails the build, rather than quietly showing English. A draft
+  // may leave whole namespaces out (they show in English), but what it has must be complete.
   it("has every key, namespace and plural form in every language, and nothing English lacks", () => {
-    const byLanguage = new Map<string, Map<string, Record<string, string>>>();
-    for (const [path, tree] of Object.entries(others)) {
-      const [lang, file] = path.split("/").slice(-2) as [string, string];
-      byLanguage.set(lang, (byLanguage.get(lang) ?? new Map()).set(file.replace(".json", ""), tree));
-    }
     for (const [lang, files] of byLanguage) {
-      expect({ lang, namespaces: [...files.keys()].sort() }).toEqual({
+      expect({ lang, ...namespaceProblems(englishNamespaces, [...files.keys()], isDraft(lang)) }).toEqual({
         lang,
-        namespaces: Object.keys(en)
-          .filter((n) => n !== "selftest")
-          .sort(),
+        missing: [],
+        extra: [],
       });
       for (const [ns, tree] of files) {
         expect(en[ns as keyof typeof en], `${lang}/${ns}.json: no English namespace "${ns}"`).toBeDefined();

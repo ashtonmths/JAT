@@ -7,6 +7,14 @@ export const LANGUAGES = ["en"] as const;
 export type Language = (typeof LANGUAGES)[number];
 /** Each language's name in itself, as the switch lists it: never translated. */
 export const LANGUAGE_NAMES: Record<Language, string> = { en: "English" };
+/**
+ * Languages still being translated, by code, each with its name in itself. A draft is offered to
+ * nobody: only a dev server shows it, with ?lang=<code> or the switch, so its translation can be
+ * checked as it grows. Its text files may be some of the namespaces, not all: the rest show in
+ * English. Move it to LANGUAGES when every namespace is translated (catalog.test.ts checks this;
+ * docs/guide/adding-a-language.md "Translating in parts").
+ */
+export const DRAFT_LANGUAGES: Readonly<Record<string, string>> = {};
 export const FALLBACK: Language = "en";
 /** The guide the switch links to. A test checks the file is there, so don't move it without this. */
 export const ADD_LANGUAGE_GUIDE =
@@ -22,15 +30,17 @@ export const PSEUDO = "en-XA";
 export const PSEUDO_ALIAS = "pseudo";
 export const STORAGE_KEY = "jat.language";
 
-const shipped = (code: string | null | undefined): Language | undefined => {
+/** The language in `list` that `code` asks for: "en-GB" → "en"; an exact match ("zh-cn") wins over its prefix ("zh"). */
+function match<T extends string>(list: readonly T[], code: string | null | undefined): T | undefined {
   if (!code) return undefined;
   const lower = code.toLowerCase();
-  // "en-GB" → "en"; an exact match ("zh-cn") wins over its prefix ("zh").
   return (
-    LANGUAGES.find((lang) => lang.toLowerCase() === lower) ??
-    LANGUAGES.find((lang) => lang.toLowerCase() === lower.split("-")[0])
+    list.find((lang) => lang.toLowerCase() === lower) ??
+    list.find((lang) => lang.toLowerCase() === lower.split("-")[0])
   );
-};
+}
+
+const shipped = (code: string | null | undefined): Language | undefined => match(LANGUAGES, code);
 
 export interface LanguageSources {
   /** location.search, e.g. "?lang=pseudo". Only read when `dev`. */
@@ -40,20 +50,31 @@ export interface LanguageSources {
   /** navigator.languages, most preferred first. */
   browser?: readonly string[];
   dev?: boolean;
+  /** The draft languages' codes; tests pass their own. Only ?lang= on a dev server picks one. */
+  drafts?: readonly string[];
 }
 
-export function pickLanguage({ search = "", stored, browser = [], dev = false }: LanguageSources): string {
+export function pickLanguage({
+  search = "",
+  stored,
+  browser = [],
+  dev = false,
+  drafts = Object.keys(DRAFT_LANGUAGES),
+}: LanguageSources): string {
   if (dev) {
     const asked = new URLSearchParams(search).get("lang");
     if (asked === PSEUDO_ALIAS || asked === PSEUDO) return PSEUDO;
-    const fromUrl = shipped(asked);
+    const fromUrl = shipped(asked) ?? match(drafts, asked);
     if (fromUrl) return fromUrl;
   }
   return shipped(stored) ?? browser.map(shipped).find(Boolean) ?? FALLBACK;
 }
 
-/** Whether a code is one of the shipped languages (not the pseudo-language, say). */
+/** Whether a code is one of the shipped languages (not the pseudo-language or a draft, say). */
 export const isLanguage = (code: string): code is Language => (LANGUAGES as readonly string[]).includes(code);
+
+/** Whether a code is a language still being translated (DRAFT_LANGUAGES). */
+export const isDraft = (code: string): boolean => Object.hasOwn(DRAFT_LANGUAGES, code);
 
 /** Remember the choice in this browser (nothing happens where storage isn't available). */
 export function saveLanguage(lang: Language) {

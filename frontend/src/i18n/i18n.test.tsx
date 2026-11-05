@@ -289,6 +289,17 @@ describe("pickLanguage", () => {
     expect(pickLanguage({ search: "?lang=pseudo", dev: false })).toBe("en");
     expect(pickLanguage({ search: "?lang=EN-gb", dev: true })).toBe("en");
   });
+
+  it("shows a draft language only for ?lang= on a dev server", () => {
+    const drafts = ["zh-CN"];
+    expect(pickLanguage({ search: "?lang=zh-CN", dev: true, drafts })).toBe("zh-CN");
+    expect(pickLanguage({ search: "?lang=zh-cn", dev: true, drafts })).toBe("zh-CN");
+    // Never in a built app, and never from a saved choice or the browser: a draft isn't offered.
+    expect(pickLanguage({ search: "?lang=zh-CN", dev: false, drafts })).toBe("en");
+    expect(pickLanguage({ stored: "zh-CN", browser: ["zh-CN"], dev: true, drafts })).toBe("en");
+    // Not a draft (yet): the URL asks for nothing the app has.
+    expect(pickLanguage({ search: "?lang=zh-CN", dev: true, drafts: [] })).toBe("en");
+  });
 });
 
 describe("the saved choice", () => {

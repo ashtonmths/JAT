@@ -108,6 +108,22 @@ export function compare(en: Tree, other: Tree, lang: string): Comparison {
 }
 
 /**
+ * A language's namespaces against English's. A shipped language needs every one. A draft
+ * (DRAFT_LANGUAGES) may have only some, since it's translated a few namespaces at a time and
+ * the rest show in English; but a namespace English doesn't have is wrong either way.
+ */
+export function namespaceProblems(
+  english: readonly string[],
+  theirs: readonly string[],
+  draft: boolean,
+): { missing: string[]; extra: string[] } {
+  return {
+    missing: draft ? [] : english.filter((name) => !theirs.includes(name)).sort(),
+    extra: theirs.filter((name) => !english.includes(name)).sort(),
+  };
+}
+
+/**
  * Keys a source file uses, as "namespace:key". What it understands (and so what code must do
  * for the unused-key test to see a key):
  * - t("key") / t(`key`) and i18nKey="key" are credited to every namespace the file names in
