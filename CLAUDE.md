@@ -65,8 +65,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   `docs/ROADMAP.yaml`, run `uv run pytest -q tests/pm`.
 - **Browser tests only when the production build can change** (Kai, 2026-11-05). `pnpm e2e` tests a
   production build on demo data, so a PR whose every changed file is in this list skips it and runs
-  every other check: a draft language's text (`frontend/src/locales/<draft>/` for a code in
-  `DRAFT_LANGUAGES`, which only a dev server loads, and its glossary `docs/i18n/<draft>.md`),
+  every other check: a draft language's text (`frontend/src/locales/<code>/` for a code in
+  `DRAFT_LANGUAGES`, which only a dev server loads, and its glossary `docs/i18n/<code>.md`),
   `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`, `.claude/workflows/`, Python tests
   (`tests/`), and docs. Anything else runs it, including `scripts/seed_demo.py` (the browser tests'
   demo data), `frontend/e2e/`, any config or lockfile, `frontend/src/i18n/` and `DRAFT_LANGUAGES`
