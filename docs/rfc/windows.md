@@ -50,8 +50,8 @@ non-UTF-8 locale, a file opened elsewhere).
 
 ### Step 1: basic Windows support
 
-**`windows-starts`.** What can't work on Windows is gathered into one place behind one switch
-that's off on Windows, so the rest of the code never imports it:
+**`windows-starts`.** What can't work on Windows is gathered into one place behind one
+is-Windows check, so the rest of the code never imports it. On Windows it's all off:
 
 - the `fcntl` lock (on Windows the lock does nothing);
 - automatic git snapshots, even when the data folder is a git repo;
@@ -72,15 +72,24 @@ lock would guard against is two backups in different processes at once (a downlo
 app while `jat archive` runs in a terminal), so letting it do nothing on Windows is safe. On
 Linux and macOS nothing changes.
 
-**A switch to turn snapshots on for testing.** Setting `JAT_WINDOWS_SNAPSHOTS=1` (an
-environment variable, or a line in the `.env` the tracker already reads) turns snapshots back
-on on Windows. It's off by default, so nobody gets snapshots on Windows without asking for
-them. It's an environment variable rather than a setting in `config.toml`, so it isn't left
-on in someone's data folder after testing.
+**A switch to turn snapshots on for testing.** Setting `JAT_WINDOWS_SNAPSHOTS=1` turns
+everything in that list back on on Windows, except the `fcntl` lock: automatic snapshots, `jat
+snapshot`, `jat push` and `jat init`'s commit. The sidebar's status dot then says backups are
+on, as it does elsewhere.
+- It's an environment variable, or a line in the `.env` file in the folder you start the
+  tracker from, which it already reads for its other `JAT_` settings.
+- It's off by default, so nobody gets snapshots on Windows without asking for them.
+- It's an environment variable rather than a setting in `config.toml`, so it isn't left on in
+  someone's data folder after testing.
 
-Until step 2 adds a Windows lock, the switch turns snapshots on with no lock between
-processes, so it's for testing only: don't run `jat snapshot` or `jat push` while `jat serve`
-is running. When it's set, the app says at startup that Windows snapshots are experimental.
+It's for testing only, on a test data folder, not your real one:
+- Until step 2 adds a Windows lock, there's no lock between processes. While `jat serve` is
+  running, don't run `jat snapshot`, `jat push` or `jat archive`: two processes writing
+  `export/` at once can commit or zip a mix of two moments.
+- Until `utf8-everywhere` and `data-gitattributes` land, git can change line endings in
+  committed notes and files.
+
+When the switch is set, the app says at startup that Windows snapshots are experimental.
 
 ### Small fixes, in any order
 
