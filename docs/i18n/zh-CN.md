@@ -23,7 +23,7 @@
 - Open：打开
 - Log（记录一条动态）：记录
 
-**屏幕阅读器文本**（注释中写有 "read out by screen readers" 或 `…Label` 的键）。写成完整、自然的句子，带句末标点，例如 `"{{card}} 已放到 {{column}}。"`。
+**屏幕阅读器文本**（注释中写有 "read out by screen readers" 或 `…Label` 的键）。写成完整、自然的句子，带句末标点，例如 `"{{card}} 已放到 {{column}}。"`。屏幕阅读器句子里的列名（`{{column}}`、`{{title}}`）不加引号；屏幕上可见的句子里出现列名时可以加 “”（例如 `board.dropOnNoRound`）。
 
 **标点。**
 - 句子里一律使用全角标点：，。：；？！（）。
@@ -186,7 +186,8 @@
 | (draft) | （草稿） | |
 | Coming soon | 即将推出 | |
 | Optional / (optional) | 可选 / （可选） | |
-| Not yet / Not set / No date | 暂未 / 未设置 / 无日期 | |
+| Not yet / Not set / No date | 暂未 / 未设置 / 无日期 | “暂未”只用在动词前（暂未投递）。日期输入框里单独的 Not yet 占位文字要写出缺的动作，例如“投递日期”的占位写“尚未投递” |
+| move along (a card advancing through rounds) | 推进 | 例如“随之推进”，不用“前移” |
 | View (List/Board switch) | 视图 | Label of the segmented control that switches between List (列表) and Board (看板). |
 | Picked up / drop (keyboard drag-and-drop) | 拿起 / 放下 | Used in screen-reader messages during keyboard dragging: 已拿起 {{card}}。, 按空格键放下, {{card}} 已放下。 |
 | Sent on | 发送日期 | Date-field label, following the same pattern as 投递日期 (Applied on). In a line with a date, 'sent {{date}}' is written {{date}} 发送. |

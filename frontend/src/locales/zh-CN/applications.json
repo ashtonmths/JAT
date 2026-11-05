@@ -50,16 +50,16 @@
     "card": "{{company}}：{{role}}",
     "replyToRead": "待读回复",
     "roundsInOrder": "轮次需按顺序推进",
-    "roundFromInterviews": "卡片所在的轮次由面试决定：在申请中添加或完成一轮面试，卡片就会随之前移。",
-    "dropOnNoRound": "把它放到“{{column}}”，添加面试轮次后它会随之前移。",
+    "roundFromInterviews": "卡片所在的轮次由面试决定：在申请中添加或完成一轮面试，卡片就会随之推进。",
+    "dropOnNoRound": "把它放到“{{column}}”，添加面试轮次后它会随之推进。",
     "notAllowed": "不能这样移动",
     "cantGo": "无法从“{{from}}”移至“{{to}}”。",
     "moved": "已将 {{company}} 移至“{{stage}}”",
     "drag": {
       "application": "申请",
       "pickedUp": "已拿起 {{card}}。用方向键移动，按空格键放下。",
-      "over": "{{card}} 位于 {{column}} 上方。",
-      "notOver": "{{card}} 不在任何阶段上方。",
+      "over": "{{card}} 当前在 {{column}} 列中。",
+      "notOver": "{{card}} 当前不在任何阶段列中。",
       "droppedOn": "{{card}} 已放到 {{column}}。",
       "dropped": "{{card}} 已放下。",
       "cancelled": "已取消。{{card}} 留在原处。"
@@ -69,7 +69,7 @@
     "drawerTitle": "申请",
     "needsChasing": "待催问",
     "archived": "已归档",
-    "alsoApplied": "这个职位你还投递过",
+    "alsoApplied": "你还另外投递过这个职位",
     "moveTo": "移至…",
     "usualNext": "常规下一步",
     "otherStages": "其他阶段",
@@ -105,7 +105,7 @@
     "throughOne": "通过 <who/>",
     "referral": "内推",
     "directly": "直接投递",
-    "directlyVia": "直接投递，经由 <company/> 的 <person/>"
+    "directlyVia": "直接投递，通过 <company/> 的 <person/>"
   },
   "log": {
     "title": "记录动态",
@@ -135,20 +135,20 @@
       "note": "笔记",
       "file": "文件",
       "interview": "面试",
-      "manual": "手动记录"
+      "manual": "手动"
     }
   },
   "page": {
     "back": "全部申请",
     "deleteConfirm": "删除你投递 {{company}}（{{role}}）的申请？它的面试、Offer、时间线和已发送的文档记录会一并删除；笔记和文件会保留。如果只想隐藏而不删除，改为归档即可。",
     "deleteName": "{{company}} · {{role}}",
-    "fromRole": "来自职位"
+    "fromRole": "来自该职位"
   },
   "details": {
     "title": "详情",
     "appliedOn": "投递日期",
     "followUpOn": "跟进日期",
-    "followUpHint": "到这天，它会出现在“今日”页的“轮到你”分组里",
+    "followUpHint": "当天会出现在“今日”页的“轮到你”中",
     "snoozeUntil": "延后至",
     "snoozeHint": "在这之前不会被标为久无进展",
     "tags": "标签",
@@ -176,13 +176,13 @@
     "as": "身份",
     "link": "关联联系人",
     "newPerson": "新建联系人",
-    "newHint": "是新认识的人？<b>新建联系人</b>会添加此人（默认在 <company/>，可以修改），并按上面选择的身份关联到这份申请。"
+    "newHint": "是新联系人？<b>新建联系人</b>会添加此人（公司默认为 <company/>，可以修改），并按上面选择的身份关联到这份申请。"
   },
   "sent": {
     "title": "已发送的文档",
     "open": "打开",
     "kindSent": "{{kind}} · {{date}} 发送",
-    "notSent": "未随这份申请发送",
+    "notSent": "并未随这份申请发送",
     "remove": "移除 {{document}} {{version}}",
     "none": "记下你发送了哪份简历和求职信，这样就知道对方看过什么。",
     "addFirst": "先<docs>在“文档”页添加你的简历</docs>。",
@@ -224,7 +224,7 @@
     "optional": "可选",
     "stage": "阶段",
     "appliedOn": "投递日期",
-    "notYet": "暂未",
+    "notYet": "尚未投递",
     "tags": "标签",
     "tagsPlaceholder": "python, 金融科技, 远程…",
     "add": "添加申请",
