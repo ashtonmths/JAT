@@ -1,8 +1,8 @@
 # Simplified Chinese (zh-CN): the plan
 
-Status: in progress. The pilot (`i18n-zh-cn-applications`, the applications strings) is being built; every other
-task waits for Kai's go after it merges (Kai, 2026-11-05: "after that file is translated and gets merged, dont continue
-after that until isay").
+Status: in progress. The pilot (`i18n-zh-cn-applications`, the applications strings) merged in #239; every other
+task waits for Kai's go (Kai, 2026-11-05: "after that file is translated and gets merged, dont continue after that
+until isay").
 
 Simplified Chinese is the first language after English: the language research (`docs/rfc/i18n.md` §13a) ranked it first.
 The roadmap tasks are `i18n-zh-cn-*` in phase P8 of `docs/ROADMAP.yaml`.
