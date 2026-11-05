@@ -622,7 +622,7 @@ line per id, the longer, so check a task's status afterwards: "building" and "pl
 for its next part), `deps/finish.py` (tests-only PRs), `deps/finish_deps.py <task> "<changelog entry>" "<title>" [minor]`
 (the bump for any PR: patch, or minor with `minor`; marks the task done, also when it already is; writes the changelog line
 as given), `<tmp>/deps/pm_checks.sh` (every check in CLAUDE.md *Git* on the current commit, printing PASS or FAIL for each and the
-commit it ran on; it re-runs itself under the shared lock, `nice` and `ionice`, with 3 workers; about 10 minutes now, so run it
+commit it ran on; it re-runs itself under the shared lock, `nice` and `ionice`, with the default workers (half the threads, since test-speed); about 10 minutes now, so run it
 in the background and restart it after any new commit), `<tmp>/pm_shot.py <base url> <prefix> <path>[@light][@375][@full]`
 (screenshots, run with `uv run --with playwright python`; not the older `deps/pm_shot.py`). If they're gone, rewrite them from this description. `e2e.sh`'s
 output is cut short, so read the whole of it before trusting a pass. `finish_i18n.py` writes a generic changelog line: replace it

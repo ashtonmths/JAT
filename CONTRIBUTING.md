@@ -79,12 +79,20 @@ pnpm --dir frontend format:check
 pnpm --dir frontend e2e
 ```
 
-**Test runs stay out of your way.** `pnpm test` and `pnpm e2e` use a quarter of your CPU threads
-(3 where there are 12; each browser-test worker also runs its own app server and Chrome), at the
+**When you can skip the browser tests.** `pnpm e2e` tests a production build on the demo data. If
+every file you changed is in this list, skip it, run the rest, and say so in the pull request: a
+draft language's text (`frontend/src/locales/<code>/` for a language in `DRAFT_LANGUAGES`, which only
+a dev server loads, and its glossary `docs/i18n/<code>.md`), `scripts/i18n/`, `scripts/demo_gif/`,
+`scripts/social_preview/`, `.claude/workflows/`, Python tests (`tests/`) and docs. Anything else
+needs it, including `scripts/seed_demo.py` (the browser tests' demo data), `frontend/e2e/`, any
+config or lockfile, `frontend/src/i18n/` (adding a draft or switching one on), and `DRAFT_LANGUAGES`.
+
+**Test runs stay out of your way.** `pnpm test` and `pnpm e2e` use half your CPU threads
+(6 where there are 12; each browser-test worker also runs its own app server and Chrome), at the
 lowest CPU priority. On Linux they also ask for idle disk priority, which only the BFQ disk
 scheduler honours. Only one runs at a time: a second, from any checkout or worktree, waits for
 the first and says so (a quick `pnpm test` waits behind a long `pnpm e2e` too). Set
-`TEST_WORKERS=6` for more workers, or `TEST_LOCK=off` to skip the wait. The wrapper is
+`TEST_WORKERS=3` for fewer workers (or more), or `TEST_LOCK=off` to skip the wait. The wrapper is
 `frontend/scripts/test-run.mjs`; running `vitest` or `playwright` yourself keeps the worker limit
 but skips the wait and the low priority.
 
