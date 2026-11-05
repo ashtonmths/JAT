@@ -52,8 +52,9 @@ next action.
   `next` (Up next: work Kai has asked for, queued) and `planned` (Backlog: ideas and things to plan with
   Kai first). Only `next` work is started; work from Kai's feedback goes on as `next` (or `building` when
   its own PR adds it). With nothing up next, "Report and wait" (Kai's pick): tell Kai what's in the
-  backlog and wait for Kai to pick. And: "those things youre waiting on me for, leave them on the
-  roadmap. we wont be doing thme this session".
+  backlog and wait for Kai to pick. And (2026-11-02, about `notes-documents-improve`, `timeline-improve`,
+  `people-you-meet`): "those things youre waiting on me for, leave them on the roadmap. we wont be doing
+  thme this session".
 - **Small PRs, split before building.** "they are big PRs, way over the 1k line target. This time I
   will allow it" (#196/#197). Since then a feature is split into ~500-line roadmap tasks before any
   code (API first, then screens, then insights): calls rescheduling and rejection feedback were five
@@ -94,7 +95,7 @@ next action.
   every PR: "most are patch unless its new feature then it would be minor. it should be very
   explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
-  Released: v1.0.0 up to v1.18.0 (section 4a). Kai: "yes add release for each change"
+  Released: v1.0.0 up to v1.18.9 (section 4a). Kai: "yes add release for each change"
   (each i18n PR is its own patch release; the switcher was minor). Only internal planning
   files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `var/`) and the PM dashboard skip
   the bump.
@@ -409,7 +410,8 @@ next action.
   worktree (the main checkout); only `main` locally and on GitHub. Version **1.18.9**, released as v1.18.9.
 - **Merged since the last snapshot (#214), all through the review-fix cycle,** one PR at a time. Every released PR
   was merged after a full `<tmp>/deps/pm_checks.sh` run on its final commit (twice the browser suite alone was rerun on
-  the same commit after a failure that wasn't the PR's, see 4a); the roadmap-only PRs ran `uv run pytest -q tests/pm`:
+  the same commit after a failure that wasn't the PR's: #222, after a `!` run cleared its test results, and #221,
+  after the flaky pin; see 4a and section 8); the roadmap-only PRs ran `uv run pytest -q tests/pm`:
   - #215, #216 the previous refresh of this doc.
   - #217 `test-resource-limits` (v1.18.1): `pnpm test` and `pnpm e2e` go through `frontend/scripts/test-run.mjs`
     (one run at a time across worktrees via `/tmp/jat-test-run.lock`, lowest CPU priority, idle disk priority on
@@ -418,7 +420,7 @@ next action.
   - #218 `test-gaps-demo-data` (v1.18.2): the demo seed has files (tiny PDFs), links, a declined and a withdrawn
     offer (on their timelines via `offers.record`), a CV file waiting to be made a version, and an empty Portfolio
     document; `text_snapshot.py` opens those states (142 views).
-  - #219 roadmap: the five bugs Kai picked set to `next`.
+  - #219 roadmap: the five bugs I chose at Kai's ask set to `next`.
   - Five bug fixes, built by five parallel agents and merged one at a time: #223 `fix-new-company-keeps-draft`
     (v1.18.3), #224 `fix-menu-prefix-active` (v1.18.4), #222 `fix-deleted-person-404` (v1.18.5), #221
     `fix-new-agency-keeps-draft` (v1.18.6), #220 `fix-cv-files-stale` (v1.18.7).
@@ -433,8 +435,9 @@ next action.
 - **Tests on main** (the lead's full run on #229's final commit, `8317a54`): pytest 1,284, browser 711 (a few
   `test.fail` for known bugs pass by failing). The unit count isn't printed by `pm_checks.sh`; the builders reported
   1,134 on 2026-11-03.
-- **Kai's tracker** answered on 8770. Every change since v1.18.0 is frontend, tooling or docs, so a page refresh is
-  enough; Kai's v1.18.0 restart (the Sankey rounds filter) may still be pending.
+- **Kai's tracker** answered on 8770. Every change since v1.18.0 is frontend, tooling or docs, so a page refresh shows
+  it; but each release bumps the server's version, so the sidebar note asks for a restart until Kai restarts, and a
+  restart also picks up v1.18.0's Sankey rounds filter if that one is still pending.
 - **Kai's messages since #214, in order** (word for word where quoted):
   - "i wonder if this can be generalised (a diff version) to general todo list / life crm" → answered (a separate app
     reusing Today's groups, reply habits and the data folder; nothing built or recorded).
@@ -461,7 +464,7 @@ next action.
   - "new feature idea for roadmap: if a recruiter is associated with an application that is active … have an icon
     next to their name, similar to VIP/fav but not that special" → #226.
   - The social card: "new roadmap item, put this one near the top of the list / reorder the text / No AI. No Cloud /
-    No account. No tracking" → #226; "do the tagline change next" → #227; "lmk when the new social preview image is
+    No account. No tracking …" → #226; "do the tagline change next" → #227; "lmk when the new social preview image is
     generated and ill upload it" (told; Kai uploads it in Settings → General → Social preview).
   - "then after that use an agent or several agent to plan out the MCP feature …" (the full ask is quoted at the top
     of `docs/rfc/mcp.md`); "for now we are just planning it, but in a lot of detail / Im happy for this to be a bigger
@@ -481,15 +484,15 @@ Keep this whole section word for word in the summary: it is the live plan.
 without Kai's go-ahead. Waiting on Kai in particular:
 - **The MCP server:** the ten `mcp-*` build tasks wait on Kai's answers to the 11 decisions in `docs/rfc/mcp.md` §14 (the
   main one: approving the official `mcp` SDK as an optional dependency) and a go-ahead. Nothing is built.
-- **Issue #230, "Windows Support?"** (opened 2026-11-04 by an outside GitHub user, no reply yet): they found the
-  `fcntl` use (`src/jat/snapshot/git.py`), suggest `msvcrt` on Windows, and ask whether contributions towards Windows
+- **Issue #230, "Windows Support?"** (opened 2026-11-04 by an outside GitHub user, no reply yet): they point at
+  `fcntl` (used in `src/jat/snapshot/git.py`), suggest `msvcrt` on Windows, and ask whether contributions towards Windows
   support would be welcome. Replying is outward-facing: Kai decides whether and what to answer (the roadmap has
   `windows-support`, planned). Don't reply on Kai's behalf.
 - **Offered and not taken up:** linking the recruiter in the Applications *list* too (its rows open on click, so the
   name is plain there; #229's reviewer noted it); a roadmap item only if Kai says.
 - **Backlog added this session:** `delivery-speed-improvements`, `recruiter-open-application-mark` (its icon and what
   counts are Kai's to decide).
-- From the last session, still left alone ("leave them on the roadmap. we wont be doing thme this session"):
+- From 2026-11-02, still left alone ("leave them on the roadmap. we wont be doing thme this session"):
   `notes-documents-improve`, `timeline-improve`, `people-you-meet`.
 - `security-alerts`: minimatch #32 stays open until eslint and redocly take minimatch 11, or Kai dismisses it.
 - Older backlog: `i18n-search`, `multi-language`, P11 "Test gaps" (less `test-gaps-demo-data`, done), `tests-reorganise`,
@@ -520,7 +523,8 @@ this session: `fix-new-company-keeps-draft`, `fix-new-agency-keeps-draft`, `fix-
 fixed 1.5 s instead of holding the request, so it passed by luck once in #221's full check). Still missing their rating
 fields: `fix-escape-closes-quick-view`, `fix-phone-header-overlap` (likely a duplicate of `fix-phone-header-overflow`).
 A bug Kai OKs is set to `next`. Next-easiest by the ratings, if Kai asks for more quick ones: `fix-rename-drops-unsaved-about`,
-`fix-archive-lock-not-ignored`, `fix-backup-same-site`, `fix-add-another-role-carries-over` (medium, trivial), then the
+`fix-archive-lock-not-ignored`, `fix-backup-same-site` (low, trivial), `fix-add-another-role-carries-over` (medium,
+trivial), then the
 trivial display-only ones (`fix-company-page-blank-route`, `fix-search-stale-after-rename`, `fix-hidden-link-kept`…).
 - Medium, easy or trivial: `fix-add-another-role-carries-over`, `fix-call-delete-no-confirm`, `fix-didnt-happen-notes-hidden`,
   `fix-link-rename-tick-error`, `fix-link-rename-cancel-saves`, `fix-timeline-load-error-silent`,
@@ -536,8 +540,9 @@ trivial display-only ones (`fix-company-page-blank-route`, `fix-search-stale-aft
 isn't a bug.
 
 **The running tracker** on 8770 answers. It may still need Kai's restart (Ctrl+C, `uv run jat serve`) for v1.18.0's server
-change (the Sankey rounds filter; the switch and the sidebar version note say so); everything since is frontend, tooling or
-docs, so a page refresh covers it. Leave it alone.
+change (the Sankey rounds filter; the switch and the sidebar version note say so). Everything since is frontend, tooling or
+docs, so a page refresh shows it, but the sidebar note keeps asking for a restart until Kai restarts, since each release
+bumps the server's version. Leave it alone.
 
 **How work ran this session:**
 - **A feature in parts** (as before): one builder agent (`isolation: "worktree"`) builds part 1, opens a draft and stops;
