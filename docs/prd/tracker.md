@@ -186,7 +186,7 @@ want. The Obsidian plugins work on plain files but aren't a web app and have no 
   when Kai asks. A local MCP server over that API, read-only unless started with writes on, is
   planned in `docs/rfc/mcp.md`.
 - **FR24:** The app runs as a single terminal process on localhost with no installed
-  services.
+  services. It runs on Linux and macOS; Windows support is planned in `docs/rfc/windows.md`.
 
 ## 7. UX
 
