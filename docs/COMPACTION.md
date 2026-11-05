@@ -481,6 +481,10 @@ Keep this whole section word for word in the summary: it is the live plan.
 without Kai's go-ahead. Waiting on Kai in particular:
 - **The MCP server:** the ten `mcp-*` build tasks wait on Kai's answers to the 11 decisions in `docs/rfc/mcp.md` §14 (the
   main one: approving the official `mcp` SDK as an optional dependency) and a go-ahead. Nothing is built.
+- **Issue #230, "Windows Support?"** (opened 2026-11-04 by an outside GitHub user, no reply yet): they found the
+  `fcntl` use (`src/jat/snapshot/git.py`), suggest `msvcrt` on Windows, and ask whether contributions towards Windows
+  support would be welcome. Replying is outward-facing: Kai decides whether and what to answer (the roadmap has
+  `windows-support`, planned). Don't reply on Kai's behalf.
 - **Offered and not taken up:** linking the recruiter in the Applications *list* too (its rows open on click, so the
   name is plain there; #229's reviewer noted it); a roadmap item only if Kai says.
 - **Backlog added this session:** `delivery-speed-improvements`, `recruiter-open-application-mark` (its icon and what
