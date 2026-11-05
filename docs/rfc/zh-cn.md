@@ -62,7 +62,7 @@ The PR body also reports the agents used and the tokens spent, so the cost of ea
 | # | Task | What |
 |---|------|------|
 | 1 | `i18n-zh-cn-applications` | Pilot: `applications` (190 strings). Registers the draft (loaded on a dev server only), starts the glossary, and adds Chinese dates and numbers (`dayjs/locale/zh-cn`, a `PATTERNS` row like `YYYY[年]M[月]D[日]`, `NUMBER_LOCALE`). Kai checks the process and token use before anything else starts. |
-| 2–17 | `i18n-zh-cn-<file>` | One per remaining file: common, stages, today, roles, people, interviews, calls, offers, todos, notes, documents, files, timeline, events, insights, errors (11 to about 330 strings each). |
+| 2–17 | `i18n-zh-cn-<file>` | One per remaining file, smallest first (Kai, 2026-11-05: "order them by string count asc"): stages (11), files (27), todos (31), calls (54), documents (75), notes (78), events (81), offers (91), common (94), timeline (103), interviews (136), roles (139), today (152), people (213), errors (269), insights (327). |
 | 18 | `i18n-zh-cn-layout` | System CJK fonts (PingFang SC, Microsoft YaHei, Noto Sans CJK SC) and clipped labels, checked on every page at desktop width and 375 px. |
 | 19 | `i18n-zh-cn-switch-on` | Minor release. `LANGUAGES` and `LANGUAGE_NAMES`; load it in production builds too (drop the dev-only gate in `i18n/index.ts`); "More coming soon", a browser test that finds no English left. README: a "Use it in your language" feature row and a Languages section with the open language menu; guide, `llms.txt`, changelog. |
 | 20 | `i18n-zh-cn-demo-data` | `seed_demo.py --lang zh-CN`: made-up Chinese companies, people and notes, so Chinese screenshots look like real use (to confirm with Kai). |
