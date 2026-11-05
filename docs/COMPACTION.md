@@ -428,7 +428,8 @@ next action.
     saved or picked from the browser. The catalog test lets a draft miss whole namespaces (English shows) but each file
     must be complete; a shipped language needs all; every `locales/<code>/` folder must be shipped or a draft and its
     `index.ts` must load exactly its files (`namespaceProblems` in `catalog.ts`). `new_language.mjs <code> <dir>` writes
-    `<dir>/<code>/`, making it if needed (it refuses one already there). Guide: "Translating in parts". RFC: Kai's AI-translation decision and the Chinese decisions.
+    `<dir>/<code>/`, making it if needed (it refuses one already there). Guide: "Translating in parts". RFC: Kai's
+    AI-translation decision and the Chinese decisions.
 - **Tests on main** (the lead's full run on #237's final commit): pytest 1,284, browser 711; unit 1,142
   passed one commit earlier, and the last fixes added one test.
 - **Kai's tracker** answered on 8770. Everything since v1.18.0 is frontend, tooling or docs; the sidebar keeps asking for
@@ -456,8 +457,7 @@ next action.
   - The #230 reply: Kai's six points; "1. testing switch, good idea. add it to the plan 2. I will post / keep PRs
     targetting 500 lines, max 1k / dont mention rebase vs merge / dont mention the 3rd ntoe" → #235 and the final
     Markdown given; "give me the message as markdown so i can copy and paste" → given. **Kai posted it on #230 (2026-11-05,
-    19:01 UTC).** Only Kai can
-    merge (sole collaborator; the `main` ruleset blocks deletion and force pushes only).
+    19:01 UTC).** Only Kai can merge (sole collaborator; the `main` ruleset blocks deletion and force pushes only).
   - "i want to add a second language! scour every tag … find the languages in the top-20 starred repos for each tag" and
     "fan out massively" → a 20-agent workflow, ranked list; "put these findings in the roadmap" → #236.
   - "then lets say i want to add a language, i assume thats 1 pr because of the checks?" → yes as built; the
