@@ -1,0 +1,70 @@
+{
+  "name": {
+    "call": "与 {{name}} 通话",
+    "video": "与 {{name}} 视频通话",
+    "in_person": "与 {{name}} 会面",
+    "other": "与 {{name}} 的 {{kind}}",
+    "withAbout": "{{what}}：{{about}}"
+  },
+  "kinds": {
+    "call": "电话",
+    "video": "视频通话",
+    "in_person": "当面"
+  },
+  "status": {
+    "scheduled": "已预约",
+    "done": "已进行",
+    "cancelled": "未进行"
+  },
+  "line": {
+    "whoAt": "<who/> · <where/>",
+    "application": "{{company}} · {{role}}",
+    "joinLink": "入会链接"
+  },
+  "happened": "已进行",
+  "happenedWho": "已进行：{{label}}",
+  "reschedule": {
+    "was": "原定于 {{when}}。",
+    "hint": "改期的提出方和原因会随通话一起保存；如果通话关于某份申请，也会记在该申请的时间线上。",
+    "choiceHint": "通话保留原来的时间，并显示为待定新时间。",
+    "todoHint": "在通话定下新时间之前，这条待办会一直保持未完成。通过“设定新时间”或“编辑”设好新时间，即视为从原时间改期，待办会自动勾选完成。"
+  },
+  "moreFor": "更多操作：{{label}}",
+  "edit": "编辑",
+  "card": {
+    "title": "通话与会面",
+    "book": "约通话",
+    "empty": "还没有与 {{name}} 的通话。约一次，或记录一次已经进行过的通话。",
+    "addRoles": "从这次通话添加职位"
+  },
+  "form": {
+    "howDidItGoTitle": "聊得怎么样？",
+    "editTitle": "编辑“{{label}}”",
+    "bookTitle": "约通话",
+    "whoError": "对方是谁？",
+    "whenError": "什么时候？",
+    "linkError": "链接需以 http:// 或 https:// 开头",
+    "with": "联系人",
+    "withPlaceholder": "选择联系人",
+    "about": "主题",
+    "aboutPlaceholder": "了解市场行情、Contoso 的职位…",
+    "when": "时间",
+    "how": "方式",
+    "status": "状态",
+    "where": "地点",
+    "wherePlaceholder": "咖啡馆、对方办公室…",
+    "meetingLink": "会议链接",
+    "linkOptional": "链接（可选）",
+    "linkPlaceholder": "https://…",
+    "application": "关联申请（可选）",
+    "applicationHint": "如果这次通话只涉及你投递过的某一个职位，就选上它，通话会和那份申请一起显示在“时间线”页上。",
+    "applicationPlaceholder": "不关联具体申请",
+    "applicationOption": "{{company}} · {{role}}",
+    "agenda": "议程",
+    "agendaHint": "要问什么、要告诉对方什么。支持 Markdown。",
+    "howDidItGo": "聊得怎么样？",
+    "howDidItGoHint": "聊了什么、下一步做什么。对方在通话中提到的职位，到对方的页面上添加，再逐个决定投递还是放弃。支持 Markdown。",
+    "log": "记录通话",
+    "book": "约通话"
+  }
+}

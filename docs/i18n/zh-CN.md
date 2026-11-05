@@ -27,7 +27,7 @@ open an issue or a pull request.*
 - Open：打开
 - Log（记录一条动态）：记录
 
-**屏幕阅读器文本**（注释中写有 "read out by screen readers" 或 `…Label` 的键）。写成完整、自然的句子，带句末标点，例如 `"{{card}} 已放到 {{column}}。"`。屏幕阅读器句子里的列名（`{{column}}`、`{{title}}`）不加引号；屏幕上可见的句子里出现列名时可以加 “”（例如 `board.dropOnNoRound`）。
+**屏幕阅读器文本**（注释中写有 "read out by screen readers" 或 `…Label` 的键）。写成完整、自然的句子，带句末标点，例如 `"{{card}} 已放到 {{column}}。"`。屏幕阅读器句子里的列名（`{{column}}`、`{{title}}`）不加引号；屏幕上可见的句子里出现列名时可以加 “”（例如 `board.dropOnNoRound`）。 针对某一项的屏幕阅读器标签写成“动作：{{label}}”（例如 `更多操作：{{label}}`），不写成“{{label}} 的动作”，因为 {{label}} 里可能已有冒号或很长的用户文字。
 
 **标点。**
 - 句子里一律使用全角标点：，。：；？！（）。
@@ -115,11 +115,12 @@ open an issue or a pull request.*
 | Happened / Didn't happen | 已进行 / 未进行 | |
 | Reschedule / Rescheduled | 改期 / 已改期 | |
 | Needs a new time | 待定新时间 | |
+| Set new time (button) | 设定新时间 | 其他提示文字引用这个按钮时用同样的词 |
 | Debrief | 复盘 | |
 | Prep | 准备 | |
 | Questions asked | 被问到的问题 | |
 | Awaiting outcome | 等待结果 | |
-| How did it go? | 进展如何？ | |
+| How did it go? | 聊得怎么样？（通话、会面之后） / 结果如何？（面试轮次之后） | 问的是已经结束的事，不用“进展如何”（那是问进行中的事） |
 | offer | Offer | 中国大陆程序员的通用说法，保留拉丁字母，前后加空格。“Add offer”译为“添加 Offer” |
 | Deciding (offer status) | 考虑中 | |
 | revised offer | 更新后的 Offer | |
