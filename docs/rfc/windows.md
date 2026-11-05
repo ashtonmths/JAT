@@ -72,6 +72,16 @@ lock would guard against is two backups in different processes at once (a downlo
 app while `jat archive` runs in a terminal), so letting it do nothing on Windows is safe. On
 Linux and macOS nothing changes.
 
+**A switch to turn snapshots on for testing.** Setting `JAT_WINDOWS_SNAPSHOTS=1` (an
+environment variable, or a line in the `.env` the tracker already reads) turns snapshots back
+on on Windows. It's off by default, so nobody gets snapshots on Windows without asking for
+them. It's an environment variable rather than a setting in `config.toml`, so it isn't left
+on in someone's data folder after testing.
+
+Until step 2 adds a Windows lock, the switch turns snapshots on with no lock between
+processes, so it's for testing only: don't run `jat snapshot` or `jat push` while `jat serve`
+is running. When it's set, the app says at startup that Windows snapshots are experimental.
+
 ### Small fixes, in any order
 
 Each is its own small pull request:
@@ -111,7 +121,9 @@ lock has to:
 - not empty the lock file when it opens it.
 
 It needs `utf8-everywhere` and `data-gitattributes` first, so snapshots on Windows don't
-change line endings or misread git's output.
+change line endings or misread git's output. The lock is built and tested with
+`JAT_WINDOWS_SNAPSHOTS=1`; once it works, snapshots are on by default on Windows, as they are
+elsewhere, and the switch goes.
 
 ## 4. Decisions
 
@@ -119,6 +131,8 @@ change line endings or misread git's output.
   globaly disable the parts that would be an issue after isolating them and minimising the
   problematic surface, that as a first step". The snapshot lock guards the commits of real
   data, so it isn't the first thing to port.
+- **A switch to test snapshots on Windows while they're off.** Kai agreed to
+  `JAT_WINDOWS_SNAPSHOTS=1`, off by default, as an environment variable (section 3, step 1).
 - **`tzdata` on every platform.** It's a new runtime dependency, which Kai approved: "this is
   reasonable to include and then use same dependency on all platforms". It's data only, about
   350 KB, maintained by the Python core team.
