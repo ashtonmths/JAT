@@ -95,7 +95,7 @@ next action.
   every PR: "most are patch unless its new feature then it would be minor. it should be very
   explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
-  Released: v1.0.0 up to v1.18.9 (section 4a). Kai: "yes add release for each change"
+  Released: v1.0.0 up to v1.18.10 (section 4a). Kai: "yes add release for each change"
   (each i18n PR is its own patch release; the switcher was minor). Only internal planning
   files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `var/`) and the PM dashboard skip
   the bump.
@@ -427,9 +427,9 @@ next action.
     (code → own name, empty for now): only a dev server shows one (`?lang=<code>` or the switch, "<name> (draft)"), never
     saved or picked from the browser. The catalog test lets a draft miss whole namespaces (English shows) but each file
     must be complete; a shipped language needs all; every `locales/<code>/` folder must be shipped or a draft and its
-    `index.ts` must load exactly its files (`namespaceProblems` in `catalog.ts`). `new_language.mjs <code> <dir>` makes
-    `<dir>` if needed. Guide: "Translating in parts". RFC: Kai's AI-translation decision and the Chinese decisions.
-- **Tests on main** (the lead's full run on #237's final commit): pytest 1284, browser 711; unit 1,142
+    `index.ts` must load exactly its files (`namespaceProblems` in `catalog.ts`). `new_language.mjs <code> <dir>` writes
+    `<dir>/<code>/`, making it if needed (it refuses one already there). Guide: "Translating in parts". RFC: Kai's AI-translation decision and the Chinese decisions.
+- **Tests on main** (the lead's full run on #237's final commit): pytest 1,284, browser 711; unit 1,142
   passed one commit earlier, and the last fixes added one test.
 - **Kai's tracker** answered on 8770. Everything since v1.18.0 is frontend, tooling or docs; the sidebar keeps asking for
   a restart until Kai restarts (each release bumps the server's version).
@@ -455,7 +455,8 @@ next action.
     pushes) and written into the RFC; "we dont need packaged-install and desktop-app as part of this windows work" → #234.
   - The #230 reply: Kai's six points; "1. testing switch, good idea. add it to the plan 2. I will post / keep PRs
     targetting 500 lines, max 1k / dont mention rebase vs merge / dont mention the 3rd ntoe" → #235 and the final
-    Markdown given; "give me the message as markdown so i can copy and paste" → given. **Kai posts it.** Only Kai can
+    Markdown given; "give me the message as markdown so i can copy and paste" → given. **Kai posted it on #230 (2026-11-05,
+    19:01 UTC).** Only Kai can
     merge (sole collaborator; the `main` ruleset blocks deletion and force pushes only).
   - "i want to add a second language! scour every tag … find the languages in the top-20 starred repos for each tag" and
     "fan out massively" → a 20-agent workflow, ranked list; "put these findings in the roadmap" → #236.
@@ -498,8 +499,9 @@ without Kai's go-ahead. Waiting on Kai in particular:
   is-Windows check, off there; `JAT_WINDOWS_SNAPSHOTS=1` turns snapshots on for testing on a test data folder), then
   `utf8-everywhere`, `windows-time-zones` (tzdata on every platform, Kai's yes), `static-file-types`,
   `data-gitattributes`, `locked-file-retry`, `windows-testing` (Kai tests on Windows), then `windows-support` (docs);
-  later `windows-snapshots` (msvcrt lock, then the switch goes). Issue #230's author may contribute: Kai posts the reply
-  (drafted, given as Markdown); don't post or reply for Kai. Their PRs: ~500 lines, max 1k; one task each.
+  later `windows-snapshots` (msvcrt lock, then the switch goes). Issue #230: Kai posted the reply (2026-11-05),
+  welcoming contributions; next is the author saying which task they'll pick up. Don't post or reply for Kai. Their PRs:
+  ~500 lines, max 1k; one task each; Kai tests on Windows before each merges.
 - **The MCP server:** the ten `mcp-*` build tasks wait on Kai's answers to the 11 decisions in `docs/rfc/mcp.md` §14 (the
   main one: approving the official `mcp` SDK as an optional dependency) and a go-ahead. Nothing is built.
 - **Offered and not taken up:** linking the recruiter in the Applications *list* too; a roadmap item only if Kai says.
@@ -533,7 +535,7 @@ without Kai's go-ahead. Waiting on Kai in particular:
 - When Kai asks a question, check the code or the running thing and answer plainly before proposing work.
 
 **Open bugs (phase B; 65, none to fix without a go-ahead).** High 1 (`fix-applied-date-wipe`), medium 18, low 46. Fixed
-this session: `fix-new-company-keeps-draft`, `fix-new-agency-keeps-draft`, `fix-menu-prefix-active`,
+on 2026-11-03: `fix-new-company-keeps-draft`, `fix-new-agency-keeps-draft`, `fix-menu-prefix-active`,
 `fix-deleted-person-404`, `fix-cv-files-stale`. Added: `fix-offer-kind-pin-flaky` (low, trivial; its `test.fail` waits a
 fixed 1.5 s instead of holding the request, so it passed by luck once in #221's full check). Still missing their rating
 fields: `fix-escape-closes-quick-view`, `fix-phone-header-overlap` (likely a duplicate of `fix-phone-header-overflow`).
@@ -695,8 +697,9 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
 
 - **In flight:** none (after this doc's PR merges). **Up next:** nothing. **Backlog:** Kai picks (section 4a); the MCP
   build waits on the RFC's §14 decisions.
-- **Left of the i18n work, P8** (when Kai says; see 4a): `i18n-search` and `multi-language` (Simplified Chinese as `zh-CN`, AI-translated, in the 11 PRs of section 4a;
-  also percent and number formats, brackets and separators).
+- **Left of the i18n work, P8** (when Kai says; see 4a): `i18n-search` and `multi-language`
+  (Simplified Chinese as `zh-CN`, AI-translated, in the 11 PRs of section 4a; also percent and number formats,
+  brackets and separators).
 - **Noticed, for later:** long text clips on Today's Waiting rows, the call form's How and the offer form's kind (for
   `multi-language`); README screenshots showing the header still have the old language icon (no open task: the `readme-refresh-*` tasks are done, so retaking them needs a new one).
 - **Planned elsewhere, not started** (build only when Kai asks): `tests-reorganise` (P7: a test
