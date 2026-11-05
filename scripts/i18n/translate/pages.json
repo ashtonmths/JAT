@@ -1,0 +1,36 @@
+{
+  "_comment": "Pages to screenshot for each string file, on the demo data (scripts/seed_demo.py). {kind:name} is looked up by name through the API: application (by company), person, company, role (an application's role, by company). width defaults to 1440; full means the whole page.",
+  "applications": [
+    {"name": "list", "path": "/applications", "full": true},
+    {"name": "board", "path": "/applications?view=board", "width": 2600},
+    {"name": "application-page", "path": "{application:Contoso}", "full": true},
+    {"name": "application-rejected", "path": "{application:Tailspin Toys}", "full": true},
+    {"name": "application-page-375", "path": "{application:Contoso}", "width": 375, "full": true}
+  ],
+  "stages": [
+    {"name": "board", "path": "/applications?view=board", "width": 2600},
+    {"name": "list", "path": "/applications", "full": true},
+    {"name": "application-page", "path": "{application:Contoso}", "full": true},
+    {"name": "today", "path": "/", "full": true},
+    {"name": "insights", "path": "/insights", "full": true}
+  ],
+  "files": [
+    {"name": "application-page", "path": "{application:Contoso}", "full": true},
+    {"name": "role-page", "path": "{role:Contoso}", "full": true},
+    {"name": "person-page", "path": "{person:Alex Morgan}", "full": true},
+    {"name": "company-page", "path": "{company:Contoso}", "full": true},
+    {"name": "application-page-375", "path": "{application:Contoso}", "width": 375, "full": true}
+  ],
+  "todos": [
+    {"name": "today", "path": "/", "full": true},
+    {"name": "application-page", "path": "{application:Contoso}", "full": true},
+    {"name": "person-page", "path": "{person:Alex Morgan}", "full": true},
+    {"name": "today-375", "path": "/", "width": 375, "full": true}
+  ],
+  "calls": [
+    {"name": "person-page", "path": "{person:Alex Morgan}", "full": true},
+    {"name": "today", "path": "/", "full": true},
+    {"name": "application-page", "path": "{application:Contoso}", "full": true},
+    {"name": "person-page-375", "path": "{person:Alex Morgan}", "width": 375, "full": true}
+  ]
+}

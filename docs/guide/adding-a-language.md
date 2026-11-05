@@ -344,6 +344,10 @@ It should end with `0 view parts differ`. (It doesn't open the language menu, so
 name there doesn't count.) Anything else means English changed, so look at what it lists. Do it all
 on one day, since the demo data is dated to the day it's used.
 
+**Translating with AI agents.** If you use Claude Code, `scripts/i18n/translate/README.md` runs steps 3 and 6 for you, a
+file at a time: agents translate each part of the screen with the code and screenshots in front of them, then two
+models review it separately. Simplified Chinese is done this way. You still need a glossary for your language first.
+
 ## 9. Open a pull request
 
 ```bash
