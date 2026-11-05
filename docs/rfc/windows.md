@@ -50,8 +50,8 @@ non-UTF-8 locale, a file opened elsewhere).
 
 ### Step 1: basic Windows support
 
-**`windows-starts`.** What can't work on Windows is gathered into one place behind one switch
-that's off on Windows, so the rest of the code never imports it:
+**`windows-starts`.** What can't work on Windows is gathered into one place behind one
+is-Windows check, so the rest of the code never imports it. On Windows it's all off:
 
 - the `fcntl` lock (on Windows the lock does nothing);
 - automatic git snapshots, even when the data folder is a git repo;
@@ -71,6 +71,25 @@ The download still writes its export under the lock. With no snapshots, the only
 lock would guard against is two backups in different processes at once (a download from the
 app while `jat archive` runs in a terminal), so letting it do nothing on Windows is safe. On
 Linux and macOS nothing changes.
+
+**A switch to turn snapshots on for testing.** Setting `JAT_WINDOWS_SNAPSHOTS=1` turns
+everything in that list back on on Windows, except the `fcntl` lock: automatic snapshots, `jat
+snapshot`, `jat push` and `jat init`'s commit. The sidebar's status dot then says backups are
+on, as it does elsewhere.
+- It's an environment variable, or a line in the `.env` file in the folder you start the
+  tracker from, which it already reads for its other `JAT_` settings.
+- It's off by default, so nobody gets snapshots on Windows without asking for them.
+- It's an environment variable rather than a setting in `config.toml`, so it isn't left on in
+  someone's data folder after testing.
+
+It's for testing only, on a test data folder, not your real one:
+- Until step 2 adds a Windows lock, there's no lock between processes. While `jat serve` is
+  running, don't run `jat snapshot`, `jat push` or `jat archive`: two processes writing
+  `export/` at once can commit or zip a mix of two moments.
+- Until `utf8-everywhere` and `data-gitattributes` land, git can change line endings in
+  committed notes and files.
+
+When the switch is set, the app says at startup that Windows snapshots are experimental.
 
 ### Small fixes, in any order
 
@@ -111,7 +130,9 @@ lock has to:
 - not empty the lock file when it opens it.
 
 It needs `utf8-everywhere` and `data-gitattributes` first, so snapshots on Windows don't
-change line endings or misread git's output.
+change line endings or misread git's output. The lock is built and tested with
+`JAT_WINDOWS_SNAPSHOTS=1`; once it works, snapshots are on by default on Windows, as they are
+elsewhere, and the switch goes.
 
 ## 4. Decisions
 
@@ -119,6 +140,8 @@ change line endings or misread git's output.
   globaly disable the parts that would be an issue after isolating them and minimising the
   problematic surface, that as a first step". The snapshot lock guards the commits of real
   data, so it isn't the first thing to port.
+- **A switch to test snapshots on Windows while they're off.** Kai agreed to
+  `JAT_WINDOWS_SNAPSHOTS=1`, off by default, as an environment variable (section 3, step 1).
 - **`tzdata` on every platform.** It's a new runtime dependency, which Kai approved: "this is
   reasonable to include and then use same dependency on all platforms". It's data only, about
   350 KB, maintained by the Python core team.
