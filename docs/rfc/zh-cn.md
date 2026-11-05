@@ -34,7 +34,9 @@ The roadmap tasks are `i18n-zh-cn-*` in phase P8 of `docs/ROADMAP.yaml`.
 
 ## How each translation PR runs
 
-One Workflow per string file, `locales/en/<file>.ts` → `locales/zh-CN/<file>.json`:
+One Workflow per string file, `locales/en/<file>.ts` → `locales/zh-CN/<file>.json`. The scripts and workflows that do
+it are in the repo, for any language: `scripts/i18n/translate/README.md` has the commands (Kai, 2026-11-05: "feel free
+to put the helper scripts in the repo and to ipdate docs about them").
 
 1. **Areas.** Split the file's keys into areas a reader would recognise on screen ("board columns", "the application card
    on the board", "New application"), usually by the file's top-level groups.

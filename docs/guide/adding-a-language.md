@@ -227,6 +227,12 @@ translated yet show in English.
 Simplified Chinese is on its way in like this already (`frontend/src/locales/zh-CN/`), following a
 [glossary](../i18n/zh-CN.md). To help with it, open an issue rather than starting it again.
 
+**Translating with AI agents.** If you use Claude Code, the tools in
+[`scripts/i18n/translate/`](../../scripts/i18n/translate/README.md) do a draft's files one at a time: they make the
+file and add it to `index.ts` (steps 1 and 2 below), have agents translate each part of the screen with the code and
+screenshots in front of them, check every placeholder and tag, and have two models review it. Simplified Chinese is done this
+way. Your language needs a glossary first, and the draft set up as in step 3 below.
+
 1. Make the files somewhere else, so you can copy in only the ones you're translating now:
 
    ```bash
