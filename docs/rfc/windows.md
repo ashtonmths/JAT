@@ -2,9 +2,10 @@
 
 **Status:** planned (2026-11-05). Nothing is built yet. The tracker runs on Linux and macOS
 only.
-**Roadmap:** `windows-starts` first, then `utf8-everywhere`, `windows-time-zones`,
-`static-file-types`, `data-gitattributes`, `locked-file-retry` and `windows-testing` in any
-order, then `windows-support`; `windows-snapshots` comes later. Each is one small pull request.
+**Roadmap:** `windows-starts`, `utf8-everywhere`, `windows-time-zones`, `static-file-types`,
+`data-gitattributes`, `locked-file-retry` and `windows-testing`, then `windows-support`; later,
+`windows-snapshots`. `windows-starts` is planned first, but the small fixes don't depend on it
+and can land in any order. Each is one small pull request.
 **Raised in:** [issue #230](https://github.com/waddington/job-application-tracker/issues/230).
 
 This is the path to Windows support: why the tracker doesn't run there today, what has to
@@ -19,9 +20,13 @@ ModuleNotFoundError: No module named 'fcntl'
 ```
 
 `fcntl` is part of Python on Linux and macOS but not on Windows. The tracker uses it for one
-thing: a file lock in `src/jat/snapshot/git.py`, so that two processes (the running app and a
-`jat snapshot` or `jat push` in another terminal) never take a git snapshot of the data folder
-at the same moment. That file imports `fcntl` at the top, and the CLI, the app, the backup
+thing: a file lock in `src/jat/snapshot/git.py` around its **snapshots**.
+
+A snapshot is the tracker's automatic git commit. When the data folder is a git repo, about a
+minute after your last change the app writes the database out to `export/` as readable JSON
+Lines, then commits `export/`, `notes/`, `files/` and `config.toml` with git. It never pushes;
+that's `jat push`. The lock makes sure two processes (the running app and a `jat snapshot` or
+`jat push` in another terminal) never snapshot at the same moment. That file imports `fcntl` at the top, and the CLI, the app, the backup
 API and the archive download all import that file, so the whole program stops before it
 starts.
 
@@ -51,10 +56,18 @@ that's off on Windows, so the rest of the code never imports it:
 - automatic git snapshots, even when the data folder is a git repo;
 - the commit `jat init` makes.
 
-The Backup page says snapshots are off on Windows and points to **Download archive**, which
-zips the whole data folder and works without git. Copying the data folder is also a complete
-backup. Without snapshots, nothing else on Windows needs the lock, so doing nothing there is
-safe. On Linux and macOS nothing changes.
+The sidebar says snapshots are off on Windows, next to its **Download a backup** link. That
+link writes a fresh export and zips your data (`export/`, `notes/`, `files/` and
+`config.toml`, with instructions for restoring), and it works without git. Copying the data
+folder while the app is stopped is also a complete backup.
+
+With snapshots off, `export/` isn't rewritten as you work, so between backups the database is
+the only up-to-date copy. That's already the case today for any data folder that isn't a git
+repo.
+
+The download still writes its export under the lock. With no snapshots, the only thing that
+lock would guard against is two downloads in different processes at once, so letting it do
+nothing on Windows is safe. On Linux and macOS nothing changes.
 
 ### Small fixes, in any order
 
@@ -75,14 +88,14 @@ Each is its own small pull request:
   --force` says to stop `jat serve` first instead of printing a traceback.
 - **`windows-testing`:** the Windows check written down as a short checklist in the guide:
   install, `jat init`, `jat serve`, the pages load, add an application, a note and a file,
-  Download archive, Insights' weekly activity, and `uv run pytest`.
+  Download a backup, Insights' weekly activity, and `uv run pytest`.
 
 ### Windows supported
 
 **`windows-support`:** Windows install steps in the guide (the current steps use Unix commands
 such as `cp`, `~` and `/tmp`), the README, the website FAQ and the troubleshooting page
 updated, and a note on keeping the data folder out of OneDrive. From here Windows is
-supported, with Download archive as the backup.
+supported, with Download a backup as the backup.
 
 ### Step 2: git snapshots on Windows
 
@@ -95,8 +108,7 @@ lock has to:
 - not empty the lock file when it opens it.
 
 It needs `utf8-everywhere` and `data-gitattributes` first, so snapshots on Windows don't
-change line endings or misread git's output. A fork linked from issue #230 already has a first
-version of this lock.
+change line endings or misread git's output.
 
 ### Afterwards
 
@@ -124,12 +136,12 @@ double-click app for Windows and macOS) build on Windows support.
 A Docker image (planned separately in `docs/rfc/docker.md`) would run on Windows, because
 Docker Desktop runs Linux in WSL2 there. It doesn't replace Windows support:
 
-- It means installing Docker Desktop and WSL2, rebooting, and giving up a few GB of memory.
+- It means installing Docker Desktop and WSL2, which can mean a reboot and a few GB of memory.
   That's a lot to ask of someone who just wants to track their job search.
 - A data folder in a normal Windows folder, reached from inside the container, is slow, and
-  file locking there isn't reliable. SQLite, which the tracker uses, can corrupt its database
-  on that kind of mount. Kept inside WSL instead, the files are safe but hard to find from
-  Explorer.
+  SQLite, which the tracker uses, can lock badly there; SQLite's own docs warn against
+  network-style file systems like it. Kept inside WSL instead, the files work well but are
+  hard to find from Explorer.
 
 Docker is for self-hosters; Windows support is for everyone else. They're complementary.
 
@@ -143,5 +155,5 @@ not under `/mnt/c`. This hasn't been tested.
   card scripts, and the frontend's test runner. The test runner already handles Windows
   (`frontend/scripts/test-run.mjs`); the rest are maintainer-only.
 - Symlink tests: Windows needs Developer Mode or admin rights to make symlinks, so the few
-  tests that make one will skip there instead of failing (part of getting `uv run pytest`
-  through on Windows).
+  tests that make one should skip there instead of failing. That's part of `windows-testing`,
+  getting `uv run pytest` through on Windows.
