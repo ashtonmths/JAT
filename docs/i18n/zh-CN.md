@@ -115,6 +115,8 @@ open an issue or a pull request.*
 | Happened / Didn't happen | 已进行 / 未进行 | |
 | Reschedule / Rescheduled | 改期 / 已改期 | |
 | Needs a new time | 待定新时间 | |
+| who needed the change: you / they / you both / not down to either of you | 由你提出 / 由对方提出 / 双方共同提出 / 与双方无关 | 改期和待定新时间的原因都用这一组，与“提出方”一致。不要写“你需要改时间”或“你需要调整”，读起来像在吩咐用户 |
+| No figures yet (an offer without pay) | 暂无金额 | |
 | Set new time (button) | 设定新时间 | 其他提示文字引用这个按钮时用同样的词 |
 | version label (a version's name, e.g. v3 (fintech)) | 版本名 | 不用“标签”（那是 tag）。字段名 Version 仍是“版本” |
 | Record as sent (a document version) | 记为已发送 | 按钮、弹窗标题和提示里都用这个说法 |
