@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.19.3 (2026-11-06)
 
-- Sentences shown one after another (the edit form of a round or call waiting for a new time, and Insights' Calls moved and Rescheduling paragraphs) join the way each language does, so a translation no longer gets a stray space after a full stop; English is unchanged (#259).
+- Sentences shown one after another (the edit form of a round or call waiting for a new time, a round's days moved, a rejection's line and Insights' Calls moved, Rescheduling and Rejections round counts) join the way each language does, so a translation no longer gets a stray space after a full stop; English is unchanged (#259).
 
 ## 1.19.2 (2026-11-06)
 

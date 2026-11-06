@@ -14,6 +14,7 @@ import {
   type Interview,
 } from "../api/interviewHooks";
 import { i18n } from "../i18n";
+import { joinSentences } from "../utils/list";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 import { useToday } from "../utils/useToday";
@@ -67,10 +68,12 @@ export function RoundDaysMoved({ interview }: { interview: Pick<Interview, "resc
   const unknown = Math.max(0, interview.rescheduled_count - moves.length);
   return (
     <Text size="sm" c="dimmed">
-      {days > 0
-        ? t("reschedule.pushedBack", { count: days })
-        : t("reschedule.broughtForward", { count: -days })}
-      {unknown > 0 && ` ${t("reschedule.notCounted", { count: unknown })}`}
+      {joinSentences(
+        days > 0
+          ? t("reschedule.pushedBack", { count: days })
+          : t("reschedule.broughtForward", { count: -days }),
+        unknown > 0 && t("reschedule.notCounted", { count: unknown }),
+      )}
     </Text>
   );
 }

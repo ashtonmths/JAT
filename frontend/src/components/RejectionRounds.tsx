@@ -2,6 +2,7 @@ import { Card, Loader, Stack, Text, Title } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 
 import { useRejectionRounds, type RejectionRounds } from "../api/insightHooks";
+import { joinSentences } from "../utils/list";
 
 // Whole keys, so the unused-key scanner sees them; a kind the app doesn't know reads as "other".
 const AFTER_KIND = {
@@ -56,8 +57,10 @@ function Counts({ data }: { data: RejectionRounds }) {
   return (
     <Stack gap="sm">
       <Text size="sm">
-        {t("rejectionRounds.total", { count })}
-        {data.no_rounds > 0 && ` ${t("rejectionRounds.noRounds", { count, n: data.no_rounds })}`}
+        {joinSentences(
+          t("rejectionRounds.total", { count }),
+          data.no_rounds > 0 && t("rejectionRounds.noRounds", { count, n: data.no_rounds }),
+        )}
       </Text>
       <Lines label={t("rejectionRounds.byKind")} lines={byKind} />
       <Lines label={t("rejectionRounds.byNumber")} lines={byNumber} />

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { useRejections, type Rejection } from "../api/insightHooks";
+import { joinSentences } from "../utils/list";
 import { stageName } from "../utils/stageName";
 import { formatDate } from "../utils/time";
 import { RecruiterLine } from "./RecruiterLine";
@@ -19,7 +20,7 @@ function rejectionLine(r: Rejection, t: ReturnType<typeof useTranslation<"insigh
         date,
         stage: stageName({ id: r.rejected_from, name: r.rejected_from_name ?? r.rejected_from ?? "" }),
       });
-  return r.stage === REJECTED ? when : `${when} ${t("rejections.nowAt", { stage: now })}`;
+  return r.stage === REJECTED ? when : joinSentences(when, t("rejections.nowAt", { stage: now }));
 }
 
 function RejectionItem({ r }: { r: Rejection }) {
