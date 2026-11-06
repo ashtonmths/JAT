@@ -177,7 +177,7 @@ a test and the type check fail until it does.
     `theme.ts`, so don't pass one.
 - **Lists the app builds** (a round's interviewers, a role's files) go through `joinList` in
   `src/utils/list.ts`, which uses the language's separator (`common:listSeparator`: ", " in English,
-  "、" in Chinese), never `.join(", ")`; the lint rule refuses that.
+  "、" in Chinese), never `.join(", ")`, which the `no-restricted-syntax` lint rule refuses.
 - **Ids instead of keys built at run time.** Map an id to a key with a typed object rather
   than `` t(`stages.${id}`) ``, which the type check can't follow. Write the map's keys the
   way that file's `t()` takes them, bare for its own namespace (`"nav.items.today"`, typed
