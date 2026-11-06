@@ -98,7 +98,7 @@ next action.
   explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
   Released: v1.0.0 up to v1.18.12 (section 4a). Kai: "yes add release for each change"
-  (each i18n PR is its own patch release; the switcher was minor). Only internal planning
+  (each i18n groundwork PR was its own patch release, the switcher minor; zh-CN translation PRs have none while it's a draft). Only internal planning
   files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `var/`) and the PM dashboard skip
   the bump.
 - **Privacy.** Kai's data never enters this repo. Tests, fixtures, seed data and screenshots use
@@ -482,7 +482,7 @@ Keep this whole section word for word in the summary: it is the live plan.
 **Nothing is being built: report and wait.** Kai scoped each batch ("do documents and notes"), so after a batch I stop
 and wait for the next go, even though the `i18n-zh-cn-*` tasks sit in Up next (Kai asked for them there "so it doesnt
 get lost"). Waiting on Kai in particular:
-- **Simplified Chinese** (`docs/rfc/zh-cn.md`; tasks `i18n-zh-cn-*`, P8: the 7 done files are `done`, the 17 left are `next`, each "waits for Kai's go").
+- **Simplified Chinese** (`docs/rfc/zh-cn.md`; tasks `i18n-zh-cn-*`, P8: the 7 done files are `done`, the other 17 (10 files, then layout, switch-on, demo-data, screenshots, readme, website, listing) are `next`, each "waits for Kai's go").
   - **Done (7 of 17 files, 460 Chinese strings):** applications, stages, files, todos, calls, documents, notes.
   - **Left, smallest first** (strings in English, plural forms counted): events 81, offers 91, common 94, timeline
     103, interviews 136, roles 139, today 152, people 213, errors 269, insights 327. Kai picks a batch ("do X and Y").
