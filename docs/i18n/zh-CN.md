@@ -141,7 +141,7 @@ open an issue or a pull request.*
 | Worth a year | 年度总值 | |
 | Start date | 入职日期 | |
 | Permanent / Contract / Fixed term | 正式岗 / 合同工 / 固定期限 | |
-| IR35 / Outside / Inside | IR35 / IR35 范围外 / IR35 范围内 | 英国税务规则名，不翻译。单独出现时（如卡片上的条目）带“IR35”；放在已标明 IR35 的标签下（表单选项、对比表的行）时只写“范围外 / 范围内 / 未知” |
+| IR35 / Outside / Inside | IR35 / IR35 范围外 / IR35 范围内 | 英国税务规则名，不翻译。单独出现时（如卡片上的条目）带“IR35”；放在已标明 IR35 的标签下（表单选项、对比表的行）时只写“范围外 / 范围内 / 未知”。“Unknown”是“未知”，表单里“Not sure”这个选项写“不确定” |
 | Remote / Hybrid / In office | 远程 / 混合办公 / 线下办公 | 英文为小写的场景（`line.workModes`）在中文里用同样的词 |
 | follow up | 跟进 | 指按计划日期跟进。“Follow up on {{date}}”译为“{{date}}跟进”，“Remind me to follow up”译为“提醒我跟进” |
 | chase / chased | 催问 / 已催问 | 指在对方迟迟不回复时去问。“time to chase”译为“该催问了”，“{{count}} to chase”译为“{{count}} 个待催问” |

@@ -1,6 +1,6 @@
 {
   "title": "职位",
-  "intro": "投递前你可能会考虑的职位：逐个选择投递、标为感兴趣或放弃。",
+  "intro": "投递前你可能会去争取的职位：逐个决定投递、标为“感兴趣”还是放弃。",
   "add": "添加职位",
   "views": {
     "label": "显示",
@@ -52,7 +52,7 @@
       "office": "线下办公"
     },
     "from": "来自 {{person}}",
-    "fromAgency": "来自 {{person}}（{{agency}}）",
+    "fromAgency": "来自 {{agency}} 的 {{person}}",
     "passed": "已放弃：{{reason}}",
     "files_other": "{{role}} 附有 {{count}} 个文件",
     "edit": "编辑：{{role}}",
@@ -69,12 +69,12 @@
     "role": "职位",
     "rolePlaceholder": "平台工程师",
     "who": "谁告诉你的",
-    "whoPlaceholder": "无：你自己找到的",
+    "whoPlaceholder": "没有人，是你自己找到的",
     "call": "来自哪次通话",
     "notFromCall": "不是来自通话",
     "pickWhoFirst": "先选择联系人",
     "callOption": "{{call}} · {{date}}",
-    "newPersonHint": "保存后，这个职位下未结束的申请中，与投递方式相符的（通过此人所在的猎头公司投递，或直接投递且此人在该公司任职）也会改为这位新联系人，并记在各自的时间线上；其余申请保持原联系人不变。",
+    "newPersonHint": "保存后，这个职位下未结束的申请中，与投递方式相符的（通过此人所在的猎头公司投递，或直接投递且此人在该公司任职）也会把联系人换成这位新联系人，并记在各自的时间线上；其余申请的联系人保持不变。",
     "jobAd": "职位链接",
     "jobAdPlaceholder": "https://…",
     "location": "地点",
@@ -106,17 +106,17 @@
     "filesHint": "可选：PDF、文档等。保存在职位里，投递后也会出现在申请中。",
     "chooseFiles": "选择文件",
     "add": "添加职位",
-    "addAnother": "添加并继续",
+    "addAnother": "添加并继续添加",
     "errors": {
       "company": "哪家公司？输入新名称即可添加。",
-      "role": "什么职位？",
+      "role": "职位是什么？",
       "link": "链接需以 http:// 或 https:// 开头"
     }
   },
   "apply": {
     "applyTitle": "投递：{{company}} 的 {{role}}",
     "interestedTitle": "感兴趣：{{company}} 的 {{role}}",
-    "throughAgencyPerson": "通过 {{agency}}（{{person}}）。",
+    "throughAgencyPerson": "通过 {{agency}} 的 {{person}}。",
     "throughAgency": "通过 {{agency}}。",
     "directWith": "直接投递，联系人是 {{person}}。",
     "direct": "直接投递。",
@@ -158,8 +158,8 @@
     "termsSeparator": " · ",
     "fromPerson": "<person/>",
     "fromPersonAgency": "<agency/> 的 <person/>",
-    "fromPersonCall": "<person/> · 来自<call/>",
-    "fromPersonAgencyCall": "<agency/> 的 <person/> · 来自<call/>",
+    "fromPersonCall": "<person/> · 通过<call/>",
+    "fromPersonAgencyCall": "<agency/> 的 <person/> · 通过<call/>",
     "passedYes": "是",
     "passedWhy": "{{when}}：{{reason}}",
     "whatTheySaid": "对方的介绍",
@@ -171,6 +171,6 @@
     "viaApplied": "通过 <person/> · {{date}}投递",
     "direct": "直投",
     "directApplied": "直投 · {{date}}投递",
-    "filesEmpty": "把职位描述或职位简介拖到这里。投递后，这些文件也会显示在申请中。"
+    "filesEmpty": "把职位描述或招聘方发来的职位简介拖到这里。投递后，这些文件也会显示在申请中。"
   }
 }
