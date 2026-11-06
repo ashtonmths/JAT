@@ -38,6 +38,7 @@ import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
 import { PersonChase, PersonClosed } from "../components/PersonChase";
 import { PersonWaiting } from "../components/Waiting";
+import { joinList } from "../utils/list";
 import { ago, formatDateTime } from "../utils/time";
 
 /** A person's page: who they are, how to reach them, what they've been part of, and your notes. */
@@ -158,9 +159,11 @@ export function PersonPage() {
                             </RecruiterLine>
                           </Text>
                           <Text size="xs" c="dimmed">
-                            {a.relations
-                              .map((r) => (r === "source" ? t("person.broughtIt") : relationLabel(r)))
-                              .join(", ")}
+                            {joinList(
+                              a.relations.map((r) =>
+                                r === "source" ? t("person.broughtIt") : relationLabel(r),
+                              ),
+                            )}
                           </Text>
                         </Table.Td>
                         <Table.Td>

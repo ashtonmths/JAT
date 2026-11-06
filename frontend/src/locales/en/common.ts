@@ -152,4 +152,7 @@ export default {
   // A card's line about a role or application, then its recruiter's name (components/RecruiterLine.tsx):
   // "Contoso · Backend Engineer · Alex Morgan". Both are filled in by the app.
   recruiterLine: "<line/> · <person/>",
+  // Between the items of a list the app builds (utils/list.ts joinList): a round's interviewers, a
+  // role's files. Spaces count: Chinese writes "、" with none.
+  listSeparator: ", ",
 } as const;

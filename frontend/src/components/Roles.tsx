@@ -42,6 +42,7 @@ import { i18n } from "../i18n";
 import { beforeApplied } from "../utils/applied";
 import { callLabel } from "../utils/calls";
 import { formatDay } from "../utils/format";
+import { joinList } from "../utils/list";
 import { stageName } from "../utils/stageName";
 import { useFavourite, useGhosted } from "./GhostMark";
 import { CreatableSelect } from "./CreatableSelect";
@@ -621,7 +622,7 @@ export function RoleLine({ role, showSource = true }: { role: RoleSummary; showS
               {role.title}
             </Anchor>
             {files.length > 0 && (
-              <Tooltip label={files.map((f) => f.original_name).join(", ")}>
+              <Tooltip label={joinList(files.map((f) => f.original_name))}>
                 <Group
                   gap={2}
                   wrap="nowrap"
