@@ -87,15 +87,16 @@ function OutcomeNotesModal({
 /** An interview round's Done (asking for the debrief and questions asked) and Didn't happen
  * (asking what happened, kept in its debrief). Only for a booked round that isn't waiting for a new
  * time; Done shows before its time too (a take-home handed in early), Didn't happen only once its
- * time has passed. */
-export function InterviewOutcome({ interview }: { interview: Interview }) {
+ * time has passed. Today passes `passed`, since the server already decided its rounds are past
+ * (this clock only ticks once a minute). */
+export function InterviewOutcome({ interview, passed: known }: { interview: Interview; passed?: boolean }) {
   const { t } = useTranslation("today");
   const save = useSaveInterview();
   const [marking, setMarking] = useState<"done" | "cancelled" | null>(null);
   const now = useNow();
   if (interview.status !== "scheduled" || interview.needs_new_time_since) return null;
   const when = interview.starts_at ?? interview.deadline_at;
-  const passed = !!when && new Date(when).getTime() < now;
+  const passed = known ?? (!!when && new Date(when).getTime() < now);
   const where = t("rows.where", { company: interview.company_name, role: interview.role_title });
   return (
     <Group gap={4} wrap="nowrap">

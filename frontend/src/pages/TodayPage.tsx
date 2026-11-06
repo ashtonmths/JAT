@@ -728,7 +728,7 @@ export function TodayPage() {
                       interview={i}
                       action={
                         <>
-                          <InterviewOutcome interview={i} />
+                          <InterviewOutcome interview={i} passed />
                           <RescheduleButton interview={i} />
                         </>
                       }

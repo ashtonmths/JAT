@@ -113,7 +113,8 @@ wide screen *Your move* is on the left and the other two sit beside it:
 - **How did it go?**: interview rounds and calls whose time has passed; mark them *Done* (a
   call: *Happened*) or *Didn't happen*. Each asks first: a round's *Done* for its debrief and
   the questions asked, *Didn't happen* for what happened (saved on the round, or in the call's
-  notes). Nothing changes until you save; the notes can stay empty.
+  notes). Nothing changes until you save; the notes can stay empty. A round's *Done* and *Didn't
+  happen* are also on the application's page and the [Interviews](#interviews) page.
 - **Needs a new time**: rounds and calls that can't go ahead at their time, with no new time agreed yet
   (see [Interviews](#interviews) and [Calls and meetings](#calls-and-meetings)), longest waiting first, each with its old time, who needed the
   change, its to-do to book the new time (listed here rather than under To-dos) and **Set new time**.
@@ -311,7 +312,8 @@ Everything about one application:
 - **Details**: applied date, follow-up date, snooze, tags, and **Archived**.
 - **Interviews**: numbered rounds in your own words ("Round 2 · Engineering manager chat"),
   with type, time or deadline, format and link, interviewers, prep, debrief, questions asked,
-  and take-home briefs and repos; *Rescheduled* on one that moved (see [Interviews](#interviews)).
+  and take-home briefs and repos; *Rescheduled* on one that moved; **Done**, **Didn't happen** and
+  **Reschedule** on an open round (see [Interviews](#interviews)).
 - **Documents sent**: which version of your CV and cover letter went with it.
 - **Offer**: pay and terms, and revised offers (see [Offers](#offers)).
 - **Notes**, **Links** (job ads, Google Docs, repos) and **Files** (PDFs, images, exported
@@ -517,7 +519,7 @@ the people there and notes); agencies have the same.
 Every interview round across all applications: what's coming up, then everything earlier
 or cancelled. On each row:
 
-- **Done** (a booked round, before or after its time, so a take-home handed in early counts) asks
+- **Done** (an open round, booked or not, before or after its time, so a take-home handed in early counts) asks
   for the debrief and the questions asked, then marks it done; **Didn't happen** (once its time has
   passed) asks what happened, kept in its debrief, then marks it cancelled. Nothing changes until
   you confirm. They're also on the round in the application's page, and on Today under

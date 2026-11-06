@@ -119,6 +119,8 @@ function InterviewItem({
             {people.length ? t("card.whenWith", { when: whenText, people: people.join(", ") }) : whenText}
           </Text>
           <RoundDaysMoved interview={interview} />
+          {/* Its own row, so the buttons on the right don't squeeze the round's details on a phone. */}
+          <InterviewOutcome interview={interview} />
           {interview.meeting_url && (
             <Anchor href={interview.meeting_url} target="_blank" rel="noreferrer" size="sm">
               {t("card.joinLink")}
@@ -131,7 +133,6 @@ function InterviewItem({
           )}
         </Stack>
         <Group gap={2} wrap="nowrap">
-          <InterviewOutcome interview={interview} />
           <RescheduleButton interview={interview} />
           <Tooltip label={t("edit")}>
             <ActionIcon variant="subtle" color="gray" onClick={onEdit} aria-label={t("editNamed", { label })}>

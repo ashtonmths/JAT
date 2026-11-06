@@ -80,6 +80,14 @@ describe("how did it go", () => {
     expect(screen.queryByRole("button", { name: /Didn't happen/ })).not.toBeInTheDocument();
   });
 
+  it("offers both on a take-home whose deadline has passed", () => {
+    renderOutcome({ ...round, starts_at: null, deadline_at: "2026-01-05T17:00:00Z" });
+    expect(screen.getByRole("button", { name: "Done: Round 2 · System design test" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Didn't happen: Round 2 · System design test" }),
+    ).toBeInTheDocument();
+  });
+
   it("offers nothing for a round that's done", () => {
     renderOutcome({ ...round, status: "done" });
     expect(screen.queryByRole("button", { name: /Done|Didn't happen/ })).not.toBeInTheDocument();
