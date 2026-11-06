@@ -39,7 +39,9 @@ next action.
   with `gh pr merge N --merge --delete-branch` after the review-fix cycle (CLAUDE.md *Git*), fixing
   every `must_fix`, the reasonable `should_fix` and the cheap nits, and reviewing again until no
   `must_fix` is left. Every PR goes through it, docs-only ones too; a large docs change gets a
-  fact-check reviewer. Kai: "merge once ready and update local main".
+  fact-check reviewer. Kai: "merge once ready and update local main". PR bodies and comments say what
+  was asked in our own words, never quoting Kai, and give an *Agents and tokens* table (CLAUDE.md *Git*,
+  2026-11-06).
 - **Approval to merge and release (since 2026-10-31).** Kai: "if you have followed and completed the
   iterative review-fix cycle then it can auto merge and make a release as appropriate, but it needs
   my explicit permission each time to make a major release". So don't ask per PR, except for a major,

@@ -50,14 +50,15 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   even one so far only on the branch's roadmap (marked "on its branch"), and as Review once the PR is ready. Keep pushing to it as work continues. Run `gh pr ready` when it's time for review, then follow the
   review-fix cycle below.
 - **Don't quote Kai in PR descriptions or comments** (Kai, 2026-11-06). When Kai asks for work, the PR
-  body says what was asked in your own words ("Adds a Done button to …", "Fixes the bug … recorded in
-  #257"), not Kai's message word for word; the same goes for PR and issue comments. The roadmap task
+  body says what was asked in your own words ("Adds a Done button to …", "Fixes the bug `fix-…`
+  recorded in #N"), not Kai's message word for word; the same goes for PR and issue comments. The roadmap task
   and `docs/COMPACTION.md` may still record Kai's words.
 - **Every PR description gives its estimated token usage** (Kai, 2026-11-06), as the translation PRs
   do: an *Agents and tokens* table with a row per step (build, each review round, workflows), the
   agents in it and their tokens as the tool reports them (an agent's or workflow's usage), a row
-  estimating the main session's own share, and a total marked "about". Fill it in before
-  `gh pr ready`, and update it if later review rounds add more.
+  estimating the main session's own share (a rough figure, saying what it rests on, e.g. the turns
+  spent on this PR times the typical context size), and a total marked "about". Fill it in before
+  `gh pr ready`, and bring it up to date before merging, after the last review round.
 - **Keep PRs small.** Aim for about 500 changed lines, and treat 1,000 as a strong target to stay
   below. Go over only when a change can't sensibly be split, and say why in the PR. `uv.lock`,
   `pnpm-lock.yaml`, `frontend/openapi.json` and `frontend/src/api/schema.d.ts` don't count. When a
