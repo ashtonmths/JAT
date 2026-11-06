@@ -49,6 +49,23 @@ describe("a role's badge", () => {
     ).toEqual(["To decide", "Interested", "Applied", "Passed", "Closed"]);
     expect(roleBadge(role({ status: "closed", closed_as: "Withdrawn" })).label).toBe("Withdrawn");
   });
+
+  it("says how an applied role's latest application ended", () => {
+    const rejected = roleBadge(
+      role({ status: "applied", ended_as: "Rejected", ended_stage: "rejected", ended_kind: "closed" }),
+    );
+    expect(rejected).toEqual({ label: "Rejected", color: "dark" });
+    const accepted = roleBadge(
+      role({ status: "applied", ended_as: "Accepted", ended_stage: "accepted", ended_kind: "success" }),
+    );
+    expect(accepted).toEqual({ label: "Accepted", color: "green" });
+    // A stage you added keeps its own name.
+    expect(
+      roleBadge(
+        role({ status: "applied", ended_as: "Ghosted by HR", ended_stage: "hr_ghost", ended_kind: "closed" }),
+      ).label,
+    ).toBe("Ghosted by HR");
+  });
 });
 
 describe("a role's page", () => {

@@ -36,7 +36,7 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
         for app_id, role_id, stage, applied_on in session.execute(
             select(Application.id, Application.role_id, Application.stage, Application.applied_on)
             .where(Application.role_id.in_(role_ids))
-            .order_by(Application.created_at)
+            .order_by(Application.created_at, Application.id)
         ):
             apps[role_id].append(app_id)
             stages[role_id].append(stage)
@@ -71,7 +71,7 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
 
     out = []
     for role, company_name, contact, agency in rows:
-        closed_as = closed_stage = None
+        closed_as = closed_stage = ended_as = ended_stage = ended_kind = None
         if apps[role.id]:
             status = (
                 role_progress(
@@ -85,6 +85,16 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
                 # The latest application's stage (the one the role links to).
                 closed_stage = stages[role.id][-1]
                 closed_as = names.get(closed_stage, closed_stage)
+            elif status == "applied" and all(kinds.get(st) in ("closed", "success") for st in stages[role.id]):
+                # Applied, and every application has ended (one still in play, say a duplicate you
+                # withdrew beside one you're interviewing on, keeps it plain Applied). The latest
+                # success wins (accepted beats a duplicate rejected later), else the latest one. The
+                # status stays `applied` for the views and Insights.
+                ended_stage = next(
+                    (st for st in reversed(stages[role.id]) if kinds[st] == "success"), stages[role.id][-1]
+                )
+                ended_as = names.get(ended_stage, ended_stage)
+                ended_kind = kinds[ended_stage]
         else:
             status = "passed" if role.decision == "passed" else "to_decide"
         out.append(
@@ -94,6 +104,9 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
                 status=status,
                 closed_as=closed_as,
                 closed_stage=closed_stage,
+                ended_as=ended_as,
+                ended_stage=ended_stage,
+                ended_kind=ended_kind,
                 application_ids=apps[role.id],
                 contact_name=contact.name if contact else None,
                 agency_id=agency.id if agency else None,
@@ -118,7 +131,9 @@ def role_summaries(
     `status`: `to_decide` (no application and not passed), `interested` (it has applications,
     all still before Applied), `closed` (all closed before any got to Applied: withdrawn while
     only interested, say), `applied` (an application got to Applied or further) or `passed`.
-    Filter by company, by who told you about it, or by the call it came up in.
+    A `closed` role has `closed_as`/`closed_stage`; an `applied` one whose applications have all
+    ended has `ended_as`/`ended_stage`/`ended_kind` (`closed` or `success`: the latest success,
+    else the latest application). Filter by company, by who told you about it, or by the call it came up in.
     """
     where = []
     if company_id:
