@@ -11,6 +11,7 @@ import { formatShortWeekday } from "../utils/format";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 import { InterviewFormModal } from "./InterviewFormModal";
+import { InterviewOutcome } from "./OutcomeNotes";
 import { RescheduleButton, RescheduledBadge, RoundDaysMoved, wasText } from "./Reschedule";
 
 type RoundLike = {
@@ -130,6 +131,7 @@ function InterviewItem({
           )}
         </Stack>
         <Group gap={2} wrap="nowrap">
+          <InterviewOutcome interview={interview} />
           <RescheduleButton interview={interview} />
           <Tooltip label={t("edit")}>
             <ActionIcon variant="subtle" color="gray" onClick={onEdit} aria-label={t("editNamed", { label })}>

@@ -517,6 +517,11 @@ the people there and notes); agencies have the same.
 Every interview round across all applications: what's coming up, then everything earlier
 or cancelled. On each row:
 
+- **Done** (a booked round, before or after its time, so a take-home handed in early counts) asks
+  for the debrief and the questions asked, then marks it done; **Didn't happen** (once its time has
+  passed) asks what happened, kept in its debrief, then marks it cancelled. Nothing changes until
+  you confirm. They're also on the round in the application's page, and on Today under
+  [How did it go?](#today-home). A round waiting for a new time has neither: set its new time first.
 - **Reschedule** (a booked round, including one whose time has passed): pick the new time,
   choose **Who needed the change?** (*Me*, *Them*, *Both of us* or *Neither of us*) and, if you
   like, say why. Its end moves with it. The application's timeline, the
