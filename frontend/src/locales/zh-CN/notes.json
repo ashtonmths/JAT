@@ -1,0 +1,101 @@
+{
+  "page": {
+    "title": "笔记",
+    "new": "新建笔记",
+    "searchPlaceholder": "搜索标题和正文",
+    "search": "搜索笔记",
+    "which": "显示哪些笔记",
+    "all": "全部笔记",
+    "general": "仅通用笔记",
+    "noMatches": "没有匹配的笔记。",
+    "none": "还没有笔记。笔记是数据文件夹中 notes/ 目录下的 Markdown 文件。"
+  },
+  "card": {
+    "title": "笔记",
+    "add": "添加笔记",
+    "none": "还没有笔记。通话记录、准备工作、个人印象，都可以用 Markdown 写下来。"
+  },
+  "item": {
+    "empty": "（空）",
+    "edit": "编辑",
+    "editNamed": "编辑笔记：{{title}}",
+    "delete": "删除",
+    "deleteNamed": "删除笔记：{{title}}",
+    "deleteConfirm": "删除“{{title}}”？对应的文件也会一并删除（git 历史中仍会保留）。"
+  },
+  "editor": {
+    "editTitle": "编辑笔记",
+    "newTitle": "新建笔记",
+    "titleError": "起个标题吧",
+    "title": "标题",
+    "titlePlaceholder": "与 Alex 通话，聊 Contoso 的职位",
+    "write": "编写",
+    "preview": "预览",
+    "note": "笔记内容",
+    "notePlaceholder": "支持 Markdown：**粗体**、- 列表、[链接](https://example.com)、| 表格 |",
+    "nothingToPreview": "还没有可预览的内容。",
+    "attachedTo": "关联到",
+    "attachedHint": "留空即为通用笔记",
+    "attachedPlaceholder": "申请、公司、联系人…",
+    "groups": {
+      "applications": "申请",
+      "companies": "公司",
+      "agencies": "猎头公司",
+      "people": "联系人"
+    },
+    "application": "{{company}} · {{role}}",
+    "add": "添加笔记"
+  },
+  "search": {
+    "title": "搜索",
+    "resultsFor": "“{{q}}”的搜索结果",
+    "intro": "在顶部的搜索框中输入（或按 <key>/</key>），即可搜索申请、联系人、笔记、面试复盘、通话、Offer、邮件、文件和链接。",
+    "failed": "搜索失败。追踪器在运行吗？",
+    "none": "没有同时匹配“{{q}}”中所有词的结果。试试少输几个词，或换短一点的词。",
+    "first50": "前 50 条结果",
+    "count_other": "{{count}} 条结果",
+    "archived": "已归档",
+    "kinds": {
+      "application": "申请",
+      "role": "职位",
+      "company": "公司",
+      "agency": "猎头公司",
+      "contact": "联系人",
+      "interview": "面试",
+      "meeting": "通话",
+      "todo": "待办",
+      "offer": "Offer",
+      "timeline": "时间线",
+      "note": "笔记",
+      "document": "文档",
+      "file": "文件",
+      "link": "链接"
+    },
+    "hit": {
+      "offer": "Offer",
+      "done": "已完成",
+      "roundKinds": {
+        "screen": "初筛",
+        "hiring_manager": "用人经理面",
+        "technical": "技术面",
+        "coding_task": "编程作业",
+        "system_design": "系统设计",
+        "pairing": "结对编程",
+        "behavioural": "行为面试",
+        "onsite": "现场面试",
+        "final": "终面",
+        "other": "其他"
+      },
+      "callKinds": {
+        "call": "通话",
+        "video": "视频通话",
+        "in_person": "会面"
+      },
+      "callAbout": {
+        "call": "通话：{{about}}",
+        "video": "视频通话：{{about}}",
+        "in_person": "会面：{{about}}"
+      }
+    }
+  }
+}

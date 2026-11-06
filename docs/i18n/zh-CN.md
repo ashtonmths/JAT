@@ -118,6 +118,8 @@ open an issue or a pull request.*
 | Set new time (button) | 设定新时间 | 其他提示文字引用这个按钮时用同样的词 |
 | version label (a version's name, e.g. v3 (fintech)) | 版本名 | 不用“标签”（那是 tag）。字段名 Version 仍是“版本” |
 | Record as sent (a document version) | 记为已发送 | 按钮、弹窗标题和提示里都用这个说法 |
+| general note (attached to nothing) | 通用笔记 | 编辑器提示（留空即为通用笔记）和“笔记”页筛选（仅通用笔记）都用它 |
+| Write / Preview (Markdown editor tabs) | 编写 / 预览 | Write 不是 Edit（编辑），编辑留给编辑按钮和弹窗标题 |
 | Debrief | 复盘 | |
 | Prep | 准备 | |
 | Questions asked | 被问到的问题 | |
