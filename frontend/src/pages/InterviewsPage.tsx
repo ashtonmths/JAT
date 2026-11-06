@@ -18,19 +18,22 @@ import { useTranslation } from "react-i18next";
 
 import { useInterviews, type Interview } from "../api/interviewHooks";
 import { InterviewFormModal } from "../components/InterviewFormModal";
+import { InterviewOutcome } from "../components/OutcomeNotes";
 import { roundStatus } from "../components/Interviews";
 import { RescheduleButton, RescheduledBadge, wasText } from "../components/Reschedule";
 import { RecruiterLine } from "../components/RecruiterLine";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 
-/** Edit a round, or move a booked one to another time. */
+/** Mark an open round done (or, once its time has passed, that it didn't happen), move a booked one
+ * to another time, or edit it. */
 function RoundActions({ interview }: { interview: Interview }) {
   const { t } = useTranslation("interviews");
   const [editing, setEditing] = useState(false);
   const label = roundLabel(interview);
   return (
     <Group gap={4} wrap="nowrap" justify="flex-end">
+      <InterviewOutcome interview={interview} />
       <RescheduleButton interview={interview} />
       <Tooltip label={t("edit")}>
         <ActionIcon variant="subtle" aria-label={t("editNamed", { label })} onClick={() => setEditing(true)}>

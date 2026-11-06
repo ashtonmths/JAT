@@ -613,6 +613,46 @@ test.describe("the Interviews page", () => {
   });
 });
 
+test.describe("marking a round done", () => {
+  test("from its application: Done asks how it went and saves it", async ({ page, request }) => {
+    const app = await application(request, "Done Here Co");
+    await addRound(request, app.id, { title: "Past", starts_at: inDays(-1) });
+    await addRound(request, app.id, { title: "Ahead", starts_at: inDays(4) });
+    await addRound(request, app.id, { title: "Over", status: "done", starts_at: inDays(-9) });
+    await openApplication(page, app.id);
+    // Before its time a round can be done (a take-home handed in early), but not "didn't happen".
+    await expect(page.getByRole("button", { name: "Done: Round 2 · Ahead" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Didn't happen: Round 2 · Ahead" })).toBeHidden();
+    await expect(page.getByRole("button", { name: "Done: Round 3 · Over" })).toBeHidden();
+    await page.getByRole("button", { name: "Done: Round 1 · Past" }).click();
+    const dialog = theDialog(page);
+    await dialog.getByLabel("Debrief").fill("Went well, fast follow-ups");
+    const saved = answered(page, "PATCH", /\/api\/v1\/interviews\//);
+    await dialog.getByRole("button", { name: "Mark as done" }).click();
+    await saved;
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole("button", { name: "Done: Round 1 · Past" })).toBeHidden();
+    const past = (await roundsOf(request, app.id)).find((r) => r.round === 1);
+    expect(past?.status).toBe("done");
+    expect(past?.debrief).toBe("Went well, fast follow-ups");
+  });
+
+  test("from Interviews: Didn't happen saves what happened", async ({ page, request }) => {
+    const app = await application(request, "Not Here Co");
+    await addRound(request, app.id, { title: "Missed", starts_at: inDays(-2) });
+    await openInterviews(page);
+    await page.getByRole("button", { name: "Didn't happen: Round 1 · Missed" }).click();
+    const dialog = theDialog(page);
+    await dialog.getByLabel("What happened?").fill("They never joined");
+    await dialog.getByRole("button", { name: "Mark as didn't happen" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole("button", { name: "Didn't happen: Round 1 · Missed" })).toBeHidden();
+    const round = (await roundsOf(request, app.id))[0];
+    expect(round?.status).toBe("cancelled");
+    expect(round?.debrief).toBe("They never joined");
+  });
+});
+
 test.describe("rescheduling", () => {
   const open = async (page: Page, label: string) => {
     await page.getByRole("button", { name: `Reschedule ${label}` }).click();

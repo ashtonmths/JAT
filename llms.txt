@@ -35,7 +35,9 @@ What it does:
   quiet, waiting to hear back, replies to read, interviews coming up, one-click follow-up,
   snooze and Ghosted, and "usually replies within N working days" per person (`replies`,
   `usual_reply_days` on contacts).
-- Interview rounds in the user's own words ("Round 2 · System design test"), rescheduled from
+- Interview rounds in the user's own words ("Round 2 · System design test"), marked done (with a
+  debrief and the questions asked) or as not having happened from the application page, the
+  Interviews page or Today, and rescheduled from
   the application page, the quick view (the current round, in an active stage), Today or the
   Interviews page and marked so, with each move's old and new time, who needed the change and
   why on the application's timeline, the Timeline page and Today's Recent activity. A round

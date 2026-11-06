@@ -6,6 +6,7 @@ import { useSaveInterview, type Interview } from "../api/interviewHooks";
 import { useSaveMeeting, type Meeting } from "../api/meetingHooks";
 import { callLabel } from "../utils/calls";
 import { roundLabel } from "../utils/rounds";
+import { useNow } from "../utils/useToday";
 
 type Field = { key: string; label: string; placeholder: string; initial: string | null };
 
@@ -84,11 +85,18 @@ function OutcomeNotesModal({
 }
 
 /** An interview round's Done (asking for the debrief and questions asked) and Didn't happen
- * (asking what happened, kept in its debrief). */
-export function InterviewOutcome({ interview }: { interview: Interview }) {
+ * (asking what happened, kept in its debrief). Only for an open round (booked or not) that isn't
+ * waiting for a new time; Done shows before its time too (a take-home handed in early), Didn't happen only once its
+ * time has passed. Today passes `passed`, since the server already decided its rounds are past
+ * (this clock only ticks once a minute). */
+export function InterviewOutcome({ interview, passed: known }: { interview: Interview; passed?: boolean }) {
   const { t } = useTranslation("today");
   const save = useSaveInterview();
   const [marking, setMarking] = useState<"done" | "cancelled" | null>(null);
+  const now = useNow();
+  if (interview.status !== "scheduled" || interview.needs_new_time_since) return null;
+  const when = interview.starts_at ?? interview.deadline_at;
+  const passed = known ?? (!!when && new Date(when).getTime() < now);
   const where = t("rows.where", { company: interview.company_name, role: interview.role_title });
   return (
     <Group gap={4} wrap="nowrap">
@@ -101,15 +109,17 @@ export function InterviewOutcome({ interview }: { interview: Interview }) {
       >
         {t("outcome.done")}
       </Button>
-      <Button
-        size="compact-xs"
-        variant="subtle"
-        color="gray"
-        aria-label={t("outcome.didntHappenWho", { label: roundLabel(interview) })}
-        onClick={() => setMarking("cancelled")}
-      >
-        {t("outcome.didntHappen")}
-      </Button>
+      {passed && (
+        <Button
+          size="compact-xs"
+          variant="subtle"
+          color="gray"
+          aria-label={t("outcome.didntHappenWho", { label: roundLabel(interview) })}
+          onClick={() => setMarking("cancelled")}
+        >
+          {t("outcome.didntHappen")}
+        </Button>
+      )}
       {marking && (
         <OutcomeNotesModal
           title={
