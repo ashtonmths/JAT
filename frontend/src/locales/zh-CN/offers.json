@@ -29,7 +29,7 @@
     "showClosed": "显示已婉拒和已撤回的 Offer",
     "noneOpen": "没有考虑中的 Offer。打开开关可查看已婉拒和已撤回的 Offer。",
     "none": "还没有 Offer。收到 Offer 后，在对应申请的页面添加。",
-    "explain": "年度总值是基本工资加上预期奖金、你估算的股权价值和雇主养老金；日薪按 220 个工作日计算。更新后的 Offer 会取代之前的那一份。",
+    "explain": "年度总值是基本工资加上预期奖金、你估算的股权价值和雇主养老金；日薪按每年 220 个工作日折算。更新后的 Offer 会取代之前的那一份。",
     "detail": "项目",
     "worth": "年度总值",
     "highest": "最高",
@@ -85,8 +85,8 @@
     "ir35": "IR35",
     "ir35Placeholder": "未设置",
     "ir35Options": {
-      "outside": "IR35 范围外",
-      "inside": "IR35 范围内",
+      "outside": "范围外",
+      "inside": "范围内",
       "unknown": "未知"
     },
     "length": "合同期限（月）",
@@ -94,7 +94,7 @@
     "bonus": "奖金（预计每年）",
     "pension": "雇主养老金（%）",
     "equity": "股权",
-    "equityPlaceholder": "0.1%，4 年归属，1 年 cliff",
+    "equityPlaceholder": "0.1%，分 4 年归属，1 年 cliff",
     "equityWorth": "股权价值（每年）",
     "equityWorthHint": "你的估算",
     "holiday": "年假（天）",
