@@ -130,6 +130,10 @@ open an issue or a pull request.*
 | offer | Offer | 中国大陆程序员的通用说法，保留拉丁字母，前后加空格。“Add offer”译为“添加 Offer” |
 | Deciding (offer status) | 考虑中 | |
 | revised offer | 更新后的 Offer | |
+| Earlier offer (replaced by a revised one) | 之前的 Offer | |
+| Received (the date an offer came in) | 收到日期 | 同“投递日期”“发送日期”的写法 |
+| Length (a contract's or fixed term's) | 合同期限 | 表单里写“合同期限（月）”，数值写“{{count}} 个月” |
+| Notes (an offer's own text field) | 备注 | 不是“笔记”（那是 Markdown 笔记功能） |
 | Offers to answer | 待答复的 Offer | |
 | Reply by | 答复截止 | “Reply by {{date}}”译为“{{date}}前答复” |
 | salary / base salary / day rate | 薪资 / 基本工资 / 日薪 | “{{rate}} a day”译为“{{rate}}/天”，“{{amount}} a year”译为“{{amount}}/年” |
@@ -137,7 +141,7 @@ open an issue or a pull request.*
 | Worth a year | 年度总值 | |
 | Start date | 入职日期 | |
 | Permanent / Contract / Fixed term | 正式岗 / 合同工 / 固定期限 | |
-| IR35 / Outside / Inside | IR35 / IR35 范围外 / IR35 范围内 | 英国税务规则名，不翻译 |
+| IR35 / Outside / Inside | IR35 / IR35 范围外 / IR35 范围内 | 英国税务规则名，不翻译。单独出现时（如卡片上的条目）带“IR35”；放在已标明 IR35 的标签下（表单选项、对比表的行）时只写“范围外 / 范围内 / 未知” |
 | Remote / Hybrid / In office | 远程 / 混合办公 / 线下办公 | 英文为小写的场景（`line.workModes`）在中文里用同样的词 |
 | follow up | 跟进 | 指按计划日期跟进。“Follow up on {{date}}”译为“{{date}}跟进”，“Remind me to follow up”译为“提醒我跟进” |
 | chase / chased | 催问 / 已催问 | 指在对方迟迟不回复时去问。“time to chase”译为“该催问了”，“{{count}} to chase”译为“{{count}} 个待催问” |
