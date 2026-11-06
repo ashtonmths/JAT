@@ -163,7 +163,7 @@ def test_a_role_you_track_at_interested_is_interested_until_you_apply(client, se
     assert client.get(f"/api/v1/role-summaries/{other}").json()["status"] == "interested"
 
 
-def test_an_applied_role_says_how_its_latest_application_ended(client, seeded):
+def test_an_applied_role_says_how_its_applications_ended(client, seeded):
     company = seeded["company"]["id"]
 
     def ended(role_id):
@@ -190,7 +190,7 @@ def test_an_applied_role_says_how_its_latest_application_ended(client, seeded):
     assert ended(platform) == ("applied", "Rejected", "rejected", "closed")
     assert platform in [r["id"] for r in _summaries(client, status="applied")]
     # Undone: back in play.
-    client.post(f"/api/v1/applications/{first}/undo")
+    assert client.post(f"/api/v1/applications/{first}/undo").status_code == 200
     assert ended(platform) == ("applied", None, None, None)
     move(first, "rejected")
     # A second application in play: not ended. Accepted, it's an end too.
@@ -244,7 +244,7 @@ def test_interested_in_a_workflow_without_an_applied_stage(app, client, seeded):
     client.post(f"/api/v1/applications/{a}/move", json={"to_stage": "gone"})
     r = client.get(f"/api/v1/role-summaries/{role}").json()
     assert (r["status"], r["ended_stage"], r["ended_kind"]) == ("applied", "gone", "closed")
-    assert r["ended_as"] in ("gone", "Gone")
+    assert r["ended_as"] == "gone"
 
 
 def _status(client, role_id):

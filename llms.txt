@@ -31,7 +31,8 @@ What it does:
 - Roles to decide before applying (`/api/v1/role-summaries`): pitched by whom, on which
   call; apply, mark interested (role status `interested`, or `closed` with `closed_as`) or
   pass; an `applied` role whose applications have all ended carries `ended_as`, `ended_stage`
-  and `ended_kind` (closed or success) and its badge says how it ended (*Rejected*, *Accepted*); a page per role whose files (e.g. the job description) show on the application.
+  and `ended_kind` (closed or success) and its badge says how it ended (*Rejected*,
+  *Accepted*); a page per role whose files (e.g. the job description) show on the application.
 - What Today lists (`GET /api/v1/next-actions`): to-dos (`/api/v1/todos`), follow-ups due, applications gone
   quiet, waiting to hear back, replies to read, interviews coming up, one-click follow-up,
   snooze and Ghosted, and "usually replies within N working days" per person (`replies`,

@@ -25,7 +25,7 @@ export const ROLE_STATUS: Record<RoleStatus, { label: `roles:status.${RoleStatus
 };
 
 /** A role's badge: its status, or the stage it ended at, for one closed before you applied or an
- * applied one whose latest application has ended (Rejected, Accepted…). */
+ * applied one whose applications have all ended (Rejected, Accepted…). */
 export function roleBadge(role: RoleSummary): { label: string; color: string } {
   const status = ROLE_STATUS[role.status];
   // closed_as and ended_as are the stage's name, as written in config.toml; *_stage its id.
