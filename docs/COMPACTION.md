@@ -97,7 +97,7 @@ next action.
   every PR: "most are patch unless its new feature then it would be minor. it should be very
   explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
-  Released: v1.0.0 up to v1.18.10 (section 4a). Kai: "yes add release for each change"
+  Released: v1.0.0 up to v1.18.12 (section 4a). Kai: "yes add release for each change"
   (each i18n PR is its own patch release; the switcher was minor). Only internal planning
   files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `var/`) and the PM dashboard skip
   the bump.
@@ -424,7 +424,7 @@ next action.
     glossary `docs/i18n/zh-CN.md`, the plan `docs/rfc/zh-cn.md`, and 24 `i18n-zh-cn-*` roadmap tasks in Up next.
   - #240 (no release): the file tasks ordered by string count, smallest first (Kai: "order them by string count asc").
   - #242 `i18n-translate-tools` (v1.18.11): the translation helpers in the repo, any language:
-    `scripts/i18n/translate/` (`prepare.py`, `screenshots.py` + `pages.json`, `assemble.py`, `apply_review.py`,
+    `scripts/i18n/translate/` (`common.py`, `prepare.py`, `screenshots.py` + `pages.json`, `assemble.py`, `apply_review.py`,
     `README.md`) and `.claude/workflows/i18n-{translate,review,rereview}.js`; `tests/test_i18n_translate.py`.
   - #243 `test-speed` (v1.18.12): tests use half the CPU threads (6 of 12, was a quarter); a PR whose every file is on a
     closed list (a draft language's text and glossary, `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`,
@@ -438,7 +438,7 @@ next action.
     strings into its neighbour in `prepare.py`, adds pages for documents and notes, and tells the consistency pass never
     to add keys.
 - **Tests on main:** #243's full run on its final commit (`f2a55f2`): pytest 1,301, browser 711 (4.8 min). The
-  translation PRs since ran everything but the browser tests (pytest 1,301 and the catalog test each time).
+  translation PRs since ran everything but the browser tests (pytest 1,301, then 1,304 since #247 added its tests; the catalog test each time).
 - **Kai's tracker** answered on 8770. Nothing since v1.18.0 is a server change; the sidebar keeps asking for a restart
   until Kai restarts (each release bumps the server's version). The zh-CN draft isn't in production builds.
 - **Kai's messages since #238, in order** (word for word where quoted):
@@ -482,7 +482,7 @@ Keep this whole section word for word in the summary: it is the live plan.
 **Nothing is being built: report and wait.** Kai scoped each batch ("do documents and notes"), so after a batch I stop
 and wait for the next go, even though the `i18n-zh-cn-*` tasks sit in Up next (Kai asked for them there "so it doesnt
 get lost"). Waiting on Kai in particular:
-- **Simplified Chinese** (`docs/rfc/zh-cn.md`; tasks `i18n-zh-cn-*`, P8, all `next`, each "waits for Kai's go").
+- **Simplified Chinese** (`docs/rfc/zh-cn.md`; tasks `i18n-zh-cn-*`, P8: the 7 done files are `done`, the 17 left are `next`, each "waits for Kai's go").
   - **Done (7 of 17 files, 460 Chinese strings):** applications, stages, files, todos, calls, documents, notes.
   - **Left, smallest first** (strings in English, plural forms counted): events 81, offers 91, common 94, timeline
     103, interviews 136, roles 139, today 152, people 213, errors 269, insights 327. Kai picks a batch ("do X and Y").
@@ -510,8 +510,8 @@ get lost"). Waiting on Kai in particular:
     translation, corrections by issue or PR; a draft until every file is in; **no release while a draft**; one PR per
     string file; Opus translates and judges, **Sonnet and Opus review** (no Haiku); **no screenshots in PRs**; **no
     saved context pack** (context looked up fresh each run); files smallest first.
-  - **Cost so far:** pilot 3.1M tokens for 190 strings (16k each); the next six files 0.68–1.14M each, about 25k per
-    string (screenshot reviewers are a fixed cost per file). Opus raised nearly every should_fix; Sonnet mostly nits.
+  - **Cost so far:** pilot 3.1M tokens for 190 strings (16k each); the next six files 0.68–1.14M each, about 5.2M for 270 strings (19k each; 14k for
+    documents to 62k for stages, as screenshot reviewers are a fixed cost per file). Opus raised nearly every should_fix; Sonnet mostly nits.
 - **Windows** (`docs/rfc/windows.md`, all planned): `windows-starts` (basic support: the Windows-unsafe parts behind one
   is-Windows check, off there; `JAT_WINDOWS_SNAPSHOTS=1` turns snapshots on for testing on a test data folder), then
   `utf8-everywhere`, `windows-time-zones` (tzdata on every platform, Kai's yes), `static-file-types`,
@@ -712,7 +712,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
 
 ### 5. Work in flight and candidates
 
-- **In flight:** none (after this doc's PR merges). **Up next:** nothing. **Backlog:** Kai picks (section 4a); the MCP
+- **In flight:** none (after this doc's PR merges). **Up next:** the 17 `i18n-zh-cn-*` tasks left, each waiting for Kai's go (4a). **Backlog:** Kai picks (section 4a); the MCP
   build waits on the RFC's §14 decisions.
 - **Left of the i18n work, P8** (when Kai says; see 4a): `i18n-search` and `multi-language`
   (now the languages after Chinese; Simplified Chinese is the `i18n-zh-cn-*` tasks of section 4a; also percent and number formats,
@@ -1114,7 +1114,7 @@ palettes; the earlier versions of this doc.
 ### 10. End the summary with
 
 The resume steps below, then one line with the next action: Kai's latest instruction if it's unfinished; otherwise
-"Next action: nothing is up next; report and wait for Kai (section 4a)."
+"Next action: nothing is being built; report and wait for Kai's next batch (section 4a)."
 
 ---
 
