@@ -24,15 +24,21 @@ export const ROLE_STATUS: Record<RoleStatus, { label: `roles:status.${RoleStatus
   passed: { label: "roles:status.passed", color: "gray" },
 };
 
-/** A role's badge: its status, or for one closed before you applied, the stage it ended at. */
+/** A role's badge: its status, or the stage it ended at, for one closed before you applied or an
+ * applied one whose latest application has ended (Rejected, Accepted…). */
 export function roleBadge(role: RoleSummary): { label: string; color: string } {
   const status = ROLE_STATUS[role.status];
-  // closed_as is the stage's name, as written in config.toml; closed_stage its id.
-  const label =
-    role.status === "closed" && role.closed_as
-      ? stageName({ id: role.closed_stage, name: role.closed_as })
-      : i18n.t(status.label);
-  return { label, color: status.color };
+  // closed_as and ended_as are the stage's name, as written in config.toml; *_stage its id.
+  if (role.status === "closed" && role.closed_as) {
+    return { label: stageName({ id: role.closed_stage, name: role.closed_as }), color: status.color };
+  }
+  if (role.status === "applied" && role.ended_as) {
+    return {
+      label: stageName({ id: role.ended_stage, name: role.ended_as }),
+      color: role.ended_kind === "success" ? "green" : ROLE_STATUS.closed.color,
+    };
+  }
+  return { label: i18n.t(status.label), color: status.color };
 }
 
 /** Roles with where they came from and where they stand, oldest first. */
