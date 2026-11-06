@@ -40,7 +40,7 @@ next action.
   every `must_fix`, the reasonable `should_fix` and the cheap nits, and reviewing again until no
   `must_fix` is left. Every PR goes through it, docs-only ones too; a large docs change gets a
   fact-check reviewer. Kai: "merge once ready and update local main". PR bodies and comments say what
-  was asked in our own words, never quoting Kai, and give an *Agents and tokens* table (CLAUDE.md *Git*,
+  was asked in our own words, never quoting Kai (CLAUDE.md *Git*,
   2026-11-06).
 - **Approval to merge and release (since 2026-10-31).** Kai: "if you have followed and completed the
   iterative review-fix cycle then it can auto merge and make a release as appropriate, but it needs
@@ -770,7 +770,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
    `jat.openapi`, `gen:api`). Link check.
 5. Live check: seed demo data, build the branch's frontend, serve on a spare port, drive it
    with Playwright, Read the screenshots (also at 375 px when rows gain buttons).
-6. Fill in the draft PR's body (what was asked, in your own words, not quoting Kai; what changed; agents and tokens; checks) and run
+6. Fill in the draft PR's body (what was asked, in your own words, not quoting Kai; what changed; checks) and run
    `gh pr ready`. Start a background `general-purpose` reviewer: `gh pr diff N` once, Read files in the worktree, report
    must_fix/should_fix/nit with file:line. For anything touching Kai's real data, tell it to
    focus on data safety. Tell Kai what's happening meanwhile.
