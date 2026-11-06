@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.0 (2026-11-06)
+
+- Mark an interview round **Done** (with its debrief and the questions asked) from the application page's Interviews card and the Interviews page, not only from Today; **Didn't happen** is there too once the round's time has passed (#253). (#253).
+
 ## 1.18.12 (2026-11-05)
 
 - Quicker checks: test runs use half the CPU threads by default (up from a quarter), and CONTRIBUTING lists the changes that can skip the browser tests, which test a production build (#243).
