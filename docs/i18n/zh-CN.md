@@ -81,7 +81,7 @@ open an issue or a pull request.*
 | hiring manager | 用人经理 | 不译为“招聘经理” |
 | interviewer | 面试官 | |
 | referrer | 内推人 | |
-| person / people / contact | 联系人 | “People and companies”导航组译为“联系人与公司”，“New person”译为“新建联系人”，“Unknown contact”译为“未知联系人” |
+| person / people / contact | 联系人 | “People and companies”导航组译为“联系人与公司”，“New person”译为“新建联系人”，“Unknown contact”译为“未知联系人”；没有公司时写“未知公司”（不用单独的“?”） |
 | route | 渠道 | 申请的来源方式，“Any route”译为“全部渠道” |
 | Direct (route label) | 直投 | 列表和卡片上的短标签 |
 | Directly / Applied directly | 直接投递 | 在表单和句子中使用 |
