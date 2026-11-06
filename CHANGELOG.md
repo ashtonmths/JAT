@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.1 (2026-11-06)
+
+- An applied role whose latest application has ended says how on its badge (*Rejected*, *Withdrawn*, *Accepted*…) instead of *Applied*: on a person's *Roles they've mentioned*, the Roles page and the role's page. Role summaries gain `ended_as`, `ended_stage` and `ended_kind` (#254).
+
 ## 1.19.0 (2026-11-06)
 
 - Mark an interview round **Done** (with its debrief and the questions asked) from the application page's Interviews card and the Interviews page, not only from Today; **Didn't happen** is there too once the round's time has passed (#253).
