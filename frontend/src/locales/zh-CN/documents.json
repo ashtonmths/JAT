@@ -26,17 +26,17 @@
     "changedPlaceholder": "开头突出支付相关的工作",
     "chooseFile": "选择文件",
     "changeFile": "更换文件",
-    "fileOptional": "可选，但很有用",
+    "fileOptional": "可选，但建议上传",
     "file": "{{name}}（{{size}}）",
     "add": "添加版本"
   },
   "version": {
-    "sentTimes": "已发送 {{times}}×",
+    "sentTimes": "已发送 {{times}} 次",
     "dateNotes": "{{date}} · {{notes}}",
     "file": "{{name}}（{{size}}）",
     "sentBlocks": "已随申请发送：先从这些申请中移除它",
     "delete": "删除版本",
-    "deleteConfirm": "删除 {{label}}？",
+    "deleteConfirm": "删除版本 {{label}}？",
     "deleteNamed": "删除版本：{{label}}"
   },
   "used": {
@@ -56,7 +56,7 @@
   },
   "cvFiles": {
     "title": "你附加的简历文件",
-    "intro": "附加在申请、职位或联系人上、看起来像简历的文件（文件名像简历，或同一个文件出现在多处），比如你发给招聘顾问的简历。把每个文件设为一个版本，“洞察”就能比较它们的效果；同一个文件算作同一个版本。",
+    "intro": "这里列出附加在申请、职位或联系人上，并且看起来像简历的文件（文件名像简历，或同一个文件出现在多处），比如你发给招聘顾问的简历。把每个文件设为一个版本，“洞察”就能比较它们的效果；同一个文件算作同一个版本。",
     "thisIs": "这是 {{document}} · {{version}}。",
     "onRole": "附在职位 <where/> 上",
     "sentTo": "已发给 <where/>",
@@ -67,7 +67,7 @@
     "recordAsSent": "记为已发送",
     "makeVersion": "设为版本",
     "notCv": "不是简历",
-    "notCvNamed": "不是简历：{{name}}",
+    "notCvNamed": "标为非简历：{{name}}",
     "showHidden_other": "显示你标为非简历的 {{count}} 个文件"
   },
   "adopt": {
@@ -78,11 +78,11 @@
     "defaultName": "简历",
     "newName": "新简历名称",
     "version": "版本",
-    "versionHint": "它的不同之处，例如 v3（金融科技）",
+    "versionHint": "与其他版本的区别，例如 v3（金融科技）",
     "sentWith": "用于以下申请",
-    "sentWithHint": "随它一起投递的申请。用了其他简历的，取消勾选即可。",
+    "sentWithHint": "发送了这份简历的申请。用了其他简历的，取消勾选即可。",
     "application": "{{company}} · {{role}}",
-    "noneMissing": "还没有缺少简历的申请。仍然可以先设为版本：等有可以记录的申请时，它会再出现在这里。",
+    "noneMissing": "还没有缺少简历的申请。仍然可以先设为版本：等有可以记录它的申请时，它会重新出现在“你附加的简历文件”中。",
     "stays": "文件也会保留在你附加它的地方。",
     "recorded_other": "已记为随 {{count}} 份申请发送。",
     "made_other": "{{label}} 现在是一个版本了，已记为随 {{count}} 份申请发送。"

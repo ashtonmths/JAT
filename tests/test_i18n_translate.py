@@ -75,6 +75,12 @@ def test_a_tiny_last_area_joins_the_one_before():
     assert [len(a["keys"]) for a in got] == [31]
 
 
+def test_a_tiny_middle_area_joins_the_one_before():
+    flat = {f"a.{i}": "" for i in range(28)} | {f"b.{i}": "" for i in range(3)} | {f"c.{i}": "" for i in range(28)}
+    got = prepare.areas(flat, "ns", max_size=30)
+    assert [(a["prefixes"], len(a["keys"])) for a in got] == [(["a", "b"], 31), (["c"], 28)]
+
+
 def test_a_tiny_first_area_takes_the_next_one_in():
     flat = {"a.0": "", "a.1": ""} | {f"b.{i}": "" for i in range(29)}
     got = prepare.areas(flat, "ns", max_size=30)
