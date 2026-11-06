@@ -15,7 +15,7 @@
   },
   "about": {
     "label": "关联对象",
-    "placeholder": "所有人和事",
+    "placeholder": "全部",
     "companies": "公司",
     "agencies": "猎头公司",
     "people": "联系人"
@@ -23,7 +23,7 @@
   "show": {
     "label": "显示",
     "everything": "全选",
-    "usual": "常用",
+    "usual": "默认",
     "none": "全不选"
   },
   "categories": {
@@ -79,13 +79,13 @@
     "bareNote": "笔记",
     "bareFile": "文件",
     "bareInterview": "面试",
-    "bareManual": "手动",
+    "bareManual": "手动记录",
     "pitched": "{{person}} 推荐了 {{company}} 的 {{role}}",
-    "pitchedNoCompany": "{{person}} 推荐了 ? 的 {{role}}",
+    "pitchedNoCompany": "{{person}} 推荐了未知公司的 {{role}}",
     "roleAdded": "已添加 {{company}} 的职位 {{role}}",
-    "roleAddedNoCompany": "已添加 ? 的职位 {{role}}",
+    "roleAddedNoCompany": "已添加未知公司的职位 {{role}}",
     "rolePassed": "已放弃 {{company}} 的 {{role}}",
-    "rolePassedNoCompany": "已放弃 ? 的 {{role}}",
+    "rolePassedNoCompany": "已放弃未知公司的 {{role}}",
     "company": "已添加公司 {{company}}",
     "agency": "已添加猎头公司 {{agency}}",
     "contact": "已添加联系人 {{person}}",
@@ -97,11 +97,11 @@
     "stageMoved": "{{from}} → {{to}}",
     "stageAdded": "已添加至“{{stage}}”",
     "roundBooked": "{{label}}（已预约）",
-    "roundDue": "{{label}}（截止）",
+    "roundDue": "{{label}}（截止日）",
     "roundDone": "{{label}}（已完成）",
-    "offerReplyYear": "Offer 答复截止：{{money}}/年",
-    "offerReplyDay": "Offer 答复截止：{{money}}/天",
-    "offerReplyNoFigures": "Offer 答复截止：暂无金额",
+    "offerReplyYear": "Offer 答复截止（{{money}}/年）",
+    "offerReplyDay": "Offer 答复截止（{{money}}/天）",
+    "offerReplyNoFigures": "Offer 答复截止（暂无金额）",
     "callBooked": "{{label}}（已预约）",
     "callDone": "{{label}}（已完成）",
     "note": "笔记：{{note}}"
@@ -138,12 +138,12 @@
     "dotHover": "{{when}} · {{title}}",
     "showRecent_other": "只显示最近的 {{count}} 行",
     "showAll_other": "显示全部 {{count}} 行",
-    "legend": "空心圆点表示尚未到来的事项；虚线表示现在。"
+    "legend": "空心圆点表示尚未到来的事项；虚线表示当前时间。"
   },
   "empty": {
     "nothingTicked": "至少勾选一类要显示的内容。",
     "title": "这里还没有内容",
     "filtered": "试试延长时间范围、多勾选几类，或清除筛选条件。",
-    "start": "添加一份申请，或记录一次与他人的通话，它就会出现在这里。"
+    "start": "添加一份申请或记录一次通话后，相关内容就会显示在这里。"
   }
 }
