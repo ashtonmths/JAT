@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.19.0 (2026-11-06)
 
-- Mark an interview round **Done** (with its debrief and the questions asked) from the application page's Interviews card and the Interviews page, not only from Today; **Didn't happen** is there too once the round's time has passed (#253). (#253).
+- Mark an interview round **Done** (with its debrief and the questions asked) from the application page's Interviews card and the Interviews page, not only from Today; **Didn't happen** is there too once the round's time has passed (#253).
 
 ## 1.18.12 (2026-11-05)
 
