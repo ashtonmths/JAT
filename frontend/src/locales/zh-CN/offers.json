@@ -1,0 +1,111 @@
+{
+  "status": {
+    "pending": "考虑中",
+    "accepted": "已接受",
+    "declined": "已婉拒",
+    "withdrawn": "已撤回"
+  },
+  "headline": {
+    "perDay": "{{amount}}/天",
+    "perYear": "{{amount}}/年",
+    "none": "暂无金额"
+  },
+  "facts": {
+    "ir35": {
+      "outside": "IR35 范围外",
+      "inside": "IR35 范围内",
+      "unknown": "IR35 未知",
+      "other": "IR35 {{value}}"
+    },
+    "bonus": "奖金 {{amount}}",
+    "pension": "雇主养老金 {{percent}}%",
+    "equity": "股权：{{equity}}",
+    "holiday_other": "年假 {{count}} 天",
+    "months_other": "{{count}} 个月",
+    "starts": "{{date}}入职"
+  },
+  "page": {
+    "title": "Offer",
+    "showClosed": "显示已婉拒和已撤回的 Offer",
+    "noneOpen": "没有考虑中的 Offer。打开开关可查看已婉拒和已撤回的 Offer。",
+    "none": "还没有 Offer。收到 Offer 后，在对应申请的页面添加。",
+    "explain": "年度总值是基本工资加上预期奖金、你估算的股权价值和雇主养老金；日薪按 220 个工作日计算。更新后的 Offer 会取代之前的那一份。",
+    "detail": "项目",
+    "worth": "年度总值",
+    "highest": "最高",
+    "rows": {
+      "status": "状态",
+      "pay": "薪资",
+      "bonus": "奖金",
+      "pension": "雇主养老金",
+      "equity": "股权",
+      "holiday": "年假",
+      "ir35": "IR35",
+      "length": "合同期限",
+      "benefits": "福利",
+      "start": "入职日期",
+      "replyBy": "答复截止",
+      "notes": "备注"
+    },
+    "percent": "{{percent}}%",
+    "equityWorth": "约 {{amount}}/年",
+    "days_other": "{{count}} 天",
+    "months_other": "{{count}} 个月",
+    "ir35": {
+      "outside": "范围外",
+      "inside": "范围内",
+      "unknown": "未知"
+    }
+  },
+  "card": {
+    "title": "Offer",
+    "add": "添加 Offer",
+    "addRevised": "添加更新后的 Offer",
+    "empty": "还没有 Offer。收到后，在这里添加薪资和条款，方便与其他 Offer 比较。",
+    "earlier": "之前的 Offer",
+    "worthSalary": "年度总值约 {{amount}}",
+    "worthDayRate": "按 220 个工作日计，约 {{amount}}/年",
+    "replyBy": "{{date}}前答复",
+    "edit": "编辑 Offer",
+    "delete": "删除 Offer",
+    "deleteConfirm": "删除这份 Offer？"
+  },
+  "form": {
+    "editTitle": "编辑 Offer",
+    "addTitle": "添加 Offer",
+    "currencyError": "三个字母，例如 GBP",
+    "kind": "类型",
+    "kinds": {
+      "permanent": "正式岗",
+      "contract": "合同工",
+      "fixed_term": "固定期限"
+    },
+    "status": "状态",
+    "dayRate": "日薪",
+    "ir35": "IR35",
+    "ir35Placeholder": "未设置",
+    "ir35Options": {
+      "outside": "IR35 范围外",
+      "inside": "IR35 范围内",
+      "unknown": "未知"
+    },
+    "length": "合同期限（月）",
+    "salary": "基本工资",
+    "bonus": "奖金（预计每年）",
+    "pension": "雇主养老金（%）",
+    "equity": "股权",
+    "equityPlaceholder": "0.1%，4 年归属，1 年 cliff",
+    "equityWorth": "股权价值（每年）",
+    "equityWorthHint": "你的估算",
+    "holiday": "年假（天）",
+    "currency": "币种",
+    "received": "收到日期",
+    "replyBy": "答复截止",
+    "start": "入职日期",
+    "benefits": "福利",
+    "benefitsPlaceholder": "私人医疗保险、£1k 学习预算…",
+    "notes": "备注",
+    "save": "保存 Offer",
+    "add": "添加 Offer"
+  }
+}

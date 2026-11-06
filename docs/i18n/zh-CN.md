@@ -130,6 +130,10 @@ open an issue or a pull request.*
 | offer | Offer | 中国大陆程序员的通用说法，保留拉丁字母，前后加空格。“Add offer”译为“添加 Offer” |
 | Deciding (offer status) | 考虑中 | |
 | revised offer | 更新后的 Offer | |
+| Earlier offer (replaced by a revised one) | 之前的 Offer | |
+| Received (the date an offer came in) | 收到日期 | 同“投递日期”“发送日期”的写法 |
+| Length (a contract's or fixed term's) | 合同期限 | 表单里写“合同期限（月）”，数值写“{{count}} 个月” |
+| Notes (an offer's own text field) | 备注 | 不是“笔记”（那是 Markdown 笔记功能） |
 | Offers to answer | 待答复的 Offer | |
 | Reply by | 答复截止 | “Reply by {{date}}”译为“{{date}}前答复” |
 | salary / base salary / day rate | 薪资 / 基本工资 / 日薪 | “{{rate}} a day”译为“{{rate}}/天”，“{{amount}} a year”译为“{{amount}}/年” |
