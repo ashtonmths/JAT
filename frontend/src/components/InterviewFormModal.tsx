@@ -26,6 +26,7 @@ import {
   type InterviewKind,
 } from "../api/interviewHooks";
 import { i18n } from "../i18n";
+import { joinSentences } from "../utils/list";
 import { roundLabel } from "../utils/rounds";
 import { wasText } from "./Reschedule";
 
@@ -181,7 +182,7 @@ export function InterviewFormModal({
           />
           {interview?.needs_new_time_since && interview.status === "scheduled" && (
             <Text size="sm" c="dimmed">
-              {wasText(interview)} {t("needsNewTime.editHint")}
+              {joinSentences(wasText(interview), t("needsNewTime.editHint"))}
             </Text>
           )}
           <Group grow align="flex-start">

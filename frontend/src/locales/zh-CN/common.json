@@ -119,5 +119,6 @@
     "separator": " · "
   },
   "recruiterLine": "<line/> · <person/>",
-  "listSeparator": "、"
+  "listSeparator": "、",
+  "twoSentences": "{{first}}{{second}}"
 }

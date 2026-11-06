@@ -156,4 +156,7 @@ export default {
   // person's relations to an application, a role's files, a week's counts. Spaces count: Chinese
   // writes "、" with none.
   listSeparator: ", ",
+  // Two whole sentences shown one after another (utils/list.ts joinSentences): Chinese puts no space
+  // after 。. A pattern, not a bare separator, because an empty translation falls back to English.
+  twoSentences: "{{first}} {{second}}",
 } as const;

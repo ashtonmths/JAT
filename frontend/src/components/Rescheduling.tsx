@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { PersonName } from "./GhostMark";
 import { useRescheduling, type Rescheduling, type RescheduledNamed } from "../api/insightHooks";
+import { joinSentences } from "../utils/list";
 
 function MovedList({ title, rows, person }: { title: string; rows: RescheduledNamed[]; person?: boolean }) {
   const { t } = useTranslation("insights");
@@ -46,11 +47,13 @@ function Moved({ data }: { data: Rescheduling }) {
   return (
     <Stack gap="sm">
       <Text size="sm">
-        {t("rescheduling.moved", { count: data.booked_rounds, moved: data.moved_rounds })}{" "}
-        {t("rescheduling.moves", { count: data.moves })}
-        {/* None from a server before rounds could wait for a new time. */}
-        {(data.waiting_for_new_time ?? 0) > 0 &&
-          ` ${t("rescheduling.waiting", { count: data.waiting_for_new_time ?? 0 })}`}
+        {joinSentences(
+          t("rescheduling.moved", { count: data.booked_rounds, moved: data.moved_rounds }),
+          t("rescheduling.moves", { count: data.moves }),
+          // None from a server before rounds could wait for a new time.
+          (data.waiting_for_new_time ?? 0) > 0 &&
+            t("rescheduling.waiting", { count: data.waiting_for_new_time ?? 0 }),
+        )}
       </Text>
       <Table aria-label={t("rescheduling.byWho")} maw={360}>
         <Table.Thead>
