@@ -105,6 +105,11 @@ export default tseslint.config(
           selector: `Property[key.name=/^(message|title|label|description|placeholder|error)$/] > ${text}`,
           message: "Text people read comes from the translation files: use t() or i18n.t().",
         })),
+        {
+          selector: "CallExpression[callee.property.name='join'][arguments.0.value=', ']",
+          message:
+            "A list people read goes through joinList (utils/list.ts), so each language uses its own separator.",
+        },
       ],
     },
   },
