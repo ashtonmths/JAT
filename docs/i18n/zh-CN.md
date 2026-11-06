@@ -81,7 +81,7 @@ open an issue or a pull request.*
 | hiring manager | 用人经理 | 不译为“招聘经理” |
 | interviewer | 面试官 | |
 | referrer | 内推人 | |
-| person / people / contact | 联系人 | “People and companies”导航组译为“联系人与公司”，“New person”译为“新建联系人”，“Unknown contact”译为“未知联系人” |
+| person / people / contact | 联系人 | “People and companies”导航组译为“联系人与公司”，“New person”译为“新建联系人”，“Unknown contact”译为“未知联系人”；没有公司时写“未知公司”（不用单独的“?”） |
 | route | 渠道 | 申请的来源方式，“Any route”译为“全部渠道” |
 | Direct (route label) | 直投 | 列表和卡片上的短标签 |
 | Directly / Applied directly | 直接投递 | 在表单和句子中使用 |
@@ -161,6 +161,7 @@ open an issue or a pull request.*
 | Merge | 合并 | |
 | Favourite / star | 星标 | “Mark as a favourite”译为“加星标” |
 | Pass (on a role) / Passed | 放弃 / 已放弃 | 与“已撤回”区分。“Reconsider”译为“重新考虑” |
+| pitch / pitched (a recruiter putting a role to you) | 推荐 / 推荐的职位 | “{{person}} pitched {{role}} at {{company}}”译为“{{person}} 推荐了 {{company}} 的 {{role}}”；“Roles pitched or passed”译为“推荐或放弃的职位” |
 | To decide / Roles to decide | 待决定 / 待决定的职位 | |
 | board | 看板 | “A column per interview round”译为“每个面试轮次一列” |
 | list | 列表 | |

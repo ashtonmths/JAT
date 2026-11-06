@@ -45,6 +45,12 @@
     {"name": "not-found", "path": "/no-such-page"},
     {"name": "today-375", "path": "/", "width": 375, "full": true}
   ],
+  "timeline": [
+    {"name": "timeline-list", "path": "/timeline?period=all", "full": true},
+    {"name": "timeline-lanes", "path": "/timeline?view=lanes&period=all", "width": 1800, "full": true},
+    {"name": "person-page", "path": "{person:Alex Morgan}"},
+    {"name": "timeline-list-375", "path": "/timeline?period=all", "width": 375, "full": true}
+  ],
   "events": [
     {"name": "application-page", "path": "{application:Contoso}", "full": true},
     {"name": "application-offer", "path": "{application:Wide World Importers}", "full": true},
