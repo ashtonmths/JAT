@@ -42,15 +42,15 @@
     "comingSoon": "更多语言即将推出！",
     "pseudo": "伪语言（开发用）",
     "draft": "{{name}}（草稿）",
-    "addYours": "没有你的语言？",
-    "addYoursLabel": "没有你的语言？在新标签页中打开 GitHub 上的指南。"
+    "addYours": "找不到你的语言？",
+    "addYoursLabel": "找不到你的语言？在新标签页中打开 GitHub 上的指南。"
   },
   "theme": {
     "toDark": "切换到深色模式",
     "toLight": "切换到浅色模式"
   },
   "footer": {
-    "localFirst": "本地优先 · 你的数据只保存在这台电脑上",
+    "localFirst": "本地优先 · 你的数据只保存在本机",
     "backup": "下载备份",
     "backupHint": "所有内容打包成一个 zip：你的数据、笔记和文件。解压后对该文件夹运行 `jat init`（它会重建所有内容）。"
   },
@@ -66,8 +66,8 @@
   "version": {
     "short": "v{{version}}",
     "linkLabel": "v{{version}}：在 GitHub 上查看此版本的更新内容（在新标签页中打开）。",
-    "serverOlder": "服务器是 v{{server}}，但此页面是 v{{page}}。重启追踪器即可更新。",
-    "pageOlder": "服务器是 v{{server}}，但此页面是 v{{page}}。刷新此页面即可更新。"
+    "serverOlder": "服务器版本是 v{{server}}，但此页面是 v{{page}}。重启追踪器即可更新。",
+    "pageOlder": "服务器版本是 v{{server}}，但此页面是 v{{page}}。刷新此页面即可更新。"
   },
   "time": {
     "today": "今天",
@@ -81,8 +81,8 @@
     "inMonths_other": "{{count}} 个月后",
     "dueToday": "今天到期",
     "overdueBy_other": "已逾期 {{count}} 天",
-    "sinceToday": "从今天起",
-    "forDays_other": "已 {{count}} 天"
+    "sinceToday": "今天开始",
+    "forDays_other": "已持续 {{count}} 天"
   },
   "notFound": {
     "title": "页面不存在",
@@ -110,7 +110,7 @@
     "roleAt": "{{company}} 的 {{role}}",
     "via": "通过 {{name}}",
     "viaRecruiter": "通过猎头",
-    "byReferral": "内推",
+    "byReferral": "通过内推",
     "directly": "直接投递",
     "howOn": "{{date}}{{how}}",
     "now": "目前处于“{{stage}}”",
