@@ -5,7 +5,8 @@
 - Writes var/i18n/<lang>/<ns>/: flat.json (key -> English), areas.json, areas/<id>.json.
 
 Areas are what the translators and reviewers each take: the file's top-level groups, merged in order
-up to MAX_AREA keys, so a reviewer sees one part of the screen at a time.
+up to MAX_AREA keys, so a reviewer sees one part of the screen at a time. An area under MIN_AREA keys
+joins a neighbour, which can take it a few keys over MAX_AREA.
 """
 
 import re
@@ -34,6 +35,8 @@ def areas(flat: dict[str, str], ns: str, max_size: int = MAX_AREA, min_size: int
             chunks.append(([group], list(keys)))
     merged: list[tuple[list[str], list[str]]] = []
     for prefixes, keys in chunks:
+        # The second test only ever holds for the first area: a small one after that has
+        # already joined the area before it.
         if merged and (len(keys) < min_size or len(merged[-1][1]) < min_size):
             merged[-1][0].extend(prefixes)
             merged[-1][1].extend(keys)
