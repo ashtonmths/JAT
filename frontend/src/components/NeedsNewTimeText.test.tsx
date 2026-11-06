@@ -4,9 +4,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { Interview } from "../api/interviewHooks";
 import { mockApi } from "../test/mockApi";
 import { formatDateTime } from "../utils/time";
-import type { Interview } from "../api/interviewHooks";
 import { InterviewFormModal } from "./InterviewFormModal";
 import { RescheduleButton, RescheduleModal } from "./Reschedule";
 
@@ -159,7 +159,7 @@ describe("a round waiting for a new time", () => {
   });
 
   it("says when it was, then what setting a time does, in its Edit form", async () => {
-    mockApi({ "GET /api/v1/contacts": [], "GET /api/v1/interviews": [] });
+    mockApi({ "GET /api/v1/contacts": [], "GET /api/v1/interviews/titles": [] });
     wrap(
       <InterviewFormModal
         opened
