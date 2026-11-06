@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.2 (2026-11-06)
+
+- Lists of names the app builds (a round's interviewers, a person's relations to an application, a role's files, an Insights week's counts) use the language's own separator, so a translation no longer shows an English comma; English is unchanged (#258).
+
 ## 1.19.1 (2026-11-06)
 
 - An applied role whose applications have all ended says how on its badge (*Rejected*, *Withdrawn*, *Accepted*…) instead of *Applied*, wherever it shows: a person's *Roles they've mentioned*, the Roles page, the role's and company's pages. Role summaries gain `ended_as`, `ended_stage` and `ended_kind` (#254).
