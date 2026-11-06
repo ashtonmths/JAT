@@ -81,7 +81,7 @@
     "inMonths_other": "{{count}} 个月后",
     "dueToday": "今天到期",
     "overdueBy_other": "已逾期 {{count}} 天",
-    "sinceToday": "今天开始",
+    "sinceToday": "始于今天",
     "forDays_other": "已持续 {{count}} 天"
   },
   "notFound": {
