@@ -38,6 +38,13 @@
     {"name": "search", "path": "/search?q=Contoso", "full": true},
     {"name": "notes-page-375", "path": "/notes", "width": 375, "full": true}
   ],
+  "common": [
+    {"name": "today", "path": "/", "full": true},
+    {"name": "applications-list", "path": "/applications", "full": true},
+    {"name": "application-page", "path": "{application:Contoso}", "full": true},
+    {"name": "not-found", "path": "/no-such-page"},
+    {"name": "today-375", "path": "/", "width": 375, "full": true}
+  ],
   "events": [
     {"name": "application-page", "path": "{application:Contoso}", "full": true},
     {"name": "application-offer", "path": "{application:Wide World Importers}", "full": true},
