@@ -1,0 +1,165 @@
+{
+  "label": "第 {{round}} 轮 · {{what}}",
+  "badgeWhen": "{{label}} · {{when}}",
+  "kindNames": {
+    "screen": "初筛",
+    "hiring_manager": "用人经理面",
+    "technical": "技术面",
+    "coding_task": "编程作业",
+    "system_design": "系统设计",
+    "pairing": "结对编程",
+    "behavioural": "行为面试",
+    "onsite": "现场面试",
+    "final": "终面",
+    "other": "面试"
+  },
+  "kinds": {
+    "screen": "初筛",
+    "hiring_manager": "用人经理面",
+    "technical": "技术面",
+    "coding_task": "编程作业",
+    "system_design": "系统设计",
+    "pairing": "结对编程",
+    "behavioural": "行为面试",
+    "onsite": "现场面试",
+    "final": "终面",
+    "other": "其他"
+  },
+  "status": {
+    "comingUp": "即将进行",
+    "done": "已完成",
+    "cancelled": "已取消",
+    "awaitingOutcome": "等待结果"
+  },
+  "due": "{{when}} 截止",
+  "notBooked": "尚未预约",
+  "edit": "编辑",
+  "editNamed": "编辑：{{label}}",
+  "deleteConfirm": "删除“{{label}}”？",
+  "page": {
+    "title": "面试",
+    "comingUp": "即将进行",
+    "comingUpEmpty": "暂无已预约的面试。在申请页面中添加面试轮次。",
+    "needsNewTime": "待定新时间",
+    "earlier": "过往及已取消",
+    "earlierEmpty": "暂无。",
+    "when": "时间",
+    "round": "轮次",
+    "application": "申请",
+    "status": "状态"
+  },
+  "card": {
+    "title": "面试",
+    "addRound": "添加第 {{round}} 轮",
+    "whenWith": "{{when}} · 面试官：{{people}}",
+    "joinLink": "入会链接",
+    "empty": "还没有面试。每约好一轮就添加一轮：“第 1 轮 · 招聘顾问初筛”、“第 2 轮 · 技术经理面谈”…"
+  },
+  "form": {
+    "editTitle": "编辑“{{label}}”",
+    "addTitle": "添加面试轮次",
+    "linkError": "链接需以 http:// 或 https:// 开头",
+    "roundError": "轮次需在 1 到 99 之间",
+    "round": "轮次",
+    "what": "这一轮是什么？",
+    "whatPlaceholder": "技术经理面谈、系统设计测试…",
+    "type": "类型",
+    "format": "形式",
+    "formatPlaceholder": "未设置",
+    "formats": {
+      "video": "视频通话",
+      "phone": "电话",
+      "onsite": "当面",
+      "take_home": "离线作业"
+    },
+    "status": "状态",
+    "when": "时间",
+    "whenPlaceholder": "尚未预约",
+    "due": "截止时间",
+    "duePlaceholder": "无截止时间",
+    "meetingLink": "会议链接",
+    "linkPlaceholder": "https://…",
+    "location": "地点",
+    "locationPlaceholder": "办公室 3 楼",
+    "interviewers": "面试官",
+    "interviewersPlaceholder": "选择联系人",
+    "taskInstructions": "作业要求",
+    "repoLink": "仓库或平台链接",
+    "prep": "准备",
+    "prepPlaceholder": "需要提前了解什么",
+    "debrief": "复盘",
+    "debriefPlaceholder": "面试过程和感受",
+    "questions": "被问到的问题",
+    "add": "添加轮次"
+  },
+  "reschedule": {
+    "action": "改期",
+    "named": "改期：{{label}}",
+    "badge": "已改期",
+    "badgeTimes": "已改期 {{times}} 次",
+    "movedFrom": "原定于 {{when}}",
+    "where": "{{company}} · {{role}}",
+    "whereWas": "{{company}} · {{role}} · 原定于 {{when}}",
+    "newTime": "新时间",
+    "who": "由谁提出改期？",
+    "whoRequired": "选择改期的提出方",
+    "whoOptions": {
+      "me": "由你提出",
+      "them": "由对方提出",
+      "mutual": "双方共同提出",
+      "neither": "与双方无关"
+    },
+    "pushedBack_other": "共推迟了 {{count}} 天。",
+    "broughtForward_other": "共提前了 {{count}} 天。",
+    "notCounted_other": "另有 {{count}} 次改期没有保存时间，未计入。",
+    "why": "原因（可选）",
+    "whyPlaceholder": "对方时间冲突，或你提出换个时间…",
+    "move": {
+      "times": "从 {{from}} 改至 {{to}}",
+      "timesReason": "从 {{from}} 改至 {{to}} · {{reason}}",
+      "timesBy": {
+        "me": "从 {{from}} 改至 {{to}} · 由你提出",
+        "them": "从 {{from}} 改至 {{to}} · 由对方提出",
+        "mutual": "从 {{from}} 改至 {{to}} · 双方共同提出",
+        "neither": "从 {{from}} 改至 {{to}} · 与双方无关"
+      },
+      "timesByReason": {
+        "me": "从 {{from}} 改至 {{to}} · 由你提出 · {{reason}}",
+        "them": "从 {{from}} 改至 {{to}} · 由对方提出 · {{reason}}",
+        "mutual": "从 {{from}} 改至 {{to}} · 双方共同提出 · {{reason}}",
+        "neither": "从 {{from}} 改至 {{to}} · 与双方无关 · {{reason}}"
+      }
+    }
+  },
+  "needsNewTime": {
+    "choice": "新时间尚未商定",
+    "choiceHint": "轮次保留原来的时间，并显示为待定新时间。",
+    "addTodo": "添加待办：约定新时间",
+    "todoDue": "待办截止",
+    "todoText": "为 {{label}} 约定新时间",
+    "todoHint": "在轮次定下新时间之前，这条待办会一直保持未完成。通过“设定新时间”或“编辑”设好新时间，即视为从原时间改期，待办会自动勾选完成。",
+    "save": "保存：待定新时间",
+    "badge": "待定新时间",
+    "roundBadge": "{{label}} · 待定新时间",
+    "was": {
+      "me": "原定于 {{when}}。改时间由你提出。",
+      "them": "原定于 {{when}}。改时间由对方提出。",
+      "mutual": "原定于 {{when}}。改时间由双方共同提出。",
+      "neither": "原定于 {{when}}。改时间的原因与双方无关。",
+      "unsaid": "原定于 {{when}}。"
+    },
+    "noTime": {
+      "me": "目前未设时间。改时间由你提出。",
+      "them": "目前未设时间。改时间由对方提出。",
+      "mutual": "目前未设时间。改时间由双方共同提出。",
+      "neither": "目前未设时间。改时间的原因与双方无关。",
+      "unsaid": "目前未设时间。"
+    },
+    "marked": "{{label}} 已标为待定新时间。",
+    "setAction": "设定新时间",
+    "setNamed": "设定新时间：{{label}}",
+    "setHint": "设好新时间即视为从原时间改期，为约定新时间而创建的待办也会自动勾选完成。",
+    "keepOld": "保留原时间",
+    "editHint": "在这里设定新时间，即视为从原时间改期，为约定新时间而创建的待办也会自动勾选完成。"
+  }
+}

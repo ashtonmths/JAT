@@ -45,6 +45,14 @@
     {"name": "not-found", "path": "/no-such-page"},
     {"name": "today-375", "path": "/", "width": 375, "full": true}
   ],
+  "interviews": [
+    {"name": "interviews-page", "path": "/interviews", "full": true},
+    {"name": "application-page", "path": "{application:Contoso}", "full": true},
+    {"name": "application-rescheduled", "path": "{application:Wide World Importers}", "full": true},
+    {"name": "board", "path": "/applications?view=board", "width": 2600},
+    {"name": "today", "path": "/", "full": true},
+    {"name": "application-page-375", "path": "{application:Contoso}", "width": 375, "full": true}
+  ],
   "timeline": [
     {"name": "timeline-list", "path": "/timeline?period=all", "full": true},
     {"name": "timeline-lanes", "path": "/timeline?view=lanes&period=all", "width": 1800, "full": true},

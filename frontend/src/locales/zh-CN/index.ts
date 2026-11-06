@@ -4,6 +4,7 @@ import common from "./common.json";
 import documents from "./documents.json";
 import events from "./events.json";
 import files from "./files.json";
+import interviews from "./interviews.json";
 import notes from "./notes.json";
 import offers from "./offers.json";
 import stages from "./stages.json";
@@ -17,6 +18,7 @@ export default {
   documents,
   events,
   files,
+  interviews,
   notes,
   offers,
   stages,
