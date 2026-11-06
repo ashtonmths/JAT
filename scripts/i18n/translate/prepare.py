@@ -16,10 +16,12 @@ import sys
 from common import EN, LOCALES, ROOT, flatten, read_json, start_file, work_dir, write_json
 
 MAX_AREA = 30
+MIN_AREA = 5
 
 
-def areas(flat: dict[str, str], ns: str, max_size: int = MAX_AREA) -> list[dict]:
-    """Top-level groups, in file order, merged while they fit in max_size keys."""
+def areas(flat: dict[str, str], ns: str, max_size: int = MAX_AREA, min_size: int = MIN_AREA) -> list[dict]:
+    """Top-level groups, in file order, merged while they fit in max_size keys. An area smaller than
+    min_size joins the one before it (or after it, if it's first), so no agent gets a couple of strings."""
     groups: dict[str, list[str]] = {}
     for key in flat:
         groups.setdefault(key.split(".")[0], []).append(key)
@@ -30,6 +32,14 @@ def areas(flat: dict[str, str], ns: str, max_size: int = MAX_AREA) -> list[dict]
             chunks[-1][1].extend(keys)
         else:
             chunks.append(([group], list(keys)))
+    merged: list[tuple[list[str], list[str]]] = []
+    for prefixes, keys in chunks:
+        if merged and (len(keys) < min_size or len(merged[-1][1]) < min_size):
+            merged[-1][0].extend(prefixes)
+            merged[-1][1].extend(keys)
+        else:
+            merged.append((list(prefixes), list(keys)))
+    chunks = merged
     return [
         {
             "id": f"{ns}-{i + 1}",

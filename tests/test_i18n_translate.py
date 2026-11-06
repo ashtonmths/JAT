@@ -69,6 +69,18 @@ def test_areas_merge_groups_in_order_up_to_the_limit():
     assert [(a["id"], a["prefixes"], len(a["keys"])) for a in got] == [("ns-1", ["a", "b"], 7), ("ns-2", ["c"], 5)]
 
 
+def test_a_tiny_last_area_joins_the_one_before():
+    # The todos file: 30 single keys, then one more, made areas of 30 and 1.
+    got = prepare.areas({f"k{i}": "" for i in range(31)}, "todos", max_size=30)
+    assert [len(a["keys"]) for a in got] == [31]
+
+
+def test_a_tiny_first_area_takes_the_next_one_in():
+    flat = {"a.0": "", "a.1": ""} | {f"b.{i}": "" for i in range(29)}
+    got = prepare.areas(flat, "ns", max_size=30)
+    assert [(a["prefixes"], len(a["keys"])) for a in got] == [(["a", "b"], 31)]
+
+
 def test_a_group_bigger_than_the_limit_is_one_area():
     got = prepare.areas({f"big.{i}": "" for i in range(40)}, "ns", max_size=30)
     assert len(got) == 1 and len(got[0]["keys"]) == 40
