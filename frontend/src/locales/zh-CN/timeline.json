@@ -1,0 +1,149 @@
+{
+  "title": "时间线",
+  "description": "发生过的一切：通话、推荐的职位、申请、面试和 Offer。泳道里每个职位占一行，从推荐一直到最终结果。",
+  "views": {
+    "label": "视图",
+    "list": "列表",
+    "lanes": "泳道"
+  },
+  "period": {
+    "label": "时间范围",
+    "days30": "最近 30 天",
+    "days90": "最近 3 个月",
+    "days365": "最近一年",
+    "all": "全部时间"
+  },
+  "about": {
+    "label": "关联对象",
+    "placeholder": "所有人和事",
+    "companies": "公司",
+    "agencies": "猎头公司",
+    "people": "联系人"
+  },
+  "show": {
+    "label": "显示",
+    "everything": "全选",
+    "usual": "常用",
+    "none": "全不选"
+  },
+  "categories": {
+    "stage": {
+      "label": "阶段变动",
+      "one": "阶段"
+    },
+    "message": {
+      "label": "消息",
+      "one": "消息"
+    },
+    "meeting": {
+      "label": "通话与会面",
+      "one": "通话"
+    },
+    "interview": {
+      "label": "面试",
+      "one": "面试"
+    },
+    "offer": {
+      "label": "Offer",
+      "one": "Offer"
+    },
+    "role": {
+      "label": "推荐或放弃的职位",
+      "one": "职位"
+    },
+    "note": {
+      "label": "笔记",
+      "one": "笔记"
+    },
+    "document": {
+      "label": "已发送的文档",
+      "one": "文档"
+    },
+    "file": {
+      "label": "文件",
+      "one": "文件"
+    },
+    "added": {
+      "label": "新增的公司、猎头公司和联系人",
+      "one": "新增"
+    },
+    "other": {
+      "label": "其他",
+      "one": "其他"
+    }
+  },
+  "titles": {
+    "bareCall": "通话",
+    "bareEmail": "邮件",
+    "bareMessage": "消息",
+    "bareNote": "笔记",
+    "bareFile": "文件",
+    "bareInterview": "面试",
+    "bareManual": "手动",
+    "pitched": "{{person}} 推荐了 {{company}} 的 {{role}}",
+    "pitchedNoCompany": "{{person}} 推荐了 ? 的 {{role}}",
+    "roleAdded": "已添加 {{company}} 的职位 {{role}}",
+    "roleAddedNoCompany": "已添加 ? 的职位 {{role}}",
+    "rolePassed": "已放弃 {{company}} 的 {{role}}",
+    "rolePassedNoCompany": "已放弃 ? 的 {{role}}",
+    "company": "已添加公司 {{company}}",
+    "agency": "已添加猎头公司 {{agency}}",
+    "contact": "已添加联系人 {{person}}",
+    "contactWaiting": "已回复 {{person}}，等待对方回复",
+    "contactChased": "已催问 {{person}}",
+    "contactToRead": "{{person}} 已回复，待读",
+    "contactGhosted": "{{person}}：已失联",
+    "contactNotInterested": "{{person}}：不感兴趣",
+    "stageMoved": "{{from}} → {{to}}",
+    "stageAdded": "已添加至“{{stage}}”",
+    "roundBooked": "{{label}}（已预约）",
+    "roundDue": "{{label}}（截止）",
+    "roundDone": "{{label}}（已完成）",
+    "offerReplyYear": "Offer 答复截止：{{money}}/年",
+    "offerReplyDay": "Offer 答复截止：{{money}}/天",
+    "offerReplyNoFigures": "Offer 答复截止：暂无金额",
+    "callBooked": "{{label}}（已预约）",
+    "callDone": "{{label}}（已完成）",
+    "note": "笔记：{{note}}"
+  },
+  "allDay": "全天",
+  "dateTime": "{{date}} {{time}}",
+  "day": {
+    "today": "今天 · {{date}}",
+    "yesterday": "昨天 · {{date}}",
+    "tomorrow": "明天 · {{date}}"
+  },
+  "comingUp": "即将进行",
+  "context": {
+    "roleAt": "{{company}} 的 {{role}}",
+    "via": "通过 {{agency}}",
+    "archived": "已归档"
+  },
+  "lanes": {
+    "rowPer": "每行一个",
+    "by": {
+      "role": "职位",
+      "person": "联系人",
+      "company": "公司",
+      "agency": "猎头公司"
+    },
+    "empty": {
+      "role": "这里没有与职位关联的内容。",
+      "person": "这里没有与联系人关联的内容。",
+      "company": "这里没有与公司关联的内容。",
+      "agency": "这里没有与猎头公司关联的内容。"
+    },
+    "roleRow": "{{company}} · {{role}}",
+    "dot": "{{when}} · {{kind}}：{{title}}",
+    "dotHover": "{{when}} · {{title}}",
+    "showRecent_other": "只显示最近的 {{count}} 行",
+    "showAll_other": "显示全部 {{count}} 行",
+    "legend": "空心圆点表示尚未到来的事项；虚线表示现在。"
+  },
+  "empty": {
+    "nothingTicked": "至少勾选一类要显示的内容。",
+    "title": "这里还没有内容",
+    "filtered": "试试延长时间范围、多勾选几类，或清除筛选条件。",
+    "start": "添加一份申请，或记录一次与他人的通话，它就会出现在这里。"
+  }
+}

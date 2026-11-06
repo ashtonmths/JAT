@@ -161,6 +161,7 @@ open an issue or a pull request.*
 | Merge | 合并 | |
 | Favourite / star | 星标 | “Mark as a favourite”译为“加星标” |
 | Pass (on a role) / Passed | 放弃 / 已放弃 | 与“已撤回”区分。“Reconsider”译为“重新考虑” |
+| pitch / pitched (a recruiter putting a role to you) | 推荐 / 推荐的职位 | “{{person}} pitched {{role}} at {{company}}”译为“{{person}} 推荐了 {{company}} 的 {{role}}”；“Roles pitched or passed”译为“推荐或放弃的职位” |
 | To decide / Roles to decide | 待决定 / 待决定的职位 | |
 | board | 看板 | “A column per interview round”译为“每个面试轮次一列” |
 | list | 列表 | |

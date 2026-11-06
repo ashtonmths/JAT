@@ -7,6 +7,7 @@ import files from "./files.json";
 import notes from "./notes.json";
 import offers from "./offers.json";
 import stages from "./stages.json";
+import timeline from "./timeline.json";
 import todos from "./todos.json";
 
 export default {
@@ -19,5 +20,6 @@ export default {
   notes,
   offers,
   stages,
+  timeline,
   todos,
 };
