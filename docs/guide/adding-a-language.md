@@ -25,7 +25,7 @@ Not translated:
   English, and a few rare error messages come from the server in English.
 - **The guide, the `jat` commands, and the API.** These stay in English.
 - **A few small things not done yet.** Search only knows the English words for some things, and
-  commas in lists and the percent sign are written the English way.
+  the percent sign and a few separators are written the English way.
 
 ## 1. Set up
 

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useActivity, type Stats, type Week } from "../api/insightHooks";
 import { i18n } from "../i18n";
 import { formatDay } from "../utils/format";
+import { joinList } from "../utils/list";
 import { stageName } from "../utils/stageName";
 
 function routeLabel(route: string) {
@@ -229,7 +230,7 @@ export function WeeklyActivity() {
             {weeks.map((w) => {
               const label = t("weekly.week", {
                 date: formatDay(w.start, "dayMonth", language),
-                counts: SERIES.map((s) => s.count(w[s.key])).join(", "),
+                counts: joinList(SERIES.map((s) => s.count(w[s.key]))),
               });
               return (
                 <Tooltip key={w.start} label={label} withinPortal>

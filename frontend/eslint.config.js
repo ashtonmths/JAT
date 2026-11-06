@@ -91,7 +91,8 @@ export default tseslint.config(
   {
     // The rule above reads JSX only. This one catches text in an object, such as a toast's
     // message: a property people read, holding a plain string with lower-case letters in it.
-    // A translation key ("today:glance.added", "nav.items.today") isn't text.
+    // A translation key ("today:glance.added", "nav.items.today") isn't text. It also refuses
+    // .join(", "): a list people read takes the language's separator through joinList.
     files: ["src/**/*.{ts,tsx}"],
     // nav.ts: label and description are shown only by Placeholder, which no page reaches.
     ignores: ["src/**/*.test.{ts,tsx}", "src/test/**", "src/locales/**", "src/nav.ts"],
@@ -105,6 +106,11 @@ export default tseslint.config(
           selector: `Property[key.name=/^(message|title|label|description|placeholder|error)$/] > ${text}`,
           message: "Text people read comes from the translation files: use t() or i18n.t().",
         })),
+        {
+          selector: "CallExpression[callee.property.name='join'][arguments.0.value=', ']",
+          message:
+            "A list people read goes through joinList (utils/list.ts), so each language uses its own separator. For a join nobody reads, disable this line.",
+        },
       ],
     },
   },

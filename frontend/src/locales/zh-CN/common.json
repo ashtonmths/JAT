@@ -118,5 +118,6 @@
     "similarTitle": "职位名称相似",
     "separator": " · "
   },
-  "recruiterLine": "<line/> · <person/>"
+  "recruiterLine": "<line/> · <person/>",
+  "listSeparator": "、"
 }

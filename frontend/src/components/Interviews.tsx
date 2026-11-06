@@ -8,6 +8,7 @@ import { useContacts } from "../api/hooks";
 import { useDeleteInterview, useInterviews, type Interview } from "../api/interviewHooks";
 import { i18n } from "../i18n";
 import { formatShortWeekday } from "../utils/format";
+import { joinList } from "../utils/list";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 import { InterviewFormModal } from "./InterviewFormModal";
@@ -95,7 +96,9 @@ function InterviewItem({
   const { t } = useTranslation(["interviews", "common"]);
   const remove = useDeleteInterview();
   const when = interview.starts_at ?? interview.deadline_at;
-  const people = interview.interviewer_ids.map((id) => names.get(id)).filter(Boolean);
+  const people = interview.interviewer_ids
+    .map((id) => names.get(id))
+    .filter((name): name is string => !!name);
   const label = roundLabel(interview);
   const whenText = interview.needs_new_time_since
     ? wasText(interview)
@@ -116,7 +119,7 @@ function InterviewItem({
             <RescheduledBadge interview={interview} size="xs" />
           </Group>
           <Text size="sm" c="dimmed">
-            {people.length ? t("card.whenWith", { when: whenText, people: people.join(", ") }) : whenText}
+            {people.length ? t("card.whenWith", { when: whenText, people: joinList(people) }) : whenText}
           </Text>
           <RoundDaysMoved interview={interview} />
           {/* Its own row, so the buttons on the right don't squeeze the round's details on a phone. */}
