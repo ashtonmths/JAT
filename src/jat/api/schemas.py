@@ -235,6 +235,11 @@ class RoleSummary(RoleOut):
     status: RoleStatus  # from its applications once it has any, whatever `decision` says
     closed_as: str | None = None  # when `closed`: the stage it ended at ("Withdrawn")
     closed_stage: str | None = None  # that stage's id, so a default one can show in your language
+    # When `applied` and the latest application has left the active stages: the stage it's at
+    # ("Rejected", "Accepted"), its id, and its kind (closed or success).
+    ended_as: str | None = None
+    ended_stage: str | None = None
+    ended_kind: Literal["closed", "success"] | None = None
     application_ids: list[str]
     contact_name: str | None = None
     agency_id: str | None = None  # the person's agency

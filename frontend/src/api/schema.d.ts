@@ -4391,6 +4391,12 @@ export interface components {
             description: string | null;
             /** Employment Type */
             employment_type: string | null;
+            /** Ended As */
+            ended_as?: string | null;
+            /** Ended Kind */
+            ended_kind?: ("closed" | "success") | null;
+            /** Ended Stage */
+            ended_stage?: string | null;
             /** Id */
             id: string;
             /** Ir35 */

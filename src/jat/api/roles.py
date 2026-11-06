@@ -71,7 +71,7 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
 
     out = []
     for role, company_name, contact, agency in rows:
-        closed_as = closed_stage = None
+        closed_as = closed_stage = ended_as = ended_stage = ended_kind = None
         if apps[role.id]:
             status = (
                 role_progress(
@@ -85,6 +85,12 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
                 # The latest application's stage (the one the role links to).
                 closed_stage = stages[role.id][-1]
                 closed_as = names.get(closed_stage, closed_stage)
+            elif status == "applied" and kinds.get(stages[role.id][-1]) in ("closed", "success"):
+                # Applied, and the latest application (the one the role links to) has ended:
+                # rejected, withdrawn, accepted… The status stays `applied` for the views and Insights.
+                ended_stage = stages[role.id][-1]
+                ended_as = names.get(ended_stage, ended_stage)
+                ended_kind = kinds[ended_stage]
         else:
             status = "passed" if role.decision == "passed" else "to_decide"
         out.append(
@@ -94,6 +100,9 @@ def summaries(session: Session, *where, workflow: Workflow | None = None) -> lis
                 status=status,
                 closed_as=closed_as,
                 closed_stage=closed_stage,
+                ended_as=ended_as,
+                ended_stage=ended_stage,
+                ended_kind=ended_kind,
                 application_ids=apps[role.id],
                 contact_name=contact.name if contact else None,
                 agency_id=agency.id if agency else None,

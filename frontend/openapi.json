@@ -9894,6 +9894,43 @@
             ],
             "title": "Employment Type"
           },
+          "ended_as": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended As"
+          },
+          "ended_kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "closed",
+                  "success"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Kind"
+          },
+          "ended_stage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Stage"
+          },
           "id": {
             "title": "Id",
             "type": "string"
