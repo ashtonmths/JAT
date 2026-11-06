@@ -1,0 +1,122 @@
+{
+  "app": {
+    "name": "求职申请追踪器",
+    "homeLabel": "求职申请追踪器：今日"
+  },
+  "header": {
+    "toggleNav": "展开或收起导航",
+    "search": "全局搜索",
+    "help": "使用说明",
+    "newApplication": "新建申请"
+  },
+  "nav": {
+    "label": "主导航",
+    "placeholder": {
+      "comingSoon": "即将推出",
+      "roadmapTask": "路线图任务 <task/>"
+    },
+    "groups": {
+      "today": "今日",
+      "applications": "你的申请",
+      "people": "联系人与公司",
+      "files": "文件与笔记",
+      "review": "回顾"
+    },
+    "items": {
+      "today": "今日",
+      "roles": "职位",
+      "applications": "申请",
+      "recruiters": "招聘顾问",
+      "companies": "公司",
+      "interviews": "面试",
+      "offers": "Offer",
+      "documents": "文档",
+      "notes": "笔记",
+      "insights": "洞察",
+      "timeline": "时间线"
+    }
+  },
+  "language": {
+    "label": "语言",
+    "current": "语言：{{name}}",
+    "comingSoon": "更多语言即将推出！",
+    "pseudo": "伪语言（开发用）",
+    "draft": "{{name}}（草稿）",
+    "addYours": "没有你的语言？",
+    "addYoursLabel": "没有你的语言？在新标签页中打开 GitHub 上的指南。"
+  },
+  "theme": {
+    "toDark": "切换到深色模式",
+    "toLight": "切换到浅色模式"
+  },
+  "footer": {
+    "localFirst": "本地优先 · 你的数据只保存在这台电脑上",
+    "backup": "下载备份",
+    "backupHint": "所有内容打包成一个 zip：你的数据、笔记和文件。解压后对该文件夹运行 `jat init`（它会重建所有内容）。"
+  },
+  "api": {
+    "connecting": "正在连接…",
+    "connectingHint": "正在检查本地 API",
+    "offline": "API 离线",
+    "offlineHint": "用 `uv run jat serve` 启动",
+    "connected": "已连接",
+    "detailsBackups": "v{{version}} · schema {{schema}} · 已开启备份",
+    "detailsNoGit": "v{{version}} · schema {{schema}} · 数据目录不是 git 仓库"
+  },
+  "version": {
+    "short": "v{{version}}",
+    "linkLabel": "v{{version}}：在 GitHub 上查看此版本的更新内容（在新标签页中打开）。",
+    "serverOlder": "服务器是 v{{server}}，但此页面是 v{{page}}。重启追踪器即可更新。",
+    "pageOlder": "服务器是 v{{server}}，但此页面是 v{{page}}。刷新此页面即可更新。"
+  },
+  "time": {
+    "today": "今天",
+    "yesterday": "昨天",
+    "tomorrow": "明天",
+    "daysAgo_other": "{{count}} 天前",
+    "weeksAgo_other": "{{count}} 周前",
+    "monthsAgo_other": "{{count}} 个月前",
+    "inDays_other": "{{count}} 天后",
+    "inWeeks_other": "{{count}} 周后",
+    "inMonths_other": "{{count}} 个月后",
+    "dueToday": "今天到期",
+    "overdueBy_other": "已逾期 {{count}} 天",
+    "sinceToday": "从今天起",
+    "forDays_other": "已 {{count}} 天"
+  },
+  "notFound": {
+    "title": "页面不存在",
+    "body": "这个地址下什么都没有。",
+    "back": "返回今日"
+  },
+  "actions": {
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "deleteNamed": "删除：{{name}}",
+    "undo": "撤销"
+  },
+  "editName": {
+    "name": "名称",
+    "website": "网站",
+    "websitePlaceholder": "https://…",
+    "needsName": "名称不能为空",
+    "websiteExample": "例如 https://contoso.example.com"
+  },
+  "select": {
+    "add": "+ 添加“{{name}}”"
+  },
+  "duplicates": {
+    "roleAt": "{{company}} 的 {{role}}",
+    "via": "通过 {{name}}",
+    "viaRecruiter": "通过猎头",
+    "byReferral": "内推",
+    "directly": "直接投递",
+    "howOn": "{{date}}{{how}}",
+    "now": "目前处于“{{stage}}”",
+    "archived": "已归档",
+    "similarTitle": "职位名称相似",
+    "separator": " · "
+  },
+  "recruiterLine": "<line/> · <person/>"
+}

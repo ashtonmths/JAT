@@ -189,6 +189,7 @@ open an issue or a pull request.*
 | Needs attention / All caught up | 需要处理 / 全部处理完了 | |
 | Due {{when}} / overdue | {{when}}截止 / 已逾期 | 截止日期 |
 | Insights | 洞察 | |
+| Review (the menu heading over Insights and Timeline) | 回顾 | 指回头看求职过程，不是审核 |
 | Rejection feedback | 被拒反馈 | |
 | Details | 详情 | |
 | Search / Search everything | 搜索 / 全局搜索 | |
