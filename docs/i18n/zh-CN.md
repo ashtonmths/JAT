@@ -36,7 +36,7 @@ open an issue or a pull request.*
 - 省略号：英文用单个字符 “…” 的地方保留单个 “…”（例如 `移至…`、`搜索公司、职位、招聘顾问…`）。只有在完整句子中确实需要表达省略时才用 “……”。
 - 分隔符键（注释中标明是 separator，或值是 `" · "` 这类分隔符）原样保留，不翻译，也不改空格：`" · "`、`"<line/> · <person/>"`、`"{{from}}–{{to}}"`。
 - 冒号：标签后面用全角 “：”，冒号后面不加空格，例如 `"<b>渠道：</b><route/>"`、`"<b>投递日期：</b>{{date}}"`。
-- 箭头 `→`、`×`、`%` 原样保留。
+- 箭头 `→`、`×`、`%` 原样保留。`×` 只在单独作符号时保留；英文把 `×` 接在次数后面（"sent {{times}}×"）时，用量词“次”（“已发送 {{times}} 次”）。
 - 演示输入格式的占位示例（例如标签输入框的 `python, fintech, remote…`）保留英文半角逗号，因为输入框可能按半角逗号拆分。示例里的词可以译，例如 `python, 金融科技, 远程…`。
 
 **中文与数字、拉丁字母之间的空格。** 采用现代中国大陆界面的通行做法：中文与阿拉伯数字、拉丁字母之间加一个半角空格。
@@ -116,6 +116,8 @@ open an issue or a pull request.*
 | Reschedule / Rescheduled | 改期 / 已改期 | |
 | Needs a new time | 待定新时间 | |
 | Set new time (button) | 设定新时间 | 其他提示文字引用这个按钮时用同样的词 |
+| version label (a version's name, e.g. v3 (fintech)) | 版本名 | 不用“标签”（那是 tag）。字段名 Version 仍是“版本” |
+| Record as sent (a document version) | 记为已发送 | 按钮、弹窗标题和提示里都用这个说法 |
 | Debrief | 复盘 | |
 | Prep | 准备 | |
 | Questions asked | 被问到的问题 | |

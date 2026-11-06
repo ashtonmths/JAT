@@ -27,6 +27,17 @@
     {"name": "person-page", "path": "{person:Alex Morgan}", "full": true},
     {"name": "today-375", "path": "/", "width": 375, "full": true}
   ],
+  "documents": [
+    {"name": "documents-page", "path": "/documents", "full": true},
+    {"name": "documents-page-375", "path": "/documents", "width": 375, "full": true}
+  ],
+  "notes": [
+    {"name": "notes-page", "path": "/notes", "full": true},
+    {"name": "application-page", "path": "{application:Contoso}", "full": true},
+    {"name": "person-page", "path": "{person:Alex Morgan}", "full": true},
+    {"name": "search", "path": "/search?q=Contoso", "full": true},
+    {"name": "notes-page-375", "path": "/notes", "width": 375, "full": true}
+  ],
   "calls": [
     {"name": "person-page", "path": "{person:Alex Morgan}", "full": true},
     {"name": "today", "path": "/", "full": true},

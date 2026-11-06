@@ -11,7 +11,7 @@
     "noSubject": "（无主题）",
     "sizeDate": "{{size}} · {{date}}",
     "delete": "删除文件",
-    "deleteNamed": "删除 {{name}}",
+    "deleteNamed": "删除文件：{{name}}",
     "deleteConfirm": "删除 {{name}}？（它仍会保留在你数据仓库的 git 历史中。）"
   },
   "links": {
@@ -28,8 +28,8 @@
     "saveTitle": "保存标题",
     "cancel": "取消",
     "rename": "重命名",
-    "renameNamed": "重命名 {{label}}",
+    "renameNamed": "重命名链接：{{label}}",
     "remove": "删除",
-    "removeNamed": "删除 {{label}}"
+    "removeNamed": "删除链接：{{label}}"
   }
 }
