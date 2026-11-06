@@ -45,6 +45,14 @@
     {"name": "not-found", "path": "/no-such-page"},
     {"name": "today-375", "path": "/", "width": 375, "full": true}
   ],
+  "roles": [
+    {"name": "roles-page", "path": "/roles", "full": true},
+    {"name": "roles-applied", "path": "/roles?status=applied", "full": true},
+    {"name": "role-page", "path": "{role:Contoso}", "full": true},
+    {"name": "person-page", "path": "{person:Alex Morgan}", "full": true},
+    {"name": "today", "path": "/", "full": true},
+    {"name": "roles-page-375", "path": "/roles", "width": 375, "full": true}
+  ],
   "interviews": [
     {"name": "interviews-page", "path": "/interviews", "full": true},
     {"name": "application-page", "path": "{application:Contoso}", "full": true},
