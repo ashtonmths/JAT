@@ -39,7 +39,9 @@ next action.
   with `gh pr merge N --merge --delete-branch` after the review-fix cycle (CLAUDE.md *Git*), fixing
   every `must_fix`, the reasonable `should_fix` and the cheap nits, and reviewing again until no
   `must_fix` is left. Every PR goes through it, docs-only ones too; a large docs change gets a
-  fact-check reviewer. Kai: "merge once ready and update local main".
+  fact-check reviewer. Kai: "merge once ready and update local main". PR bodies and comments say what
+  was asked in our own words, never quoting Kai, and give an *Agents and tokens* table (CLAUDE.md *Git*,
+  2026-11-06).
 - **Approval to merge and release (since 2026-10-31).** Kai: "if you have followed and completed the
   iterative review-fix cycle then it can auto merge and make a release as appropriate, but it needs
   my explicit permission each time to make a major release". So don't ask per PR, except for a major,
@@ -768,7 +770,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
    `jat.openapi`, `gen:api`). Link check.
 5. Live check: seed demo data, build the branch's frontend, serve on a spare port, drive it
    with Playwright, Read the screenshots (also at 375 px when rows gain buttons).
-6. Fill in the draft PR's body (what Kai asked, quoted; what changed; checks) and run
+6. Fill in the draft PR's body (what was asked, in your own words, not quoting Kai; what changed; agents and tokens; checks) and run
    `gh pr ready`. Start a background `general-purpose` reviewer: `gh pr diff N` once, Read files in the worktree, report
    must_fix/should_fix/nit with file:line. For anything touching Kai's real data, tell it to
    focus on data safety. Tell Kai what's happening meanwhile.
@@ -1143,7 +1145,7 @@ from the record rather than guessing:
 - **The full conversation:** the transcript path the summary gives
   (`/home/kai/.claude/projects/-home-kai/<session>.jsonl`). Search it with `grep` for a quote,
   a PR number or a file name; don't read it whole.
-- **What a PR did and why:** `gh pr view N` (the body quotes Kai and lists what changed and
+- **What a PR did and why:** `gh pr view N` (the body says what was asked and what changed, with
   the checks), `gh pr diff N`, and the merge commit's messages (`git log --oneline main`).
 - **What a feature does:** `docs/guide/using-the-app.md` and the module docstrings
   (`src/jat/domain/*.py`, `src/jat/api/*.py`); `CHANGELOG.md` maps features to PRs.
@@ -1160,5 +1162,5 @@ in the same PR that makes it true:
 - Kai's standing instructions and decisions: sections 1 and 7 here (and `CLAUDE.md` when they
   are rules for the repo).
 - What's built: the guide, the README, `llms.txt`, `CHANGELOG.md`, the roadmap.
-- Why: the PR body (quote Kai) and commit messages.
+- Why: the PR body (what was asked, in your own words) and commit messages; Kai's own words go in the roadmap task and this file.
 - Gotchas worth not relearning: section 8 here.
