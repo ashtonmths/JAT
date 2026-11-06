@@ -189,6 +189,9 @@ open an issue or a pull request.*
 | Needs attention / All caught up | 需要处理 / 全部处理完了 | |
 | Due {{when}} / overdue | {{when}}截止 / 已逾期 | 截止日期 |
 | Insights | 洞察 | |
+| Review (the menu heading over Insights and Timeline) | 回顾 | 指回头看求职过程，不是审核 |
+| this machine / this computer | 本机 | 比“这台电脑”简短，是软件里的常用说法 |
+| for {{count}} days (how long a state has lasted) / since today | 已持续 {{count}} 天 / 始于今天 | “今天开始”单独出现时会被读成“今天开始做” |
 | Rejection feedback | 被拒反馈 | |
 | Details | 详情 | |
 | Search / Search everything | 搜索 / 全局搜索 | |
