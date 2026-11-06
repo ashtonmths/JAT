@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4, 4a and 5 are a snapshot (2026-11-05, after PR #237, main at `5ed8f46`, v1.18.10), and 4a is the live plan;
+Sections 3, 4, 4a and 5 are a snapshot (2026-11-06, after PR #248, main at `32d12e3`, v1.18.12), and 4a is the live plan;
 refresh them before each compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
 
@@ -65,6 +65,8 @@ next action.
   `pnpm e2e` cap their workers, run at low priority and take one lock across worktrees (`/tmp/jat-test-run.lock`;
   CLAUDE.md and CONTRIBUTING *Checks*). `<tmp>/deps/pm_checks.sh` still also wraps a whole run in the older
   `flock /tmp/jat-heavy-tests.lock nice -n 19 ionice -c 3`; the two locks don't wait on each other.
+  Since `test-speed` (#243): half the CPU threads (Kai: "do 1 and 2"), and a PR whose every file is on CLAUDE.md's
+  closed list skips `pnpm e2e` (`<tmp>/deps/pm_checks_noe2e.sh` runs the rest); its body says so.
 - **Plan before building when asked.** "lets plan it firtst and dont start building until i say
   so" (Docker); "dont build yet, just commit the plan"; "noooo noo no no, dont buikld antyhing
   eyt … undo all of that. i want to know what each PR would be". When Kai asks for a plan,
@@ -238,6 +240,10 @@ next action.
   - **Draft languages** (#237): `DRAFT_LANGUAGES` in `i18n/language.ts` (code → own name), shown only on a dev server
     (`?lang=<code>`, or "<name> (draft)" in the switch), never saved; may miss whole namespaces (English shows), but each
     file must be complete; its `index.ts` must load exactly its files. Moves to `LANGUAGES` when every namespace is in.
+  - **Simplified Chinese** (`zh-CN`, a draft, #239–#248): `locales/zh-CN/*.json` (7 of 17 files), loaded only when
+    `import.meta.env.DEV`; its dates and numbers in `utils/format.ts`; the glossary `docs/i18n/zh-CN.md` (in Chinese,
+    an English note on top); the plan `docs/rfc/zh-cn.md`. Tools for any language: `scripts/i18n/translate/` and
+    `.claude/workflows/i18n-{translate,review,rereview}.js` (#242; README there).
   - `frontend/src/i18n/`: `index.ts` (`createI18n`, the app's `i18n`, strict mode throws
     `MissingValueError`/`MissingKeyError` in dev and tests), `language.ts` (`LANGUAGES`,
     `LANGUAGE_NAMES`, `pickLanguage`, `saveLanguage`, `isLanguage`, `PSEUDO` = `en-XA`,
@@ -341,7 +347,7 @@ next action.
   *No round yet* takes drops (`isRoundColumn`, keys `<stage>#round-<n>`, `stageOfColumn`).
   A card's recruiter name links to their page, or the agency's when only the agency shows (`ViaLink`, #229); the link
   stops click, pointerdown and keydown so it doesn't open the quick view or start a drag. The list view's name isn't linked.
-- **Test runs** (#217): `pnpm test` / `pnpm e2e` go through `frontend/scripts/test-run.mjs` (one at a time across
+- **Test runs** (#217, #243: half the threads): `pnpm test` / `pnpm e2e` go through `frontend/scripts/test-run.mjs` (one at a time across
   worktrees on `/tmp/jat-test-run.lock`, low priority) with workers from `frontend/testWorkers.ts`.
 - **The MCP server** is planned, not built: `docs/rfc/mcp.md` (#228), the `mcp-*` tasks.
 - **Interviews page** (`pages/InterviewsPage.tsx`, #90): a pencil per row (the round's form)
@@ -407,94 +413,105 @@ next action.
   `search`, `workflow`, `backup` (+ `/archive`, `/snapshot`, `/push`); `interviews/{id}/needs-new-time`,
   `meetings/{id}/needs-new-time`, `applications/{id}/rejection-feedback`.
 
-### 4. Current state (snapshot 2026-11-05, after #237)
+### 4. Current state (snapshot 2026-11-06, after #248)
 
-- **main at `5ed8f46`** (merge of #237), plus this doc's PR until it merges. No other open PRs; one worktree (the main
-  checkout); only `main` locally and on GitHub. Version **1.18.10**, released as v1.18.10.
-- **Merged since the last snapshot (#231), all through the review-fix cycle, one PR at a time:**
-  - #231 the previous refresh of this doc.
-  - #232 roadmap: `windows-support` split into nine planned tasks (section 4a), with Kai's answers.
-  - #233 `windows-rfc` (no release): `docs/rfc/windows.md`, the path to Windows support, fact-checked twice; the tasks
-    and the PRD (FR24) link to it. Written to link from issue #230.
-  - #234 (no release): `packaged-install` and `desktop-app` taken out of the Windows plan (Kai: "we dont need
-    packaged-install and desktop-app as part of this windows work").
-  - #235 (no release): the testing switch `JAT_WINDOWS_SNAPSHOTS=1` added to the plan (Kai: "testing switch, good idea.
-    add it to the plan").
-  - #236 `language-research` (no release): `docs/rfc/i18n.md` 13a, the human languages offered by up to 20 most-starred
-    repos in each of the repo's 20 GitHub topics (299 repos, 20 agents): Simplified Chinese first (72 repos, 16 topics),
-    then Spanish, French, German, Russian, Japanese. Data in `<tmp>/lang/` (`results.json`, `aggregate.py`).
-  - #237 `i18n-draft-languages` (v1.18.10): draft languages. `DRAFT_LANGUAGES` in `frontend/src/i18n/language.ts`
-    (code → own name, empty for now): only a dev server shows one (`?lang=<code>` or the switch, "<name> (draft)"), never
-    saved or picked from the browser. The catalog test lets a draft miss whole namespaces (English shows) but each file
-    must be complete; a shipped language needs all; every `locales/<code>/` folder must be shipped or a draft and its
-    `index.ts` must load exactly its files (`namespaceProblems` in `catalog.ts`). `new_language.mjs <code> <dir>` writes
-    `<dir>/<code>/`, making it if needed (it refuses one already there). Guide: "Translating in parts". RFC: Kai's
-    AI-translation decision and the Chinese decisions.
-- **Tests on main** (the lead's full run on #237's final commit): pytest 1,284, browser 711; unit 1,142
-  passed one commit earlier, and the last fixes added one test.
-- **Kai's tracker** answered on 8770. Everything since v1.18.0 is frontend, tooling or docs; the sidebar keeps asking for
-  a restart until Kai restarts (each release bumps the server's version).
-- **Kai's messages since #231, in order** (word for word where quoted):
-  - Issue #230: "evaluate what he said, and the effort required to do it, and the risks of him doing it hmself and
-    contributing it / also, at some ppint i want to dockerize, would that solve it / also first explain to me why this
-    wont work on windows atm / also check his fork and see his approach" → answered after three agents (audit, fork
-    review, Docker). The fork is `ashtonmths/JAT` (12 ahead: 7 Windows commits, plus an unrequested "colleges" route
-    with migration 0018, a margin change, a version bump; Kai: "i wont incorporate them").
-  - "feel free to fan out" (agents used); four questions (isolate and disable on Windows; what tzdata is; the colleges
-    commits; fork vs Docker) → answered.
-  - "the various issues you mentioned, perhaps its worth splitting those things out as their own PRs also" → #232; then
-    "1. that sounds like a plan, add it to the roadmap to get basic windows support. on windows we can simply globaly
-    disable the parts that would be an issue after isolating them and minimising the problematic surface, that as a
-    first step 2. this is reasonable to include and then use same dependency on all platforms 3. nice 4. i can test on
-    windows" → folded into #232.
-  - "so what does the path to windows support look like now?", "how much of this does the other persons fork cover?"
-    (about a quarter), "so their dependency change instead of fcntl, our plan would still do that" (yes, msvcrt in step
-    2; it's stdlib) → answered.
-  - "okay so is our roadmap up to date with our path to windows support? perhaps create a separate md file about this
-    that we can later link to, explaining our path / afterwards, dont do it until i say so, we will draft a reply." →
-    #233; "is git snapshot correct? really its just making a commit isnt it?" → answered (export + commit, never
-    pushes) and written into the RFC; "we dont need packaged-install and desktop-app as part of this windows work" → #234.
-  - The #230 reply: Kai's six points; "1. testing switch, good idea. add it to the plan 2. I will post / keep PRs
-    targetting 500 lines, max 1k / dont mention rebase vs merge / dont mention the 3rd ntoe" → #235 and the final
-    Markdown given; "give me the message as markdown so i can copy and paste" → given. **Kai posted it on #230 (2026-11-05,
-    19:01 UTC).** Only Kai can merge (sole collaborator; the `main` ruleset blocks deletion and force pushes only).
-  - "i want to add a second language! scour every tag … find the languages in the top-20 starred repos for each tag" and
-    "fan out massively" → a 20-agent workflow, ranked list; "put these findings in the roadmap" → #236.
-  - "then lets say i want to add a language, i assume thats 1 pr because of the checks?" → yes as built; the
-    draft-language change splits it. "i will have AI do the translations, people can open an issue/pr if the think
-    something should change / dont do anything yet, give me a PR plan for adding simplified chinese" → the 11-PR plan
-    (section 4a). "what is the draft-language change? you didnt explain it to me, file changes got in the way" →
-    explained. "i like the draft-language plan, implenebt tgat change but dont create the new language yet" → #237.
-    Kai's decisions: "1. i dont know, recommended 2. recommended 3. keep but change to more coming soon 5. leave it".
-  - "after that update the compaction doc" → this PR.
+- **main at `32d12e3`** (merge of #248), plus this doc's PR until it merges. No other open PRs; one worktree (the main
+  checkout); only `main` locally and on GitHub. Version **1.18.12**, released as v1.18.12.
+- **Merged since the last snapshot (#238), all through the review-fix cycle, one PR at a time:**
+  - #239 `i18n-zh-cn-applications` (no release): the Simplified Chinese pilot. `zh-CN` "简体中文" in `DRAFT_LANGUAGES`,
+    loaded only on a dev server (`resources: import.meta.env.DEV ? {...} : {}` in `i18n/index.ts`), its dates and numbers
+    (`dayjs/locale/zh-cn`, a `PATTERNS` row `YYYY[年]M[月]D[日]`…, `NUMBER_LOCALE`), the 190 applications strings, the
+    glossary `docs/i18n/zh-CN.md`, the plan `docs/rfc/zh-cn.md`, and 24 `i18n-zh-cn-*` roadmap tasks in Up next.
+  - #240 (no release): the file tasks ordered by string count, smallest first (Kai: "order them by string count asc").
+  - #242 `i18n-translate-tools` (v1.18.11): the translation helpers in the repo, any language:
+    `scripts/i18n/translate/` (`prepare.py`, `screenshots.py` + `pages.json`, `assemble.py`, `apply_review.py`,
+    `README.md`) and `.claude/workflows/i18n-{translate,review,rereview}.js`; `tests/test_i18n_translate.py`.
+  - #243 `test-speed` (v1.18.12): tests use half the CPU threads (6 of 12, was a quarter); a PR whose every file is on a
+    closed list (a draft language's text and glossary, `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`,
+    `.claude/workflows/`, `tests/`, docs) skips `pnpm e2e` (CLAUDE.md *Git*, CONTRIBUTING *Checks*). Browser tests went
+    from 7.1 to 4.8 minutes. Backlog: `e2e-shared-server`.
+  - #241 `stages`, #244 `files`, #245 `todos`, #246 `calls`, #247 `documents`, #248 `notes` (no release; browser tests
+    skipped under #243's rule). Glossary fixes along the way, each applied to the merged files in the same PR: no space
+    after a date before Chinese (`{{date}}前`, dates render as 2026年11月7日); per-item screen-reader labels are
+    "动作：{{label}}"; "How did it go?" is 聊得怎么样？ after a call and 结果如何？ after an interview round; × after a count
+    is 次; Set new time is 设定新时间; terms 版本名, 记为已发送, 通用笔记, 编写 / 预览. #247 also folds an area under 5
+    strings into its neighbour in `prepare.py`, adds pages for documents and notes, and tells the consistency pass never
+    to add keys.
+- **Tests on main:** #243's full run on its final commit (`f2a55f2`): pytest 1,301, browser 711 (4.8 min). The
+  translation PRs since ran everything but the browser tests (pytest 1,301 and the catalog test each time).
+- **Kai's tracker** answered on 8770. Nothing since v1.18.0 is a server change; the sidebar keeps asking for a restart
+  until Kai restarts (each release bumps the server's version). The zh-CN draft isn't in production builds.
+- **Kai's messages since #238, in order** (word for word where quoted):
+  - "refresh on how to add a new language / the first one were going to do is siplified chinese / fan out heavily - im
+    thinking an agent per strings file, perhaps even more granular over more PRs / 1x PR per strings file (or perhaps
+    more) / I want strings considered in context to enable the translation to be as accurate as possible / the review
+    should possibly also include some screenshots to check it in situ / review should use several agents, also for each
+    area perhaps masssively fan out so 1x agent reviewing 1x piece of text / text for a specific area (e.g. kanban column
+    names, application card on kanban board) andd then that mutlipled across a few different models e.g. haiku, sonnet,
+    then opus to check for difference of opinions"; "give me your detailed plan here and wait for my approval to start"
+    → plan given.
+  - "PR23 - chinese readme, good. how about we also generate some of the screenshots/graphics with chinese versions too /
+    then also, the main readme, i want to highlight the fact that we support multiple languages, and have some chinese
+    characters/writing near the top so people spot it. same for the repo description so it is obvious from search
+    results / i also want to promote (not in the hero) but make it clear/obisous that we support multiple languages in
+    the app, not just have translated readmes / update the plan accordingly then give me the full plan again" → plan.
+  - "pr1 context pack. this can very quickly get out of date. do yoyu think this is a good idea? if something is changed
+    this would be wrong / 1. yes no release while it is draft / 2. models yes sounds good, perhaps we can drop haiku / 3.
+    no screenshots in the PR / also, for now, lets do the translations for jsut the applications.ts, that way i can
+    validate the review/translation process and token usage / after that file is translated and gets merged, dont
+    continue after that until isay" → no saved context pack (looked up fresh each run); #239.
+  - "also, commit the plan as items in the roadmap in upnext column so it doesnt get lost. add enough detail. create a
+    companion doc if yoyu like" → in #239. "also run a dev server so i can see the language in progress" → done.
+  - "why is the new local a json file not a ts file like en?" → answered (RFC i18n §3); "its fine that it is, just
+    curious".
+  - "whats next for transaltion? working through the strings files?", "order them by string count asc" → #240; "then
+    tell me what they are" → table given; "how big was applications" → 190 strings.
+  - "do stages, files, todos, and calls" → #241, #244–#246. Mid-way: "feel free to put the helper scripts in the repo and
+    to ipdate docs about them" → #242; "is there a way to make the browser tests quicker?" then "do 1 and 2, and add a
+    roadmap item for 3" → #243.
+  - "what are the next strings files, remaing, ordered by size asc" → listed. "do documents and notes" → #247, #248.
+    "then update the compaction doc afterwards" → this PR.
 
-### 4a. Current work, 2026-11-05 (read this first; it overrides 4 and 5 where they differ)
+### 4a. Current work, 2026-11-06 (read this first; it overrides 4 and 5 where they differ)
 
 Keep this whole section word for word in the summary: it is the live plan.
 
-**Versions and main.** Released up to v1.18.10 (#237); main at `5ed8f46`. Everything Kai asked for is merged and
-released (section 4). Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
+**Versions and main.** Released up to v1.18.12 (#243); main at `32d12e3`. Everything Kai asked for is merged (section
+4). Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 
-**Nothing is up next: report and wait.** No roadmap task is `next` or `building`. By `CLAUDE.md` ("Report and wait", Kai,
-2026-11-02), with nothing up next I tell Kai what's in the backlog and wait for Kai to pick; nothing from the backlog starts
-without Kai's go-ahead. Waiting on Kai in particular:
-- **Simplified Chinese** (Kai: "dont create the new language yet"). The PR plan Kai was given, none on the roadmap yet (add
-  them as tasks when Kai says go; each its own PR, all patch but the switch-on, which is minor):
-  1. ~~Draft languages~~ (done, #237).
-  2. A glossary, `docs/i18n/zh-CN.md`: the fixed Chinese for key terms (application, role, recruiter, agency, round,
-     stage, offer, ghosted, Today, Your move…), tone, and how dates, numbers and money read. Every translation PR follows it.
-  3–8. Six translation PRs of ~500 lines, by namespace: `insights`+`stages`+`files`; `errors`+`common`+`todos`;
-     `people`+`applications`; `today`+`roles`+`calls`; `interviews`+`offers`+`timeline`+`events`; `notes`+`documents`
-     (the first adds `zh-CN` to `DRAFT_LANGUAGES` as "简体中文", its `index.ts` and the loader line in `i18n/index.ts`).
-     Each checked by the catalog test and `?lang=zh-CN` screenshots of its pages.
-  9. Chinese layout: system CJK fonts (PingFang SC, Microsoft YaHei, Noto Sans CJK SC) and clipped labels, at desktop
-     and 375 px.
-  10. Switch it on (minor): `LANGUAGES`/`LANGUAGE_NAMES`, `dayjs/locale/zh-cn`, a `PATTERNS` row (`YYYY年M月D日`…),
-      `NUMBER_LOCALE`, "Coming soon!" → "More coming soon", a browser test that switches and finds no English, guide,
-      README row, `llms.txt`, changelog.
-  11. `README.zh-CN.md`, linked from the README. The website in Chinese is separate and later, if Kai wants it.
-  Kai's decisions (RFC i18n 13a): code `zh-CN`; Traditional Chinese browsers stay on English; "More coming soon"; search
-  left as is (`i18n-search` not first); AI translation, corrections by issue or PR (no native-speaker review).
+**Nothing is being built: report and wait.** Kai scoped each batch ("do documents and notes"), so after a batch I stop
+and wait for the next go, even though the `i18n-zh-cn-*` tasks sit in Up next (Kai asked for them there "so it doesnt
+get lost"). Waiting on Kai in particular:
+- **Simplified Chinese** (`docs/rfc/zh-cn.md`; tasks `i18n-zh-cn-*`, P8, all `next`, each "waits for Kai's go").
+  - **Done (7 of 17 files, 460 Chinese strings):** applications, stages, files, todos, calls, documents, notes.
+  - **Left, smallest first** (strings in English, plural forms counted): events 81, offers 91, common 94, timeline
+    103, interviews 136, roles 139, today 152, people 213, errors 269, insights 327. Kai picks a batch ("do X and Y").
+  - **Then:** `i18n-zh-cn-layout` (CJK fonts, clipped labels, and stage badges set in capitals: 已获 OFFER),
+    `i18n-zh-cn-switch-on` (minor: `LANGUAGES`, drop the dev-only gate, "More coming soon", a README "Use it in your
+    language" row and Languages section, not in the hero), `-demo-data` (Chinese demo data, Kai to confirm),
+    `-screenshots` (Chinese README images and demo.gif; show Kai first), `-readme` (`README.zh-CN.md`, `English · 简体中文`
+    under the main README's title), `-website` (Kai to confirm), `-listing` (GitHub description with Chinese, topics;
+    Kai approves the exact text). Also for switch-on: load the language on demand, not in every bundle (RFC i18n §3), and
+    decide whether plain `zh`/`zh-Hans` browsers get it.
+  - **How each file runs** (`scripts/i18n/translate/README.md`): worktree `worktree-i18n-zh-cn-<ns>` (branch the next
+    file from the previous file's branch when both are open, so `index.ts` doesn't clash; its PR still targets main),
+    task `building`, draft PR; `prepare.py zh-CN <ns>` (add pages for the file to `pages.json` first if it has none);
+    a dev server for the branch (`JAT_API_URL=http://127.0.0.1:8891 pnpm exec vite --port 51xx --strictPort` from its
+    `frontend/`, demo data served from `<tmp>/zh/demo` on 8891); `screenshots.py … en`; the `i18n-translate` workflow
+    (`scriptPath` the worktree's `.claude/workflows/i18n-translate.js`, args `{lang, language, ns, wt, areas}`), save its
+    result as `var/i18n/zh-CN/<ns>/translate.json` (drop any consistency change whose key isn't in `flat.json`);
+    `assemble.py`; catalog test; commit; `screenshots.py … zh-CN`; `i18n-review`; `apply_review.py`; `assemble.py
+    zh-CN <ns> review-fixes.json`; `i18n-rereview` (add any cross-file change to `changed.json` first); until no
+    must_fix. New glossary terms go into `docs/i18n/zh-CN.md`, and a glossary fix updates the merged files in the same
+    PR. Then task `done`, merge main (check the roadmap statuses after), `<tmp>/deps/pm_checks_noe2e.sh` when every file
+    is on the skip list, PR body (what changed, the judge's table from `review-table.md`, agents and tokens, checks,
+    "Browser tests skipped" and why), `gh pr ready`, `merge.sh`, no release, remove the worktree.
+  - **Kai's decisions:** `zh-CN`; Traditional Chinese browsers stay English; "More coming soon"; search as is; AI
+    translation, corrections by issue or PR; a draft until every file is in; **no release while a draft**; one PR per
+    string file; Opus translates and judges, **Sonnet and Opus review** (no Haiku); **no screenshots in PRs**; **no
+    saved context pack** (context looked up fresh each run); files smallest first.
+  - **Cost so far:** pilot 3.1M tokens for 190 strings (16k each); the next six files 0.68–1.14M each, about 25k per
+    string (screenshot reviewers are a fixed cost per file). Opus raised nearly every should_fix; Sonnet mostly nits.
 - **Windows** (`docs/rfc/windows.md`, all planned): `windows-starts` (basic support: the Windows-unsafe parts behind one
   is-Windows check, off there; `JAT_WINDOWS_SNAPSHOTS=1` turns snapshots on for testing on a test data folder), then
   `utf8-everywhere`, `windows-time-zones` (tzdata on every platform, Kai's yes), `static-file-types`,
@@ -698,7 +715,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
 - **In flight:** none (after this doc's PR merges). **Up next:** nothing. **Backlog:** Kai picks (section 4a); the MCP
   build waits on the RFC's §14 decisions.
 - **Left of the i18n work, P8** (when Kai says; see 4a): `i18n-search` and `multi-language`
-  (Simplified Chinese as `zh-CN`, AI-translated, in the 11 PRs of section 4a; also percent and number formats,
+  (now the languages after Chinese; Simplified Chinese is the `i18n-zh-cn-*` tasks of section 4a; also percent and number formats,
   brackets and separators).
 - **Noticed, for later:** long text clips on Today's Waiting rows, the call form's How and the offer form's kind (for
   `multi-language`); README screenshots showing the header still have the old language icon (no open task: the `readme-refresh-*` tasks are done, so retaking them needs a new one).
@@ -916,6 +933,11 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
   Docker doesn't replace it (it's for self-hosters).
 - **Translations:** AI-translated, corrections by issue or PR, no native-speaker review; a big language goes in as a
   draft a few namespaces per PR. Chinese: `zh-CN`; Traditional browsers stay English; "More coming soon"; search as is.
+  One PR per string file, smallest first, in context (code and screenshots), reviewed per screen area by Sonnet and
+  Opus with an Opus judge; no release while a draft; no screenshots in PRs; no saved context pack; Chinese README,
+  screenshots and repo description later, "Use it in your language" in the README but not the hero (`docs/rfc/zh-cn.md`).
+- **Browser tests** run only when the production build can change (closed list in CLAUDE.md *Git*); tests use half
+  the threads (Kai, 2026-11-05).
 
 ### 8. Gotchas already learned
 
@@ -1046,6 +1068,16 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
     the same commit (`<tmp>/deps/e2e_only.sh`) when everything else passed and the failure isn't the PR's.
   - **`pm_checks.sh` keeps only the last 25 lines** of a failing check: read the failures' `error-context.md` under
     `frontend/test-results/` for the rest.
+- **Learned 2026-11-06:**
+  - **A worktree-isolated session limits its subagents' Bash to that worktree** (and edits too): run a review from the
+    worktree it reviews, or tell agents to Read files by path. Switch with EnterWorktree `path` before editing another.
+  - **The translate workflow's consistency pass added `_one` keys** Chinese doesn't have; `assemble.py` refuses
+    unknown keys, so drop them from `translate.json` (the prompt now forbids it).
+  - **`prepare.py` leaves `locales/<lang>/<ns>.json` and `index.ts` uncommitted** with markers; assemble and commit
+    before merging another branch in, or the merge refuses.
+  - **Branching file N+1 from file N's branch** keeps `index.ts` from clashing; after N merges, merge main and the diff
+    shrinks to N+1's own files. `merge_main.sh` then reverted N's task to `building` once: fix it by hand.
+  - **A session restart stops background servers** (the PM dashboard, the demo and dev servers): restart them.
 - **Learned 2026-11-05:**
   - **Fact-check public docs before linking them.** The Windows RFC's first fact-check found a "Backup page" that
     doesn't exist (it's the sidebar's "Download a backup" link) and a fork "linked from the issue" that wasn't.
