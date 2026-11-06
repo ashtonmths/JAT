@@ -43,6 +43,7 @@ import { useTodos, type Todo } from "../api/todoHooks";
 import { useRoleSummaries } from "../api/roleHooks";
 import { i18n } from "../i18n";
 import { callLabel } from "../utils/calls";
+import { joinSentences } from "../utils/list";
 import { formatDateTime } from "../utils/time";
 
 type Status = "scheduled" | "done" | "cancelled";
@@ -144,7 +145,7 @@ export function MeetingFormModal({
         <Stack>
           {meeting?.needs_new_time_since && meeting.status === "scheduled" && status !== "done" && (
             <Text size="sm" c="dimmed">
-              {wasText(meeting)} {i18n.t("interviews:needsNewTime.editHint")}
+              {joinSentences(wasText(meeting), i18n.t("interviews:needsNewTime.editHint"))}
             </Text>
           )}
           <Group grow align="flex-start">

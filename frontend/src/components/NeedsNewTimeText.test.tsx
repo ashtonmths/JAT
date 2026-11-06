@@ -4,8 +4,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { Interview } from "../api/interviewHooks";
 import { mockApi } from "../test/mockApi";
 import { formatDateTime } from "../utils/time";
+import { InterviewFormModal } from "./InterviewFormModal";
 import { RescheduleButton, RescheduleModal } from "./Reschedule";
 
 // A round that can't go ahead at its time, with no new one agreed yet: what it says, word for word.
@@ -154,5 +156,23 @@ describe("a round waiting for a new time", () => {
     expect(within(dialog).getByRole("button", { name: "Save" })).toBeDisabled();
     fireEvent.click(within(dialog).getByRole("button", { name: "Keep the old time" }));
     await waitFor(() => expect(calls.some((c) => c.method === "DELETE")).toBe(true));
+  });
+
+  it("says when it was, then what setting a time does, in its Edit form", async () => {
+    mockApi({ "GET /api/v1/contacts": [], "GET /api/v1/interviews/titles": [] });
+    wrap(
+      <InterviewFormModal
+        opened
+        onClose={() => {}}
+        applicationId="a1"
+        interview={{ ...waiting, interviewer_ids: [] } as unknown as Interview}
+        nextRound={2}
+      />,
+    );
+    expect(
+      await screen.findByText(
+        `Was ${OLD}. They needed the change. Setting a new time here counts as the move from the old one, and ticks off any to-do made to book it.`,
+      ),
+    ).toBeInTheDocument();
   });
 });

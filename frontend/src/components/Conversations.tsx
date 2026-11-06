@@ -25,6 +25,7 @@ import {
 } from "../api/insightHooks";
 import { i18n } from "../i18n";
 import { PersonName } from "./GhostMark";
+import { joinSentences } from "../utils/list";
 import { formatDate } from "../utils/time";
 import { SankeyChart } from "./SankeyChart";
 import { daysText } from "./Scorecard";
@@ -99,9 +100,11 @@ function CallsMoved({ tally }: { tally: Tally }) {
     <Stack gap="sm" mt="lg">
       <Title order={5}>{t("conversations.moved.title")}</Title>
       <Text size="sm">
-        {t("conversations.moved.calls", { count: moved })}{" "}
-        {t("conversations.moved.moves", { count: tally.call_moves ?? 0 })}
-        {waiting > 0 && ` ${t("conversations.moved.waiting", { count: waiting })}`}
+        {joinSentences(
+          t("conversations.moved.calls", { count: moved }),
+          t("conversations.moved.moves", { count: tally.call_moves ?? 0 }),
+          waiting > 0 && t("conversations.moved.waiting", { count: waiting }),
+        )}
       </Text>
       <Table aria-label={t("conversations.moved.title")} maw={360}>
         <Table.Thead>

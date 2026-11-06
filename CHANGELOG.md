@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.3 (2026-11-06)
+
+- Sentences shown one after another (the edit form of a round or call waiting for a new time, a round's days moved, a rejection's line and Insights' Calls moved, Rescheduling and Rejections round counts) join the way each language does, so a translation no longer gets a stray space after a full stop; English is unchanged (#259).
+
 ## 1.19.2 (2026-11-06)
 
 - Lists of names the app builds (a round's interviewers, a person's relations to an application, a role's files, an Insights week's counts) use the language's own separator, so a translation no longer shows an English comma; English is unchanged (#258).
