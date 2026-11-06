@@ -1260,7 +1260,9 @@ export interface paths {
          *     `status`: `to_decide` (no application and not passed), `interested` (it has applications,
          *     all still before Applied), `closed` (all closed before any got to Applied: withdrawn while
          *     only interested, say), `applied` (an application got to Applied or further) or `passed`.
-         *     Filter by company, by who told you about it, or by the call it came up in.
+         *     A `closed` role has `closed_as`/`closed_stage`; an `applied` one whose applications have all
+         *     ended has `ended_as`/`ended_stage`/`ended_kind` (`closed` or `success`: the latest success,
+         *     else the latest application). Filter by company, by who told you about it, or by the call it came up in.
          */
         get: operations["role_summaries_api_v1_role_summaries_get"];
         put?: never;

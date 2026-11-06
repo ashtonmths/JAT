@@ -17892,7 +17892,7 @@
     },
     "/api/v1/role-summaries": {
       "get": {
-        "description": "Roles with where they came from and where they stand, oldest first.\n\n`status`: `to_decide` (no application and not passed), `interested` (it has applications,\nall still before Applied), `closed` (all closed before any got to Applied: withdrawn while\nonly interested, say), `applied` (an application got to Applied or further) or `passed`.\nFilter by company, by who told you about it, or by the call it came up in.",
+        "description": "Roles with where they came from and where they stand, oldest first.\n\n`status`: `to_decide` (no application and not passed), `interested` (it has applications,\nall still before Applied), `closed` (all closed before any got to Applied: withdrawn while\nonly interested, say), `applied` (an application got to Applied or further) or `passed`.\nA `closed` role has `closed_as`/`closed_stage`; an `applied` one whose applications have all\nended has `ended_as`/`ended_stage`/`ended_kind` (`closed` or `success`: the latest success,\nelse the latest application). Filter by company, by who told you about it, or by the call it came up in.",
         "operationId": "role_summaries_api_v1_role_summaries_get",
         "parameters": [
           {

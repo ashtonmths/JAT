@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.19.1 (2026-11-06)
 
-- An applied role whose latest application has ended says how on its badge (*Rejected*, *Withdrawn*, *Accepted*…) instead of *Applied*: on a person's *Roles they've mentioned*, the Roles page and the role's page. Role summaries gain `ended_as`, `ended_stage` and `ended_kind` (#254).
+- An applied role whose applications have all ended says how on its badge (*Rejected*, *Withdrawn*, *Accepted*…) instead of *Applied*, wherever it shows: a person's *Roles they've mentioned*, the Roles page, the role's and company's pages. Role summaries gain `ended_as`, `ended_stage` and `ended_kind` (#254).
 
 ## 1.19.0 (2026-11-06)
 

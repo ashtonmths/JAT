@@ -25,7 +25,8 @@ export default {
     passed: "You haven't passed on any roles.",
     all: "No roles yet.",
   },
-  // A role's badge. A role closed before you applied shows the stage it ended at instead.
+  // A role's badge. A role closed before you applied, or an applied one whose applications have all
+  // ended, shows the stage it ended at instead.
   status: {
     to_decide: "To decide",
     interested: "Interested",

@@ -89,8 +89,9 @@ Today, an application's *Role* card, search, the Timeline) to open its page:
 
 The **Roles** page shows roles *To decide* (the default), *Interested* (an application that
 hasn't got to *Applied* yet), *Applied* (one that got to *Applied* at some point, even if it
-was closed later; once the latest application has ended, its badge says how, e.g. *Rejected* or
-*Accepted*, here, on the role's page and on the person's page under *Roles they've mentioned*),
+was closed later; once every application for it has ended, its badge says how, e.g. *Rejected* or
+*Accepted* (an accepted one wins, else the latest), wherever the role shows: here, on its page, on
+the person's and company's pages and under their calls),
 *Closed* (every application closed before any got to *Applied*: withdrawn, rejected or
 ghosted while only interested; the badge says how the latest one ended, e.g. *Withdrawn*, and
 the role links to that one), *Passed* or *All*. An application you record straight at a closed
