@@ -49,7 +49,7 @@ const CONS = {
 }
 const consistency = await agent(`${COMMON}
 
-Below is the whole "${ns}" namespace translated area by area, with proposed new terms. Check it as one file and against the files already translated: the same concept uses the same term (and matches the glossary), same tone, button style, punctuation and spacing; placeholders and tags intact versus the English (${wt}/frontend/src/locales/en/${ns}.ts). Only change what's inconsistent or wrong. Decide which proposed terms join the glossary (only ones not already in it).
+Below is the whole "${ns}" namespace translated area by area, with proposed new terms. Check it as one file and against the files already translated: the same concept uses the same term (and matches the glossary), same tone, button style, punctuation and spacing; placeholders and tags intact versus the English (${wt}/frontend/src/locales/en/${ns}.ts). Only change what's inconsistent or wrong, and only keys given above: never add keys (the plural forms are already the ones this language uses, so no _one where only _other is given). Decide which proposed terms join the glossary (only ones not already in it).
 
 Translations: ${JSON.stringify(ok.flatMap(r => (r.translations || []).map(t => ({ area: r.area, ...t }))))}
 Proposed terms: ${JSON.stringify(ok.map(r => ({ area: r.area, terms: r.new_terms || [], unused: r.unused_keys || [] })))}`, { label: 'consistency', phase: 'Consistency', model: 'opus', schema: CONS })

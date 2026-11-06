@@ -116,6 +116,8 @@ open an issue or a pull request.*
 | Reschedule / Rescheduled | 改期 / 已改期 | |
 | Needs a new time | 待定新时间 | |
 | Set new time (button) | 设定新时间 | 其他提示文字引用这个按钮时用同样的词 |
+| version label (a version's name, e.g. v3 (fintech)) | 版本名 | 不用“标签”（那是 tag）。字段名 Version 仍是“版本” |
+| Record as sent (a document version) | 记为已发送 | 按钮、弹窗标题和提示里都用这个说法 |
 | Debrief | 复盘 | |
 | Prep | 准备 | |
 | Questions asked | 被问到的问题 | |

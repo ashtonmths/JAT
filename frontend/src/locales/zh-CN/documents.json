@@ -1,0 +1,90 @@
+{
+  "kinds": {
+    "cv": "简历",
+    "cover_letter": "求职信",
+    "other": "其他"
+  },
+  "page": {
+    "title": "文档",
+    "new": "新建文档",
+    "empty": "把你的简历和求职信放在这里，每次针对职位修改时就新建一个版本。然后在每份申请里记录你发送的是哪个版本。"
+  },
+  "newDocument": {
+    "title": "新建文档",
+    "nameError": "起个名字，例如“后端简历”",
+    "kind": "类型",
+    "name": "名称",
+    "namePlaceholder": "后端简历",
+    "create": "创建"
+  },
+  "newVersion": {
+    "title": "{{name}} 的新版本",
+    "defaultLabel": "v{{number}}",
+    "labelError": "给版本起个名字，例如 v3（金融科技）",
+    "label": "版本名",
+    "changed": "改了什么",
+    "changedPlaceholder": "开头突出支付相关的工作",
+    "chooseFile": "选择文件",
+    "changeFile": "更换文件",
+    "fileOptional": "可选，但很有用",
+    "file": "{{name}}（{{size}}）",
+    "add": "添加版本"
+  },
+  "version": {
+    "sentTimes": "已发送 {{times}}×",
+    "dateNotes": "{{date}} · {{notes}}",
+    "file": "{{name}}（{{size}}）",
+    "sentBlocks": "已随申请发送：先从这些申请中移除它",
+    "delete": "删除版本",
+    "deleteConfirm": "删除 {{label}}？",
+    "deleteNamed": "删除版本：{{label}}"
+  },
+  "used": {
+    "none": "还没有随任何申请发送过。",
+    "application": "{{company}} · {{role}}",
+    "versionDateStage": "{{version}} · {{date}} · {{stage}}",
+    "versionStage": "{{version}} · {{stage}}"
+  },
+  "card": {
+    "newVersion": "新建版本",
+    "sentBlocks": "已随申请发送：先从这些申请中移除它",
+    "delete": "删除文档",
+    "deleteConfirm": "删除 {{name}} 及其所有版本？",
+    "deleteNamed": "删除文档：{{name}}",
+    "noVersions": "还没有版本。添加你要发送的文件。",
+    "whereUsed": "使用记录（{{sent}}）"
+  },
+  "cvFiles": {
+    "title": "你附加的简历文件",
+    "intro": "附加在申请、职位或联系人上、看起来像简历的文件（文件名像简历，或同一个文件出现在多处），比如你发给招聘顾问的简历。把每个文件设为一个版本，“洞察”就能比较它们的效果；同一个文件算作同一个版本。",
+    "thisIs": "这是 {{document}} · {{version}}。",
+    "onRole": "附在职位 <where/> 上",
+    "sentTo": "已发给 <where/>",
+    "for_other": "用于 {{count}} 份申请：",
+    "notRecordedOn_other": "尚未在 {{count}} 份申请中记录：",
+    "noApplications": "还没有缺少简历的申请。",
+    "application": "{{company}} · {{role}}",
+    "recordAsSent": "记为已发送",
+    "makeVersion": "设为版本",
+    "notCv": "不是简历",
+    "notCvNamed": "不是简历：{{name}}",
+    "showHidden_other": "显示你标为非简历的 {{count}} 个文件"
+  },
+  "adopt": {
+    "recordTitle": "将 {{document}} · {{version}} 记为已发送",
+    "makeTitle": "将 {{name}} 设为简历版本",
+    "addTo": "添加到",
+    "newCv": "新建简历…",
+    "defaultName": "简历",
+    "newName": "新简历名称",
+    "version": "版本",
+    "versionHint": "它的不同之处，例如 v3（金融科技）",
+    "sentWith": "用于以下申请",
+    "sentWithHint": "随它一起投递的申请。用了其他简历的，取消勾选即可。",
+    "application": "{{company}} · {{role}}",
+    "noneMissing": "还没有缺少简历的申请。仍然可以先设为版本：等有可以记录的申请时，它会再出现在这里。",
+    "stays": "文件也会保留在你附加它的地方。",
+    "recorded_other": "已记为随 {{count}} 份申请发送。",
+    "made_other": "{{label}} 现在是一个版本了，已记为随 {{count}} 份申请发送。"
+  }
+}
