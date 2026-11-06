@@ -25,7 +25,8 @@ import { RecruiterLine } from "../components/RecruiterLine";
 import { roundLabel } from "../utils/rounds";
 import { formatDateTime } from "../utils/time";
 
-/** Mark a booked round done (or that it didn't happen), move it to another time, or edit it. */
+/** Mark an open round done (or, once its time has passed, that it didn't happen), move a booked one
+ * to another time, or edit it. */
 function RoundActions({ interview }: { interview: Interview }) {
   const { t } = useTranslation("interviews");
   const [editing, setEditing] = useState(false);

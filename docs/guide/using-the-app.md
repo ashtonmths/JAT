@@ -312,8 +312,9 @@ Everything about one application:
 - **Details**: applied date, follow-up date, snooze, tags, and **Archived**.
 - **Interviews**: numbered rounds in your own words ("Round 2 · Engineering manager chat"),
   with type, time or deadline, format and link, interviewers, prep, debrief, questions asked,
-  and take-home briefs and repos; *Rescheduled* on one that moved; **Done**, **Didn't happen** and
-  **Reschedule** on an open round (see [Interviews](#interviews)).
+  and take-home briefs and repos; *Rescheduled* on one that moved; **Done** on an open round,
+  **Didn't happen** once its time has passed, and **Reschedule** on a booked one (see
+  [Interviews](#interviews)).
 - **Documents sent**: which version of your CV and cover letter went with it.
 - **Offer**: pay and terms, and revised offers (see [Offers](#offers)).
 - **Notes**, **Links** (job ads, Google Docs, repos) and **Files** (PDFs, images, exported

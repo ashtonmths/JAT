@@ -85,8 +85,8 @@ function OutcomeNotesModal({
 }
 
 /** An interview round's Done (asking for the debrief and questions asked) and Didn't happen
- * (asking what happened, kept in its debrief). Only for a booked round that isn't waiting for a new
- * time; Done shows before its time too (a take-home handed in early), Didn't happen only once its
+ * (asking what happened, kept in its debrief). Only for an open round (booked or not) that isn't
+ * waiting for a new time; Done shows before its time too (a take-home handed in early), Didn't happen only once its
  * time has passed. Today passes `passed`, since the server already decided its rounds are past
  * (this clock only ticks once a minute). */
 export function InterviewOutcome({ interview, passed: known }: { interview: Interview; passed?: boolean }) {
