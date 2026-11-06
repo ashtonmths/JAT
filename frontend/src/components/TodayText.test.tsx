@@ -48,10 +48,14 @@ describe("How did it go?", () => {
     role_title: "Senior Backend Engineer",
     debrief: null,
     questions: null,
+    status: "scheduled",
+    starts_at: "2026-01-05T10:00:00Z",
+    deadline_at: null,
+    needs_new_time_since: null,
   } as unknown as Interview;
 
   it("asks for the debrief and the questions when it's done", async () => {
-    wrap(<InterviewOutcome interview={round} />);
+    wrap(<InterviewOutcome interview={round} passed />);
     fireEvent.click(screen.getByRole("button", { name: "Done: Round 2 · System design test" }));
     expect(await screen.findByText("How did Round 2 · System design test go?")).toBeInTheDocument();
     expect(screen.getByText("Contoso · Senior Backend Engineer")).toBeInTheDocument();
@@ -68,7 +72,7 @@ describe("How did it go?", () => {
   });
 
   it("asks what happened when it didn't", async () => {
-    wrap(<InterviewOutcome interview={round} />);
+    wrap(<InterviewOutcome interview={round} passed />);
     fireEvent.click(screen.getByRole("button", { name: "Didn't happen: Round 2 · System design test" }));
     expect(await screen.findByText("Round 2 · System design test didn't happen")).toBeInTheDocument();
     expect(screen.getByLabelText("What happened?")).toHaveAttribute(
