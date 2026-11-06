@@ -38,6 +38,19 @@
     {"name": "search", "path": "/search?q=Contoso", "full": true},
     {"name": "notes-page-375", "path": "/notes", "width": 375, "full": true}
   ],
+  "events": [
+    {"name": "application-page", "path": "{application:Contoso}", "full": true},
+    {"name": "application-offer", "path": "{application:Wide World Importers}", "full": true},
+    {"name": "timeline", "path": "/timeline?view=list&period=all", "full": true},
+    {"name": "today", "path": "/", "full": true},
+    {"name": "application-page-375", "path": "{application:Contoso}", "width": 375, "full": true}
+  ],
+  "offers": [
+    {"name": "offers-page", "path": "/offers", "full": true},
+    {"name": "application-offer", "path": "{application:Wide World Importers}", "full": true},
+    {"name": "application-declined", "path": "{application:Alpine Ski House}", "full": true},
+    {"name": "offers-page-375", "path": "/offers", "width": 375, "full": true}
+  ],
   "calls": [
     {"name": "person-page", "path": "{person:Alex Morgan}", "full": true},
     {"name": "today", "path": "/", "full": true},
