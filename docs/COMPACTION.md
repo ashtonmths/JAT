@@ -8,7 +8,7 @@ and how to carry on afterwards, so the work continues as if nothing happened.
 After compaction, the session follows [Resuming](#resuming-after-compaction), and
 [Re-expanding](#re-expanding-what-the-summary-dropped) when it needs a detail back.
 
-Sections 3, 4, 4a and 5 are a snapshot (2026-11-06, after PR #248, main at `32d12e3`, v1.18.12), and 4a is the live plan;
+Sections 3, 4, 4a and 5 are a snapshot (2026-11-07, after PR #262, main at `04d03d0`, v1.19.3), and 4a is the live plan;
 refresh them before each compaction in a small docs PR. This repo is public: nothing here may contain Kai's job-search
 data (no real companies, people, salaries or notes).
 
@@ -98,7 +98,7 @@ next action.
   every PR: "most are patch unless its new feature then it would be minor. it should be very
   explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
-  Released: v1.0.0 up to v1.18.12 (section 4a). Kai: "yes add release for each change"
+  Released: v1.0.0 up to v1.19.3 (section 4a). Kai: "yes add release for each change"
   (each i18n groundwork PR was its own patch release, the switcher minor; zh-CN translation PRs have none while it's a draft). Only internal planning
   files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `var/`) and the PM dashboard skip
   the bump.
@@ -193,7 +193,7 @@ next action.
     `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8770/api/v1/health`; if it's down,
     say so and offer to start it as a background job from the main checkout.
   - PM dashboard: `python3 -m tools.pm` → http://127.0.0.1:8767 (pages in section 4a). Kai asked for it on 2026-10-25 and it runs as a
-    background job of this session from the main checkout; restart it if it's gone.
+    background job of this session from the main checkout (job `bfkb0y2e1` since the 2026-11-07 restart); restart it if it's gone.
 - **Commands.**
   - Backend: `uv run pytest -q`, `uv run ruff check src tests scripts`, `uv run ruff format -q src tests`.
   - Frontend: prefix pnpm with `PATH=/home/kai/.nvm/versions/node/v22.23.3/bin:/home/kai/.local/bin:/usr/local/bin:/usr/bin:/bin`
@@ -241,7 +241,7 @@ next action.
   - **Draft languages** (#237): `DRAFT_LANGUAGES` in `i18n/language.ts` (code → own name), shown only on a dev server
     (`?lang=<code>`, or "<name> (draft)" in the switch), never saved; may miss whole namespaces (English shows), but each
     file must be complete; its `index.ts` must load exactly its files. Moves to `LANGUAGES` when every namespace is in.
-  - **Simplified Chinese** (`zh-CN`, a draft, #239–#248): `locales/zh-CN/*.json` (7 of 17 files), loaded only when
+  - **Simplified Chinese** (`zh-CN`, a draft, #239–#261): `locales/zh-CN/*.json` (13 of 17 files), loaded only when
     `import.meta.env.DEV`; its dates and numbers in `utils/format.ts`; the glossary `docs/i18n/zh-CN.md` (in Chinese,
     an English note on top); the plan `docs/rfc/zh-cn.md`. Tools for any language: `scripts/i18n/translate/` and
     `.claude/workflows/i18n-{translate,review,rereview}.js` (#242; README there).
@@ -294,7 +294,8 @@ next action.
   migration 0013 backfilled it (first stage read from the data folder's `config.toml`).
 - **Roles** (`api/roles.py`, `components/Roles.tsx`, `pages/RolesPage.tsx`,
   `pages/RolePage.tsx`): pitched or spotted roles, **Apply** / **Interested** / **Pass** /
-  Reconsider; a page per role with its files (shown on the application). Status (#77):
+  Reconsider; a page per role with its files (shown on the application). An applied role whose applications
+  have all ended shows how on its badge (`ended_as`, #254). Status (#77):
   `to_decide` (no application, not passed), `interested`, `closed` (#79, with `closed_as` =
   the latest application's stage name, e.g. *Withdrawn*), `applied`, `passed`; a view on the
   Roles page for each. All from `role_progress` in `domain/insights.py` (also `applied_rank`,
@@ -350,8 +351,10 @@ next action.
   stops click, pointerdown and keydown so it doesn't open the quick view or start a drag. The list view's name isn't linked.
 - **Test runs** (#217, #243: half the threads): `pnpm test` / `pnpm e2e` go through `frontend/scripts/test-run.mjs` (one at a time across
   worktrees on `/tmp/jat-test-run.lock`, low priority) with workers from `frontend/testWorkers.ts`.
+- **Lists and sentences the app builds** (#258, #259): `frontend/src/utils/list.ts` `joinList` (`common:listSeparator`)
+  and `joinSentences` (`common:twoSentences`); an eslint rule refuses `.join(", ")` in app code (CONTRIBUTING *Text in the UI*).
 - **The MCP server** is planned, not built: `docs/rfc/mcp.md` (#228), the `mcp-*` tasks.
-- **Interviews page** (`pages/InterviewsPage.tsx`, #90): a pencil per row (the round's form)
+- **Interviews page** (`pages/InterviewsPage.tsx`, #90): **Done** / **Didn't happen** (#253, as on Today), a pencil per row (the round's form)
   and **Reschedule** for booked rounds. `interviews.rescheduled_count` / `rescheduled_from` (migration 0014,
   backfilled count); a *Rescheduled* badge.
 - **Rescheduling** (#191–#197, v1.3.0–v1.8.0): `components/Reschedule.tsx` asks **Who needed the
@@ -414,79 +417,81 @@ next action.
   `search`, `workflow`, `backup` (+ `/archive`, `/snapshot`, `/push`); `interviews/{id}/needs-new-time`,
   `meetings/{id}/needs-new-time`, `applications/{id}/rejection-feedback`.
 
-### 4. Current state (snapshot 2026-11-06, after #248)
+### 4. Current state (snapshot 2026-11-07, after #262)
 
-- **main at `32d12e3`** (merge of #248), plus this doc's PR until it merges. No other open PRs; one worktree (the main
-  checkout); only `main` locally and on GitHub. Version **1.18.12**, released as v1.18.12.
-- **Merged since the last snapshot (#238), all through the review-fix cycle, one PR at a time:**
-  - #239 `i18n-zh-cn-applications` (no release): the Simplified Chinese pilot. `zh-CN` "简体中文" in `DRAFT_LANGUAGES`,
-    loaded only on a dev server (`resources: import.meta.env.DEV ? {...} : {}` in `i18n/index.ts`), its dates and numbers
-    (`dayjs/locale/zh-cn`, a `PATTERNS` row `YYYY[年]M[月]D[日]`…, `NUMBER_LOCALE`), the 190 applications strings, the
-    glossary `docs/i18n/zh-CN.md`, the plan `docs/rfc/zh-cn.md`, and 24 `i18n-zh-cn-*` roadmap tasks in Up next.
-  - #240 (no release): the file tasks ordered by string count, smallest first (Kai: "order them by string count asc").
-  - #242 `i18n-translate-tools` (v1.18.11): the translation helpers in the repo, any language:
-    `scripts/i18n/translate/` (`common.py`, `prepare.py`, `screenshots.py` + `pages.json`, `assemble.py`, `apply_review.py`,
-    `README.md`) and `.claude/workflows/i18n-{translate,review,rereview}.js`; `tests/test_i18n_translate.py`.
-  - #243 `test-speed` (v1.18.12): tests use half the CPU threads (6 of 12, was a quarter); a PR whose every file is on a
-    closed list (a draft language's text and glossary, `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`,
-    `.claude/workflows/`, `tests/`, docs) skips `pnpm e2e` (CLAUDE.md *Git*, CONTRIBUTING *Checks*). Browser tests went
-    from 7.1 to 4.8 minutes. Backlog: `e2e-shared-server`.
-  - #241 `stages`, #244 `files`, #245 `todos`, #246 `calls`, #247 `documents`, #248 `notes` (no release; browser tests
-    skipped under #243's rule). Glossary fixes along the way, each applied to the merged files in the same PR: no space
-    after a date before Chinese (`{{date}}前`, dates render as 2026年11月7日); per-item screen-reader labels are
-    "动作：{{label}}"; "How did it go?" is 聊得怎么样？ after a call and 结果如何？ after an interview round; × after a count
-    is 次; Set new time is 设定新时间; terms 版本名, 记为已发送, 通用笔记, 编写 / 预览. #247 also folds an area under 5
-    strings into its neighbour in `prepare.py`, adds pages for documents and notes, and tells the consistency pass never
-    to add keys.
-- **Tests on main:** #243's full run on its final commit (`f2a55f2`): pytest 1,301, browser 711 (4.8 min). The
-  translation PRs since ran everything but the browser tests (pytest 1,301, then 1,304 since #247 added its tests; the catalog test each time).
-- **Kai's tracker** answered on 8770. Nothing since v1.18.0 is a server change; the sidebar keeps asking for a restart
-  until Kai restarts (each release bumps the server's version). The zh-CN draft isn't in production builds.
-- **Kai's messages since #238, in order** (word for word where quoted):
-  - "refresh on how to add a new language / the first one were going to do is siplified chinese / fan out heavily - im
-    thinking an agent per strings file, perhaps even more granular over more PRs / 1x PR per strings file (or perhaps
-    more) / I want strings considered in context to enable the translation to be as accurate as possible / the review
-    should possibly also include some screenshots to check it in situ / review should use several agents, also for each
-    area perhaps masssively fan out so 1x agent reviewing 1x piece of text / text for a specific area (e.g. kanban column
-    names, application card on kanban board) andd then that mutlipled across a few different models e.g. haiku, sonnet,
-    then opus to check for difference of opinions"; "give me your detailed plan here and wait for my approval to start"
-    → plan given.
-  - "PR23 - chinese readme, good. how about we also generate some of the screenshots/graphics with chinese versions too /
-    then also, the main readme, i want to highlight the fact that we support multiple languages, and have some chinese
-    characters/writing near the top so people spot it. same for the repo description so it is obvious from search
-    results / i also want to promote (not in the hero) but make it clear/obisous that we support multiple languages in
-    the app, not just have translated readmes / update the plan accordingly then give me the full plan again" → plan.
-  - "pr1 context pack. this can very quickly get out of date. do yoyu think this is a good idea? if something is changed
-    this would be wrong / 1. yes no release while it is draft / 2. models yes sounds good, perhaps we can drop haiku / 3.
-    no screenshots in the PR / also, for now, lets do the translations for jsut the applications.ts, that way i can
-    validate the review/translation process and token usage / after that file is translated and gets merged, dont
-    continue after that until isay" → no saved context pack (looked up fresh each run); #239.
-  - "also, commit the plan as items in the roadmap in upnext column so it doesnt get lost. add enough detail. create a
-    companion doc if yoyu like" → in #239. "also run a dev server so i can see the language in progress" → done.
-  - "why is the new local a json file not a ts file like en?" → answered (RFC i18n §3); "its fine that it is, just
-    curious".
-  - "whats next for transaltion? working through the strings files?", "order them by string count asc" → #240; "then
-    tell me what they are" → table given; "how big was applications" → 190 strings.
-  - "do stages, files, todos, and calls" → #241, #244–#246. Mid-way: "feel free to put the helper scripts in the repo and
-    to ipdate docs about them" → #242; "is there a way to make the browser tests quicker?" then "do 1 and 2, and add a
-    roadmap item for 3" → #243.
-  - "what are the next strings files, remaing, ordered by size asc" → listed. "do documents and notes" → #247, #248.
-    "then update the compaction doc afterwards" → this PR.
+- **main at `04d03d0`** (merge of #262), plus this doc's PR until it merges. No other open PRs; one worktree (the main
+  checkout); only `main` locally and on GitHub. Version **1.19.3**, released as v1.19.3.
+- **Merged since the last snapshot (#248), all through the review-fix cycle, one PR at a time:**
+  - #249: this doc's refresh (internal, no release).
+  - Simplified Chinese, no release (a draft), browser tests skipped under #243's rule: #250 `events`, #251 `offers`
+    (branched from #250's branch), #252 `common`, #256 `timeline`, #257 `interviews`, #261 `roles`. Glossary added or applied along
+    the way: who needed a reschedule is 由你提出 / 由对方提出 / 双方共同提出 / 与双方无关 (not 你需要改时间, which reads
+    like an instruction); a round getting a time uses the existing 已预约; 暂无金额; an offer's notes field is 备注 (not 笔记); 合同期限;
+    IR35 options under an IR35 label drop the prefix (范围外 / 范围内 / 未知), and a form's "Not sure" is 不确定; 回顾 (the
+    Review menu heading); 本机; 已持续 {{count}} 天 / 始于今天; 推荐 for a recruiter pitching a role; 未知公司, never a bare
+    "?"; a date-and-time placeholder ends in a digit, so it keeps its space before Chinese (`{{when}} 截止`); 结果如何 only
+    for the after-round question, a debrief placeholder says 面试过程和感受. Applied but not in the glossary yet: "track" is 追踪 (跟进 is following up; #261) — add a row in the next zh-CN PR.
+  - #253 `interview-done-button` (v1.19.0, minor): **Done** (and **Didn't happen** once the time has passed) on a round
+    on the application page's Interviews card (its own line under the time) and on the Interviews page, reusing Today's
+    `InterviewOutcome` (`components/OutcomeNotes.tsx`), which now hides itself unless the round is scheduled and not
+    waiting for a new time; Today passes `passed`.
+  - #254 `role-ended-badge` (v1.19.1): `RoleSummary` gains `ended_as` / `ended_stage` / `ended_kind` (closed|success) for an
+    applied role whose applications have all ended (a success wins, else the latest); `roleBadge` shows that stage (the
+    Closed colour, Mantine "dark", or green for success) wherever a role shows. Status stays `applied`. Applications are read by `(created_at, id)`.
+  - #255 (internal): Backlog task `code-cleanup` (audit first, then one PR per area; removing an endpoint, command or
+    config key would be a major, so those go on a separate list for Kai).
+  - #258 `fix-list-separator-english` (v1.19.2): `joinList` in `frontend/src/utils/list.ts` with `common:listSeparator`
+    (", " / 、) at four places; an eslint `no-restricted-syntax` rule refuses `.join(", ")` in app code.
+  - #259 `fix-sentence-join-space` (v1.19.3): `joinSentences` there with `common:twoSentences` ("{{first}} {{second}}" /
+    "{{first}}{{second}}"; a pattern because `returnEmptyString: false` makes an empty translation fall back to English),
+    at seven places (round and call edit forms, a round's days moved, Insights' Calls moved, Rescheduling and Rejections
+    counts, a rejection's now-at line).
+  - #260 / #262 (internal): `CLAUDE.md` *Git* now says PR descriptions and comments describe what Kai asked in our own
+    words, never quoting him. #260 also added a rule that every PR gives its estimated token usage; #262 took it out
+    again (Kai's later ask). Translation PRs keep their agents table, as before.
+- **Tests on main:** #259's full run on its final commit (`304e2ba`): pytest 1,305, browser 713 (4.5 min). Once, on
+  #258, one browser test (`reschedule.spec.ts` "who needed the change … shown after a reload") failed on an HTTP 500 from
+  `GET /offers` while the page loaded; a rerun on the same commit passed. Not recorded as a bug (cause unseen: the e2e
+  fixtures keep the server's stderr only while it starts). If it recurs, capture the server log and record it.
+- **Kai's tracker** answered on 8770. #254 changed the API (role summaries), so the *Rejected* badge shows only once Kai
+  restarts the tracker (Ctrl+C, `uv run jat serve`); everything else since is frontend, tooling or docs.
+- **Kai's messages since #248, in order** (word for word):
+  - "what are the next strings files, remaing, ordered by size asc" / "which string files are next, asc order" →
+    listed. "do events and offers" → #250, #251. "do common" → #252.
+  - Screenshots of an application page's Interviews card and the Interviews page: "i need a \"done\" button for
+    interviews here not just on today page" → #253 (v1.19.0).
+  - A screenshot of a person's Roles they've mentioned: "if a role is rejected it should say so on the associated
+    recruiter page too" → #254 (v1.19.1).
+  - "add a roadmap item to do a broad code delete / cleanup / simplification" → #255 (`code-cleanup`, Backlog).
+  - "what are the next strings to translate" → listed. "do timeline" → #256. "do interviews" → #257 (it recorded two
+    bugs). "fix those 2 bugs" → #258 (v1.19.2), #259 (v1.19.3).
+  - Mid-#259: "update the projects claude.md file stop quoting me directly in PR descriptions/comments when i tell you
+    to work on something", then "also update it to mention that all PRs should have their estimtaed token usage in the
+    descriptiuon similar to the translation PRs", "that can be part of the same pr" → #260.
+  - "do roles" → #261. "update claude.md again to remove th recently added token usage estimates" → #262.
+  - After a session restart (the PM dashboard and the demo server on 8891 stopped; the dashboard was restarted):
+    "update the compaction doc" → this PR; mid-way: "we will be resuming the strings translation afte" (cut off: the
+    string translation resumes after this, `today` next).
 
-### 4a. Current work, 2026-11-06 (read this first; it overrides 4 and 5 where they differ)
+### 4a. Current work, 2026-11-07 (read this first; it overrides 4 and 5 where they differ)
 
 Keep this whole section word for word in the summary: it is the live plan.
 
-**Versions and main.** Released up to v1.18.12 (#243); main at `32d12e3`. Everything Kai asked for is merged (section
+**Versions and main.** Released up to v1.19.3 (#259); main at `04d03d0`. Everything Kai asked for is merged (section
 4). Before trusting anything here, re-read `docs/ROADMAP.yaml` and run `gh pr list`.
 
-**Nothing is being built: report and wait.** Kai scoped each batch ("do documents and notes"), so after a batch I stop
-and wait for the next go, even though the `i18n-zh-cn-*` tasks sit in Up next (Kai asked for them there "so it doesnt
-get lost"). Waiting on Kai in particular:
-- **Simplified Chinese** (`docs/rfc/zh-cn.md`; tasks `i18n-zh-cn-*`, P8: the 7 done files are `done`, the other 17 (10 files, then layout, switch-on, demo-data, screenshots, readme, website, listing) are `next`, each "waits for Kai's go").
-  - **Done (7 of 17 files, 460 Chinese strings):** applications, stages, files, todos, calls, documents, notes.
-  - **Left, smallest first** (strings in English, plural forms counted): events 81, offers 91, common 94, timeline
-    103, interviews 136, roles 139, today 152, people 213, errors 269, insights 327. Kai picks a batch ("do X and Y").
+**Next: resume the string translation.** Kai, while this doc was being refreshed: "we will be resuming the strings
+translation afte[r]". So after compaction, carry on with the next file, `today` (152 strings), as its own PR, unless Kai
+says otherwise. Kai has been scoping one file (or a pair) at a time ("do roles"): after each file, report and wait for the
+next go, even though the `i18n-zh-cn-*` tasks sit in Up next. The demo server on 8891 stopped in the restart: start it
+again first (`uv run jat --data-dir /home/kai/.claude/jobs/cf5328f4/tmp/zh/demo serve --dev --port 8891` from the main
+checkout, as a background job), so it also runs the current backend. Waiting on Kai's go per file after `today`, and in particular:
+- **Simplified Chinese** (`docs/rfc/zh-cn.md`; tasks `i18n-zh-cn-*`, P8: the 13 done files are `done`; the other 11 (4 files, then layout, switch-on, demo-data, screenshots, readme, website, listing) are `next`, each "waits for Kai's go").
+  - **Done (13 of 17 files):** applications, stages, files, todos, calls, documents, notes, events, offers, common,
+    timeline, interviews, roles.
+  - **Left, smallest first** (strings in English, plural forms counted): today 152, people 213, errors 269, insights 327.
+    In the draft, Insights' and the person page's lists and sentences still hold English words until `people` and
+    `insights` are in.
   - **Then:** `i18n-zh-cn-layout` (CJK fonts, clipped labels, and stage badges set in capitals: 已获 OFFER),
     `i18n-zh-cn-switch-on` (minor: `LANGUAGES`, drop the dev-only gate, "More coming soon", a README "Use it in your
     language" row and Languages section, not in the hero), `-demo-data` (Chinese demo data, Kai to confirm),
@@ -496,23 +501,29 @@ get lost"). Waiting on Kai in particular:
     decide whether plain `zh`/`zh-Hans` browsers get it.
   - **How each file runs** (`scripts/i18n/translate/README.md`): worktree `worktree-i18n-zh-cn-<ns>` (branch the next
     file from the previous file's branch when both are open, so `index.ts` doesn't clash; its PR still targets main),
-    task `building`, draft PR; `prepare.py zh-CN <ns>` (add pages for the file to `pages.json` first if it has none);
-    a dev server for the branch (`JAT_API_URL=http://127.0.0.1:8891 pnpm exec vite --port 51xx --strictPort` from its
-    `frontend/`, demo data served from `<tmp>/zh/demo` on 8891); `screenshots.py … en`; the `i18n-translate` workflow
-    (`scriptPath` the worktree's `.claude/workflows/i18n-translate.js`, args `{lang, language, ns, wt, areas}`), save its
-    result as `var/i18n/zh-CN/<ns>/translate.json` (drop any consistency change whose key isn't in `flat.json`);
-    `assemble.py`; catalog test; commit; `screenshots.py … zh-CN`; `i18n-review`; `apply_review.py`; `assemble.py
-    zh-CN <ns> review-fixes.json`; `i18n-rereview` (add any cross-file change to `changed.json` first); until no
-    must_fix. New glossary terms go into `docs/i18n/zh-CN.md`, and a glossary fix updates the merged files in the same
-    PR. Then task `done`, merge main (check the roadmap statuses after), `<tmp>/deps/pm_checks_noe2e.sh` when every file
-    is on the skip list, PR body (what changed, the judge's table from `review-table.md`, agents and tokens, checks,
-    "Browser tests skipped" and why), `gh pr ready`, `merge.sh`, no release, remove the worktree.
+    task `building`, draft PR; add pages for the file to `scripts/i18n/translate/pages.json` (none yet for `today`,
+    `people`, `errors`, `insights`; `{person:Alex Morgan}`-style placeholders resolve only as a whole path, not inside a
+    query string); `prepare.py zh-CN <ns>`; a dev server for the branch (`JAT_API_URL=http://127.0.0.1:8891 pnpm exec
+    vite --port 51xx --strictPort` from its `frontend/`); `screenshots.py … en`; the `i18n-translate` workflow
+    (`scriptPath` the worktree's `.claude/workflows/i18n-translate.js`, args `{lang, language, ns, wt, areas}` with
+    `areas` the parsed `areas.json`), save its result as `var/i18n/zh-CN/<ns>/translate.json` (drop any consistency
+    change whose key isn't in `flat.json`); `assemble.py`; add the consistency pass's `glossary_additions` to
+    `docs/i18n/zh-CN.md` by hand; catalog test; commit; `screenshots.py … zh-CN`; `i18n-review`; save as `review.json`;
+    `apply_review.py` (it prints the judge's glossary notes: apply them); `assemble.py zh-CN <ns> review-fixes.json`;
+    `i18n-rereview` (add any cross-file change to `changed.json` first); until no must_fix. A reviewer's note about
+    code (not text) is checked and, if real, recorded as a bug (as #257 did). Then task `done`, merge main (check the
+    roadmap statuses after), `<tmp>/deps/pm_checks_noe2e.sh` from the worktree root when every file is on the skip
+    list, PR body (what was done in our own words, not quoting Kai; what changed; the judge's table from
+    `review-table.md`; agents and tokens; checks; "Browser tests skipped" and why), `gh pr ready`, `merge.sh`, no
+    release, remove the worktree (`git -C <main checkout> worktree remove --force …` when the session sits in it).
   - **Kai's decisions:** `zh-CN`; Traditional Chinese browsers stay English; "More coming soon"; search as is; AI
     translation, corrections by issue or PR; a draft until every file is in; **no release while a draft**; one PR per
     string file; Opus translates and judges, **Sonnet and Opus review** (no Haiku); **no screenshots in PRs**; **no
     saved context pack** (context looked up fresh each run); files smallest first.
-  - **Cost so far:** pilot 3.1M tokens for 190 strings (16k each); the next six files 0.68–1.14M each, about 5.2M for 270 strings (19k each; 14k for
-    documents to 62k for stages, as screenshot reviewers are a fixed cost per file). Opus raised nearly every should_fix; Sonnet mostly nits.
+  - **Cost so far:** pilot 3.1M tokens for 190 strings (16k each); the next six files about 5.2M for 270 strings; since
+    then events 1.30M, offers 1.25M, common 1.39M, timeline 1.50M, interviews 1.93M, roles 1.97M (about 14–16k per
+    string; a file's screenshots set most of the review's cost, about 2 × 50k tokens each). Opus raises nearly every
+    should_fix; Sonnet mostly nits.
 - **Windows** (`docs/rfc/windows.md`, all planned): `windows-starts` (basic support: the Windows-unsafe parts behind one
   is-Windows check, off there; `JAT_WINDOWS_SNAPSHOTS=1` turns snapshots on for testing on a test data folder), then
   `utf8-everywhere`, `windows-time-zones` (tzdata on every platform, Kai's yes), `static-file-types`,
@@ -523,7 +534,7 @@ get lost"). Waiting on Kai in particular:
 - **The MCP server:** the ten `mcp-*` build tasks wait on Kai's answers to the 11 decisions in `docs/rfc/mcp.md` §14 (the
   main one: approving the official `mcp` SDK as an optional dependency) and a go-ahead. Nothing is built.
 - **Offered and not taken up:** linking the recruiter in the Applications *list* too; a roadmap item only if Kai says.
-- **Backlog added recently:** `delivery-speed-improvements`, `recruiter-open-application-mark` (its icon and what
+- **Backlog added recently:** `code-cleanup` (#255: audit, then one PR per area Kai picks), `delivery-speed-improvements`, `recruiter-open-application-mark` (its icon and what
   counts are Kai's to decide).
 - From 2026-11-02, still left alone ("leave them on the roadmap. we wont be doing thme this session"):
   `notes-documents-improve`, `timeline-improve`, `people-you-meet`.
@@ -552,7 +563,8 @@ get lost"). Waiting on Kai in particular:
 - Mid-turn "sitrep" questions get a short honest answer straight away, then carry on.
 - When Kai asks a question, check the code or the running thing and answer plainly before proposing work.
 
-**Open bugs (phase B; 65, none to fix without a go-ahead).** High 1 (`fix-applied-date-wipe`), medium 18, low 46. Fixed
+**Open bugs (phase B; 65, none to fix without a go-ahead).** High 1 (`fix-applied-date-wipe`), medium 18, low 46. Recorded
+and fixed on 2026-11-06: `fix-list-separator-english` (#258), `fix-sentence-join-space` (#259). Fixed
 on 2026-11-03: `fix-new-company-keeps-draft`, `fix-new-agency-keeps-draft`, `fix-menu-prefix-active`,
 `fix-deleted-person-404`, `fix-cv-files-stale`. Added: `fix-offer-kind-pin-flaky` (low, trivial; its `test.fail` waits a
 fixed 1.5 s instead of holding the request, so it passed by luck once in #221's full check). Still missing their rating
@@ -574,10 +586,10 @@ trivial display-only ones (`fix-company-page-blank-route`, `fix-search-stale-aft
 **Settled:** two people can share a name. Kai: "yes there can be 2 people with the same name". Keep that test pinned; it
 isn't a bug.
 
-**The running tracker** on 8770 answers. It may still need Kai's restart (Ctrl+C, `uv run jat serve`) for v1.18.0's server
-change (the Sankey rounds filter; the switch and the sidebar version note say so). Everything since is frontend, tooling or
-docs, so a page refresh shows it, but the sidebar note keeps asking for a restart until Kai restarts, since each release
-bumps the server's version. Leave it alone.
+**The running tracker** on 8770 answers. It may still need Kai's restart (Ctrl+C, `uv run jat serve`) for the latest server
+change, #254's `ended_as` in role summaries (v1.19.1: the *Rejected* badge shows only after it; before that, v1.18.0's
+Sankey rounds filter). Everything else since is frontend, tooling or docs, so a page refresh shows it, but the sidebar note
+keeps asking for a restart until Kai restarts, since each release bumps the server's version. Leave it alone.
 
 **How work ran this session:**
 - **A feature in parts** (as before): one builder agent (`isolation: "worktree"`) builds part 1, opens a draft and stops;
@@ -713,7 +725,7 @@ need no action. To preview a branch, serve it on a spare port from the worktree:
 
 ### 5. Work in flight and candidates
 
-- **In flight:** none (after this doc's PR merges). **Up next:** the 17 `i18n-zh-cn-*` tasks left, each waiting for Kai's go (4a). **Backlog:** Kai picks (section 4a); the MCP
+- **In flight:** none (after this doc's PR merges). **Up next:** the 11 `i18n-zh-cn-*` tasks left; `today` resumes after compaction (4a). **Backlog:** Kai picks (section 4a); the MCP
   build waits on the RFC's §14 decisions.
 - **Left of the i18n work, P8** (when Kai says; see 4a): `i18n-search` and `multi-language`
   (now the languages after Chinese; Simplified Chinese is the `i18n-zh-cn-*` tasks of section 4a; also percent and number formats,
@@ -1069,6 +1081,22 @@ conflict is the last lines of `docs/ROADMAP.yaml` (keep both, in merge order).
     the same commit (`<tmp>/deps/e2e_only.sh`) when everything else passed and the failure isn't the PR's.
   - **`pm_checks.sh` keeps only the last 25 lines** of a failing check: read the failures' `error-context.md` under
     `frontend/test-results/` for the rest.
+- **Learned 2026-11-07:**
+  - **Run `pm_checks.sh` / `pm_checks_noe2e.sh` from the worktree root.** Started from `frontend/`, every frontend check
+    "failed" on `frontend/frontend` (ENOENT) without running anything. Read the PASS/FAIL lines, not just the exit code.
+  - **zsh aborts a whole command line on an unmatched glob** (`grep --include=*.tsx`, `ls ../locales/en/*.ts`): later
+    commands in the chain never run, so a silent "no output" can mean "not run". Use plain paths or quote globs.
+  - **An empty translation falls back to English** (`returnEmptyString: false` in `i18n/index.ts`): a separator that's
+    empty in one language must be a pattern (`"{{first}}{{second}}"`), as `common:twoSentences` is.
+  - **A review should search more than one way.** #259's first search found two sentence joins (`{" "}`); the reviewer
+    found three more as template literals with a leading space. Grep both forms.
+  - **The demo API on 8891 runs the backend it started with:** after a backend change merges (e.g. #254's `ended_as`),
+    restart it, or screenshots show the old behaviour.
+  - **`finish_deps.py` appends the PR number itself:** don't put "(#N)" in its changelog text, or the line gets it twice.
+  - **A session restart stops background jobs** (the PM dashboard, demo and dev servers) and they're reported as
+    "stopped"; restart the dashboard at once (Kai keeps it open).
+  - **A one-off server 500 in e2e** (`GET /offers`, #258) passed on rerun; the fixtures don't keep the server's stderr
+    after start, so its cause couldn't be seen.
 - **Learned 2026-11-06:**
   - **A worktree-isolated session limits its subagents' Bash to that worktree** (and edits too): run a review from the
     worktree it reviews, or tell agents to Read files by path. Switch with EnterWorktree `path` before editing another.
