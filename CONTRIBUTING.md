@@ -79,11 +79,15 @@ pnpm --dir frontend format:check
 pnpm --dir frontend e2e
 ```
 
+`tools/dev/checks.sh` runs them all and prints PASS or FAIL for each; `tools/dev/README.md` lists the
+other maintainer scripts (merging main, the version bump, merging and releasing).
+
 **When you can skip the browser tests.** `pnpm e2e` tests a production build on the demo data. If
 every file you changed is in this list, skip it, run the rest, and say so in the pull request: a
 draft language's text (`frontend/src/locales/<code>/` for a language in `DRAFT_LANGUAGES`, which only
 a dev server loads, and its glossary `docs/i18n/<code>.md`), `scripts/i18n/`, `scripts/demo_gif/`,
-`scripts/social_preview/`, `.claude/workflows/`, Python tests (`tests/`) and docs. Anything else
+`scripts/social_preview/`, `.claude/workflows/`, the maintainer scripts (`tools/dev/`), Python tests
+(`tests/`) and docs. Anything else
 needs it, including `scripts/seed_demo.py` (the browser tests' demo data), `frontend/e2e/`, any
 config or lockfile, `frontend/src/i18n/` (adding a draft or switching one on), and `DRAFT_LANGUAGES`.
 
