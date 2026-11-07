@@ -63,7 +63,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   the version bump.
 - **Checks run locally; only the website has a CI build.** On the exact commit being merged, in the
   worktree, these must pass: `uv run pytest -q`, `uv run ruff check src tests scripts`, and in
-  `frontend/` `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm e2e`. Never
+  `frontend/` `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm e2e`
+  (`tools/dev/checks.sh` runs them all; `tools/dev/README.md` lists the other maintainer scripts). Never
   merge on a failure. Merging main into the branch makes a new commit, so run them again. A PR that
   only touches docs and planning files can skip these, and the PR says so; if it touches
   `docs/ROADMAP.yaml`, run `uv run pytest -q tests/pm`.
@@ -71,8 +72,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   production build on demo data, so a PR whose every changed file is in this list skips it and runs
   every other check: a draft language's text (`frontend/src/locales/<code>/` for a code in
   `DRAFT_LANGUAGES`, which only a dev server loads, and its glossary `docs/i18n/<code>.md`),
-  `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`, `.claude/workflows/`, Python tests
-  (`tests/`), and docs. Anything else runs it, including `scripts/seed_demo.py` (the browser tests'
+  `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`, `.claude/workflows/`, `tools/dev/`,
+  Python tests (`tests/`), and docs. Anything else runs it, including `scripts/seed_demo.py` (the browser tests'
   demo data), `frontend/e2e/`, any config or lockfile, `frontend/src/i18n/` and `DRAFT_LANGUAGES`
   itself, and switching a draft on. The PR says it skipped and why.
 - **Don't max out Kai's PC** (Kai, 2026-11-02). `pnpm test` and `pnpm e2e` limit their workers,
@@ -95,7 +96,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 The app follows [semantic versioning](https://semver.org/), from 1.0.0. **Every PR that changes
 what people get (the app, the website, the README or the guide) bumps the version in that
 PR.** PRs that only touch internal files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`,
-`docs/IDEAS.md`, `var/`, and the PM dashboard: `tools/pm`, `tests/pm`) don't, and so get no release.
+`docs/IDEAS.md`, `var/`, the PM dashboard: `tools/pm`, `tests/pm`, and the maintainer scripts: `tools/dev`,
+`tests/dev`) don't, and so get no release.
 
 - **Patch (1.0.0 → 1.0.1): most PRs.** Fixes, wording, docs, screenshots, refactors, tests,
   tooling, small tweaks to something that already exists.
