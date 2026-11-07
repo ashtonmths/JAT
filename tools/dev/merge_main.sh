@@ -5,9 +5,14 @@
 source "$(dirname "$0")/env.sh"
 need_root
 git fetch -q
-git merge --no-edit origin/main 2>&1 | tail -1
+out="$(git merge --no-edit origin/main 2>&1)"
+status=$?
+echo "$out" | tail -1
 conflicts="$(git diff --name-only --diff-filter=U)"
-[ -z "$conflicts" ] && exit 0
+if [ -z "$conflicts" ]; then
+  [ $status -eq 0 ] || echo "$out" >&2
+  exit $status
+fi
 echo "$conflicts"
 if [ "$conflicts" != "docs/ROADMAP.yaml" ]; then
   echo "Conflicts beyond the roadmap: resolve them by hand." >&2

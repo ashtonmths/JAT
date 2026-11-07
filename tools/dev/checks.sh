@@ -10,9 +10,13 @@ esac
 need_root
 clean_env
 # One heavy run at a time across worktrees, at the lowest CPU and disk priority.
+# Without flock or ionice (macOS), it runs anyway: pnpm test and pnpm e2e still take their own lock.
 if [ -z "$HEAVY_TESTS_LOCKED" ]; then
   export HEAVY_TESTS_LOCKED=1
-  exec flock /tmp/jat-heavy-tests.lock nice -n 19 ionice -c 3 bash "$0" "$@"
+  wrap=(nice -n 19)
+  command -v ionice >/dev/null && wrap+=(ionice -c 3)
+  command -v flock >/dev/null && wrap=(flock /tmp/jat-heavy-tests.lock "${wrap[@]}")
+  exec "${wrap[@]}" bash "$0" "$@"
 fi
 echo "commit $(git rev-parse --short HEAD), dirty files: $(git status --short | wc -l)"
 pnpm --dir frontend install --frozen-lockfile --silent

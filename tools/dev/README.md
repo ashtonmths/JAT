@@ -5,7 +5,8 @@ The scripts the Claude Code session that maintains this repo uses to check, merg
 bump or browser tests. Shell scripts load `env.sh`, which puts Node first on `PATH` (`NODE_BIN` overrides it) and
 `uv` on it.
 
-Run them from the root of a checkout: the PR's worktree, or the main checkout where it says so.
+Run them from the root of a checkout: the PR's worktree, or the main checkout where it says so. They're written for
+Linux (GNU `sed`); on macOS `checks.sh` runs without `flock` and `ionice`, and the others may need GNU tools.
 
 | Script | What it does |
 |---|---|

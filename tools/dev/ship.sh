@@ -7,8 +7,8 @@
 #   A worktree folder that doesn't exist (e.g. keep-agent-worktree) leaves a builder's worktree in place.
 set -e
 source "$(dirname "$0")/env.sh"
-need_root
-V=$1 N=$2 W=$3
+[ "$(pwd -P)" = "$MAIN" ] || { echo "Run this from the main checkout ($MAIN)." >&2; exit 2; }
+V=${1#v} N=$2 W=$3
 [ -n "$W" ] || { echo "usage: ship.sh <version|-> <pr> <worktree folder> [<branch>]" >&2; exit 2; }
 SHA=$(gh pr view "$N" --json mergeCommit -q .mergeCommit.oid)
 [ -n "$SHA" ] || { echo "PR $N has no merge commit"; exit 1; }
@@ -18,6 +18,7 @@ git branch -D "${4:-worktree-$W}" >/dev/null 2>&1 || true
 git fetch -q --prune
 if [ "$V" != "-" ]; then
   NOTES=$(mktemp)
+  trap 'rm -f "$NOTES"' EXIT
   uv run python "$DEV/release_notes.py" "$V" "$NOTES"
   git tag -a "v$V" "$SHA" -m "v$V"
   git push -q origin "v$V"

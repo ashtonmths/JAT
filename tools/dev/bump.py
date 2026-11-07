@@ -26,7 +26,10 @@ VERSION_FILES = [
 
 
 def run(*args: str, **kw) -> str:
-    return subprocess.run(args, check=True, capture_output=True, text=True, **kw).stdout.strip()
+    try:
+        return subprocess.run(args, check=True, capture_output=True, text=True, **kw).stdout.strip()
+    except subprocess.CalledProcessError as e:
+        sys.exit(f"{' '.join(args)} failed:\n{e.stderr or e.stdout}")
 
 
 def node_env() -> dict[str, str]:
@@ -50,41 +53,45 @@ def changelog_with(text: str, old: str, new: str, entry: str, pr: str, today: st
 
 
 def main() -> None:
+    if len(sys.argv) not in (4, 5) or (len(sys.argv) == 5 and sys.argv[4] != "minor"):
+        sys.exit(__doc__)
     task, entry, title = sys.argv[1:4]
-    minor = len(sys.argv) > 4 and sys.argv[4] == "minor"
+    minor = len(sys.argv) == 5
     if not (ROOT / "pyproject.toml").exists():
         sys.exit("Run this from the root of a checkout.")
     if run("git", "diff", "--name-only", "--diff-filter=U"):
         sys.exit("Unresolved merge conflict: fix it first")
     branch = run("git", "branch", "--show-current")
-    old = re.search(r'^version = "(\d+\.\d+\.\d+)"', (ROOT / "pyproject.toml").read_text(), re.M).group(1)
+    m = re.search(r'^version = "(\d+\.\d+\.\d+)"', (ROOT / "pyproject.toml").read_text(), re.M)
+    if not m:
+        sys.exit("pyproject.toml: no version line")
+    old = m.group(1)
     new = next_version(old, minor)
     pr = run("gh", "pr", "view", "--json", "number", "-q", ".number")
     repo = run("gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner")
 
+    # Work out every change first, so a problem stops the bump before any file is written.
+    changes: dict[Path, str] = {}
     for name, pattern in VERSION_FILES:
-        p = ROOT / name
-        s = p.read_text()
+        s = (ROOT / name).read_text()
         if s.count(pattern.format(old)) != 1:
             sys.exit(f"{name}: expected one {pattern.format(old)}")
-        p.write_text(s.replace(pattern.format(old), pattern.format(new)))
+        changes[ROOT / name] = s.replace(pattern.format(old), pattern.format(new))
     p = ROOT / "website/src/layouts/Landing.astro"
     s = p.read_text()
-    s2 = re.sub(r'(softwareVersion["\']?\s*:\s*["\'])' + re.escape(old), r"\g<1>" + new, s)
-    if s2 == s:
+    changes[p] = re.sub(r'(softwareVersion["\']?\s*:\s*["\'])' + re.escape(old), r"\g<1>" + new, s)
+    if changes[p] == s:
         sys.exit("Landing.astro: softwareVersion not found")
-    p.write_text(s2)
-
     p = ROOT / "CHANGELOG.md"
-    p.write_text(changelog_with(p.read_text(), old, new, entry, pr, str(date.today())))
-
+    changes[p] = changelog_with(p.read_text(), old, new, entry, pr, str(date.today()))
     p = ROOT / "docs/ROADMAP.yaml"
-    s, n = re.subn(
+    changes[p], n = re.subn(
         rf"(id: {re.escape(task)}, .*?status: )(next|planned|building|done)", r"\1done", p.read_text(), count=1
     )
     if n != 1:
         sys.exit(f"roadmap task {task} not found")
-    p.write_text(s)
+    for path, text in changes.items():
+        path.write_text(text)
 
     run("uv", "lock", "-q")
     run("uv", "run", "python", "-m", "jat.openapi")
