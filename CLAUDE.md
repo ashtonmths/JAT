@@ -36,7 +36,7 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 
 ## Working style
 - **After a start or a compaction, read `docs/agents/`** (the state and live plan, Kai's standing instructions, gotchas,
-  decisions, and what to read for which task). A hook prints them after a compaction; `docs/COMPACTION.md` says how.
+  decisions, and what to read for which task). A hook tells the session to read them after a compaction; `docs/COMPACTION.md` says how.
 - **Don't use the `agent-team` skill in this repo** (Kai, 2026-09-30). This overrides the global
   "default to agent-team" instruction. Work directly; use a plain subagent only when parallel
   work or a review pass calls for one.
