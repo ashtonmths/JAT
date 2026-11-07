@@ -1,0 +1,89 @@
+# Decisions already made
+
+Product decisions Kai has made or accepted. Don't re-litigate them; change one only when Kai asks. The guide
+(`docs/guide/using-the-app.md`) and the RFCs hold the detail.
+
+## Workflow and applications
+
+- Any-to-any stage moves by default; `transitions = "configured"` enforces `next`. *Screen* stays in the default
+  workflow. Kai's own stages live in their data folder's `config.toml`: give snippets, never edit it.
+- Every application starts at the workflow's first stage: implied events (`data.implied`) fill it in; they aren't undoable
+  and don't count as a stay, update, reply or move.
+- Staleness: not stale if snoozed, a follow-up is planned later, a round is booked ahead, you're waiting to hear back, or
+  there's a reply to read. `awaiting_reply_since` and `reply_to_read_since` never coexist; a stage move clears both.
+- At a glance follows Today's rules for one application; key dates count only what has happened.
+- Today: one home page with three groups (Your move / Coming up / Waiting on them), "Tiles + faint buttons" (Kai: "Lines
+  is least fav"; "I like the new one, ship that"); no per-row menu, no folding long lists.
+
+## Roles
+
+- Status is derived: *applied* > *passed* > *to decide*. *Interested* while every application is in an open stage before
+  Applied. Closed before reaching Applied → *Closed* (badge = how it ended), counted as passed in Insights; applied then
+  withdrawn stays *Applied*, with an ended badge once every application has ended (a success wins, else the latest).
+- Same title at the same company reuses the role; role files show on the application.
+- A role's person changing never changes an application's route or agency; only open, unarchived, non-referral
+  applications that had the old person or nobody, and only where the new person fits. Notes are bookkeeping.
+
+## People
+
+- One agency or company each; one person per email and LinkedIn profile. Two people can share a name (Kai: "yes there can
+  be 2 people with the same name"); keep that test pinned.
+- Merge: the kept person's fields win; notes are relinked in the file. Deleting a person deletes their calls and unlinks
+  the rest (for duplicates, merge).
+- Ghosts: only `closed_as == "ghosted"` gets a ghost; taking it off is a plain action with an Undo toast. Favourites are
+  one star, separate from ghosted, listed first.
+- Reply times: recorded when waiting ends with a reply or a move that isn't yours; chasing and Ghosted aren't replies;
+  weekdays only; no guessing at PATCH "undos". Merging people keeps replies.
+
+## Interviews, calls and offers
+
+- Reschedules count only when a booked round's time moves. "Who needed the change?" (Me / Them / Both of us / Neither of
+  us; `me | them | mutual | neither`), required in the dialog, optional in the API; each move keeps its own who and why.
+- "A new time isn't agreed yet" is a mark beside the status, not a status: the old time is kept, the to-do is made in the
+  same request and starts open ("Add a to-do to book the new time"), booking counts as one move. Calls mirror rounds.
+- "Reached" a round: not cancelled, not waiting for a new time, and started (or due) by the cutoff, or marked done by then.
+- Rejection feedback: by the stage id `rejected`; one per application, editable, kept as written; undo keeps it.
+- Offers: the newest per application counts; a year's worth = salary + bonus + equity + employer pension, or day rate ×
+  220.
+
+## Insights
+
+- Sankeys: a holding spur for every active stage; outcomes on the right edge; *Decided not to apply* beside Applied;
+  column order searched for fewest crossings; "Passed" is never a Sankey label. The whole picture's sources: referral >
+  recruiter > found; a role applied to twice counts twice.
+- Recruiter conversations: calls held = marked Happened; booked = scheduled ahead; best outcome per role: offer > in
+  progress > closed > ghosted.
+- CV A/B: CVs told apart by the version recorded per application; Wilson 95% ranges; Fisher's exact test, "too few" under
+  5 each. CV files grouped by content; originals never touched; you tick the applications.
+- Board rounds: only stages named "interview" split; only *No round yet* takes drops.
+- Timeline: lanes by role by default; `added` bookkeeping off by default.
+
+## Product and positioning
+
+- "No AI. No cloud. No account. No tracking." in that order (Kai, 2026-11-03). Not "no external dependencies"; "plain
+  files" only with the SQLite caveat; git backups are optional. The app never calls out to the web. No coined phrase.
+  Keep the repo name `job-application-tracker`.
+- Scope cuts: no job searching or scraping, no quick-add from URLs, no `.ics` export, no Search Console or Google
+  Analytics, no CI test workflow. The MCP server is planned (`docs/rfc/mcp.md`).
+- The website: one landing page, the paper palette, docs on GitHub, no analytics; it speaks to non-developers, the README
+  to developers. Docker is for self-hosters (shelved, `docs/rfc/docker.md`); the lay-person path is a one-command
+  install, then Windows support, then a desktop app.
+- Promotion: Claude drafts posts and Kai posts them; posts say it's built with Claude Code.
+- Search: every word must match, accent- and case-insensitive.
+- English dates are day, month, year, through the dayjs patterns in `utils/format.ts`, never the browser's locale.
+
+## Translations
+
+- The frontend does all translating; the backend sends codes and ids next to its English. One namespace per area; English
+  as `.ts` `as const`, other languages JSON. Your data (companies, notes, renamed stages) is never translated; a default
+  stage you haven't changed is. Saved summaries stay English; new events also save `data.msg`.
+- The language switch: an outlined button with a globe, the name and an arrow (globe alone on a phone); languages by their
+  own names; pseudo in dev only.
+- New languages: AI-translated, corrections by issue or PR, no native-speaker review; a big language goes in as a draft,
+  one string file per PR, smallest first, in context (code and screenshots), reviewed per screen area. Chinese specifics
+  are in [now.md](now.md).
+
+## Windows
+
+- Basic support first (`docs/rfc/windows.md`): the Windows-unsafe parts behind one is-Windows check and off there;
+  `JAT_WINDOWS_SNAPSHOTS=1` for testing; `tzdata` on every platform; Kai tests on Windows (no CI job unless Kai asks).
