@@ -7,8 +7,8 @@ everything under [The prompt](#the-prompt). It's short on purpose: what must sur
   (`working-with-kai.md`), lessons (`gotchas.md`) and decisions (`decisions.md`), plus a list of what else to read for
   which task.
 - After a compaction, a SessionStart hook (`tools/dev/after_compact.sh`, set in `.claude/settings.json`, and in Kai's
-  user settings for a session started outside the repo) prints those four files into the new context, so they're read
-  for certain rather than when the summary remembers to.
+  user settings for a session started outside the repo) tells the new context to read README.md and those four files
+  first, by full path. It prints the instruction, not the files: hook output past about 10,000 characters is cut short.
 - Before compacting, refresh `docs/agents/now.md` in a small docs PR (internal: no bump, no release).
 
 This repo is public: nothing here may contain Kai's job-search data (no real companies, people, salaries or notes).
@@ -31,11 +31,11 @@ Summarise this session so the work carries on without asking Kai anything a sens
 
 **Drop:** tool output, diffs and file contents that are on disk; step-by-step narration; reviewer reports already
 handled; screenshots already looked at; anything `docs/agents/`, `CLAUDE.md` or the repo already records. Don't restate
-those files: they're printed into the next context.
+those files: the next context is told to read them.
 
 **End with:**
-1. "Resume: the after-compaction hook prints docs/agents/README.md, now.md, working-with-kai.md, gotchas.md and
-   decisions.md. If they're not in the context, read them first. Then run `gh pr list`, `git worktree list` and
+1. "Resume: read docs/agents/README.md, now.md, working-with-kai.md, gotchas.md and decisions.md first (the
+   after-compaction hook says so too). Then run `gh pr list`, `git worktree list` and
    `git log --oneline -5`, check the PM dashboard (8767) and Kai's tracker (8770), and finish any open PR before new
    work."
 2. One line: "Next action: …", Kai's latest instruction if it's unfinished, otherwise the next item in
@@ -45,7 +45,7 @@ those files: they're printed into the next context.
 
 ## Resuming after compaction
 
-1. Read what the hook printed (or read `docs/agents/README.md` and the four files it lists yourself). `CLAUDE.md` wins
+1. Read `docs/agents/README.md` and the four files it lists, as the hook's message says. `CLAUDE.md` wins
    on any conflict.
 2. Check the state: `gh pr list`, `git worktree list`, `git branch -a`, `git log --oneline -5`; the dashboard
    (`curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8767/board`, restart `python3 -m tools.pm` from the main

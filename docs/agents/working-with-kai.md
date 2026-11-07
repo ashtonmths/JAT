@@ -8,9 +8,10 @@ where things run. Quotes are Kai's words.
 - **Keep going.** "keep going. im going afk. you have enough to work on for ages, you'll hit a rate limit before you
   finish. just wait it out." On a rate limit, wait about 30 minutes and retry. But Kai scopes the work: "stop after
   merge and release, dont start the next one". When Kai has named the items, finish those, report, and wait.
-- **Commits:** "commit small and frequently and often". Conventional Commits, pushed after each commit, ending with
-  `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`; PR bodies end with
-  `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
+- **Commits:** "commit small and frequently and often". Conventional Commits, pushed after each commit, ending with the
+  `Co-Authored-By:` trailer the harness gives (`Claude Opus 5.5 <noreply@anthropic.com>` as of 2026-11-07); PR bodies
+  end with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
+- **Documents go in the repo, not artifacts.** Deleting anything of Kai's needs Kai's confirmation.
 - **One PR at a time:** "handle PRs sequentially, review-fix cycle then merge, then handle the next PR. theres no point
   running reviews for PRs that will need ot be reviewed again ocne another PR merges". Don't combine fixes to save check
   time ("no dont ocmbine them"). After merging main into an already-reviewed PR, compare its own diff before and after
@@ -26,6 +27,10 @@ where things run. Quotes are Kai's words.
   must_fix).
 - **Small PRs:** about 500 changed lines, 1,000 at most; split a feature into roadmap tasks before any code (API, then
   screens, then insights).
+- **Dependency updates:** "it might be best to do only a couple of version updates per PR in case something breaks";
+  "be sure to run e2e tests for this as these updates have a high risk of breaking some behaviour".
+- **Data safety:** a feature that rewrites applications from another edit gets a reviewer told to focus on data safety
+  (#92's first version flipped routes and was reworked).
 - **Don't max out Kai's PC:** "you are maxing out my PC". Tests only through `pnpm` or `tools/dev/checks.sh`; never two
   heavy runs at once; skip browser tests when CLAUDE.md allows.
 - **Branches:** "also delete branches on remote that are no longer needed". After each merge only `main` remains.
@@ -42,7 +47,8 @@ where things run. Quotes are Kai's words.
   file details. Answer a mid-turn "sitrep" briefly and honestly, then carry on. When Kai asks for links or status, give
   them in a clean final message (mid-turn text doesn't always reach Kai).
 - **Questions first:** when Kai asks a question, check the code or the running thing and answer before proposing work.
-- **Outward-facing things** (repo description, topics, Pages, issue replies) need Kai's yes. Draft replies as Markdown
+- **Outward-facing things** (repo description, topics, Pages, issue replies) need Kai's yes. Kai uploads the social
+  preview by hand; Kai's branch ruleset on `main` blocks deletion and force pushes. Draft replies as Markdown
   for Kai to post; never post for Kai. Dates in English are day, month, year ("31 Oct 2026").
 - **Privacy:** never copy names from Kai's screenshots (real companies and recruiters) into the repo, commits or PRs.
   Never POST, PATCH or DELETE against Kai's tracker on 8770; GETs to check health or a migration are fine.
@@ -67,6 +73,7 @@ where things run. Quotes are Kai's words.
 - **Kai's data:** `/home/kai/Documents/Projects/job-application-tracker-data`. Never touch it beyond reading status.
 - **Kai's tracker:** http://127.0.0.1:8770, run by Kai in their own terminal (`uv run jat serve` in the main checkout,
   data folder from `.env`). Never stop it. Check: `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8770/api/v1/health`.
+  If it's down, say so and offer to start it as a background job from the main checkout.
 - **PM dashboard:** http://127.0.0.1:8767, `python3 -m tools.pm` from the main checkout as a background job of the
   session. Restart it when gone (a session restart stops it) and after a `tools/pm` change. Preview a branch's with
   `python3 -m tools.pm --port 8768 --root <main checkout>`.
@@ -74,7 +81,8 @@ where things run. Quotes are Kai's words.
   `uv run jat --data-dir <dir> serve --port 88xx` (one port per server and reviewer). The zh-CN demo API is on 8891.
 - **Node for pnpm:** `/home/kai/.nvm/versions/node/v22.23.3/bin` first on PATH, with `/home/kai/.local/bin` (uv) kept.
   `tools/dev/env.sh` does both.
-- **Scratch files:** the session's job folder (`$CLAUDE_JOB_DIR/tmp`); PR bodies there. Agents in their own worktree
+- **Scratch files:** the session's job folder, `/home/kai/.claude/jobs/cf5328f4/tmp` for the current session (also
+  `$CLAUDE_JOB_DIR/tmp`; a new session gets a new folder); PR bodies there. Agents in their own worktree
   can't write there: they use their worktree's `var/` or a `/tmp/jat-<task>-…` folder.
 - **Scripts:** `tools/dev/` (checks, merge main, bump, merge, ship, text snapshot, links, screenshots);
   `scripts/i18n/translate/` and `.claude/workflows/` (translation); `scripts/demo_gif/`, `scripts/social_preview/`.

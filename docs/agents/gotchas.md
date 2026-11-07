@@ -37,6 +37,9 @@ Each of these cost time once. Add a line when something new does.
   `building` or `planned`. Always check `git diff origin/main -- docs/ROADMAP.yaml` after merging main.
 - **Stacked PRs:** merging the lower PR with `--delete-branch` closes the upper one for good. Prefer one base, main.
 - **New commits make running checks stale**: TaskStop `checks.sh` and start it again on the final commit.
+- **Run `checks.sh` from the worktree root** (it refuses elsewhere). Wait for a PR's checks with a background `until`
+  loop on `mergeStateStatus` (or `merge.sh`), never a foreground `sleep`. A piped e2e run can exit 0 on failure: read
+  the pass and fail counts. Don't write "(#N)" in `bump.py`'s entry: it appends it.
 - **`checks.sh` keeps only the last 25 lines** of a failing check: read `frontend/test-results/*/error-context.md`.
 - **A flaky `test.fail`** (`fix-offer-kind-pin-flaky`) can block a merge: rerun just the browser suite
   (`tools/dev/e2e_only.sh`) when everything else passed and the failure isn't the PR's.
@@ -85,6 +88,8 @@ Each of these cost time once. Add a line when something new does.
   restarted, so fall back to the old English field and don't send a body field an older server rejects (#176).
 - Demo servers don't reload code: restart them (and the zh-CN API on 8891) after a backend change.
 - `ruff check src tests` misses `scripts/` and `tools/`; `checks.sh` includes them.
+- A model change: a migration (check `tests/test_db.py`), new tables or columns in `tests/factories.py` `populate()`.
+  Frontend hooks invalidate every query key that shows the data.
 
 ## Text and translations
 
@@ -95,7 +100,13 @@ Each of these cost time once. Add a line when something new does.
   a pattern, as `common:twoSentences` is. Lists use `joinList`, sentence pairs `joinSentences`; grep both `{" "}` and
   template literals with a leading space when hunting joins.
 - English must stay exactly the same in a text move: check with `tools/dev/i18n_snapshot.sh` ("0 view parts differ"). A
-  run across the hour or midnight differs on default times: run it again.
+  run across the hour or midnight differs on default times: run it again. A bug found mid-move stays for its own task
+  (`fix-offer-plurals` keeps "1 months", or its `test.fail` goes green).
+- Check what the API sends as English (round, call and search titles and Sankey names did): build the words in the
+  frontend from raw parts and keep the English field as the fallback.
+- A `*Text.test.tsx` pins what the snapshot can't reach (plurals, titles, errors); say "most of" unless a test covers all.
+  A regex containing `//` goes on its own line, for the unused-key scanner. Review before the slow checks; run the
+  checks on the final commit.
 - The lint plugin's word filters have no `u` flag (no `\p{L}`). Intl's en-GB writes "Sept"; all dates go through dayjs
   patterns. A Tooltip inside `Menu.Target` steals the menu's ARIA.
 - The translate workflow's consistency pass once added `_one` keys Chinese doesn't have: drop unknown keys before

@@ -10,7 +10,7 @@ check `gh pr list`, `git worktree list`, `git log --oneline -5` and `docs/ROADMA
   after-compaction hook).
 - No open PRs; only `main` locally and on GitHub, unless this snapshot is older than the last merge.
 - Kai's tracker on 8770 still needs a restart for #254's *Rejected* badge on roles (Ctrl+C, `uv run jat serve`).
-- Tests on main: pytest about 1,310, browser 713 (#259's full run). A one-off browser-test 500 on `GET /offers` (#258)
+- Tests on main: pytest 1,309 (#265), browser 713 (#259's full run). A one-off browser-test 500 on `GET /offers` (#258)
   passed on rerun; if it recurs, keep the server log and record a bug.
 - Dependabot: #32 and #33 are both minimatch in dev tools only. The fix (minimatch 11) waits for eslint and redocly to
   accept it; leave both open unless Kai dismisses them.

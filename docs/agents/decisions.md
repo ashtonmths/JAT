@@ -42,7 +42,13 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
 - "A new time isn't agreed yet" is a mark beside the status, not a status: the old time is kept, the to-do is made in the
   same request and starts open ("Add a to-do to book the new time"), booking counts as one move. Calls mirror rounds.
 - "Reached" a round: not cancelled, not waiting for a new time, and started (or due) by the cutoff, or marked done by then.
-- Rejection feedback: by the stage id `rejected`; one per application, editable, kept as written; undo keeps it.
+- Rejection feedback: by the stage id `rejected`; one per application, editable, kept as written; undo keeps it. The
+  Rejections list takes the date and from-stage from the latest standing move to Rejected.
+- Rescheduling insights show raw counts, companies and recruiters only from 3 moved rounds, and never claim reschedules
+  lengthen time in stage.
+- Notes dialogs: nothing saves until confirmed; they can't close while saving.
+- Interested roles count as *still deciding* in Recruiter conversations; Today's *roles to decide* lists only roles with
+  no application.
 - Offers: the newest per application counts; a year's worth = salary + bonus + equity + employer pension, or day rate ×
   220.
 

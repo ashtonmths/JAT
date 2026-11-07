@@ -21,7 +21,7 @@ Linux (GNU `sed`); on macOS `checks.sh` runs without `flock` and `ionice`, and t
 | `i18n_snapshot.sh` | The before/after text check for UI text changes: main's build against the branch's, on one demo folder. `SNAP_PORT` picks the port. |
 | `check_links.py [files]` | Relative links and anchors in the README and the guide (or the files given). |
 | `shot.py <url> <prefix> <path>[@light][@375][@full]…` | Screenshots with the system Chrome (`uv run --with playwright python`), flagging sideways scroll and console errors. |
-| `after_compact.sh [--user]` | Prints `docs/agents/` into the context after a compaction (a SessionStart hook; see `docs/COMPACTION.md`). |
+| `after_compact.sh [--user]` | Tells the session to read `docs/agents/` right after a compaction (a SessionStart hook; see `docs/COMPACTION.md`). |
 | `briefs/bug-fix.md` | The brief for a subagent fixing one roadmap bug. |
 
 A typical PR, from its worktree: `tools/dev/merge_main.sh`, `uv run python tools/dev/bump.py …` (skip for internal

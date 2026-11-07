@@ -6,8 +6,8 @@ the rest. Everything here is public: no job-search data (no real companies, peop
 
 ## Read after every start or compaction
 
-`tools/dev/after_compact.sh` prints these into the context after a compaction (a SessionStart hook on `compact`,
-set in `.claude/settings.json`). If it didn't, or this is a fresh session, read them yourself before doing anything:
+After a compaction, `tools/dev/after_compact.sh` (a SessionStart hook on `compact`, set in `.claude/settings.json`)
+tells the session to read these by full path; in a fresh session, `CLAUDE.md` says so. Read them before doing anything:
 
 | File | What's in it |
 |---|---|
