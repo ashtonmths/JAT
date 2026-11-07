@@ -35,6 +35,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   Kai; don't rewrite history on your own.
 
 ## Working style
+- **After a start or a compaction, read `docs/agents/`** (the state and live plan, Kai's standing instructions, gotchas,
+  decisions, and what to read for which task). A hook prints them after a compaction; `docs/COMPACTION.md` says how.
 - **Don't use the `agent-team` skill in this repo** (Kai, 2026-09-30). This overrides the global
   "default to agent-team" instruction. Work directly; use a plain subagent only when parallel
   work or a review pass calls for one.
@@ -52,7 +54,7 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 - **Don't quote Kai in PR descriptions or comments** (Kai, 2026-11-06). When Kai asks for work, the PR
   body says what was asked in your own words ("Adds a Done button to …", "Fixes the bug `fix-…`
   recorded in #N"), not Kai's message word for word; the same goes for PR and issue comments. The roadmap task
-  and `docs/COMPACTION.md` may still record Kai's words.
+  and the maintainer's notes (`docs/COMPACTION.md`, `docs/agents/`) may still record Kai's words.
 - **Keep PRs small.** Aim for about 500 changed lines, and treat 1,000 as a strong target to stay
   below. Go over only when a change can't sensibly be split, and say why in the PR. `uv.lock`,
   `pnpm-lock.yaml`, `frontend/openapi.json` and `frontend/src/api/schema.d.ts` don't count. When a
@@ -72,7 +74,7 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   production build on demo data, so a PR whose every changed file is in this list skips it and runs
   every other check: a draft language's text (`frontend/src/locales/<code>/` for a code in
   `DRAFT_LANGUAGES`, which only a dev server loads, and its glossary `docs/i18n/<code>.md`),
-  `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`, `.claude/workflows/`, `tools/dev/`,
+  `scripts/i18n/`, `scripts/demo_gif/`, `scripts/social_preview/`, `.claude/workflows/`, `.claude/settings.json`, `tools/dev/`,
   Python tests (`tests/`), and docs. Anything else runs it, including `scripts/seed_demo.py` (the browser tests'
   demo data), `frontend/e2e/`, any config or lockfile, `frontend/src/i18n/` and `DRAFT_LANGUAGES`
   itself, and switching a draft on. The PR says it skipped and why.
@@ -95,7 +97,8 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
 ## Versions and releases
 The app follows [semantic versioning](https://semver.org/), from 1.0.0. **Every PR that changes
 what people get (the app, the website, the README or the guide) bumps the version in that
-PR.** PRs that only touch internal files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`,
+PR.** PRs that only touch internal files (`CLAUDE.md`, `.claude/settings.json`, `docs/ROADMAP.yaml`,
+`docs/COMPACTION.md`, `docs/agents/`,
 `docs/IDEAS.md`, `var/`, the PM dashboard: `tools/pm`, `tests/pm`, and the maintainer scripts: `tools/dev`,
 `tests/dev`) don't, and so get no release.
 
