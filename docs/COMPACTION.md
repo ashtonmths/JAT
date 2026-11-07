@@ -98,7 +98,7 @@ next action.
   every PR: "most are patch unless its new feature then it would be minor. it should be very
   explicit asking me for permission to merge a major bump". The rules are in `CLAUDE.md`
   (*Versions and releases*): bump in each PR, release each version, ask before any major.
-  Released: v1.0.0 up to v1.18.12 (section 4a). Kai: "yes add release for each change"
+  Released: v1.0.0 up to v1.19.3 (section 4a). Kai: "yes add release for each change"
   (each i18n groundwork PR was its own patch release, the switcher minor; zh-CN translation PRs have none while it's a draft). Only internal planning
   files (`CLAUDE.md`, `docs/ROADMAP.yaml`, `docs/COMPACTION.md`, `docs/IDEAS.md`, `var/`) and the PM dashboard skip
   the bump.
@@ -424,20 +424,20 @@ next action.
 - **Merged since the last snapshot (#248), all through the review-fix cycle, one PR at a time:**
   - #249: this doc's refresh (internal, no release).
   - Simplified Chinese, no release (a draft), browser tests skipped under #243's rule: #250 `events`, #251 `offers`
-    (branched from #250's branch), #252 `common`, #256 `timeline`, #257 `interviews`, #261 `roles`. Glossary added along
+    (branched from #250's branch), #252 `common`, #256 `timeline`, #257 `interviews`, #261 `roles`. Glossary added or applied along
     the way: who needed a reschedule is 由你提出 / 由对方提出 / 双方共同提出 / 与双方无关 (not 你需要改时间, which reads
-    like an instruction); a round getting a time is 已预约; 暂无金额; an offer's notes field is 备注 (not 笔记); 合同期限;
+    like an instruction); a round getting a time uses the existing 已预约; 暂无金额; an offer's notes field is 备注 (not 笔记); 合同期限;
     IR35 options under an IR35 label drop the prefix (范围外 / 范围内 / 未知), and a form's "Not sure" is 不确定; 回顾 (the
     Review menu heading); 本机; 已持续 {{count}} 天 / 始于今天; 推荐 for a recruiter pitching a role; 未知公司, never a bare
     "?"; a date-and-time placeholder ends in a digit, so it keeps its space before Chinese (`{{when}} 截止`); 结果如何 only
-    for the after-round question, a debrief placeholder says 面试过程和感受; "track" is 追踪 (跟进 is following up).
+    for the after-round question, a debrief placeholder says 面试过程和感受. Applied but not in the glossary yet: "track" is 追踪 (跟进 is following up; #261) — add a row in the next zh-CN PR.
   - #253 `interview-done-button` (v1.19.0, minor): **Done** (and **Didn't happen** once the time has passed) on a round
     on the application page's Interviews card (its own line under the time) and on the Interviews page, reusing Today's
     `InterviewOutcome` (`components/OutcomeNotes.tsx`), which now hides itself unless the round is scheduled and not
     waiting for a new time; Today passes `passed`.
   - #254 `role-ended-badge` (v1.19.1): `RoleSummary` gains `ended_as` / `ended_stage` / `ended_kind` (closed|success) for an
-    applied role whose applications have all ended (a success wins, else the latest); `roleBadge` shows that stage (grey,
-    or green for success) wherever a role shows. Status stays `applied`. Applications are read by `(created_at, id)`.
+    applied role whose applications have all ended (a success wins, else the latest); `roleBadge` shows that stage (the
+    Closed colour, Mantine "dark", or green for success) wherever a role shows. Status stays `applied`. Applications are read by `(created_at, id)`.
   - #255 (internal): Backlog task `code-cleanup` (audit first, then one PR per area; removing an endpoint, command or
     config key would be a major, so those go on a separate list for Kai).
   - #258 `fix-list-separator-english` (v1.19.2): `joinList` in `frontend/src/utils/list.ts` with `common:listSeparator`
@@ -485,7 +485,7 @@ translation afte[r]". So after compaction, carry on with the next file, `today` 
 says otherwise. Kai has been scoping one file (or a pair) at a time ("do roles"): after each file, report and wait for the
 next go, even though the `i18n-zh-cn-*` tasks sit in Up next. The demo server on 8891 stopped in the restart: start it
 again first (`uv run jat --data-dir /home/kai/.claude/jobs/cf5328f4/tmp/zh/demo serve --dev --port 8891` from the main
-checkout, as a background job), so it also runs the current backend. Waiting on Kai in particular:
+checkout, as a background job), so it also runs the current backend. Waiting on Kai's go per file after `today`, and in particular:
 - **Simplified Chinese** (`docs/rfc/zh-cn.md`; tasks `i18n-zh-cn-*`, P8: the 13 done files are `done`; the other 11 (4 files, then layout, switch-on, demo-data, screenshots, readme, website, listing) are `next`, each "waits for Kai's go").
   - **Done (13 of 17 files):** applications, stages, files, todos, calls, documents, notes, events, offers, common,
     timeline, interviews, roles.
@@ -586,10 +586,10 @@ trivial display-only ones (`fix-company-page-blank-route`, `fix-search-stale-aft
 **Settled:** two people can share a name. Kai: "yes there can be 2 people with the same name". Keep that test pinned; it
 isn't a bug.
 
-**The running tracker** on 8770 answers. It may still need Kai's restart (Ctrl+C, `uv run jat serve`) for v1.18.0's server
-change (the Sankey rounds filter; the switch and the sidebar version note say so). Everything since is frontend, tooling or
-docs, so a page refresh shows it, but the sidebar note keeps asking for a restart until Kai restarts, since each release
-bumps the server's version. Leave it alone.
+**The running tracker** on 8770 answers. It may still need Kai's restart (Ctrl+C, `uv run jat serve`) for the latest server
+change, #254's `ended_as` in role summaries (v1.19.1: the *Rejected* badge shows only after it; before that, v1.18.0's
+Sankey rounds filter). Everything else since is frontend, tooling or docs, so a page refresh shows it, but the sidebar note
+keeps asking for a restart until Kai restarts, since each release bumps the server's version. Leave it alone.
 
 **How work ran this session:**
 - **A feature in parts** (as before): one builder agent (`isolation: "worktree"`) builds part 1, opens a draft and stops;
