@@ -89,12 +89,19 @@ function NewDocumentModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+/** One above the highest "vN" label ("v3 (fintech)" counts as 3), so the suggestion never repeats one. */
+function nextVersionNumber(labels: string[]): number {
+  const numbers = labels.map((label) => /^v(\d+)(?:\s|$)/i.exec(label.trim())?.[1]).map(Number);
+  return Math.max(0, ...numbers.filter((n) => Number.isFinite(n))) + 1;
+}
+
 function AddVersionModal({ doc, onClose }: { doc: DocumentItem; onClose: () => void }) {
   const { t } = useTranslation("documents");
   const add = useAddVersion(doc.id);
   const [file, setFile] = useState<File | null>(null);
+  const number = nextVersionNumber(doc.versions.map((v) => v.label));
   const form = useForm({
-    initialValues: { label: t("newVersion.defaultLabel", { number: doc.versions.length + 1 }), notes: "" },
+    initialValues: { label: t("newVersion.defaultLabel", { number }), notes: "" },
     validate: { label: (v) => (v.trim() ? null : t("newVersion.labelError")) },
   });
   return (
