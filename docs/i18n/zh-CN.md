@@ -214,3 +214,5 @@ open an issue or a pull request.*
 | Picked up / drop (keyboard drag-and-drop) | 拿起 / 放下 | Used in screen-reader messages during keyboard dragging: 已拿起 {{card}}。, 按空格键放下, {{card}} 已放下。 |
 | Sent on | 发送日期 | Date-field label, following the same pattern as 投递日期 (Applied on). In a line with a date, 'sent {{date}}' is written {{date}}发送 (no space: the date ends in 日). |
 | As (relation of a contact to an application) | 身份 | Label of the relation select (面试官, 用人经理, 猎头顾问…). Also used in hints that mention 'the role chosen above' when it means this relation, not a job role (职位). |
+| snapshot (automatic git backup of the data folder) | 快照 | Used across the backup errors (快照失败, 快照已关闭). Not the same as 下载备份 (Download a backup). |
+| data repo (the data folder as a git repository) | 数据仓库 | As in common's delete hint (你数据仓库的 git 历史). The data directory or folder on its own stays 数据目录 / 数据文件夹. |

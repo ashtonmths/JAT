@@ -2,6 +2,7 @@ import applications from "./applications.json";
 import calls from "./calls.json";
 import common from "./common.json";
 import documents from "./documents.json";
+import errors from "./errors.json";
 import events from "./events.json";
 import files from "./files.json";
 import interviews from "./interviews.json";
@@ -18,6 +19,7 @@ export default {
   calls,
   common,
   documents,
+  errors,
   events,
   files,
   interviews,
