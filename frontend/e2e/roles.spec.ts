@@ -616,8 +616,7 @@ test.describe("editing a role", () => {
 });
 
 test.describe("what a save leaves alone", () => {
-  // KNOWN BUG (fix-add-another-role-carries-over on the roadmap): expected to fail until it is fixed.
-  test.fail("Add and add another clears the type, work mode and IR35 too", async ({ page, request }) => {
+  test("Add and add another clears the type, work mode and IR35 too", async ({ page, request }) => {
     await company(request, "Carry Co");
     await openRoles(page);
     const dialog = await addDialog(page);
