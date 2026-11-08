@@ -1291,21 +1291,21 @@ test.describe("what a delete leaves on other pages", () => {
     },
   );
 
-  // KNOWN BUG (fix-refused-delete-stale-page on the roadmap): expected to fail until it is fixed.
-  test.fail(
-    "after a refused delete, the page shows the application that stopped it",
-    async ({ page, request, problems }) => {
-      problems.allow(/409.*\/api\/v1\/companies/);
-      const here = await company(request, "Refreshed Co");
-      await openCompany(page, here.id, "Refreshed Co");
-      await expect(page.getByText("No applications here yet.")).toBeVisible();
-      await apply(request, { company_name: "Refreshed Co", role_title: "Refreshed Role" });
-      const refused = answered(page, "DELETE", /\/companies\//);
-      await deleteAnswering(page, true);
-      await refused;
-      await expect(page.getByRole("row").filter({ hasText: "Refreshed Role" })).toBeVisible();
-    },
-  );
+  test("after a refused delete, the page shows the application that stopped it", async ({
+    page,
+    request,
+    problems,
+  }) => {
+    problems.allow(/409.*\/api\/v1\/companies/);
+    const here = await company(request, "Refreshed Co");
+    await openCompany(page, here.id, "Refreshed Co");
+    await expect(page.getByText("No applications here yet.")).toBeVisible();
+    await apply(request, { company_name: "Refreshed Co", role_title: "Refreshed Role" });
+    const refused = answered(page, "DELETE", /\/companies\//);
+    await deleteAnswering(page, true);
+    await refused;
+    await expect(page.getByRole("row").filter({ hasText: "Refreshed Role" })).toBeVisible();
+  });
 
   // KNOWN BUG (fix-duplicate-company-name on the roadmap): expected to fail until it is fixed.
   test.fail("New application doesn't make a third company when two share the name", async ({ request }) => {

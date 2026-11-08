@@ -2,7 +2,7 @@ import { notifications } from "@mantine/notifications";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
-import { api, ApiError } from "./client";
+import { api, ApiError, isRefusal } from "./client";
 import { invalidateApplicationViews, keys } from "./hooks";
 import { errorText } from "./notifyError";
 
@@ -59,7 +59,12 @@ export function useDeleteEntity(kind: Deletable, onDeleted?: () => void) {
       }
       invalidateApplicationViews(qc);
     },
-    onError: (error: Error) =>
-      notifications.show({ color: "red", title: i18n.t("errors:own.deleteIt"), message: errorText(error) }),
+    onError: (error: Error) => {
+      notifications.show({ color: "red", title: i18n.t("errors:own.deleteIt"), message: errorText(error) });
+      // A refusal means something changed that this page may not show yet ("Contoso has 2
+      // applications"), so refresh the pages that would show it. Not when it's gone: that
+      // would refetch a page for something that no longer exists.
+      if (isRefusal(error)) invalidateApplicationViews(qc);
+    },
   });
 }
