@@ -764,7 +764,9 @@ test.describe("more permutations", () => {
 
   // KNOWN BUG (fix-offer-kind-before-roles on the roadmap): expected to fail until it is fixed.
   // It's marked expected to fail only once the form has opened while roles are held, so a timeout
-  // before that is a real failure, never a lucky expected one.
+  // before that is a real failure, never a lucky expected one. It goes green for a fix that updates
+  // the open form once roles arrive. A fix that instead disables Add offer while roles load must
+  // rewrite this test: the button can't be clicked while roles are held, so the 5 s cap fails it.
   test("the offer's kind is right even if roles are slow to load", async ({ page, request }) => {
     const company = await post<{ id: string }>(request, "companies", { name: "Slow Roles Co" });
     await post(request, "roles", {
