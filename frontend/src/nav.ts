@@ -51,6 +51,16 @@ export interface NavItem {
   /** Roadmap task that builds the page (shown on its placeholder). */
   task: string;
   description: string;
+  /** Other address sections whose pages sit under this item, like a person's page under Recruiters. */
+  also?: string[];
+}
+
+/** Whether the menu marks this item for the address: its path or another of its sections, up to a slash. */
+export function isActive(item: NavItem, pathname: string): boolean {
+  if (item.path === "/") return pathname === "/";
+  return [item.path, ...(item.also ?? [])].some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
 }
 
 // Navigation from docs/prd/tracker.md §7, grouped so the menu reads as a map of the app.
@@ -90,6 +100,7 @@ export const NAV: NavItem[] = [
     icon: IconUsers,
     task: "recruiters",
     description: "Agencies and recruiters, their contact details and the roles they've sent.",
+    also: ["/people", "/agencies"],
   },
   {
     path: "/companies",

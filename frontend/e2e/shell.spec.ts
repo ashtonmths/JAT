@@ -362,13 +362,14 @@ test.describe("wide screens", () => {
 
 test.describe("more of the frame", () => {
   test("an address that only starts like a section marks nothing", async ({ page }) => {
-    await page.goto("/notes-old");
-    await expect(page.getByRole("heading", { name: "Page not found", level: 2 })).toBeVisible();
-    await expect(menu(page).locator('a[data-active="true"]')).toHaveCount(0);
+    for (const path of ["/notes-old", "/peoplex", "/agencies-old"]) {
+      await page.goto(path);
+      await expect(page.getByRole("heading", { name: "Page not found", level: 2 })).toBeVisible();
+      await expect(menu(page).locator('a[data-active="true"]')).toHaveCount(0);
+    }
   });
 
-  // KNOWN BUG (fix-menu-recruiters-section on the roadmap): expected to fail until it is fixed.
-  test.fail("a person's and an agency's pages are under Recruiters", async ({ page, request }) => {
+  test("a person's and an agency's pages are under Recruiters", async ({ page, request }) => {
     const firm = (await (
       await request.post("/api/v1/agencies", { data: { name: "Section Agency" } })
     ).json()) as { id: string };
