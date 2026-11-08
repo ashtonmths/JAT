@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.9 (2026-11-08)
+
+- A new document version's suggested label no longer repeats one that's there: it goes one above the highest vN label (#277).
+
 ## 1.19.8 (2026-11-08)
 
 - A person's or an agency's page now marks Recruiters in the menu (#275).
