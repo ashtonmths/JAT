@@ -57,7 +57,11 @@ export function useDeleteEntity(kind: Deletable, onDeleted?: () => void) {
       }
       invalidateApplicationViews(qc);
     },
-    onError: (error: Error) =>
-      notifications.show({ color: "red", title: i18n.t("errors:own.deleteIt"), message: errorText(error) }),
+    onError: (error: Error) => {
+      notifications.show({ color: "red", title: i18n.t("errors:own.deleteIt"), message: errorText(error) });
+      // A refusal means something changed that this page may not show yet ("Contoso has 2
+      // applications"), so refresh the pages that would show it.
+      invalidateApplicationViews(qc);
+    },
   });
 }

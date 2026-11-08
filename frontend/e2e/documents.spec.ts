@@ -662,8 +662,7 @@ test.describe("more of what could go out of step", () => {
     await pause(500); // the fixture fails the test on any failed request
   });
 
-  // KNOWN BUG (fix-refused-delete-stale-page on the roadmap): expected to fail until it is fixed.
-  test.fail("after a refused delete, the page shows it was sent", async ({ page, request, problems }) => {
+  test("after a refused delete, the page shows it was sent", async ({ page, request, problems }) => {
     problems.allow(/409.*\/api\/v1\/documents/);
     const app = await application(request, "Refreshed Doc Co");
     const doc = await makeDoc(request, "Refreshed Doc");

@@ -63,7 +63,11 @@ export function useDeleteDocument() {
       if (error) throw new ApiError(error);
     },
     onSuccess: refresh,
-    onError: notifyError,
+    // A refusal ("was sent with 1 application") may be news to this page: show it.
+    onError: (error: Error) => {
+      notifyError(error);
+      refresh();
+    },
   });
 }
 
@@ -97,7 +101,10 @@ export function useDeleteVersion() {
       if (error) throw new ApiError(error);
     },
     onSuccess: refresh,
-    onError: notifyError,
+    onError: (error: Error) => {
+      notifyError(error);
+      refresh();
+    },
   });
 }
 
