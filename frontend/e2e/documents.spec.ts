@@ -677,24 +677,24 @@ test.describe("more of what could go out of step", () => {
     await expect(card(page, "Refreshed Doc").getByText("Where it was used (1)")).toBeVisible();
   });
 
-  // KNOWN BUG (fix-deleted-application-documents-stale on the roadmap): expected to fail until it is fixed.
-  test.fail(
-    "an application deleted on its page frees the document, without a reload",
-    async ({ page, request }) => {
-      const app = await application(request, "Freed In App Co");
-      const doc = await makeDoc(request, "Freed In App Doc");
-      const version = await makeVersion(request, doc.id, "v1");
-      await send(request, app.id, version.id);
-      await openDocuments(page);
-      await expect(page.getByRole("button", { name: "Delete Freed In App Doc" })).toBeDisabled();
-      await inApp(page, `/applications/${app.id}`);
-      page.once("dialog", (d) => void d.accept());
-      await page.getByRole("button", { name: "Delete", exact: true }).click();
-      await expect(page).not.toHaveURL(new RegExp(app.id));
-      await menu(page, "Documents").click();
-      await expect(page.getByRole("button", { name: "Delete Freed In App Doc" })).toBeEnabled();
-    },
-  );
+  test("an application deleted on its page frees the document, without a reload", async ({
+    page,
+    request,
+  }) => {
+    const app = await application(request, "Freed In App Co");
+    const doc = await makeDoc(request, "Freed In App Doc");
+    const version = await makeVersion(request, doc.id, "v1");
+    await send(request, app.id, version.id);
+    await openDocuments(page);
+    await expect(page.getByRole("button", { name: "Delete Freed In App Doc" })).toBeDisabled();
+    await inApp(page, `/applications/${app.id}`);
+    page.once("dialog", (d) => void d.accept());
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await expect(page).not.toHaveURL(new RegExp(app.id));
+    await menu(page, "Documents").click();
+    await expect(page.getByRole("button", { name: "Delete Freed In App Doc" })).toBeEnabled();
+    await expect(card(page, "Freed In App Doc").getByText("Where it was used (0)")).toBeVisible();
+  });
 
   for (const [kind, label] of [
     ["role", "role"],
