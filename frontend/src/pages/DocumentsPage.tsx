@@ -92,7 +92,8 @@ function NewDocumentModal({ onClose }: { onClose: () => void }) {
 /** One above the highest "vN" label ("v3 (fintech)" counts as 3), so the suggestion never repeats one. */
 function nextVersionNumber(labels: string[]): number {
   const numbers = labels.map((label) => /^v(\d+)(?:\s|$)/i.exec(label.trim())?.[1]).map(Number);
-  return Math.max(0, ...numbers.filter((n) => Number.isFinite(n))) + 1;
+  // A number too big to add one to exactly ("v99999999999999999999") is ignored, like a label that isn't vN.
+  return Math.max(0, ...numbers.filter((n) => Number.isSafeInteger(n) && n < Number.MAX_SAFE_INTEGER)) + 1;
 }
 
 function AddVersionModal({ doc, onClose }: { doc: DocumentItem; onClose: () => void }) {

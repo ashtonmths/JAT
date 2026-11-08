@@ -327,7 +327,7 @@ test.describe("versions", () => {
     expect((await request.delete(`${API}/documents/versions/${first.id}`)).ok()).toBe(true);
     await openDocuments(page);
     const dialog = await newVersion(page, "Gap Label Doc");
-    await expect(dialog.getByLabel("Label")).not.toHaveValue("v2");
+    await expect(dialog.getByLabel("Label")).toHaveValue("v3");
   });
 
   test("the suggestion goes one above the highest vN, suffix or not, and skips other labels", async ({
@@ -338,9 +338,18 @@ test.describe("versions", () => {
     await makeVersion(request, doc.id, "v5 (fintech)");
     await makeVersion(request, doc.id, "draft");
     await makeVersion(request, doc.id, "v2");
+    await makeVersion(request, doc.id, "v99999999999999999999");
     await openDocuments(page);
     const dialog = await newVersion(page, "Suffix Label Doc");
     await expect(dialog.getByLabel("Label")).toHaveValue("v6");
+  });
+
+  test("with no vN label yet, the suggestion is v1", async ({ page, request }) => {
+    const doc = await makeDoc(request, "Draft Only Doc");
+    await makeVersion(request, doc.id, "draft");
+    await openDocuments(page);
+    const dialog = await newVersion(page, "Draft Only Doc");
+    await expect(dialog.getByLabel("Label")).toHaveValue("v1");
   });
 });
 
