@@ -197,9 +197,12 @@ export function RoleFormModal({
           title: "",
           url: "",
           location: "",
+          workMode: null,
+          employment: null,
           salaryMin: "",
           salaryMax: "",
           dayRate: "",
+          ir35: null,
           description: "",
         });
       },

@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.4 (2026-11-08)
+
+- **Fix:** after *Add and add another* in the role dialog, the next role no longer keeps the last one's type, work mode and IR35, so it can't silently save as a contract (#270).
+
 ## 1.19.3 (2026-11-06)
 
 - Sentences shown one after another (the edit form of a round or call waiting for a new time, a round's days moved, a rejection's line and Insights' Calls moved, Rescheduling and Rejections round counts) join the way each language does, so a translation no longer gets a stray space after a full stop; English is unchanged (#259).
