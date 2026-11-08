@@ -34,7 +34,9 @@ open an issue or a pull request.*
 - 中文引号用 “”，不用「」或 ""。界面中出现的阶段名、按钮名如果嵌在句子中间，用 “” 括起来（见下文“占位符”一节）。
 - 句子内的并列项用顿号“、”。`listJoiner` 一类的连接符（英文为 `", "`）译为 `"、"`。
 - 省略号：英文用单个字符 “…” 的地方保留单个 “…”（例如 `移至…`、`搜索公司、职位、招聘顾问…`）。只有在完整句子中确实需要表达省略时才用 “……”。
-- 分隔符键（注释中标明是 separator，或值是 `" · "` 这类分隔符）原样保留，不翻译，也不改空格：`" · "`、`"<line/> · <person/>"`、`"{{from}}–{{to}}"`。
+- 分隔符键（注释中标明是 separator，或值是 `" · "` 这类分隔符）分两种：
+  - 标点连接符（英文为 `"; "`、`", "`）改成全角中文标点，后面不加空格：`"; "` 译为 `"；"`（例如 `uploadFailedSeparator`、`validation.separator`），`", "` 译为 `"、"`（例如 `listJoiner`、`validation.fieldSeparator`）。
+  - 视觉分隔符（`" · "`、`"–"`、`"→"`）原样保留，不翻译，也不改空格：`" · "`、`"<line/> · <person/>"`、`"{{from}}–{{to}}"`。
 - 冒号：标签后面用全角 “：”，冒号后面不加空格，例如 `"<b>渠道：</b><route/>"`、`"<b>投递日期：</b>{{date}}"`。
 - 箭头 `→`、`×`、`%` 原样保留。`×` 只在单独作符号时保留；英文把 `×` 接在次数后面（"sent {{times}}×"）时，用量词“次”（“已发送 {{times}} 次”）。
 - 演示输入格式的占位示例（例如标签输入框的 `python, fintech, remote…`）保留英文半角逗号，因为输入框可能按半角逗号拆分。示例里的词可以译，例如 `python, 金融科技, 远程…`。
@@ -214,3 +216,5 @@ open an issue or a pull request.*
 | Picked up / drop (keyboard drag-and-drop) | 拿起 / 放下 | Used in screen-reader messages during keyboard dragging: 已拿起 {{card}}。, 按空格键放下, {{card}} 已放下。 |
 | Sent on | 发送日期 | Date-field label, following the same pattern as 投递日期 (Applied on). In a line with a date, 'sent {{date}}' is written {{date}}发送 (no space: the date ends in 日). |
 | As (relation of a contact to an application) | 身份 | Label of the relation select (面试官, 用人经理, 猎头顾问…). Also used in hints that mention 'the role chosen above' when it means this relation, not a job role (职位). |
+| snapshot (automatic git backup of the data folder) | 快照 | Used across the backup errors (快照失败, 快照已关闭). Not the same as 下载备份 (Download a backup). |
+| data repo (the data folder as a git repository) | 数据仓库 | As in common's delete hint (你数据仓库的 git 历史). The data directory or folder on its own stays 数据目录 / 数据文件夹. |
