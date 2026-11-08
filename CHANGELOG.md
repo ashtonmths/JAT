@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.7 (2026-11-08)
+
+- Documents now notices an application deleted on its page: its sent counts and where-it-was-used lists refresh straight away (#276).
+
 ## 1.19.6 (2026-11-08)
 
 - `jat archive` no longer leaves an unignored lock file in a data folder that isn't a git repository: `jat-snapshot.lock` is now in its `.gitignore`, and `jat init` adds it to older ones (#278).
