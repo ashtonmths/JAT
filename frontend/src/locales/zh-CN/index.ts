@@ -11,6 +11,7 @@ import people from "./people.json";
 import roles from "./roles.json";
 import stages from "./stages.json";
 import timeline from "./timeline.json";
+import today from "./today.json";
 import todos from "./todos.json";
 
 export default {
@@ -27,5 +28,6 @@ export default {
   roles,
   stages,
   timeline,
+  today,
   todos,
 };
