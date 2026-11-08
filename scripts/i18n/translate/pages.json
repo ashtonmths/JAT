@@ -85,5 +85,16 @@
     {"name": "today", "path": "/", "full": true},
     {"name": "application-page", "path": "{application:Contoso}", "full": true},
     {"name": "person-page-375", "path": "{person:Alex Morgan}", "width": 375, "full": true}
+  ],
+  "people": [
+    {"name": "recruiters-page", "path": "/recruiters", "full": true},
+    {"name": "person-page", "path": "{person:Alex Morgan}", "full": true},
+    {"name": "person-favourite", "path": "{person:Jordan Lee}", "full": true},
+    {"name": "companies-page", "path": "/companies", "full": true},
+    {"name": "company-page", "path": "{company:Contoso}", "full": true},
+    {"name": "agency-page", "path": "/agencies/01a1ad8c-f03c-7a92-ba4d-6a64e87fdd8f", "full": true},
+    {"name": "application-page", "path": "{application:Contoso}", "full": true},
+    {"name": "today", "path": "/", "full": true},
+    {"name": "recruiters-page-375", "path": "/recruiters", "width": 375, "full": true}
   ]
 }
