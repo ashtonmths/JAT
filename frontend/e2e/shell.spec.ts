@@ -378,10 +378,12 @@ test.describe("more of the frame", () => {
     ).json()) as { id: string };
     await page.goto(`/agencies/${firm.id}`);
     await expect(page.getByRole("heading", { name: "Section Agency", level: 2 })).toBeVisible();
-    await expect(item(page, "Recruiters")).toHaveAttribute("data-active", "true", { timeout: 2_000 });
+    await expect(item(page, "Recruiters")).toHaveAttribute("data-active", "true");
+    await expect(menu(page).locator('a[data-active="true"]')).toHaveCount(1);
     await page.goto(`/people/${who.id}`);
     await expect(page.getByRole("heading", { name: "Section Person", level: 2 })).toBeVisible();
-    await expect(item(page, "Recruiters")).toHaveAttribute("data-active", "true", { timeout: 2_000 });
+    await expect(item(page, "Recruiters")).toHaveAttribute("data-active", "true");
+    await expect(menu(page).locator('a[data-active="true"]')).toHaveCount(1);
   });
 
   // KNOWN BUG (fix-backup-same-site on the roadmap): expected to fail until it is fixed.
