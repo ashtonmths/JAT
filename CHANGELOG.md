@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.10 (2026-11-08)
+
+- When a delete is refused (a company that has gained an application, a document that has been sent), the page now refreshes to show why, instead of staying out of date (#279).
+
 ## 1.19.9 (2026-11-08)
 
 - A new document version's suggested label no longer repeats one that's there: it goes one above the highest vN label (#277).
