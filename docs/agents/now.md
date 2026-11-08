@@ -15,7 +15,8 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
   them open unless Kai dismisses them.
 - Background jobs of this session: the PM dashboard on 8767 and the zh-CN demo API on 8891
   (`uv run jat --data-dir /home/kai/.claude/jobs/cf5328f4/tmp/zh/demo serve --dev --port 8891`). A session restart
-  stops both; restart the dashboard at once, the demo API only when a zh-CN task needs it.
+  stops both; restart the dashboard at once, the demo API only when a zh-CN task needs it. If that folder is gone (a new
+  session gets a new job folder), seed one with `uv run python scripts/seed_demo.py <dir>`.
 
 ## Done since the last snapshot (2026-11-07 / 08)
 
@@ -34,9 +35,12 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 ## Kai's latest asks (2026-11-07 / 08)
 
 1. "the compaction doc is very long…" and "do it, but make sure that the files to be read after resuming do actually
-   get read…" → #266. The user-level hook needs Kai: the auto-mode check refused editing `~/.claude/settings.json`; the
-   JSON to add is in `docs/COMPACTION.md`'s first section (SessionStart, matcher `compact`,
-   `tools/dev/after_compact.sh --user`). Not confirmed added.
+   get read…" → #266. The user-level hook needs Kai: the auto-mode check refused editing `~/.claude/settings.json`.
+   Kai was given this to add next to `"env"` (not confirmed added; check `jq .hooks ~/.claude/settings.json`):
+   ```json
+   "hooks": { "SessionStart": [ { "matcher": "compact", "hooks": [ { "type": "command",
+     "command": "/home/kai/Documents/Projects/job-application-tracker/tools/dev/after_compact.sh --user", "timeout": 30 } ] } ] },
+   ```
 2. "actually dont paralleisd im close to usage limit" (2026-11-07), then on 2026-11-08 "do today and people in parallel
    with agents, not yourself": translations and fixes go to builder agents.
 3. "choose 3 easy bugs to fix…" → listed; "do 1, do 3 but ensure there is a maximum time limit for the test so it cant
@@ -63,7 +67,8 @@ Nothing Kai asked for is unfinished. Report and wait. When Kai picks, the likely
 
 **How a translation or fix ran this round** (keep doing it this way unless Kai says otherwise):
 - A builder agent per item (`isolation: "worktree"`, no `name`), briefed by `/home/kai/.claude/jobs/cf5328f4/tmp/deps/zh-builder-brief.md`
-  (translations) or `tools/dev/briefs/bug-fix.md` (bugs). Builders have **no Workflow tool**: they stop at each workflow
+  (translations; it's outside the repo, so if it's gone, rewrite it from `scripts/i18n/translate/README.md`, which has
+  every step) or `tools/dev/briefs/bug-fix.md` (bugs). Builders have **no Workflow tool**: they stop at each workflow
   step with an args file; the lead runs the workflow (`scriptPath` in the builder's worktree), saves `.result` from the
   task output file into the builder's `var/i18n/zh-CN/<ns>/` (translate.json, review.json, rereview-1.json) and resumes
   the builder with SendMessage.
