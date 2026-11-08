@@ -763,7 +763,9 @@ test.describe("more permutations", () => {
   });
 
   // KNOWN BUG (fix-offer-kind-before-roles on the roadmap): expected to fail until it is fixed.
-  test.fail("the offer's kind is right even if roles are slow to load", async ({ page, request }) => {
+  // It's marked expected to fail only once the form has opened while roles are held, so a timeout
+  // before that is a real failure, never a lucky expected one.
+  test("the offer's kind is right even if roles are slow to load", async ({ page, request }) => {
     const company = await post<{ id: string }>(request, "companies", { name: "Slow Roles Co" });
     await post(request, "roles", {
       company_id: company.id,
@@ -771,26 +773,33 @@ test.describe("more permutations", () => {
       employment_type: "contract",
     });
     const app = await application(request, "Slow Roles Co", "Slow Kind Role");
-    // Roles are held until the form is open, then let through. The hold has a hard cap: after
-    // 5 s the request goes through anyway and the test fails, so it can never wait forever.
+    const roles = `**${API}/roles`;
     let release = () => {};
     const held = new Promise<void>((done) => (release = done));
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const cap = new Promise<"capped">((done) => (timer = setTimeout(() => done("capped"), 5_000)));
-    await page.route(`**${API}/roles`, async (route) => {
-      await Promise.race([held, cap]);
-      await route.continue();
+    await page.route(roles, async (route) => {
+      await held;
+      await route.continue().catch(() => undefined); // the page may have closed
     });
-    await openApplication(page, app.id);
-    const opening = newOffer(page);
-    const opened = opening.then(() => "open" as const);
-    opened.catch(() => undefined); // if the cap wins first, that failure is the one reported
-    const first = await Promise.race([opened, cap]);
-    release();
-    clearTimeout(timer);
-    expect(first, "the offer form should open while roles are held (5 s cap)").toBe("open");
-    const dialog = await opening;
-    await expect(dialog.getByLabel("Day rate")).toBeVisible({ timeout: 3_000 });
+    try {
+      await openApplication(page, app.id);
+      // Roles are held until the form is open. A hard cap: after 5 s they go through anyway and
+      // the test fails, so it can never wait forever.
+      const cap = new Promise<"capped">((done) => (timer = setTimeout(() => done("capped"), 5_000)));
+      const opening = newOffer(page);
+      const opened = opening.then(() => "open" as const);
+      opened.catch(() => undefined); // if the cap wins first, that failure is the one reported
+      const first = await Promise.race([opened, cap]);
+      expect(first, "the offer form should open while roles are held (5 s cap)").toBe("open");
+      test.fail(true, "KNOWN BUG fix-offer-kind-before-roles: the form keeps the kind it opened with");
+      release();
+      const dialog = await opening; // already open: this only hands back its locator
+      await expect(dialog.getByLabel("Day rate")).toBeVisible({ timeout: 3_000 });
+    } finally {
+      release();
+      clearTimeout(timer);
+      await page.unroute(roles);
+    }
   });
 
   // KNOWN BUG (fix-offer-loading-says-none on the roadmap): expected to fail until it is fixed.
