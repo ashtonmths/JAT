@@ -804,21 +804,17 @@ test.describe("more permutations", () => {
     }
   });
 
-  // KNOWN BUG (fix-offer-loading-says-none on the roadmap): expected to fail until it is fixed.
-  test.fail(
-    "an application with an offer never says it has none while loading",
-    async ({ page, request }) => {
-      const app = await application(request, "Loading Offer Co");
-      await addOffer(request, app.id, { employment_type: "permanent", salary: 80000 });
-      await page.route(`**${API}/offers?*`, async (route) => {
-        await pause(2500);
-        await route.continue();
-      });
-      await page.goto(`/applications/${app.id}`);
-      await expect(card(page).getByRole("button", { name: /^Add/ })).toBeVisible();
-      await expect(page.getByText("No offer yet.")).toBeHidden({ timeout: 200 });
-    },
-  );
+  test("an application with an offer never says it has none while loading", async ({ page, request }) => {
+    const app = await application(request, "Loading Offer Co");
+    await addOffer(request, app.id, { employment_type: "permanent", salary: 80000 });
+    await page.route(`**${API}/offers?*`, async (route) => {
+      await pause(2500);
+      await route.continue();
+    });
+    await page.goto(`/applications/${app.id}`);
+    await expect(card(page).getByRole("button", { name: /^Add/ })).toBeVisible();
+    await expect(page.getByText("No offer yet.")).toBeHidden({ timeout: 200 });
+  });
 
   // KNOWN BUG (fix-offer-plurals on the roadmap): expected to fail until it is fixed.
   test.fail("one of something isn't plural", async ({ page, request }) => {

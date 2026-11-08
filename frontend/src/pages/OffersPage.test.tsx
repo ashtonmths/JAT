@@ -111,7 +111,7 @@ describe("offers", () => {
     const card = (await screen.findByRole("heading", { name: "Offer" })).closest(
       ".mantine-Card-root",
     ) as HTMLElement;
-    expect(within(card).getByText(/No offer yet/)).toBeInTheDocument();
+    expect(await within(card).findByText(/No offer yet/)).toBeInTheDocument();
     fireEvent.click(within(card).getByRole("button", { name: "Add offer" }));
     const dialog = await screen.findByRole("dialog");
     // The role is a contract, so the offer starts as one: a day rate, not a salary.

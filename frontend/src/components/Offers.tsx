@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   Group,
+  Loader,
   Modal,
   NumberInput,
   SegmentedControl,
@@ -293,7 +294,7 @@ export function offerFacts(o: Offer): string[] {
 /** Offers on an application, newest first; a revised offer goes on top. */
 export function OffersCard({ applicationId, roleId }: { applicationId: string; roleId: string }) {
   const { t } = useTranslation("offers");
-  const { data: offers } = useOffers({ application_id: applicationId, latest: false });
+  const { data: offers, isPending } = useOffers({ application_id: applicationId, latest: false });
   const { data: roles } = useRoles();
   // A new offer starts as the kind of job the role is.
   const defaultKind = (roles?.find((r) => r.id === roleId)?.employment_type as Kind | null) ?? "permanent";
@@ -315,7 +316,10 @@ export function OffersCard({ applicationId, roleId }: { applicationId: string; r
           {offers?.length ? t("card.addRevised") : t("card.add")}
         </Button>
       </Group>
-      {!offers?.length ? (
+      {/* Not loaded yet: a loader while pending, nothing if the load failed, never "no offer". */}
+      {!offers ? (
+        isPending && <Loader size="sm" />
+      ) : !offers.length ? (
         <Text size="sm" c="dimmed">
           {t("card.empty")}
         </Text>
