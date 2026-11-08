@@ -26,6 +26,7 @@ GITIGNORE_ENTRIES = (
     "*.tmp",
     ".tmp/",  # uploads in progress
     ".tmp-*",  # atomic writes in progress (notes)
+    "jat-snapshot.lock",  # snapshot lock, kept here when the folder has no .git
 )
 
 DEFAULT_CONFIG = """\

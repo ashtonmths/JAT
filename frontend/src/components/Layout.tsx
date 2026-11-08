@@ -19,7 +19,7 @@ import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 
 import { useTranslation } from "react-i18next";
 
-import { NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
+import { isActive, NAV, NAV_GROUP_KEYS, NAV_GROUPS } from "../nav";
 import { ApiStatus } from "./ApiStatus";
 import { AppVersion } from "./AppVersion";
 import { HeaderSearch } from "./HeaderSearch";
@@ -100,11 +100,7 @@ export function Layout() {
                   to={item.path}
                   label={t(item.labelKey)}
                   leftSection={<item.icon size={18} stroke={1.6} />}
-                  active={
-                    item.path === "/"
-                      ? pathname === "/"
-                      : pathname === item.path || pathname.startsWith(`${item.path}/`)
-                  }
+                  active={isActive(item, pathname)}
                   onClick={close}
                 />
               ))}
