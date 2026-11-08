@@ -155,7 +155,7 @@
     "url_parsing_bad_ipv6": "应为有效的 URL，IPv6 地址无效",
     "url_parsing_bad_port": "应为有效的 URL，端口号无效",
     "url_parsing_empty_host": "应为有效的 URL，缺少主机名",
-    "url_parsing_relative": "应为有效的 URL，这是相对地址，缺少 https:// 开头",
+    "url_parsing_relative": "应为有效的 URL，缺少 https:// 开头",
     "url_scheme": "URL 协议应为 http 或 https",
     "url_type": "应为字符串或 URL",
     "bool_type": "应为有效的布尔值",
