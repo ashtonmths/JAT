@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.11 (2026-11-08)
+
+- An application with an offer no longer says No offer yet while its offers are loading, or after they fail to load (#281).
+
 ## 1.19.10 (2026-11-08)
 
 - When a delete is refused (a company that has gained an application, a document that has been sent), the page now refreshes to show why, instead of staying out of date (#279).
