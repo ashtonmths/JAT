@@ -57,6 +57,8 @@ open an issue or a pull request.*
 
 **相对时间**（`common.time`）。`今天`、`昨天`、`明天`、`{{count}} 天前`、`{{count}} 天后`、`{{count}} 周前`、`{{count}} 个月前`、`今天到期`、`已逾期 {{count}} 天`。“今天”作为相对时间时用“今天”，作为页面名时用“今日”（见术语表）。
 
+**大写。** 部分标题和标记用 CSS 转成大写，会把“Offer”显示成“OFFER”。这是布局问题（路线图任务 `i18n-zh-cn-layout`），不要在译文里绕开，照常写“Offer”。
+
 **命令与代码。** 反引号中的命令（`jat init`、`uv run jat serve`）、文件名、`config.toml`、`schema` 等技术词原样保留。
 
 **虚构示例名。** 占位示例中的虚构公司名和人名（Contoso、Northwind Talent、Riley Chen、Alex Morgan）保留英文原样。示例句子要翻译。
@@ -126,7 +128,7 @@ open an issue or a pull request.*
 | Prep | 准备 | |
 | Questions asked | 被问到的问题 | |
 | Awaiting outcome | 等待结果 | |
-| How did it go? | 聊得怎么样？（通话、会面之后） / 结果如何？（面试轮次之后） | 问的是已经结束的事，不用“进展如何”（那是问进行中的事）。“结果如何”只用于面试后的这个问题，复盘笔记的提示文字写“面试过程和感受”，不要让人以为在问通过与否 |
+| How did it go? | 聊得怎么样？（通话、会面之后） / 结果如何？（面试轮次之后） / 情况如何？（“今日”页同时列出面试和通话的分组标题） | 问的是已经结束的事，不用“进展如何”（那是问进行中的事）。“结果如何”只用于面试后的这个问题，复盘笔记的提示文字写“面试过程和感受”，不要让人以为在问通过与否 |
 | offer | Offer | 中国大陆程序员的通用说法，保留拉丁字母，前后加空格。“Add offer”译为“添加 Offer” |
 | Deciding (offer status) | 考虑中 | |
 | revised offer | 更新后的 Offer | |
@@ -143,7 +145,8 @@ open an issue or a pull request.*
 | Permanent / Contract / Fixed term | 正式岗 / 合同工 / 固定期限 | |
 | IR35 / Outside / Inside | IR35 / IR35 范围外 / IR35 范围内 | 英国税务规则名，不翻译。单独出现时（如卡片上的条目）带“IR35”；放在已标明 IR35 的标签下（表单选项、对比表的行）时只写“范围外 / 范围内 / 未知”。“Unknown”是“未知”，表单里“Not sure”这个选项写“不确定” |
 | Remote / Hybrid / In office | 远程 / 混合办公 / 线下办公 | 英文为小写的场景（`line.workModes`）在中文里用同样的词 |
-| follow up | 跟进 | 指按计划日期跟进。“Follow up on {{date}}”译为“{{date}}跟进”，“Remind me to follow up”译为“提醒我跟进” |
+| track | 追踪 | 指记录和跟踪求职进展（与应用名称“求职申请追踪器”一致）。不要用“跟进”，那是 follow up |
+| follow up | 跟进 | 指按计划日期跟进。“Follow up on {{date}}”译为“{{date}}跟进”，“Remind me to follow up”译为“提醒我跟进”。“跟进”分组里每行的“due {{date}}”也写“{{date}}跟进”，不写“截止”：那是计划日期，不是截止日期 |
 | chase / chased | 催问 / 已催问 | 指在对方迟迟不回复时去问。“time to chase”译为“该催问了”，“{{count}} to chase”译为“{{count}} 个待催问” |
 | Needs chasing | 待催问 | 用作筛选器和标记，与“跟进”区分 |
 | Snooze / Snoozed until | 延后 / 延后至 | 与 Gmail 中文版一致 |
