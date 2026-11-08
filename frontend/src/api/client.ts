@@ -55,6 +55,14 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Whether the server refused the request because of what's saved ("Contoso has 2 applications"),
+ * not because the thing is gone (a `…_not_found` code) or the request never got an answer.
+ */
+export function isRefusal(error: unknown): boolean {
+  return error instanceof ApiError && error.code !== undefined && !error.code.endsWith("_not_found");
+}
+
 /** Unwrap an openapi-fetch result or throw with a readable message (for TanStack Query). */
 export function unwrap<T>(result: { data?: T; error?: unknown }): T {
   if (result.error !== undefined || result.data === undefined) {

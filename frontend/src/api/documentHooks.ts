@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
-import { api, ApiError, unwrap, type Schemas } from "./client";
+import { api, ApiError, isRefusal, unwrap, type Schemas } from "./client";
 import { invalidateApplicationViews } from "./hooks";
 import { notifyError } from "./notifyError";
 
@@ -66,7 +66,7 @@ export function useDeleteDocument() {
     // A refusal ("was sent with 1 application") may be news to this page: show it.
     onError: (error: Error) => {
       notifyError(error);
-      refresh();
+      if (isRefusal(error)) refresh();
     },
   });
 }
@@ -103,7 +103,7 @@ export function useDeleteVersion() {
     onSuccess: refresh,
     onError: (error: Error) => {
       notifyError(error);
-      refresh();
+      if (isRefusal(error)) refresh();
     },
   });
 }
