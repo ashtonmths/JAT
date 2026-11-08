@@ -4,7 +4,7 @@
     "within_other": "通常 {{count}} 个工作日内回复",
     "onceSameDay": "回复过一次，当天就回了",
     "onceIn_other": "回复过一次，用了 {{count}} 个工作日",
-    "longerThanUsual_other": "比平时多等 {{count}} 个工作日"
+    "longerThanUsual_other": "超出平时 {{count}} 个工作日"
   },
   "conversation": {
     "waitingSinceToday": "等待中，始于今天",
