@@ -771,12 +771,25 @@ test.describe("more permutations", () => {
       employment_type: "contract",
     });
     const app = await application(request, "Slow Roles Co", "Slow Kind Role");
+    // Roles are held until the form is open, then let through. The hold has a hard cap: after
+    // 5 s the request goes through anyway and the test fails, so it can never wait forever.
+    let release = () => {};
+    const held = new Promise<void>((done) => (release = done));
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const cap = new Promise<"capped">((done) => (timer = setTimeout(() => done("capped"), 5_000)));
     await page.route(`**${API}/roles`, async (route) => {
-      await pause(1500);
+      await Promise.race([held, cap]);
       await route.continue();
     });
     await openApplication(page, app.id);
-    const dialog = await newOffer(page);
+    const opening = newOffer(page);
+    const opened = opening.then(() => "open" as const);
+    opened.catch(() => undefined); // if the cap wins first, that failure is the one reported
+    const first = await Promise.race([opened, cap]);
+    release();
+    clearTimeout(timer);
+    expect(first, "the offer form should open while roles are held (5 s cap)").toBe("open");
+    const dialog = await opening;
     await expect(dialog.getByLabel("Day rate")).toBeVisible({ timeout: 3_000 });
   });
 
