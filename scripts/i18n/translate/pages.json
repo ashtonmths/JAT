@@ -85,5 +85,12 @@
     {"name": "today", "path": "/", "full": true},
     {"name": "application-page", "path": "{application:Contoso}", "full": true},
     {"name": "person-page-375", "path": "{person:Alex Morgan}", "width": 375, "full": true}
+  ],
+  "today": [
+    {"name": "today", "path": "/", "full": true},
+    {"name": "application-page", "path": "{application:Contoso}", "full": true},
+    {"name": "application-offer", "path": "{application:Wide World Importers}", "full": true},
+    {"name": "interviews-page", "path": "/interviews", "full": true},
+    {"name": "today-375", "path": "/", "width": 375, "full": true}
   ]
 }
