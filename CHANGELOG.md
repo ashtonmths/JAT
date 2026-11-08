@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.5 (2026-11-08)
+
+- **Developers:** the browser test that pins the offer-kind bug holds the roles request until the offer form is open (for 5 s at most) instead of waiting a fixed time, so it can no longer pass by luck and fail the browser suite (#271).
+
 ## 1.19.4 (2026-11-08)
 
 - **Fix:** after *Add and add another* in the role dialog, the next role no longer keeps the last one's type, work mode and IR35, so it can't silently save as a contract (#270).
