@@ -320,15 +320,36 @@ test.describe("versions", () => {
     expect((await request.get(url)).status()).toBe(404);
   });
 
-  // KNOWN BUG (fix-version-label-repeats on the roadmap): expected to fail until it is fixed.
-  test.fail("the suggested label doesn't repeat one that's there", async ({ page, request }) => {
+  test("the suggested label doesn't repeat one that's there", async ({ page, request }) => {
     const doc = await makeDoc(request, "Gap Label Doc");
     const first = await makeVersion(request, doc.id, "v1");
     await makeVersion(request, doc.id, "v2");
     expect((await request.delete(`${API}/documents/versions/${first.id}`)).ok()).toBe(true);
     await openDocuments(page);
     const dialog = await newVersion(page, "Gap Label Doc");
-    await expect(dialog.getByLabel("Label")).not.toHaveValue("v2");
+    await expect(dialog.getByLabel("Label")).toHaveValue("v3");
+  });
+
+  test("the suggestion goes one above the highest vN, suffix or not, and skips other labels", async ({
+    page,
+    request,
+  }) => {
+    const doc = await makeDoc(request, "Suffix Label Doc");
+    await makeVersion(request, doc.id, "v5 (fintech)");
+    await makeVersion(request, doc.id, "draft");
+    await makeVersion(request, doc.id, "v2");
+    await makeVersion(request, doc.id, "v99999999999999999999");
+    await openDocuments(page);
+    const dialog = await newVersion(page, "Suffix Label Doc");
+    await expect(dialog.getByLabel("Label")).toHaveValue("v6");
+  });
+
+  test("with no vN label yet, the suggestion is v1", async ({ page, request }) => {
+    const doc = await makeDoc(request, "Draft Only Doc");
+    await makeVersion(request, doc.id, "draft");
+    await openDocuments(page);
+    const dialog = await newVersion(page, "Draft Only Doc");
+    await expect(dialog.getByLabel("Label")).toHaveValue("v1");
   });
 });
 
