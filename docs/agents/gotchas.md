@@ -26,7 +26,13 @@ Each of these cost time once. Add a line when something new does.
 - **The main checkout is read-only for edits** in this session (pull, worktree remove and `pnpm build` are fine).
 - **`!` commands run in the session's current folder**, maybe a worktree: tell Kai to run things like
   `playwright --ui` in their own terminal.
-- **The auto-mode permission check** can block `gh pr merge` or a release: ask Kai, never work around it.
+- **The auto-mode permission check** can block `gh pr merge` or a release: ask Kai, never work around it. It also refused
+  editing `~/.claude/settings.json` ("self-modification"): give Kai the JSON to add instead.
+- **Builder agents have no Workflow tool** (2026-11-08): brief them to stop at each workflow step with an args file; the
+  lead runs the workflow and copies `.result` from the task output file into the builder's `var/`. Agents were also
+  refused `source tools/dev/env.sh`; they put Node on PATH with `export PATH=…` instead.
+- **A subagent's report can arrive as a message, not a notification**, and a second report in the same run is refused:
+  when an agent says it reported again, SendMessage it to ask for what's new.
 
 ## Git and GitHub
 
@@ -111,7 +117,16 @@ Each of these cost time once. Add a line when something new does.
   patterns. A Tooltip inside `Menu.Target` steals the menu's ARIA.
 - The translate workflow's consistency pass once added `_one` keys Chinese doesn't have: drop unknown keys before
   `assemble.py`. `prepare.py` leaves files uncommitted with markers: assemble and commit before merging another branch.
-- Branch file N+1 from file N's branch when both are open, so `index.ts` doesn't clash.
+- Branch file N+1 from file N's branch when both are open, so `index.ts` doesn't clash. Or branch both from main in
+  parallel: the second merges main after the first lands, keeping both sides of `index.ts`, the glossary and `pages.json`.
+- **Keys with the namespace prefix** (`errors.contact_detail_taken`, `insights:rejections.loadFailed`): the consistency
+  pass and the judge sometimes return them. `assemble.py` refuses them as extra keys, and `apply_review.py` silently
+  skips them. Strip the prefix, and compare the judge's changed keys with `review-fixes.json` by hand.
+- **`screenshots.py` only opens pages**: Insights tabs (local state; the rounds switch is localStorage
+  `jat.insights.rounds`) and error toasts need a click or a failed save. Builders wrote throwaway helpers in `var/`;
+  fake every non-GET request so the shared demo data never changes.
+- **`merge_main.sh` reverted a done task** again (`i18n-zh-cn-people` came back as `next`): check the roadmap diff after
+  every merge of main.
 
 ## Other
 
