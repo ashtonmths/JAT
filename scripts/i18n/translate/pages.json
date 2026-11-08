@@ -103,5 +103,9 @@
     {"name": "application-offer", "path": "{application:Wide World Importers}", "full": true},
     {"name": "interviews-page", "path": "/interviews", "full": true},
     {"name": "today-375", "path": "/", "width": 375, "full": true}
+  ],
+  "insights": [
+    {"name": "insights-whole", "path": "/insights", "full": true},
+    {"name": "insights-whole-375", "path": "/insights", "width": 375, "full": true}
   ]
 }

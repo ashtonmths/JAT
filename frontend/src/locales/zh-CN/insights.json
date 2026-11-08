@@ -1,0 +1,339 @@
+{
+  "title": "洞察",
+  "percent": "{{percent}}%",
+  "range": {
+    "label": "时间范围",
+    "all": "全部时间",
+    "days90": "最近 90 天",
+    "days30": "最近 30 天"
+  },
+  "routes": {
+    "label": "渠道",
+    "any": "全部渠道",
+    "direct": "直投",
+    "agency": "猎头",
+    "referral": "内推"
+  },
+  "tabs": {
+    "whole": "全貌",
+    "applications": "申请",
+    "conversations": "招聘顾问沟通",
+    "documents": "简历与求职信",
+    "rejections": "被拒情况"
+  },
+  "rejectionRounds": {
+    "heading": "在哪一轮之后被拒",
+    "intro": "所有未撤销的被拒记录（不论有无反馈），按被拒前走到的最后一轮统计。",
+    "introPeriod": "这段时间内的被拒记录（不论有无反馈），按每次被拒前走到的最后一轮统计。",
+    "loadFailed": "无法加载被拒前的轮次统计。如果你刚更新过追踪器，重启它即可。",
+    "none": "暂无被拒记录。",
+    "noneInPeriod": "这段时间内没有被拒记录。",
+    "total_other": "共被拒 {{count}} 次。",
+    "noRounds_other": "{{count}} 次被拒中，{{n}} 次在进入任何轮次之前。",
+    "byKind": "按轮次类型",
+    "byNumber": "按轮次编号",
+    "afterKind": {
+      "screen_other": "{{count}} 次被拒中，{{n}} 次在初筛之后。",
+      "hiring_manager_other": "{{count}} 次被拒中，{{n}} 次在用人经理面之后。",
+      "technical_other": "{{count}} 次被拒中，{{n}} 次在技术面之后。",
+      "coding_task_other": "{{count}} 次被拒中，{{n}} 次在编程作业之后。",
+      "system_design_other": "{{count}} 次被拒中，{{n}} 次在系统设计面试之后。",
+      "pairing_other": "{{count}} 次被拒中，{{n}} 次在结对编程面试之后。",
+      "behavioural_other": "{{count}} 次被拒中，{{n}} 次在行为面试之后。",
+      "onsite_other": "{{count}} 次被拒中，{{n}} 次在现场面试之后。",
+      "final_other": "{{count}} 次被拒中，{{n}} 次在终面之后。",
+      "other_other": "{{count}} 次被拒中，{{n}} 次在其他类型的轮次之后。"
+    },
+    "afterRound_other": "{{count}} 次被拒中，{{n}} 次在第 {{round}} 轮之后。",
+    "unnumbered_other": "{{count}} 次被拒中，{{n}} 次在未编号的轮次之后。",
+    "hint": "这些只是简单的计数，不代表规律：被拒次数不多时，再多一次就可能改变整体情况。"
+  },
+  "rejections": {
+    "heading": "被拒反馈",
+    "intro": "对方拒绝你时说了什么，最新的在前，不论之后情况有何变化。",
+    "introPeriod": "这段时间内未通过的申请，对方拒绝你时说了什么，最新的在前。",
+    "loadFailed": "无法加载被拒反馈。如果你刚更新过追踪器，重启它即可。",
+    "none": "还没有被拒反馈。把申请移至“未通过”时，可以记下对方怎么说。",
+    "noneInPeriod": "这段时间内未通过的申请没有被拒反馈。",
+    "count_other": "{{count}} 份申请有反馈。",
+    "title": "{{company}} · {{role}}",
+    "itemLabel": "{{company}}：{{role}}",
+    "rejectedFrom": "{{date}}在“{{stage}}”阶段未通过。",
+    "addedAt": "{{date}}添加时已是“未通过”。",
+    "nowAt": "现在处于“{{stage}}”阶段。",
+    "undone": "移至“未通过”的操作已撤销，现在处于“{{stage}}”阶段。"
+  },
+  "flow": {
+    "title": "申请的去向",
+    "intro_other": "{{count}} 份申请，按添加日期统计。退回到较早阶段的申请，仍按到达过的最远阶段计算。",
+    "introLoading": "…按添加日期统计。退回到较早阶段的申请，仍按到达过的最远阶段计算。",
+    "loadFailed": "无法加载申请去向。",
+    "notMoved": "还没有哪份申请从最初的阶段推进过。等求职有了进展再来看看。",
+    "noMatch": "没有符合这些筛选条件的申请。",
+    "statsFailed": "无法加载统计数据。"
+  },
+  "rounds": {
+    "toggle": "显示面试轮次",
+    "hint": "“面试中”会按每份申请推进前到达过的轮次拆分：第 1 轮、第 2 轮，依此类推。轮次在已进行或已完成后才计入。",
+    "olderServer": "更新后需要重启追踪器才能显示轮次。"
+  },
+  "whole": {
+    "title": "全貌",
+    "intro_other": "{{count}} 个职位，按添加日期统计：每个职位从哪里来，之后是放弃、待决定，还是已投递、走到了哪一步。每个阶段右侧紧挨着的，是仍停留在该阶段的职位（退回过的按到达过的最远阶段计算）；最右边是最终结果。同一个职位投递了两次，就计两次。",
+    "introLoading": "…按添加日期统计：每个职位从哪里来，之后是放弃、待决定，还是已投递、走到了哪一步。每个阶段右侧紧挨着的，是仍停留在该阶段的职位（退回过的按到达过的最远阶段计算）；最右边是最终结果。同一个职位投递了两次，就计两次。",
+    "loadFailed": "无法加载全貌。",
+    "empty": "这里还什么都没有：添加一个职位或一份申请，就会显示在这里。",
+    "chart_other": "{{count}} 个职位从哪里来、现在到了哪里的桑基图。"
+  },
+  "stages": {
+    "title": "各阶段情况",
+    "intro": "“已推进”指到达后面某个未结束的阶段。阶段停留时间计入每一段已结束的停留，包括退回到较早阶段之前的停留。",
+    "stage": "阶段",
+    "reached": "已到达",
+    "movedOn": "已推进",
+    "conversion": "转化率",
+    "median": "阶段停留时间中位数",
+    "underADay": "不到 1 天",
+    "days_other": "{{value}} 天",
+    "from_other": "基于 {{count}} 次停留"
+  },
+  "routeTable": {
+    "title": "直投与猎头对比",
+    "intro": "各渠道的申请中，至少走到每个阶段的比例。",
+    "same": "目前所有申请都来自同一渠道，还没有可比较的。",
+    "route": "渠道",
+    "applications": "申请"
+  },
+  "weekly": {
+    "title": "每周动态",
+    "added": "新增",
+    "applied": "投递",
+    "moves": "阶段变动",
+    "interviews": "面试",
+    "calls": "通话",
+    "pitched": "推荐的职位",
+    "week": "{{date}}起的一周：{{counts}}",
+    "countAdded_other": "新增 {{count}} 份",
+    "countApplied_other": "投递 {{count}} 份",
+    "countMoves_other": "阶段变动 {{count}} 次",
+    "countInterviews_other": "面试 {{count}} 次",
+    "countCalls_other": "通话 {{count}} 次",
+    "countPitched_other": "推荐职位 {{count}} 个"
+  },
+  "sankey": {
+    "hint": "把鼠标移到阶段或流向上，查看具体数字。",
+    "nodes": {
+      "source_recruiter": "通过猎头",
+      "source_referral": "内推",
+      "source_found": "自己找到的",
+      "deciding": "待决定",
+      "passed": "决定不投递",
+      "holding_applied": "等待回复",
+      "holding_screen": "仍在初筛",
+      "holding_interviewing": "仍在面试",
+      "holding_final": "终面中",
+      "holding_offer": "考虑中",
+      "holding_other": "仍在“{{stage}}”",
+      "round": "第 {{round}} 轮",
+      "pitched": "推荐给你",
+      "applied": "已投递",
+      "in_progress": "进行中",
+      "offer": "已获 Offer",
+      "closed": "已结束",
+      "ghosted": "已失联"
+    },
+    "chartApplications_other": "{{count}} 份申请在各阶段间流转的桑基图。",
+    "chartRoles_other": "推荐给你的 {{count}} 个职位及其去向的桑基图。",
+    "nodeApplications_other": "{{name}}：{{count}} 份申请",
+    "nodeRoles_other": "{{name}}：{{count}} 个职位",
+    "nodeReached_other": "{{name}}：{{count}} 份申请到过这一步",
+    "nodeReachedStill_other": "{{name}}：{{count}} 份申请到过这一步，{{still}} 份仍在这里",
+    "linkApplications_other": "{{source}} → {{target}}：{{count}} 份申请（占“{{source}}”的 {{share}}%）",
+    "linkRoles_other": "{{source}} → {{target}}：{{count}} 个职位（占“{{source}}”的 {{share}}%）"
+  },
+  "rescheduling": {
+    "title": "改期",
+    "intro": "统计这段时间内新增的申请中的轮次，不论何时改期。已预约的轮次是指现在定了时间，或曾改期的轮次。",
+    "loadFailed": "无法加载改期数据。",
+    "noneBooked": "这段时间内新增的申请中没有已预约的轮次。",
+    "noneMoved_other": "你已预约的 {{count}} 轮都没有改期。",
+    "noneMovedInPeriod_other": "这段时间内新增的申请中，已预约的 {{count}} 轮都没有改期。",
+    "moved_other": "已预约的 {{count}} 轮中，$t(insights:rescheduling.movedRounds, {\"count\": {{moved}} })。",
+    "movedRounds_other": "{{count}} 轮已改期",
+    "moves_other": "共改期 {{count}} 次：同一轮改期两次，算作一轮、两次改期。",
+    "waiting_other": "有 {{count}} 轮改期后仍待定新时间：每轮都算作已预约，也各算一次改期。",
+    "byWho": "提出方",
+    "movesColumn": "次数",
+    "who": {
+      "me": "由你提出",
+      "them": "由对方提出",
+      "mutual": "双方共同提出",
+      "neither": "与双方无关",
+      "notRecorded": "未记录"
+    },
+    "notRecordedHint": "“未记录”表示应用不知道是谁提出的：这次改期是通过轮次的“编辑”表单完成的，或者发生在应用开始询问提出方之前。",
+    "listHint_other": "这里只列出至少有 {{count}} 轮已改期的公司和招聘顾问，且只显示计数：轮次更少时，偶然情况也可能看起来像规律。",
+    "company": "公司",
+    "recruiter": "招聘顾问",
+    "roundsMoved": "改期轮次"
+  },
+  "conversations": {
+    "title": "与招聘顾问的沟通",
+    "loadFailed": "无法加载与招聘顾问的沟通。",
+    "intro": "投递之前也有很多事：和联系人通话，以及他们推荐的职位。通话按进行的日期计入，职位按你添加的日期计入。",
+    "stats": {
+      "callsHeld": "已进行的通话",
+      "booked": "另有 {{booked}} 次已预约",
+      "people": "联系人",
+      "peopleHint": "通话过或推荐过职位",
+      "pitched": "推荐的职位",
+      "applied": "已投递",
+      "appliedHint": "占已决定职位的 {{percent}}",
+      "passed": "已放弃",
+      "deciding": "仍在考虑",
+      "interviews": "面试",
+      "interviewsHint": "获得面试的推荐职位",
+      "offers": "Offer",
+      "offersHint": "来自推荐的职位",
+      "time": "决定用时",
+      "timeHint": "中位数，到投递或放弃为止",
+      "ghosted": "已失联",
+      "ghostedHint": "来自推荐职位的申请"
+    },
+    "moved": {
+      "title": "改期的通话",
+      "calls_other": "{{count}} 次通话改到了其他时间。",
+      "moves_other": "共改期 {{count}} 次：同一次通话改期两次，算作一次通话、两次改期。",
+      "waiting_other": "{{count}} 次通话待定新时间：每次都算作改期，但不算作已进行或已预约。",
+      "notRecordedHint": "“未记录”表示应用不知道是谁提出的：时间是在通话的“编辑”表单里改的。"
+    },
+    "flow": "推荐的职位去向",
+    "noPitched": "这段时间内没有推荐的职位。在联系人的页面上，对方每提到一个职位，就点<b>从这次通话添加职位</b>。",
+    "who": {
+      "title": "你在和谁沟通",
+      "intro": "每位联系人或每家猎头公司的已进行通话，以及推荐的职位：你投递了多少、放弃了多少、还有多少在考虑，以及这些申请的去向。投递率按你已决定的职位计算。",
+      "by": "按对象查看沟通",
+      "people": "联系人",
+      "agencies": "猎头公司",
+      "noPeople": "这段时间内没有通话或推荐的职位。在联系人的页面上记录通话，或添加对方提到的职位。",
+      "noAgencies": "这段时间内没有来自猎头公司的联系人。",
+      "person": "联系人",
+      "agency": "猎头公司",
+      "calls": "通话",
+      "lastCall": "最近通话",
+      "pitched": "推荐",
+      "applied": "已投递",
+      "passed": "已放弃",
+      "deciding": "考虑中",
+      "applyRate": "投递率",
+      "interviews": "面试",
+      "applications": "申请",
+      "peopleCount_other": "{{count}} 位联系人",
+      "ghosted": "已失联",
+      "notInterested": "不感兴趣",
+      "independent": "无所属"
+    },
+    "outcomes": {
+      "inProgress_other": "{{count}} 份进行中",
+      "offer_other": "{{count}} 份 Offer",
+      "closed_other": "{{count}} 份已结束",
+      "ghosted_other": "{{count}} 份已失联"
+    },
+    "passed": {
+      "title": "你为什么放弃",
+      "intro": "你放弃推荐职位时给出的理由，最新的在前。",
+      "company": "{{company}}",
+      "companyFrom": "{{company}} · 来自 {{person}}",
+      "companyDate": "{{company}} · {{date}}",
+      "companyFromDate": "{{company}} · 来自 {{person}} · {{date}}"
+    }
+  },
+  "documents": {
+    "loadFailed": "无法加载简历的效果数据。",
+    "kinds": {
+      "cv": "简历",
+      "cover_letter": "求职信",
+      "other": "其他文档"
+    },
+    "best": {
+      "cv": "哪份简历效果最好",
+      "cover_letter": "哪封求职信效果最好",
+      "other": "哪份文档效果最好"
+    },
+    "none": {
+      "cv": "未记录简历",
+      "cover_letter": "未记录求职信"
+    },
+    "kind": "文档类型",
+    "version": "{{document}} · {{version}}",
+    "toSort_other": "你附加的 {{count}} 个简历文件还没有整理成版本，所以没有参与这里的比较。<place>到“文档”页整理</place>。",
+    "intro_other": "你已投递的 {{count}} 份申请（按添加日期统计），按各自所用的版本分列。最值得关注的是<b>初筛或面试</b>：这一步才是真正进了门。",
+    "nothing": "暂时没有可比较的内容。先到<place>“文档”页</place>添加你的简历（每次修改都新建一个版本），然后在每份申请里记下你发送的是哪一个（在它的“<card>已发送的文档</card>”卡片里）。之后就会在这里进行比较。",
+    "explain": "<b>已收到回复</b>：投递后收到的任何回复，包括拒信（你自己结束申请或标为已失联不算；记录过的通话和消息无论如何都算）。<b>初筛或面试</b>：已过“已投递”阶段，或有面试轮次。<b>可信度</b>：圆点是进入初筛或面试的比例，横条是真实比例很可能所在的范围（95% 区间）；申请少时横条会很宽。其他因素也在变化（职位、渠道、市场），所以要同类相比：选定一个渠道，每次只改一处。",
+    "range": "很可能在 {{low}}% 到 {{high}}% 之间（95% 区间）",
+    "rangeShort": "很可能在 {{low}}% 到 {{high}}% 之间",
+    "table": {
+      "sent": "已发送",
+      "heardBack": "已收到回复",
+      "interviewed": "初筛或面试",
+      "sure": "可信度",
+      "offers": "Offer",
+      "outcomes": "进行中 · 已失联 · 已结束",
+      "reply": "通常回复用时"
+    },
+    "compare": {
+      "onlyOne": "目前只有一项：再发送另一个版本（或记录未附文档的申请）才能比较。",
+      "pickTwo": "选两项不同的来比较。",
+      "compare": "比较",
+      "with": "对比对象",
+      "measure": "比较指标",
+      "measures": {
+        "heard_back": "已收到回复",
+        "interviewed": "初筛或面试",
+        "offers": "Offer"
+      },
+      "say": {
+        "heard_back": "{{name}}：{{sent}} 份中有 {{hits}} 份收到回复（{{percent}}）",
+        "interviewed": "{{name}}：{{sent}} 份中有 {{hits}} 份进入初筛或面试（{{percent}}）",
+        "offers": "{{name}}：{{sent}} 份中有 {{hits}} 份拿到 Offer（{{percent}}）"
+      },
+      "verdict": {
+        "tooFew": "样本太少，还看不出来：每一项至少用于 {{min}} 份申请（10 份以上更好）再下结论。目前：{{first}}；{{second}}。",
+        "same": "目前看不出真正的差别：{{first}}；{{second}}。这个差距完全可能只是偶然。两个都继续发送，或者试试更大的改动。",
+        "hint": "有迹象，但还不能证明：{{first}}；{{second}}。两个都继续发送，看看这个差距是否会持续。",
+        "likely": "很可能有真正的差别：{{first}}；{{second}}。"
+      },
+      "titles": {
+        "tooFew": "样本太少",
+        "likely": "差别很可能是真的",
+        "hint": "有迹象",
+        "same": "可能只是偶然"
+      },
+      "fisher": "Fisher 精确检验：p = {{p}}。即假如两者效果一样，仅凭偶然出现这么大差距的概率。",
+      "fisherSmall": "Fisher 精确检验：p = < 0.001。即假如两者效果一样，仅凭偶然出现这么大差距的概率。"
+    }
+  },
+  "scorecard": {
+    "title": "招聘顾问评分卡",
+    "intro": "统计每位招聘顾问或每家猎头公司推荐你应聘的职位。“首次更新”是从添加申请到第一次通话、邮件、消息或阶段变动所用时间的中位数。",
+    "by": "评分卡统计维度",
+    "recruiters": "招聘顾问",
+    "agencies": "猎头公司",
+    "loadFailed": "无法加载评分卡。",
+    "noneRecruiters": "这段时间内没有来自招聘顾问的职位。给申请添加招聘顾问或猎头公司后，就会显示在这里。",
+    "noneAgencies": "这段时间内没有来自猎头公司的职位。给申请添加招聘顾问或猎头公司后，就会显示在这里。",
+    "recruiter": "招聘顾问",
+    "agency": "猎头公司",
+    "roles": "职位",
+    "interviewed": "进入面试",
+    "now": "目前状态",
+    "firstUpdate": "首次更新",
+    "lastContact": "最近联系",
+    "sameDay": "当天",
+    "days_other": "{{value}} 天",
+    "active_other": "{{count}} 份进行中",
+    "accepted_other": "{{count}} 份已接受",
+    "ghosted_other": "{{count}} 份已失联",
+    "closed_other": "{{count}} 份已结束"
+  }
+}

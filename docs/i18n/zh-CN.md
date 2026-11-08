@@ -216,5 +216,11 @@ open an issue or a pull request.*
 | Picked up / drop (keyboard drag-and-drop) | 拿起 / 放下 | Used in screen-reader messages during keyboard dragging: 已拿起 {{card}}。, 按空格键放下, {{card}} 已放下。 |
 | Sent on | 发送日期 | Date-field label, following the same pattern as 投递日期 (Applied on). In a line with a date, 'sent {{date}}' is written {{date}}发送 (no space: the date ends in 日). |
 | As (relation of a contact to an application) | 身份 | Label of the relation select (面试官, 用人经理, 猎头顾问…). Also used in hints that mention 'the role chosen above' when it means this relation, not a job role (职位). |
+| The whole picture (Insights tab and section) | 全貌 | “洞察”页的标签页名和区块标题用同一个词。不用“概览”（那是 At a glance） |
+| Sankey diagram | 桑基图 | 屏幕阅读器标签写成“……的桑基图。”，例如“{{count}} 份申请……的桑基图。” |
+| flow (a band in a Sankey diagram) | 流向 | 例如“悬停在某个阶段或流向上查看数字” |
+| rejection (counted) | 被拒 | 计数时量词用“次”：“共被拒 {{count}} 次”“{{count}} 次被拒中，{{n}} 次……”。阶段名仍是“未通过” |
+| Screen or interview (Insights measure) | 初筛或面试 | 列名、指标和说明文字都用它，由阶段名“初筛”组成 |
+| How sure (confidence range for a rate) | 可信度 | 列名和说明文字用同一个词。区间写成“很可能在 {{low}}% 到 {{high}}% 之间（95% 区间）” |
 | snapshot (automatic git backup of the data folder) | 快照 | Used across the backup errors (快照失败, 快照已关闭). Not the same as 下载备份 (Download a backup). |
 | data repo (the data folder as a git repository) | 数据仓库 | As in common's delete hint (你数据仓库的 git 历史). The data directory or folder on its own stays 数据目录 / 数据文件夹. |

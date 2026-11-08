@@ -5,6 +5,7 @@ import documents from "./documents.json";
 import errors from "./errors.json";
 import events from "./events.json";
 import files from "./files.json";
+import insights from "./insights.json";
 import interviews from "./interviews.json";
 import notes from "./notes.json";
 import offers from "./offers.json";
@@ -23,6 +24,7 @@ export default {
   errors,
   events,
   files,
+  insights,
   interviews,
   notes,
   offers,
