@@ -37,6 +37,19 @@ def test_gitignore_keeps_existing_lines(tmp_path):
     assert "tracker.sqlite3" not in report.gitignore_added
 
 
+def test_gitignore_covers_the_snapshot_lock(tmp_path):
+    """Without a .git folder the snapshot lock sits in the data folder itself, so it must be ignored."""
+    from jat.snapshot.git import LOCK_NAME
+
+    path = tmp_path / "data"
+    init_data_dir(path)
+    assert LOCK_NAME in (path / ".gitignore").read_text().splitlines()
+
+    # An older data folder gets the entry added on the next run.
+    (path / ".gitignore").write_text("tracker.sqlite3\n")
+    assert LOCK_NAME in init_data_dir(path).gitignore_added
+
+
 def test_refuses_data_dir_inside_code_repo():
     with pytest.raises(DataDirError):
         init_data_dir(CODE_ROOT / "data")
