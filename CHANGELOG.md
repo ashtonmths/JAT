@@ -5,6 +5,22 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.10 (2026-11-08)
+
+- When a delete is refused (a company that has gained an application, a document that has been sent), the page now refreshes to show why, instead of staying out of date (#279).
+
+## 1.19.9 (2026-11-08)
+
+- A new document version's suggested label no longer repeats one that's there: it goes one above the highest vN label (#277).
+
+## 1.19.8 (2026-11-08)
+
+- A person's or an agency's page now marks Recruiters in the menu (#275).
+
+## 1.19.7 (2026-11-08)
+
+- Documents now notices an application deleted on its page: its sent counts and where-it-was-used lists refresh straight away (#276).
+
 ## 1.19.6 (2026-11-08)
 
 - `jat archive` no longer leaves an unignored lock file in a data folder that isn't a git repository: `jat-snapshot.lock` is now in its `.gitignore`, and `jat init` adds it to older ones (#278).
