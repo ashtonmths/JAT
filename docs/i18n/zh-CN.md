@@ -76,10 +76,10 @@ open an issue or a pull request.*
 | job description | 职位描述 | 不写“JD” |
 | company | 公司 | |
 | agency | 猎头公司 | 指招聘中介 |
-| recruiter | 招聘顾问 | 通称，包括猎头顾问和企业内部招聘。“Recruiters”页面名译为“招聘顾问” |
+| recruiter | 招聘顾问 | 通称，包括猎头顾问和企业内部招聘人员。“Recruiters”页面名译为“招聘顾问” |
 | Recruiter (agency) (relation) | 猎头顾问 | 联系人与申请的关系 |
 | Internal recruiter / talent | 企业招聘 / 人才负责人 | |
-| in-house recruiter | 企业内部招聘 | |
+| in-house recruiter | 企业内部招聘人员 | 指人时用“企业内部招聘人员”（如人员列表、“如果有企业内部招聘人员……联系过你”）；单独的“企业内部招聘”读作招聘这项工作，不是人 |
 | hiring manager | 用人经理 | 不译为“招聘经理” |
 | interviewer | 面试官 | |
 | referrer | 内推人 | |
@@ -147,7 +147,7 @@ open an issue or a pull request.*
 | Remote / Hybrid / In office | 远程 / 混合办公 / 线下办公 | 英文为小写的场景（`line.workModes`）在中文里用同样的词 |
 | track | 追踪 | 指记录和跟踪求职进展（与应用名称“求职申请追踪器”一致）。不要用“跟进”，那是 follow up |
 | follow up | 跟进 | 指按计划日期跟进。“Follow up on {{date}}”译为“{{date}}跟进”，“Remind me to follow up”译为“提醒我跟进”。“跟进”分组里每行的“due {{date}}”也写“{{date}}跟进”，不写“截止”：那是计划日期，不是截止日期 |
-| chase / chased | 催问 / 已催问 | 指在对方迟迟不回复时去问。“time to chase”译为“该催问了”，“{{count}} to chase”译为“{{count}} 个待催问” |
+| chase / chased | 催问 / 已催问 | 指在对方迟迟不回复时去问。“time to chase”译为“该催问了”，“{{count}} to chase”译为“{{count}} 份待催问”（数的是申请，量词用“份”） |
 | Needs chasing | 待催问 | 用作筛选器和标记，与“跟进”区分 |
 | Snooze / Snoozed until | 延后 / 延后至 | 与 Gmail 中文版一致 |
 | Gone quiet / stale | 久无进展 | |
@@ -164,7 +164,7 @@ open an issue or a pull request.*
 | Merge | 合并 | |
 | Favourite / star | 星标 | “Mark as a favourite”译为“加星标” |
 | Pass (on a role) / Passed | 放弃 / 已放弃 | 与“已撤回”区分。“Reconsider”译为“重新考虑” |
-| pitch / pitched (a recruiter putting a role to you) | 推荐 / 推荐的职位 | “{{person}} pitched {{role}} at {{company}}”译为“{{person}} 推荐了 {{company}} 的 {{role}}”；“Roles pitched or passed”译为“推荐或放弃的职位” |
+| pitch / pitched (a recruiter putting a role to you) | 推荐 / 推荐的职位 | “{{person}} pitched {{role}} at {{company}}”译为“{{person}} 推荐了 {{company}} 的 {{role}}”；“Roles pitched or passed”译为“推荐或放弃的职位”；猎头公司页的标题“Roles through <agency>”译为“{{name}} 推荐的职位”，不用“通过 {{name}} 的职位” |
 | To decide / Roles to decide | 待决定 / 待决定的职位 | |
 | board | 看板 | “A column per interview round”译为“每个面试轮次一列” |
 | list | 列表 | |

@@ -8,6 +8,7 @@ import files from "./files.json";
 import interviews from "./interviews.json";
 import notes from "./notes.json";
 import offers from "./offers.json";
+import people from "./people.json";
 import roles from "./roles.json";
 import stages from "./stages.json";
 import timeline from "./timeline.json";
@@ -25,6 +26,7 @@ export default {
   interviews,
   notes,
   offers,
+  people,
   roles,
   stages,
   timeline,
