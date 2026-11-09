@@ -23,7 +23,11 @@ Each of these cost time once. Add a line when something new does.
 - **Isolated agents** (`isolation: "worktree"`) can't write to the job folder; their worktrees stay locked after they
   finish (`git worktree remove -f -f` once merged). A forked agent can't use EnterWorktree from the main checkout.
 - **EnterWorktree refuses** when the worktree is already the cwd; you're isolated anyway.
-- **The main checkout is read-only for edits** in this session (pull, worktree remove and `pnpm build` are fine).
+- **The main checkout is read-only for edits** in this session (pull, worktree remove and `pnpm build` are fine). When
+  Kai wants a file there, write it in the job folder and give Kai a `!` command to copy it in.
+- **Reviewer agents' Bash is refused while the lead's session is inside a worktree** (2026-11-09): set up a PR's
+  worktree with `git worktree add` and work in it by absolute path, without EnterWorktree, until the reviewers finish.
+- **The auto-mode check won't let an agent run an external contributor's code**: the lead runs the checks itself.
 - **`!` commands run in the session's current folder**, maybe a worktree: tell Kai to run things like
   `playwright --ui` in their own terminal.
 - **The auto-mode permission check** can block `gh pr merge` or a release: ask Kai, never work around it. It also refused
@@ -137,3 +141,11 @@ Each of these cost time once. Add a line when something new does.
 - Reviewers find real bugs in code that passes its tests, usually false claims when a source fails: ask them to check what
   a page claims, and look at real pages (a screenshot found #150's broken logo). Fact-check public docs and plans before
   merging them. Agents disagree: check the code.
+- **Small fixes rarely get a must_fix; that's fine** (2026-11-08, `review-process-check`): planted bugs were all caught.
+  A brief with only the bug and the diff, plus "try to break it", found more on #281 than briefs describing the fix.
+- **Simulating Windows on Linux:** Linux's `fcntl` is built in, so a stub on `PYTHONPATH` can't hide it. A launcher that
+  sets `sys.modules["fcntl"] = None` before `from jat.cli import main`, then (optionally) `sys.platform = "win32"`
+  *after* the import (earlier, asyncio looks for Windows-only modules), then `main(argv)`. For time zones,
+  `PYTHONTZPATH=` (empty) leaves only the `tzdata` package, as on Windows. Neither proves it runs on real Windows.
+- **Vite's hot reload can silently keep old code** on `TodayPage.tsx` ("Could not Fast Refresh (useNextActions export
+  is incompatible)"): if a dev page doesn't show a change, restart Vite with `--force` before debugging the code.
