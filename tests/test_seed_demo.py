@@ -128,3 +128,26 @@ def test_the_chinese_demo_names_are_chinese_and_addresses_made_up(demos):
     hosts = {h for t in texts for h in re.findall(r"https?://([^/\s\"')]+)", t)}
     hosts |= {h for t in texts for h in re.findall(r"[\w.]+@([\w.-]+)", t)}
     assert hosts and {h for h in hosts if h != "example.com" and not h.endswith(".example.com")} == set()
+
+
+def test_demo_phone_numbers_cant_ring_anyone(demos):
+    # English: Ofcom's range kept for drama (07700 900xxx). Chinese has none, so a 000 that no
+    # number starts with; a real-looking 138 would be a China Mobile number.
+    en, zh = demos
+    sql = "select value from contact_details where kind = 'phone'"
+    assert names(en, sql) and all(re.fullmatch(r"\+44 7700 900\d{3}", p) for p in names(en, sql))
+    assert names(zh, sql) and all(re.fullmatch(r"\+86 000 0000 \d{4}", p) for p in names(zh, sql))
+
+
+def test_every_language_has_the_same_demo_keys():
+    # A key missing from one table would only fail when that language is seeded. The lookups by
+    # id must match too; a record's own fields may differ (Chinese has no IR35 or pension).
+    sys.path.insert(0, str(REPO / "scripts"))
+    from demo_content import CONTENT
+
+    english = CONTENT["en"]
+    lookups = ("companies", "agencies", "recruiters", "apps", "rounds", "files")
+    for lang, table in CONTENT.items():
+        assert set(table) == set(english), lang
+        for key in lookups:
+            assert set(table[key]) == set(english[key]), f"{lang}: {key}"
