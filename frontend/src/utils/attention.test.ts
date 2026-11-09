@@ -161,6 +161,11 @@ describe("glance", () => {
     expect(g.attention.map((i) => [i.label, i.when])).toEqual([
       ["Round 2 · System design: waiting to hear back", "for 3 days"],
     ]);
+    // Never booked: no date, as a round not booked yet says.
+    const undated = { ...done, starts_at: null };
+    expect(
+      run({ app: app({ current_round: undated }), interviews: [undated] }).attention.map((i) => i.when),
+    ).toEqual(["no date"]);
     // Once something has happened since it, nothing.
     const heard = { ...done, waiting_to_hear_back: false };
     expect(run({ app: app({ current_round: heard }), interviews: [heard] }).attention).toEqual([]);

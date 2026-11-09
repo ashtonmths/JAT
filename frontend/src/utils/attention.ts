@@ -199,7 +199,7 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
       attention.push({
         key: `round-${last.id}`,
         label: t("today:glance.roundWaiting", { label: roundLabel(last) }),
-        when: at ? lasting(dayOf(at), today) : "",
+        when: at ? lasting(dayOf(at), today) : t("today:glance.noDate"), // never booked: as an unbooked round says
         tone: "gray", // as the application's own waiting is
       });
     }
