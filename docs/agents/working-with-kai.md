@@ -20,8 +20,13 @@ where things run. Quotes are Kai's words.
   "actually dont paralleisd im close to usage limit dont want to go over". Lifted on 2026-11-09: "my usage limit
   refreshed, do it in paralel with agents" (builder agents per bug, merged one at a time). If Kai mentions the limit
   again: no parallel builders, one reviewer per PR (Sonnet for small or docs PRs), no workflows.
-- **Merging and releasing** follow CLAUDE.md; "merge once ready and update local main". A major needs Kai's explicit yes
-  every time. If a permission check blocks a merge or release, ask Kai and give the `!` command; never work around it.
+- **Merging and releasing** follow CLAUDE.md; "merge once ready and update local main". Confirmed 2026-11-09: "yes you
+  can merge and release going forward as long as you follow review-fix iterative cycle. i thought i had alrady granted
+  express permssion for you to auto merge and release". So after the cycle (review, fix, re-review the fixes, checks
+  on the final commit), merge and release without asking. A major needs Kai's explicit yes every time. The auto-mode
+  check doesn't read CLAUDE.md and can still block a merge ("Merge Without Review", often after fixes landed post-
+  review): `.claude/settings.json` allows `tools/dev/merge.sh` and `ship.sh` for that reason. If it still blocks,
+  ask Kai and give the `!` command; never work around it.
 - **Plan before building when asked:** "dont do anything yet, give me a PR plan"; "noooo noo no no, dont buikld antyhing
   eyt … undo all of that. i want to know what each PR would be". Write the plan (an RFC in `docs/rfc/`, roadmap tasks)
   and stop; build on "lets get building" / "do the first item". Fact-check a plan before merging it (one plan had 15
