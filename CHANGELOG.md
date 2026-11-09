@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.19.12 (2026-11-09)
+
+- On Today, a round or call happening today has an orange Today pill under its title in Coming up, like a to-do due today; and a call's buttons now fade until you point at the row, like a round's (#286).
+
 ## 1.19.11 (2026-11-08)
 
 - An application with an offer no longer says No offer yet while its offers are loading, or after they fail to load (#281).

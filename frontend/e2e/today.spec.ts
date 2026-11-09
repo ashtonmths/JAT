@@ -108,6 +108,55 @@ test.describe("what it shows", () => {
     await expect(comingUp(page).getByText("Not booked yet")).toBeVisible();
   });
 
+  test("a round or call on today has the Today pill at full strength; later ones don't", async ({
+    page,
+    request,
+  }) => {
+    const soon = new Date(Date.now() + 10 * 60 * 1000);
+    const londonDay = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(d);
+    test.skip(londonDay(soon) !== today(), "too close to midnight to book something later today");
+    const go = await app(request, "Backend Engineer (Go)");
+    const alex = await person(request, "Alex Morgan");
+    expect(
+      (
+        await request.post(`/api/v1/applications/${go.id}/interviews`, {
+          data: { title: "Pill round", starts_at: soon.toISOString() },
+        })
+      ).ok(),
+    ).toBe(true);
+    expect(
+      (
+        await request.post("/api/v1/meetings", {
+          data: { contact_id: alex.id, title: "Pill call", starts_at: soon.toISOString() },
+        })
+      ).ok(),
+    ).toBe(true);
+    await page.reload();
+    const row = (title: string) =>
+      comingUp(page)
+        .getByText(title)
+        .locator("xpath=ancestor::div[contains(@class,'mantine-Stack-root')][1]");
+    // How strongly it shows: its own opacity times every parent's (buttons fade until you point at a row).
+    const strength = (el: ReturnType<Page["locator"]>) =>
+      el.evaluate((e) => {
+        let o = 1;
+        for (let n: Element | null = e; n; n = n.parentElement) o *= parseFloat(getComputedStyle(n).opacity);
+        return o;
+      });
+    await page.mouse.move(0, 0);
+    for (const title of ["Pill round", "Call with Alex Morgan: Pill call"]) {
+      const pill = row(title).getByText("Today", { exact: true });
+      await expect(pill).toBeVisible();
+      expect(await strength(pill)).toBe(1);
+      // Its Reschedule fades like every other row's, round or call.
+      expect(await strength(row(title).getByRole("button", { name: "Reschedule" }))).toBeLessThan(1);
+    }
+    // Tomorrow's call keeps its date and gets no pill (found first, so the check can't pass on nothing).
+    const tomorrow = row("Roles for the new year");
+    await expect(tomorrow.getByRole("button", { name: "Reschedule" })).toBeVisible();
+    await expect(tomorrow.getByText("Today", { exact: true })).toHaveCount(0);
+  });
+
   test("how long someone usually takes to reply", async ({ page }) => {
     await expect(
       section(page, "Waiting to hear back").getByText(/Usually replies within 1 working day/),
