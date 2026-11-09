@@ -329,7 +329,7 @@
           "current_round": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/RoundSummary"
+                "$ref": "#/components/schemas/CurrentRound"
               },
               {
                 "type": "null"
@@ -822,7 +822,7 @@
           "current_round": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/RoundSummary"
+                "$ref": "#/components/schemas/CurrentRound"
               },
               {
                 "type": "null"
@@ -2831,6 +2831,119 @@
         "title": "CoverLetterSentMsg",
         "type": "object"
       },
+      "CurrentRound": {
+        "description": "An application's current round, with what only the application can tell.",
+        "properties": {
+          "deadline_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline At"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "needs_new_time_by": {
+            "anyOf": [
+              {
+                "enum": [
+                  "me",
+                  "them",
+                  "mutual",
+                  "neither"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Needs New Time By"
+          },
+          "needs_new_time_since": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Needs New Time Since"
+          },
+          "round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "waiting_to_hear_back": {
+            "default": false,
+            "title": "Waiting To Hear Back",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "round",
+          "title",
+          "kind",
+          "status",
+          "label",
+          "starts_at",
+          "deadline_at"
+        ],
+        "title": "CurrentRound",
+        "type": "object"
+      },
       "CvFile": {
         "description": "A file that looks like a CV, attached to applications, roles or people: one per distinct\nfile (by content).",
         "properties": {
@@ -3815,7 +3928,7 @@
           "current_round": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/RoundSummary"
+                "$ref": "#/components/schemas/CurrentRound"
               },
               {
                 "type": "null"
@@ -8089,7 +8202,7 @@
           "current_round": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/RoundSummary"
+                "$ref": "#/components/schemas/CurrentRound"
               },
               {
                 "type": "null"
@@ -10678,114 +10791,6 @@
         "title": "RoundScheduledMsg",
         "type": "object"
       },
-      "RoundSummary": {
-        "description": "The round an application is at, for the board and list: \"Round 2 \u00b7 System design test\".",
-        "properties": {
-          "deadline_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Deadline At"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "kind": {
-            "title": "Kind",
-            "type": "string"
-          },
-          "label": {
-            "title": "Label",
-            "type": "string"
-          },
-          "needs_new_time_by": {
-            "anyOf": [
-              {
-                "enum": [
-                  "me",
-                  "them",
-                  "mutual",
-                  "neither"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Needs New Time By"
-          },
-          "needs_new_time_since": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Needs New Time Since"
-          },
-          "round": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Round"
-          },
-          "starts_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Starts At"
-          },
-          "status": {
-            "title": "Status",
-            "type": "string"
-          },
-          "title": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Title"
-          }
-        },
-        "required": [
-          "id",
-          "round",
-          "title",
-          "kind",
-          "status",
-          "label",
-          "starts_at",
-          "deadline_at"
-        ],
-        "title": "RoundSummary",
-        "type": "object"
-      },
       "RouteStatsOut": {
         "properties": {
           "applications": {
@@ -12873,7 +12878,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.19.12"
+    "version": "1.20.0"
   },
   "openapi": "3.1.0",
   "paths": {

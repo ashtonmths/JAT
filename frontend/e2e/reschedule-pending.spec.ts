@@ -212,16 +212,22 @@ test("the board, the quick view and the Interviews page show it too", async ({ p
   await expect(waiting.getByText(`Was ${stamp(round.starts_at)}. You needed the change.`)).toBeVisible();
   await expect(waiting.getByRole("button", { name: `Set a new time for ${label}` })).toBeVisible();
 
+  // The round's badge, and beside it one saying it needs a new time.
+  const needsOne = (within: Page | Locator) =>
+    within
+      .locator("[data-round-pill]")
+      .filter({ hasText: label })
+      .locator("xpath=..")
+      .locator('[data-round-state="needsNewTime"]');
   await page.goto("/applications?view=board");
-  await expect(page.getByText(`${label} · needs a new time`).first()).toBeVisible();
+  await expect(needsOne(page)).toHaveText("Needs a new time");
 
   await page.goto("/applications?view=list");
-  await expect(page.getByRole("row").filter({ hasText: "Shown Time Co" })).toContainText(
-    `${label} · needs a new time`,
-  );
-  await page.getByRole("row").filter({ hasText: "Shown Time Co" }).click();
+  const row = page.getByRole("row").filter({ hasText: "Shown Time Co" });
+  await expect(needsOne(row)).toHaveText("Needs a new time");
+  await row.click();
   const drawer = page.getByRole("dialog").filter({ hasText: "Shown Time Co" });
-  await expect(drawer.getByText(`${label} · needs a new time`)).toBeVisible();
+  await expect(needsOne(drawer)).toHaveText("Needs a new time");
   await expect(drawer.getByRole("button", { name: `Set a new time for ${label}` })).toBeVisible();
 
   await page.goto(`/applications/${appId}`);

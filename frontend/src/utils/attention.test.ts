@@ -152,6 +152,28 @@ describe("glance", () => {
     expect(g.attention).toEqual([]);
   });
 
+  it("says a done round with nothing heard since is waiting to hear back", () => {
+    const done = {
+      ...round({ status: "done", starts_at: "2026-10-10T14:00:00" }),
+      waiting_to_hear_back: true,
+    };
+    const g = run({ app: app({ current_round: done }), interviews: [done] });
+    expect(g.attention.map((i) => [i.label, i.when])).toEqual([
+      ["Round 2 · System design: waiting to hear back", "for 3 days"],
+    ]);
+    // Never booked: no date, as a round not booked yet says.
+    const undated = { ...done, starts_at: null };
+    expect(
+      run({ app: app({ current_round: undated }), interviews: [undated] }).attention.map((i) => i.when),
+    ).toEqual(["no date"]);
+    // Once something has happened since it, nothing.
+    const heard = { ...done, waiting_to_hear_back: false };
+    expect(run({ app: app({ current_round: heard }), interviews: [heard] }).attention).toEqual([]);
+    // Waiting on a reply already says it.
+    const replying = run({ app: app({ current_round: done, awaiting_reply_since: "2026-10-11" }) });
+    expect(replying.attention.map((i) => i.label)).toEqual(["Waiting to hear back"]);
+  });
+
   it("asks for an answer to the newest pending offer", () => {
     const offers = [
       { id: "o1", status: "pending", respond_by: "2026-10-12", created_at: "2026-10-01T00:00:00Z" },

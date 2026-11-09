@@ -176,6 +176,9 @@ export default {
     noDate: "no date",
     replyToOffer: "Reply to the offer by {{date}}",
     notBooked: "{{label}}: not booked yet",
+    // Its latest round is done and nothing has happened since (no stage move, offer or later round),
+    // as its badge says: "Round 1 · First chat: waiting to hear back".
+    roundWaiting: "{{label}}: waiting to hear back",
     howDidItGo: "How did {{label}} go?",
     // It can't go ahead at its time, with no new one agreed yet; its to-do to book one isn't listed again.
     needsNewTime: "{{label}} needs a new time",

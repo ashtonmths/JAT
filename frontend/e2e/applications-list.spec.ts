@@ -202,7 +202,8 @@ test.describe("sorting", () => {
     await page.getByRole("button", { name: "Stage", exact: true }).click();
     const positions = async () => {
       const badges = await page
-        .locator("tbody tr td:nth-child(3) .mantine-Badge-root:first-child")
+        // The cell's own first badge, the stage's (the round's badges sit in a group of their own below).
+        .locator("tbody tr td:nth-child(3) > div > .mantine-Badge-root:first-child")
         .allInnerTexts();
       return badges.map((badge) => order.indexOf(badge.toLowerCase()));
     };

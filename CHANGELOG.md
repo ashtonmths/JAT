@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.20.0 (2026-11-09)
+
+- Round pills on the board, the list and the quick view show what a round is waiting for: a separate pink badge says Not booked yet, Waiting to hear back (a done round with no decision since) or Needs a new time, and At a glance says when a done round is waiting to hear back. The API's current round gains waiting_to_hear_back. (#289).
+
 ## 1.19.12 (2026-11-09)
 
 - On Today, a round or call happening today has an orange Today pill under its title in Coming up, like a to-do due today; and a call's buttons now fade until you point at the row, like a round's (#286).
