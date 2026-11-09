@@ -50,54 +50,62 @@ describe("a round waiting for a new time", () => {
         <RoundBadge round={waiting} stageKind="active" />
       </MantineProvider>,
     );
-    expect(screen.getByText("Round 2 · System design test · needs a new time")).toBeInTheDocument();
+    // The round on its own badge, and what it needs on a second one beside it.
+    expect(screen.getByText("Round 2 · System design test")).toBeInTheDocument();
+    expect(screen.getByText("Needs a new time")).toBeInTheDocument();
   });
 });
 
-// What the round badge on the board, list and quick view says after the round's name, and its
-// colour: violet once settled, pink while in between (waiting for a time or an answer).
+// The round badge on the board, list and quick view: the round in violet (with its day once booked),
+// and, while it's in between (waiting for a time or an answer), a pink badge of its own beside it.
 describe("the round badge", () => {
   const round = { ...waiting, needs_new_time_since: null, needs_new_time_by: null };
+  const NAME = "Round 2 · System design test";
+  const inBetween = (id: string, text: string) => ({
+    text: NAME,
+    color: "violet",
+    state: { id, text, color: "pink" },
+  });
 
   it("gives a booked round's day, even once it has passed until it's marked done", () => {
     expect(roundBadge({ ...round, starts_at: "2030-03-14T10:00:00Z" })).toEqual({
-      text: "Round 2 · System design test · Thu 14 Mar",
+      text: `${NAME} · Thu 14 Mar`,
       color: "violet",
+      state: null,
     });
     expect(roundBadge({ ...round, starts_at: "2020-03-14T10:00:00Z" })).toEqual({
-      text: "Round 2 · System design test · Sat 14 Mar",
+      text: `${NAME} · Sat 14 Mar`,
       color: "violet",
+      state: null,
     });
     expect(roundBadge({ ...round, starts_at: null, deadline_at: "2030-03-15T17:00:00Z" })).toEqual({
-      text: "Round 2 · System design test · Fri 15 Mar",
+      text: `${NAME} · Fri 15 Mar`,
       color: "violet",
+      state: null,
     });
   });
 
   it("says a round with no time or deadline is not booked yet", () => {
-    expect(roundBadge({ ...round, starts_at: null })).toEqual({
-      text: "Round 2 · System design test · not booked yet",
-      color: "pink",
-    });
+    expect(roundBadge({ ...round, starts_at: null })).toEqual(inBetween("notBooked", "Not booked yet"));
   });
 
   it("says a done round with nothing heard since is waiting to hear back", () => {
     const done = { ...round, status: "done", waiting_to_hear_back: true };
-    const text = "Round 2 · System design test · waiting to hear back";
-    expect(roundBadge(done)).toEqual({ text, color: "pink" });
+    const expected = inBetween("waiting", "Waiting to hear back");
+    expect(roundBadge(done)).toEqual(expected);
     // Undated (marked done without ever being booked) too.
-    expect(roundBadge({ ...done, starts_at: null })).toEqual({ text, color: "pink" });
+    expect(roundBadge({ ...done, starts_at: null })).toEqual(expected);
   });
 
   it("gives only the name of a done round with something since, or from an older server", () => {
-    const decided = { text: "Round 2 · System design test", color: "violet" };
+    const decided = { text: NAME, color: "violet", state: null };
     expect(roundBadge({ ...round, status: "done", waiting_to_hear_back: false })).toEqual(decided);
     expect(roundBadge({ ...round, status: "done" })).toEqual(decided);
   });
 
-  it("still says a round waiting for a new time needs one, whatever its time", () => {
-    const text = "Round 2 · System design test · needs a new time";
-    expect(roundBadge(waiting)).toEqual({ text, color: "pink" });
-    expect(roundBadge({ ...waiting, starts_at: null })).toEqual({ text, color: "pink" });
+  it("says a round waiting for a new time needs one, without its old day", () => {
+    const expected = inBetween("needsNewTime", "Needs a new time");
+    expect(roundBadge(waiting)).toEqual(expected);
+    expect(roundBadge({ ...waiting, starts_at: null })).toEqual(expected);
   });
 });

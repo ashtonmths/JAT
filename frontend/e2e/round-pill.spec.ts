@@ -28,35 +28,37 @@ const withRound = async (request: APIRequestContext, company: string, round: obj
   return { appId: app.id, roundId: made.id };
 };
 
-/** A round pill, by its text. */
-const pill = (page: Page, text: string | RegExp) =>
-  page.locator("[data-round-state]").filter({ hasText: text });
-/** A round waiting for a time or an answer: pink, apart from a booked round's violet. */
-const expectInBetween = async (badge: Locator) => {
-  await expect(badge).toHaveAttribute("data-round-state", "in-between");
-  await expect(badge).toHaveAttribute("style", /--mantine-color-pink-/);
-};
+/** A round's own badge, by its text: always violet. */
+const roundPill = (within: Page | Locator, text: string | RegExp) =>
+  within.locator("[data-round-pill]").filter({ hasText: text });
+/** The badge beside a round's own badge saying what it's waiting for, if any. */
+const stateOf = (pill: Locator) => pill.locator("xpath=..").locator("[data-round-state]");
+
+const expectViolet = (badge: Locator) => expect(badge).toHaveAttribute("style", /--mantine-color-violet-/);
+const expectPink = (badge: Locator) => expect(badge).toHaveAttribute("style", /--mantine-color-pink-/);
 
 test("a round with no time says it's not booked yet, until it's booked", async ({ page, request }) => {
   const { roundId } = await withRound(request, "Unbooked Pill Co", { title: "Pill first chat" });
 
   await page.goto("/applications?view=board");
-  const unbooked = pill(page, "Round 1 · Pill first chat · not booked yet");
-  await expect(unbooked).toBeVisible();
-  await expectInBetween(unbooked);
+  const unbooked = roundPill(page, "Round 1 · Pill first chat");
+  await expect(unbooked).toHaveText("Round 1 · Pill first chat"); // just the round
+  await expectViolet(unbooked);
+  await expect(stateOf(unbooked)).toHaveText("Not booked yet");
+  await expect(stateOf(unbooked)).toHaveAttribute("data-round-state", "notBooked");
+  await expectPink(stateOf(unbooked));
 
   await page.goto("/applications?view=list");
   const row = page.getByRole("row").filter({ hasText: "Unbooked Pill Co" });
-  await expect(row).toContainText("Round 1 · Pill first chat · not booked yet");
+  await expect(stateOf(roundPill(row, "Round 1 · Pill first chat"))).toHaveText("Not booked yet");
 
-  // Booked, it gives its day instead, in the booked round's violet.
+  // Booked, the round gives its day and nothing sits beside it.
   await patch(request, `interviews/${roundId}`, { starts_at: inDays(3) });
   await page.goto("/applications?view=board");
-  const booked = pill(page, /^Round 1 · Pill first chat · /);
+  const booked = roundPill(page, /^Round 1 · Pill first chat · /);
   await expect(booked).toBeVisible();
-  await expect(booked).not.toContainText("not booked yet");
-  await expect(booked).toHaveAttribute("data-round-state", "settled");
-  await expect(booked).toHaveAttribute("style", /--mantine-color-violet-/);
+  await expectViolet(booked);
+  await expect(stateOf(booked)).toHaveCount(0);
 });
 
 test("a done round with nothing since says it's waiting to hear back", async ({ page, request }) => {
@@ -65,25 +67,28 @@ test("a done round with nothing since says it's waiting to hear back", async ({ 
     starts_at: inDays(-2),
   });
   await patch(request, `interviews/${roundId}`, { status: "done" });
-  const waiting = "Round 1 · Pill tech chat · waiting to hear back";
+  const name = "Round 1 · Pill tech chat";
 
   await page.goto("/applications?view=board");
-  await expect(pill(page, waiting)).toBeVisible();
-  await expectInBetween(pill(page, waiting));
+  const pill = roundPill(page, name);
+  await expect(pill).toHaveText(name);
+  await expectViolet(pill);
+  await expect(stateOf(pill)).toHaveText("Waiting to hear back");
+  await expectPink(stateOf(pill));
 
   await page.goto("/applications?view=list");
   const row = page.getByRole("row").filter({ hasText: "Waiting Pill Co" });
-  await expect(row).toContainText(waiting);
+  await expect(stateOf(roundPill(row, name))).toHaveText("Waiting to hear back");
   await row.click();
   const drawer = page.getByRole("dialog").filter({ hasText: "Waiting Pill Co" });
-  await expect(drawer.getByText(waiting)).toBeVisible();
+  await expect(stateOf(roundPill(drawer, name))).toHaveText("Waiting to hear back");
 
   await page.goto(`/applications/${appId}`);
-  await expect(page.getByText("Round 1 · Pill tech chat: waiting to hear back")).toBeVisible();
+  await expect(page.getByText(`${name}: waiting to hear back`)).toBeVisible();
 
-  // Moved on a stage since: they've decided, so it's just the round's name again.
+  // Moved on a stage since: they've decided, so it's just the round, with nothing beside it.
   await post(request, `applications/${appId}/move`, { to_stage: "applied" });
   await page.goto("/applications?view=board");
-  await expect(page.getByText("Round 1 · Pill tech chat", { exact: true })).toBeVisible();
-  await expect(page.getByText(waiting)).toBeHidden();
+  await expect(roundPill(page, name)).toBeVisible();
+  await expect(stateOf(roundPill(page, name))).toHaveCount(0);
 });

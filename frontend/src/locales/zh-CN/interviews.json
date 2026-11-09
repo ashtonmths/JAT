@@ -1,8 +1,7 @@
 {
   "label": "第 {{round}} 轮 · {{what}}",
   "badgeWhen": "{{label}} · {{when}}",
-  "badgeNotBooked": "{{label}} · 尚未预约",
-  "badgeWaiting": "{{label}} · 等待回复",
+  "waitingToHearBack": "等待回复",
   "kindNames": {
     "screen": "初筛",
     "hiring_manager": "用人经理面",
@@ -142,7 +141,6 @@
     "todoHint": "在轮次定下新时间之前，这条待办会一直保持未完成。通过“设定新时间”或“编辑”设好新时间，即视为从原时间改期，待办会自动勾选完成。",
     "save": "保存：待定新时间",
     "badge": "待定新时间",
-    "roundBadge": "{{label}} · 待定新时间",
     "was": {
       "me": "原定于 {{when}}。改时间由你提出。",
       "them": "原定于 {{when}}。改时间由对方提出。",

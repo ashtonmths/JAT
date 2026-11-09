@@ -6,12 +6,10 @@ export default {
   label: "Round {{round}} · {{what}}",
   // The round badge on cards and rows, when it's booked: "Round 2 · Technical · Thu 2 Oct".
   badgeWhen: "{{label}} · {{when}}",
-  // The badge for a round with no time or deadline yet, so it still needs booking:
-  // "Round 1 · First chat · not booked yet" (the words of notBooked, as needsNewTime.roundBadge does).
-  badgeNotBooked: "{{label}} · not booked yet",
-  // The badge for a round marked done with nothing since (no stage move, offer or later round):
-  // "Round 1 · First chat · waiting to hear back". The same words as Today's Waiting to hear back.
-  badgeWaiting: "{{label}} · waiting to hear back",
+  // A small badge beside the round badge for a round marked done with nothing heard since (no stage
+  // move, offer or later round). The same words as Today's Waiting to hear back. Its neighbours for a
+  // round not booked yet and one needing a new time are notBooked and needsNewTime.badge.
+  waitingToHearBack: "Waiting to hear back",
   // A round with no description goes by its kind ("other" reads "Interview" here).
   kindNames: {
     screen: "Screen",
@@ -168,7 +166,6 @@ export default {
       "The to-do stays open until the round has its new time. Setting that, with Set new time or Edit, counts as the move from the old time and ticks the to-do off for you.",
     save: "Save: needs a new time",
     badge: "Needs a new time",
-    roundBadge: "{{label}} · needs a new time",
     // The round's old time and who needed the change, one sentence for each.
     was: {
       me: "Was {{when}}. You needed the change.",

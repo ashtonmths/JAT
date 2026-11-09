@@ -239,15 +239,15 @@ The **board** shows a column per stage. Drag a card to move it; the usual next s
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
 switch on *Show closed stages*, but appear while you drag so you can drop a card on them. Cards show the current interview round.
 
-The round's badge, on board cards, list rows and the quick view, says what the round needs. It's
-purple when the round is settled (booked, or done and heard back), and pink while it's in between,
-waiting for a time or an answer (not booked yet, needs a new time, waiting to hear back):
-- booked: its day, "Round 2 · Technical · Thu 12 Nov" (still, once that day has passed, until you mark it done);
-- no time or deadline yet: "Round 1 · Screen · not booked yet";
-- can't go ahead at its time: "Round 2 · Technical · needs a new time";
-- marked done, with nothing heard since: "Round 1 · Screen · waiting to hear back". Something heard
-  is a stage move since the round (a move you undid doesn't count), an offer added since, or a later
-  round (even one cancelled); then the badge shows just the round's name. A booked later round is the
+The round's purple badge, on board cards, list rows and the quick view, names the round, with its
+day once booked: "Round 2 · Technical · Thu 12 Nov" (still, once that day has passed, until you mark
+it done). While the round is waiting for a time or an answer, a small pink badge beside it says what
+for (on a narrow card it goes on the next line):
+- **Not booked yet**: it has no time or deadline yet;
+- **Needs a new time**: it can't go ahead at its time (its old day isn't shown);
+- **Waiting to hear back**: you marked it done and nothing has been heard since. Something heard is
+  a stage move since the round (a move you undid doesn't count), an offer added since, or a later
+  round (even one cancelled); then there's just the round's badge. A booked later round is the
   current round instead. A round without a time counts from when you marked it done, and editing it
   afterwards doesn't change that. An archived application isn't waiting.
 

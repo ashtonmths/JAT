@@ -47,42 +47,56 @@ type CurrentRound = Omit<NonNullable<ApplicationRow["current_round"]>, "waiting_
   waiting_to_hear_back?: boolean;
 };
 
-// A round settled in time (booked, or done and decided) is violet; one in between, waiting for a
-// time or an answer, is pink: a colour of its own, which no other badge, pill or stage uses (only the
-// Timeline's lane for calls), and which reads apart from violet in light and dark mode.
-const SETTLED = "violet";
-const IN_BETWEEN = "pink";
+// The round's own badge is violet; the badge beside it for a round in between, waiting for a time or
+// an answer, is pink: a colour no other badge, pill or stage uses (only the Timeline's lane for calls),
+// which reads apart from violet in light and dark mode.
+const ROUND_COLOR = "violet";
+const STATE_COLOR = "pink";
+
+export type RoundState = "notBooked" | "waiting" | "needsNewTime";
+
+// Whole keys, so the unused-key scanner sees them and a missing one fails the type check.
+const STATE_TEXT = {
+  notBooked: "interviews:notBooked",
+  waiting: "interviews:waitingToHearBack",
+  needsNewTime: "interviews:needsNewTime.badge",
+} as const;
 
 /**
- * What the badge says after a round's name (its time, or what it's waiting for) and its colour,
- * decided together so every badge agrees:
- * - waiting for a new time: "needs a new time", in between;
- * - booked (a time or deadline): the day, "Thu 2 Oct", also once that has passed until it's marked done;
- * - not booked (no time or deadline, still to happen): "not booked yet", in between;
- * - done with nothing heard since: "waiting to hear back", in between. The server works that out
+ * The round an application is at, as its badges say it: the round ("Round 2 · Technical", with its
+ * day once booked: "· Thu 2 Oct", also once that has passed until it's marked done), and, for a round
+ * in between, what it's waiting for, on a badge of its own. Decided here so every badge agrees:
+ * - waiting for a new time: "Needs a new time" (no day: its old time isn't happening);
+ * - not booked (no time or deadline, still to happen): "Not booked yet";
+ * - done with nothing heard since: "Waiting to hear back". The server works that out
  *   (`waiting_to_hear_back`, see `waiting_to_hear_back` in domain/interviews.py): no stage move,
  *   offer or later round since it happened;
- * - otherwise (done and something has happened since) just its name.
+ * - otherwise (booked, or done and something has happened since) no state.
  */
-export function roundBadge(round: CurrentRound): { text: string; color: string } {
+export function roundBadge(round: CurrentRound): {
+  text: string;
+  color: string;
+  state: { id: RoundState; text: string; color: string } | null;
+} {
   const label = roundLabel(round);
   const when = round.starts_at ?? round.deadline_at;
+  const as = (id: RoundState | null, text = label) => ({
+    text,
+    color: ROUND_COLOR,
+    state: id && { id, text: i18n.t(STATE_TEXT[id]), color: STATE_COLOR },
+  });
   if (round.status === "scheduled") {
-    if (round.needs_new_time_since)
-      return { text: i18n.t("interviews:needsNewTime.roundBadge", { label }), color: IN_BETWEEN };
-    if (when)
-      return { text: i18n.t("interviews:badgeWhen", { label, when: shortDate(when) }), color: SETTLED };
-    return { text: i18n.t("interviews:badgeNotBooked", { label }), color: IN_BETWEEN };
+    if (round.needs_new_time_since) return as("needsNewTime");
+    if (when) return as(null, i18n.t("interviews:badgeWhen", { label, when: shortDate(when) }));
+    return as("notBooked");
   }
-  if (round.status === "done" && round.waiting_to_hear_back)
-    return { text: i18n.t("interviews:badgeWaiting", { label }), color: IN_BETWEEN };
-  return { text: label, color: SETTLED };
+  return as(round.status === "done" && round.waiting_to_hear_back ? "waiting" : null);
 }
 
 /**
  * The round an application is at ("Round 2 · System design test · Thu 2 Oct"), for cards, rows
- * and headers. Only shown while the application is in an active stage: once there's an offer or
- * a rejection, the last round is history.
+ * and headers, with what it's waiting for beside it when it's in between. Only shown while the
+ * application is in an active stage: once there's an offer or a rejection, the last round is history.
  */
 export function RoundBadge({
   round,
@@ -97,24 +111,33 @@ export function RoundBadge({
   if (!round || stageKind !== "active") return null;
   const when = round.starts_at ?? round.deadline_at;
   const pending = round.status === "scheduled" && !!round.needs_new_time_since;
-  const { text, color } = roundBadge(round);
+  const { text, color, state } = roundBadge(round);
   return (
-    <Tooltip label={pending ? wasText(round) : when ? formatDateTime(when) : ""} disabled={!when}>
-      <Badge
-        size={size}
-        variant="light"
-        color={color}
-        data-round-state={color === IN_BETWEEN ? "in-between" : "settled"}
-        leftSection={<IconCalendarEvent size={12} />}
-        // Wrap rather than cut off on narrow board cards.
-        h="auto"
-        py={2}
-        style={{ textTransform: "none", maxWidth: "100%" }}
-        styles={{ label: { whiteSpace: "normal", overflow: "visible", textAlign: "left" } }}
-      >
-        {text}
-      </Badge>
-    </Tooltip>
+    // Side by side, or one under the other on a narrow card.
+    <Group gap={4} wrap="wrap" style={{ maxWidth: "100%" }}>
+      <Tooltip label={pending ? wasText(round) : when ? formatDateTime(when) : ""} disabled={!when}>
+        <Badge
+          size={size}
+          variant="light"
+          color={color}
+          data-round-pill
+          leftSection={<IconCalendarEvent size={12} />}
+          // Wrap rather than cut off on narrow board cards.
+          h="auto"
+          py={2}
+          style={{ textTransform: "none", maxWidth: "100%" }}
+          styles={{ label: { whiteSpace: "normal", overflow: "visible", textAlign: "left" } }}
+        >
+          {text}
+        </Badge>
+      </Tooltip>
+      {state && (
+        // Like a card's Reply to read badge: small and light.
+        <Badge size={size} variant="light" color={state.color} data-round-state={state.id}>
+          {state.text}
+        </Badge>
+      )}
+    </Group>
   );
 }
 
