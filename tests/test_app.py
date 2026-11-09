@@ -31,6 +31,9 @@ def test_health(data_dir, dist):
     assert body["status"] == "ok"
     assert body["schema"] == body["schema_head"] == head_revision()
     assert body["git_repo"] is False
+    assert body["snapshots_enabled"] is False
+    assert isinstance(body["unix"], bool)
+    assert isinstance(body["windows"], bool)
 
 
 def test_spa_routes_and_assets(data_dir, dist):

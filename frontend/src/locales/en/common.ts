@@ -74,6 +74,7 @@ export default {
     connected: "Connected",
     detailsBackups: "v{{version}} · schema {{schema}} · backups on",
     detailsNoGit: "v{{version}} · schema {{schema}} · data dir isn't a git repo",
+    detailsWindowsNoSnapshots: "v{{version}} · schema {{schema}} · snapshots off on Windows",
   },
   // The version in the footer (AppVersion), and what to do when the server's differs from the
   // page's. Versions are data, written as "1.8.0".

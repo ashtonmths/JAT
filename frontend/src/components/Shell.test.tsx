@@ -88,6 +88,13 @@ describe("the frame", () => {
     expect(await screen.findByText("v1.1.3 · schema ? · data dir isn't a git repo")).toBeInTheDocument();
   });
 
+  it("the connection tooltip on Windows with snapshots off", async () => {
+    mockApi({ "/api/v1/health": { ...HEALTH, snapshots_enabled: false, windows: true } });
+    renderAt("/no-such-page");
+    fireEvent.mouseEnter((await screen.findByText("Connected")).parentElement!);
+    expect(await screen.findByText("v1.1.3 · schema 0014 · snapshots off on Windows")).toBeInTheDocument();
+  });
+
   it("says it's connecting while the first check is out", async () => {
     vi.stubGlobal(
       "fetch",

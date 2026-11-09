@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import sys
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -49,6 +50,10 @@ def _api_router() -> APIRouter:
     def health(request: Request) -> dict:
         state: AppState = request.app.state.jat
         engine = request.app.state.engine
+        snapshots: SnapshotService = getattr(request.app.state, "snapshots", None)
+        snapshots_enabled = snapshots.enabled if snapshots is not None else state.git_repo
+        is_unix = sys.platform in ("linux", "darwin")
+        is_windows = sys.platform == "win32"
         return {
             "status": "ok",
             "version": __version__,
@@ -56,6 +61,9 @@ def _api_router() -> APIRouter:
             "schema_head": head_revision(),
             "data_dir": str(state.data_dir),
             "git_repo": state.git_repo,
+            "snapshots_enabled": snapshots_enabled,
+            "unix": is_unix,
+            "windows": is_windows,
         }
 
     return api
@@ -102,11 +110,18 @@ def create_app(
     dev: bool = False,
     snapshot_debounce: float | None = None,
     bind_host: str | None = None,
+    windows_snapshots: bool | None = None,
 ) -> FastAPI:
     """Build the app for a data directory whose database already exists and is migrated."""
     check_outside_code_repo(data_dir)
     if not db_path(data_dir).exists():
         raise RuntimeError(f"No database at {db_path(data_dir)}. Run `jat init` first.")
+
+    ws = Settings().windows_snapshots if windows_snapshots is None else windows_snapshots
+    if sys.platform in ("linux", "darwin"):
+        pass
+    elif sys.platform == "win32" and ws:
+        print("note: Windows snapshots are experimental")
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -129,7 +144,12 @@ def create_app(
     app.state.jat = AppState(data_dir=data_dir, git_repo=is_git_repo(data_dir))
     app.state.workflow = WorkflowCache(data_dir)
     app.state.writes = WriteNotifier()
-    app.state.snapshots = SnapshotService(data_dir, engine, debounce_seconds=snapshot_debounce)
+    app.state.snapshots = SnapshotService(
+        data_dir,
+        engine,
+        debounce_seconds=snapshot_debounce,
+        windows_snapshots=ws,
+    )
     app.state.writes.subscribe(app.state.snapshots.mark_dirty)
     if dev:
         app.add_middleware(CORSMiddleware, allow_origins=DEV_ORIGINS, allow_methods=["*"], allow_headers=["*"])
@@ -151,4 +171,9 @@ def app_from_env() -> FastAPI:
     """Factory for uvicorn (`jat serve`): reads JAT_DATA_DIR and JAT_DEV from the environment."""
     settings = Settings()
     data_dir = resolve_data_dir(settings)
-    return create_app(data_dir, dev=os.environ.get("JAT_DEV") == "1", bind_host=settings.host)
+    return create_app(
+        data_dir,
+        dev=os.environ.get("JAT_DEV") == "1",
+        bind_host=settings.host,
+        windows_snapshots=settings.windows_snapshots,
+    )

@@ -67,6 +67,7 @@ def git_env(monkeypatch):
         "GIT_COMMITTER_EMAIL": "test@example.com",
         "GIT_CONFIG_GLOBAL": os.devnull,
         "GIT_CONFIG_NOSYSTEM": "1",
+        "JAT_WINDOWS_SNAPSHOTS": "1",
     }.items():
         monkeypatch.setenv(key, value)
 

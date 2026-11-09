@@ -11,6 +11,7 @@ Layout (see docs/rfc/stack.md §4):
 from __future__ import annotations
 
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -88,8 +89,16 @@ def _ensure_gitignore(path: Path) -> list[str]:
     return missing
 
 
-def init_data_dir(path: Path, commit: bool = True, code_root: Path = CODE_ROOT) -> InitReport:
+def init_data_dir(
+    path: Path,
+    commit: bool = True,
+    code_root: Path = CODE_ROOT,
+    *,
+    windows_snapshots: bool | None = None,
+) -> InitReport:
     """Create the layout. Idempotent: existing files are never overwritten."""
+    from .config import Settings
+
     check_outside_code_repo(path, code_root)
     report = InitReport(path=path)
     if not path.exists():
@@ -109,7 +118,14 @@ def init_data_dir(path: Path, commit: bool = True, code_root: Path = CODE_ROOT) 
         report.created.append("config.toml")
     report.gitignore_added = _ensure_gitignore(path)
     report.is_git_repo = is_git_repo(path)
-    if commit and report.is_git_repo and (report.created or report.gitignore_added):
+    ws = Settings().windows_snapshots if windows_snapshots is None else windows_snapshots
+    if sys.platform in ("linux", "darwin"):
+        can_commit = commit
+    elif sys.platform == "win32":
+        can_commit = commit and ws
+    else:
+        can_commit = commit
+    if can_commit and report.is_git_repo and (report.created or report.gitignore_added):
         report.committed = _commit_scaffold(path)
     return report
 

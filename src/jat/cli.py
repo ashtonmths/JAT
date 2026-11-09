@@ -27,14 +27,20 @@ def _require_db(path: Path) -> None:
 
 
 def cmd_init(args) -> int:
+    settings = Settings()
     path = _data_dir(args)
-    report = init_data_dir(path, commit=not args.no_commit)
+    report = init_data_dir(path, commit=not args.no_commit, windows_snapshots=settings.windows_snapshots)
     print(f"Data directory: {report.path}")
     print("  created: " + (", ".join(report.created) or "nothing (already initialised)"))
     if report.gitignore_added:
         print("  .gitignore: added " + ", ".join(report.gitignore_added))
     if report.is_git_repo:
-        print("  git: " + ("committed the layout" if report.committed else "nothing to commit"))
+        if sys.platform in ("linux", "darwin"):
+            print("  git: " + ("committed the layout" if report.committed else "nothing to commit"))
+        elif sys.platform == "win32" and not settings.windows_snapshots:
+            print("  git: snapshots are off on Windows")
+        else:
+            print("  git: " + ("committed the layout" if report.committed else "nothing to commit"))
     else:
         print("  git: not a git repo, so snapshots will be disabled")
     # A fresh clone has export/ but no database: rebuild it rather than starting empty,
@@ -102,6 +108,8 @@ def cmd_serve(args) -> int:
     os.environ["JAT_DEV"] = "1" if args.dev else "0"
     os.environ["JAT_HOST"] = host  # the app only answers to this host (and loopback names)
     print(f"Job Application Tracker: http://{host}:{port}  (data: {path})")
+    if sys.platform == "win32" and settings.windows_snapshots:
+        print("note: Windows snapshots are experimental")
     if args.dev:
         print("dev mode: API reloads on change; run `pnpm --dir frontend dev` for the UI on :5173")
     uvicorn.run(
@@ -121,16 +129,39 @@ def _service(path: Path):
 
     _require_db(path)
     migrate(db_path(path))
-    return SnapshotService(path, make_engine(db_path(path)), debounce_seconds=0)
+    settings = Settings()
+    return SnapshotService(
+        path,
+        make_engine(db_path(path)),
+        debounce_seconds=0,
+        windows_snapshots=settings.windows_snapshots,
+    )
 
 
 def cmd_snapshot(args) -> int:
+    settings = Settings()
+    if sys.platform in ("linux", "darwin") or settings.windows_snapshots:
+        commit = _service(_data_dir(args)).snapshot_now()
+        print(f"committed snapshot {commit}" if commit else "nothing changed since the last snapshot")
+        return 0
+    if sys.platform == "win32":
+        print("snapshots are off on Windows (set JAT_WINDOWS_SNAPSHOTS=1 to test them)")
+        return 0
     commit = _service(_data_dir(args)).snapshot_now()
     print(f"committed snapshot {commit}" if commit else "nothing changed since the last snapshot")
     return 0
 
 
 def cmd_push(args) -> int:
+    settings = Settings()
+    if sys.platform in ("linux", "darwin") or settings.windows_snapshots:
+        service = _service(_data_dir(args))
+        service.snapshot_now()
+        print(service.push() or "pushed")
+        return 0
+    if sys.platform == "win32":
+        print("snapshots are off on Windows (set JAT_WINDOWS_SNAPSHOTS=1 to test them)")
+        return 0
     service = _service(_data_dir(args))
     service.snapshot_now()
     print(service.push() or "pushed")

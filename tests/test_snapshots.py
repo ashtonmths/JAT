@@ -163,3 +163,46 @@ def test_debounce_config(tmp_path):
     assert debounce_from_config(tmp_path) == 5
     (tmp_path / "config.toml").write_text('[snapshot]\ndebounce_seconds = "soon"\n')
     assert debounce_from_config(tmp_path) == 60
+
+
+def test_windows_snapshots_off_by_default(git_repo, monkeypatch):
+    monkeypatch.setattr("sys.platform", "win32")
+    monkeypatch.delenv("JAT_WINDOWS_SNAPSHOTS", raising=False)
+    service = SnapshotService(git_repo, make_engine(db_path(git_repo)), debounce_seconds=0)
+    assert service.enabled is False
+    with pytest.raises(SnapshotError, match="Snapshots are off on Windows"):
+        service.snapshot_now()
+    with pytest.raises(SnapshotError, match="Snapshots are off on Windows"):
+        service.push()
+
+
+def test_windows_snapshots_enabled_with_switch(git_repo, monkeypatch):
+    monkeypatch.setattr("sys.platform", "win32")
+    monkeypatch.setenv("JAT_WINDOWS_SNAPSHOTS", "1")
+    service = SnapshotService(git_repo, make_engine(db_path(git_repo)), debounce_seconds=0)
+    assert service.enabled is True
+    # Verify the lock is a no-op on Windows
+    with service._process_lock():
+        pass
+
+
+def test_windows_init_commit_off_without_switch(git_repo, monkeypatch):
+    monkeypatch.setattr("sys.platform", "win32")
+    monkeypatch.delenv("JAT_WINDOWS_SNAPSHOTS", raising=False)
+    target = git_repo / "sub"
+    target.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main", str(target)], check=True)
+    report = init_data_dir(target)
+    assert report.is_git_repo is True
+    assert report.committed is False
+
+
+def test_windows_init_commit_on_with_switch(git_repo, monkeypatch):
+    monkeypatch.setattr("sys.platform", "win32")
+    monkeypatch.setenv("JAT_WINDOWS_SNAPSHOTS", "1")
+    target = git_repo / "sub2"
+    target.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main", str(target)], check=True)
+    report = init_data_dir(target)
+    assert report.is_git_repo is True
+    assert report.committed is True
