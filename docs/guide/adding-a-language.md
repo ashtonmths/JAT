@@ -206,6 +206,9 @@ uv run jat --data-dir /tmp/jat-demo serve --dev --port 8771
 JAT_API_URL=http://127.0.0.1:8771 pnpm --dir frontend dev
 ```
 
+(`seed_demo.py --lang zh-CN` fills the folder with Chinese companies, people and notes instead. Its words
+are in `scripts/demo_content.py`, one table per language, so a demo in your language is a new table there.)
+
 Open <http://127.0.0.1:5173> and choose your language from the button at the top right, beside
 light and dark mode. (Adding `?lang=pl` to the address does the same.) It works however much you've
 translated: a line you haven't done shows as it is in the file, like `[TRANSLATE] Today`, so you can
