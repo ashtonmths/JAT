@@ -66,6 +66,9 @@ What it does:
 - Backups: git-backed snapshots, a one-click zip (`GET /api/v1/backup/archive` or
   `jat archive`), restore (`jat restore`).
 - Full-text search across everything, notes included (`GET /api/v1/search?q=`, or press /).
+- The whole interface in English or Simplified Chinese (简体中文), chosen from the header's language
+  menu or the browser's language, with dates and numbers in that language; the user's own data is
+  never translated. The API's text stays English, next to codes the frontend translates.
 
 Stack: Python 3.12, FastAPI, SQLAlchemy, Alembic and SQLite (with a JSON Lines export
 committed to the user's private data repo); React 19, TypeScript, Mantine, TanStack
