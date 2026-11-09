@@ -20,7 +20,15 @@ The roadmap tasks are `i18n-zh-cn-*` in phase P8 of `docs/ROADMAP.yaml`.
 - **Reviewers:** Sonnet and Opus, each separately ("perhaps we can drop haiku"); Opus translates and settles
   disagreements.
 - **No screenshots in the PRs** ("no screenshots in the PR"). They're taken to translate and review, and stay outside the
-  repo.
+  repo. The exception is the layout PR (2026-11-09): Kai reviews it from a before-and-after table of screenshots in its
+  description, hosted on a throwaway branch, and merges it himself.
+- **Layout: English stays as it is, with as little language-specific CSS as possible** (Kai, 2026-11-09: "im not
+  expecting any changes to english language version. if there are some needed then wait for my approval firtst";
+  "ideally we want to reduce the language-specific css as much as possible … balacne between langauge-specific css and
+  making english chagnes too"). Fixes that work for every language without changing English come first (fonts last in
+  the list, `word-break: keep-all` on short labels, date patterns per language); a fix that changes English waits for
+  Kai's yes. Kai chose: no forced capitals in Chinese (`:lang(zh)` in `text.module.css`, the one language-specific rule),
+  and the date boxes one per line on phones in every language.
 - **This replaces `docs/rfc/i18n.md` §14 for Chinese** where they differ: there are Chinese screenshots (not English
   only), and the website only says the app comes in several languages (no translated site for now).
 - **Which browsers get it:** only those asking for `zh-CN`. Plain `zh` or `zh-Hans` doesn't match yet; whether it should is

@@ -7,6 +7,7 @@ import { stageLookup, useWorkflow } from "../api/hooks";
 import { useInterviews } from "../api/interviewHooks";
 import { useOffers } from "../api/offerHooks";
 import { useTodos } from "../api/todoHooks";
+import text from "../text.module.css";
 import { glance, type GlanceItem } from "../utils/attention";
 import { stageName } from "../utils/stageName";
 import { useNow, useToday } from "../utils/useToday";
@@ -31,6 +32,7 @@ function Row({ item }: { item: GlanceItem }) {
         c={item.tone === "red" ? "red" : "dimmed"}
         fw={item.tone === "red" ? 600 : 400}
         ta="right"
+        className={text.keepWords}
       >
         {item.when}
       </Text>

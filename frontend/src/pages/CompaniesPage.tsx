@@ -20,6 +20,7 @@ import { Trans, useTranslation } from "react-i18next";
 
 import { useCreateCompany } from "../api/detailHooks";
 import { useApplications, useCompanies } from "../api/hooks";
+import text from "../text.module.css";
 
 const companyPath = (id: string) => `/companies/${id}`;
 const WEB_LINK = /^https?:\/\//;
@@ -128,8 +129,8 @@ export function CompaniesPage() {
           <Table.Thead>
             <Table.Tr>
               <Table.Th>{t("companies.company")}</Table.Th>
-              <Table.Th>{t("companies.applications")}</Table.Th>
-              <Table.Th>{t("companies.inProgress")}</Table.Th>
+              <Table.Th className={text.keepWords}>{t("companies.applications")}</Table.Th>
+              <Table.Th className={text.keepWords}>{t("companies.inProgress")}</Table.Th>
               <Table.Th>{t("companies.website")}</Table.Th>
             </Table.Tr>
           </Table.Thead>
@@ -151,7 +152,7 @@ export function CompaniesPage() {
                   <Table.Td>
                     {s?.active ?? 0}
                     {s?.stale ? (
-                      <Text span c="red" size="xs" ml={6}>
+                      <Text span c="red" size="xs" ml={6} className={text.keepWords}>
                         {t("companies.toChase", { count: s.stale })}
                       </Text>
                     ) : null}

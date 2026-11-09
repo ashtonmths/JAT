@@ -37,6 +37,10 @@ interface Patterns {
   dayMonthTime: string;
   /** 09:07 */
   time: string;
+  /** 5 Mar 2026, in a date picker's box (also how a typed date is read) */
+  pickerDate: string;
+  /** 5 Mar 2026 09:07, in a date-and-time picker's box */
+  pickerDateTime: string;
 }
 
 const PATTERNS = new Map<string, Patterns>([
@@ -54,6 +58,8 @@ const PATTERNS = new Map<string, Patterns>([
       monthYear: "MMM YYYY",
       dayMonthTime: "D MMM, HH:mm",
       time: "HH:mm",
+      pickerDate: "D MMM YYYY",
+      pickerDateTime: "D MMM YYYY HH:mm",
     },
   ],
   [
@@ -70,6 +76,8 @@ const PATTERNS = new Map<string, Patterns>([
       monthYear: "YYYY[年]M[月]",
       dayMonthTime: "M[月]D[日] HH:mm",
       time: "HH:mm",
+      pickerDate: "YYYY[年]M[月]D[日]",
+      pickerDateTime: "YYYY[年]M[月]D[日] HH:mm",
     },
   ],
 ]);
@@ -101,6 +109,9 @@ export function dayjsLocale(lang: string): string {
 const dayjsIn = (value: ConfigType, lang: string) => dayjs(value).locale(dayjsLocale(lang));
 
 export type DatePattern = keyof Patterns;
+
+/** The dayjs pattern itself, for components that format dates themselves (date pickers). */
+export const datePattern = (pattern: DatePattern, lang: string): string => lookup(PATTERNS, lang)[pattern];
 
 /** A date (or date-time) in one of the app's fixed shapes, e.g. formatDay(at, "dayMonth", lang). */
 export function formatDay(value: ConfigType, pattern: DatePattern, lang: string): string {

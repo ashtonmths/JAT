@@ -25,6 +25,7 @@ import {
 } from "../api/insightHooks";
 import { i18n } from "../i18n";
 import { PersonName } from "./GhostMark";
+import text from "../text.module.css";
 import { joinSentences } from "../utils/list";
 import { formatDate } from "../utils/time";
 import { SankeyChart } from "./SankeyChart";
@@ -38,7 +39,7 @@ const percent = (rate: number | null | undefined) =>
 function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
     <Paper withBorder p="sm" radius="md">
-      <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+      <Text size="xs" c="dimmed" className={text.caps} fw={600}>
         {label}
       </Text>
       <Text size="xl" fw={700}>

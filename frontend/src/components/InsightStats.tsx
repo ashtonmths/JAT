@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { useActivity, type Stats, type Week } from "../api/insightHooks";
 import { i18n } from "../i18n";
+import text from "../text.module.css";
 import { formatDay } from "../utils/format";
 import { joinList } from "../utils/list";
 import { stageName } from "../utils/stageName";
@@ -262,7 +263,14 @@ export function WeeklyActivity() {
           </Group>
           <Group gap={0} wrap="nowrap">
             {weeks.map((w, i) => (
-              <Text key={w.start} size="xs" c="dimmed" ta="center" style={{ flex: 1 }}>
+              <Text
+                key={w.start}
+                size="xs"
+                c="dimmed"
+                ta="center"
+                style={{ flex: 1 }}
+                className={text.keepWords}
+              >
                 {(WEEKS - 1 - i) % 2 === 0 ? formatDay(w.start, "dayMonth", language) : ""}
               </Text>
             ))}

@@ -41,6 +41,7 @@ import { useCreateAgency } from "../api/peopleHooks";
 import { contactHref } from "../components/ContactCard";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { closedLabel, UndoClosed } from "../components/PersonChase";
+import text from "../text.module.css";
 import { formatDate } from "../utils/time";
 
 const WEB_LINK = /^https?:\/\//;
@@ -335,7 +336,7 @@ export function RecruitersPage() {
       </Group>
       {agencyList.length > 0 && (
         <Group gap={6} align="center">
-          <Text size="xs" c="dimmed" fw={600} tt="uppercase">
+          <Text size="xs" c="dimmed" fw={600} className={text.caps}>
             {t("recruiters.agencies")}
           </Text>
           {agencyList.map((a) => {
