@@ -64,8 +64,9 @@ class Snapshot:
     taken_at: float = 0.0
     git_ok: bool = True
     github_ok: bool = True
-    lines: int = 0  # lines of source in tracked files
+    lines: int = 0  # lines of code in tracked files, tests included
     tests: int = 0  # tests defined in tracked files
+    by_kind: dict[str, int] = field(default_factory=dict)  # lines of code: source, tests, other (kind_of)
     git_at: float = 0.0  # when each source last answered
     github_at: float = 0.0
     scope: list[tuple[str, int]] = field(default_factory=list)  # (when, tasks on the roadmap)
@@ -121,6 +122,38 @@ def count_code(root: Path, files: list[str]) -> tuple[int, int]:
     """Lines of source and tests defined across `files`."""
     by_area = code_by_area(root, files)
     return sum(n[0] for n in by_area.values()), sum(n[1] for n in by_area.values())
+
+
+APP_SOURCE = ("src/", "frontend/src/")  # the app itself
+APP_TESTS = ("tests/", "frontend/e2e/")  # its tests (tests/pm/ is the dashboard's: "other")
+
+
+def kind_of(name: str) -> str:
+    """ "source" (the app: backend and frontend), "tests" (the app's tests and their set-up) or
+    "other" (the PM dashboard, scripts, the website, config files)."""
+    base = name.rsplit("/", 1)[-1]
+    if name.startswith("tests/pm/"):
+        return "other"
+    if name.startswith(APP_TESTS):
+        return "tests"
+    if name.startswith(APP_SOURCE):
+        return "tests" if ".test." in base or ".spec." in base else "source"
+    return "other"
+
+
+def count_by_kind(root: Path, files: list[str]) -> dict[str, int]:
+    """Lines of code by `kind_of`, counted the same way as `code_by_area` counts lines, so the
+    three add up to the total."""
+    counts = {"source": 0, "tests": 0, "other": 0}
+    for name in files:
+        path = root / name
+        if path.suffix not in SOURCE_SUFFIXES or path.name in GENERATED:
+            continue
+        try:
+            counts[kind_of(name)] += path.read_text(errors="ignore").count("\n")
+        except OSError:  # listed by git but gone from the checkout
+            continue
+    return counts
 
 
 def code_by_area(root: Path, files: list[str]) -> dict[str, tuple[int, int]]:
@@ -424,9 +457,11 @@ def collect(root: Path, repo: str) -> Snapshot:
         for tree in snapshot.worktrees:
             if tree.branch != "main":
                 read_activity(tree, main)
-        snapshot.areas = code_by_area(root, _run(["git", "ls-files"], root).splitlines())
+        files = _run(["git", "ls-files"], root).splitlines()
+        snapshot.areas = code_by_area(root, files)
         snapshot.lines = sum(n[0] for n in snapshot.areas.values())
         snapshot.tests = sum(n[1] for n in snapshot.areas.values())
+        snapshot.by_kind = count_by_kind(root, files)
         snapshot.scope = scope_history(root, main)
     except (subprocess.SubprocessError, OSError, ValueError) as exc:
         snapshot.git_ok = False
@@ -477,7 +512,8 @@ def keep_last_good(new: Snapshot, old: Snapshot | None) -> Snapshot:
         new.areas = new.areas or old.areas
         new.commits = new.commits or old.commits
         new.worktrees = new.worktrees or old.worktrees
-        new.lines, new.tests = (new.lines, new.tests) if new.lines else (old.lines, old.tests)
+        if not new.lines:
+            new.lines, new.tests, new.by_kind = old.lines, old.tests, old.by_kind
         new.live.branches_ahead = new.live.branches_ahead or old.live.branches_ahead
     if not new.github_ok:
         new.github_at = old.github_at
