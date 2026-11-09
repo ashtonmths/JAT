@@ -130,7 +130,11 @@ Each of these cost time once. Add a line when something new does.
   `jat.insights.rounds`) and error toasts need a click or a failed save. Builders wrote throwaway helpers in `var/`;
   fake every non-GET request so the shared demo data never changes.
 - **`merge_main.sh` reverted a done task** again (`i18n-zh-cn-people` came back as `next`): check the roadmap diff after
-  every merge of main.
+  every merge of main. Its dedupe can also drop a task's `status:` field (`fix-offer-loading-says-none`), and then
+  `bump.py` fails: put the status back by hand. `bump.py` also needs `pnpm install` in the worktree first
+  ("openapi-typescript: not found").
+- **Screenshot pixel diffs prove English didn't change**: `screenshots.py <url> <lang> layout en` before and after,
+  then compare the PNGs with Pillow (`ImageChops.difference(...).getbbox()`); same size and no box means identical.
 
 ## Other
 
