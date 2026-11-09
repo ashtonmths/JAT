@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.21.1 (2026-11-09)
+
+- Chinese demo data: scripts/seed_demo.py --lang zh-CN fills a demo folder with made-up Chinese companies, recruiters, roles, notes and offers in CNY, for trying the app or taking screenshots in Chinese. The English demo is unchanged. (#293).
+
 ## 1.21.0 (2026-11-09)
 
 - Simplified Chinese (简体中文) is switched on: choose it from the language menu, or get it automatically from a browser set to Simplified Chinese (zh, zh-CN, zh-Hans, zh-SG); dates, numbers and the tab's title follow, and the menu's Coming soon! is now More coming soon. The README has a Languages section. (#294).
