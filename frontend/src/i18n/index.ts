@@ -84,10 +84,16 @@ export function createI18n({ lng, resources, strict = false, pseudo = false, rea
   return instance;
 }
 
-/** Keep <html lang> on the language shown, for screen readers and the browser's own tools. */
+/**
+ * Keep <html lang> on the language shown, for screen readers and the browser's own tools, and
+ * the tab's title in it too (index.html's is English, for the moment before this runs).
+ */
 function followLanguage(instance: I18n) {
   if (typeof document === "undefined") return;
-  const set = (lng: string) => document.documentElement.setAttribute("lang", lng);
+  const set = (lng: string) => {
+    document.documentElement.setAttribute("lang", lng);
+    document.title = instance.t("common:app.name");
+  };
   set(instance.language);
   instance.on("languageChanged", set);
 }

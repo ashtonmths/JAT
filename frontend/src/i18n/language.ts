@@ -46,10 +46,12 @@ function match<T extends string>(list: readonly T[], code: string | null | undef
  * until it has its own translation (docs/rfc/zh-cn.md).
  */
 export function isSimplifiedChinese(code: string): boolean {
-  const [lang, ...rest] = code.toLowerCase().split("-");
+  const [lang, ...rest] = code.toLowerCase().replaceAll("_", "-").split("-");
   if (lang !== "zh") return false;
   if (rest.includes("hans")) return true;
-  return !rest.some((part) => ["hant", "tw", "hk", "mo"].includes(part));
+  // Traditional by script or region ("cht" is old Internet Explorer's), and other Chinese
+  // languages written with a zh- prefix (Cantonese, Min Nan, Hakka): not Mandarin in Simplified.
+  return !rest.some((part) => ["hant", "tw", "hk", "mo", "cht", "yue", "min", "hakka"].includes(part));
 }
 
 const shipped = (code: string | null | undefined): Language | undefined =>
@@ -78,7 +80,7 @@ export function pickLanguage({
     const asked = new URLSearchParams(search).get("lang");
     if (asked === PSEUDO_ALIAS || asked === PSEUDO) return PSEUDO;
     // One list, so an exact draft ("pt-BR") wins over a shipped language's prefix ("pt").
-    const fromUrl = match([...LANGUAGES, ...drafts], asked);
+    const fromUrl = match([...LANGUAGES, ...drafts], asked) ?? shipped(asked);
     if (fromUrl) return fromUrl;
   }
   return shipped(stored) ?? browser.map(shipped).find(Boolean) ?? FALLBACK;

@@ -23,14 +23,22 @@ function strings(tree: unknown): string[] {
 }
 
 /**
- * The English the app writes itself, as whole strings: those with a {{value}} or <tag> can't be
- * matched whole, and short ones ("CV", "OK") or ones Chinese keeps as they are ("Offer",
- * "Markdown") aren't a sign of anything left untranslated.
+ * The English the app writes itself. Short strings ("CV", "OK") and ones Chinese keeps as they
+ * are ("Offer", "Markdown") aren't a sign of anything left untranslated. A string with values
+ * ("{{count}} days ago") becomes a pattern with each value as a wildcard; one with <tags> is
+ * split into the words around them by the page, so it's left to the whole-string check.
  */
 const chinese = new Set(strings(zhCN));
-const ENGLISH = new Set(
-  strings(en).filter((s) => !/[{<]/.test(s) && s.trim().length > 3 && !chinese.has(s) && /[a-z]/.test(s)),
-);
+const english = strings(en).filter((s) => s.trim().length > 3 && !chinese.has(s) && /[a-z]/.test(s));
+const ENGLISH = new Set(english.filter((s) => !/[{<]/.test(s)));
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const ENGLISH_PATTERNS = english
+  .filter((s) => s.includes("{{") && !s.includes("<"))
+  .map((s) => s.split(/\{\{[^}]+\}\}/))
+  // At least two English words outside the values, or "{{name}}" alone would match anything.
+  .filter((parts) => (parts.join(" ").match(/[A-Za-z]{2,}/g) ?? []).length >= 2)
+  .map((parts) => new RegExp(`^${parts.map(escape).join(".+")}$`));
+const isEnglish = (text: string) => ENGLISH.has(text) || ENGLISH_PATTERNS.some((re) => re.test(text));
 
 /** The page's visible text pieces, and the labels a screen reader or a tooltip would give. */
 async function textOnScreen(page: Page): Promise<string[]> {
@@ -43,12 +51,16 @@ async function textOnScreen(page: Page): Promise<string[]> {
       const text = node.textContent?.trim();
       if (text) out.push(text);
     }
-    for (const el of document.querySelectorAll("[aria-label], [placeholder], [title]")) {
-      for (const attr of ["aria-label", "placeholder", "title"]) {
+    for (const el of document.querySelectorAll("[aria-label], [placeholder], [title], img[alt]")) {
+      for (const attr of ["aria-label", "placeholder", "title", "alt"]) {
         const value = el.getAttribute(attr)?.trim();
         if (value) out.push(value);
       }
     }
+    // What's shown in a box you type into or pick from (a checkbox's value is a hidden code).
+    for (const input of document.querySelectorAll("input:not([type=checkbox], [type=radio], [type=hidden])"))
+      if ((input as HTMLInputElement).value.trim()) out.push((input as HTMLInputElement).value.trim());
+    out.push(document.title);
     return out;
   });
 }
@@ -79,14 +91,26 @@ test.describe("a browser set to Simplified Chinese", () => {
   });
 
   test("every page is in Chinese, with no English of the app's own left", async ({ page, request }) => {
-    const apps = (await (await request.get("/api/v1/applications")).json()) as {
-      id: string;
-      company_name: string;
-    }[];
-    const people = (await (await request.get("/api/v1/contacts")).json()) as { id: string }[];
+    const get = async <T>(path: string) => (await (await request.get(`/api/v1/${path}`)).json()) as T;
+    const apps = await get<{ id: string; company_name: string; role_id: string }[]>("applications");
+    const named = async (what: string, name: string) => {
+      const row = (await get<{ id: string; name: string }[]>(what)).find((r) => r.name === name);
+      expect(row, `${name} in ${what}`).toBeTruthy();
+      return row!.id;
+    };
     const contoso = apps.find((a) => a.company_name === "Contoso")!;
+    const agencies = await get<{ id: string }[]>("agencies");
+    const detailPages = [
+      `/applications/${contoso.id}`,
+      `/roles/${contoso.role_id}`,
+      `/companies/${await named("companies", "Contoso")}`,
+      `/people/${await named("contacts", "Alex Morgan")}`,
+      `/agencies/${agencies[0]!.id}`,
+      "/no-such-page",
+    ];
     // Your data stays as you wrote it, and the demo's is English: a role called "Senior Backend
     // Engineer" or a tag "remote" is data, even where the catalog uses the same words as an example.
+    // The API also sends English the app translates itself (default stage names): not data.
     const data = new Set<string>();
     for (const what of [
       "applications",
@@ -96,6 +120,7 @@ test.describe("a browser set to Simplified Chinese", () => {
       "documents",
       "interviews",
       "offers",
+      "notes",
     ]) {
       for (const s of strings(await (await request.get(`/api/v1/${what}`)).json())) data.add(s.trim());
     }
@@ -103,13 +128,18 @@ test.describe("a browser set to Simplified Chinese", () => {
       const links = await request.get(`/api/v1/links?entity_type=application&entity_id=${app.id}`);
       for (const s of strings(await links.json())) data.add(s.trim());
     }
+    for (const s of strings(en.stages)) data.delete(s);
+    // Search highlights split a title into pieces: a piece of your data is data too.
+    const isData = (text: string) =>
+      data.has(text) || [...data].some((d) => d.length > text.length && d.includes(text));
     const left: Record<string, string[]> = {};
-    for (const path of [...PAGES, `/applications/${contoso.id}`, `/people/${people[0]!.id}`]) {
+    for (const path of [...PAGES, ...detailPages]) {
       await page.goto(path);
-      await page.waitForLoadState("networkidle");
-      // The page's own heading, past the app's name in the header (an application's is level 3).
+      // The page's own heading, past the app's name in the header (an application's is level 3),
+      // then nothing still loading.
       await expect(page.getByRole("heading").nth(1)).toBeVisible();
-      const english = (await textOnScreen(page)).filter((text) => ENGLISH.has(text) && !data.has(text));
+      await expect(page.locator(".mantine-Loader-root, .mantine-Skeleton-root")).toHaveCount(0);
+      const english = (await textOnScreen(page)).filter((text) => isEnglish(text) && !isData(text));
       if (english.length) left[path] = [...new Set(english)];
     }
     expect(left).toEqual({});

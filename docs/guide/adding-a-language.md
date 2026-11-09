@@ -166,6 +166,8 @@ lower-case code (`pt-br`):
     {
       weekdayDayMonth: "dddd, D MMMM",
       shortWeekdayDayMonth: "ddd, D MMM",
+      shortWeekdayDayMonthTime: "ddd, D MMM, HH:mm",
+      shortWeekdayDayMonthYearTime: "ddd, D MMM YYYY, HH:mm",
       shortWeekdayDayMonthYear: "ddd, D MMM YYYY",
       dayMonth: "D MMM",
       dayMonthYear: "D MMM YYYY",
@@ -173,6 +175,9 @@ lower-case code (`pt-br`):
       monthYear: "MMM YYYY",
       dayMonthTime: "D MMM, HH:mm",
       time: "HH:mm",
+      // A date box shows its date this way, and reads a typed one the same way.
+      pickerDate: "D MMM YYYY",
+      pickerDateTime: "D MMM YYYY HH:mm",
     },
   ],
 ```
@@ -180,6 +185,7 @@ lower-case code (`pt-br`):
 ```ts
 const NUMBER_LOCALE = new Map<string, string>([
   ["en", "en-GB"],
+  ["zh-cn", "zh-CN"],
   ["pl", "pl-PL"],
 ]);
 ```
@@ -188,8 +194,8 @@ const NUMBER_LOCALE = new Map<string, string>([
 with a hyphen needs quotes (`"pt-BR": "Português (Brasil)"`):
 
 ```ts
-export const LANGUAGES = ["en", "pl"] as const;
-export const LANGUAGE_NAMES: Record<Language, string> = { en: "English", pl: "Polski" };
+export const LANGUAGES = ["en", "zh-CN", "pl"] as const;
+export const LANGUAGE_NAMES: Record<Language, string> = { en: "English", "zh-CN": "简体中文", pl: "Polski" };
 ```
 
 ## 6. Try it

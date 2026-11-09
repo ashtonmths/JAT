@@ -207,7 +207,7 @@ The full plan is in the [product requirements](docs/prd/tracker.md) and the
 
 ## 🌐 Languages
 
-The whole app comes in **English** and **简体中文** (Simplified Chinese): every page, message and date. It
+The app's interface comes in **English** and **简体中文** (Simplified Chinese): its pages, buttons, messages and dates. It
 picks your browser's language, and the language menu in the header switches it (your choice is
 remembered). The data you type in stays as you wrote it.
 

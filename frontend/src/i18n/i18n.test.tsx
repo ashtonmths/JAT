@@ -235,6 +235,19 @@ describe("the app's English", () => {
     expect(i18n.t("selftest:days", { count: 1 })).toBe("1 day");
     expect(i18n.t("selftest:days", { count: 3 })).toBe("3 days");
   });
+
+  it("puts the page's language and the tab's title in the language shown", async () => {
+    expect(document.documentElement.lang).toBe("en");
+    expect(document.title).toBe("Job Application Tracker");
+    await i18n.changeLanguage("zh-CN");
+    try {
+      expect(document.documentElement.lang).toBe("zh-CN");
+      expect(document.title).toBe("求职申请追踪器");
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+    expect(document.title).toBe("Job Application Tracker");
+  });
 });
 
 describe("pseudo-language", () => {
@@ -307,7 +320,8 @@ describe("pickLanguage", () => {
     for (const code of ["zh-CN", "zh-cn", "zh", "zh-Hans", "zh-Hans-CN", "zh-SG", "zh-Hans-SG"]) {
       expect(pickLanguage({ browser: [code] }), code).toBe("zh-CN");
     }
-    for (const code of ["zh-TW", "zh-HK", "zh-MO", "zh-Hant", "zh-Hant-TW", "ja-JP"]) {
+    expect(pickLanguage({ browser: ["zh_CN"] }), "zh_CN").toBe("zh-CN");
+    for (const code of ["zh-TW", "zh-HK", "zh-MO", "zh-Hant", "zh-Hant-TW", "zh-CHT", "zh-yue", "ja-JP"]) {
       expect(pickLanguage({ browser: [code] }), code).toBe("en");
     }
     // The browser's order wins: Traditional first, then Simplified, gives Simplified; English first stays English.
