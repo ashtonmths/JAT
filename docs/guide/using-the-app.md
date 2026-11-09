@@ -239,6 +239,15 @@ The **board** shows a column per stage. Drag a card to move it; the usual next s
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
 switch on *Show closed stages*, but appear while you drag so you can drop a card on them. Cards show the current interview round.
 
+The round's badge, on board cards, list rows and the quick view, says what the round needs:
+- booked: its day, "Round 2 · Technical · Thu 12 Nov" (still, once that day has passed, until you mark it done);
+- no time or deadline yet: "Round 1 · Screen · not booked yet";
+- can't go ahead at its time: "Round 2 · Technical · needs a new time";
+- marked done, with nothing heard since: "Round 1 · Screen · waiting to hear back". Something heard
+  is a stage move since the round (a move you undid doesn't count), an offer added since, or a later
+  round (even one cancelled); then the badge shows just the round's name. A booked later round is the
+  current round instead.
+
 The list's *Route* column and each board card name the application's recruiter. Through an agency,
 the list shows "Alex Morgan · Northwind Talent" and the card "Alex Morgan". Applied directly
 with an in-house recruiter who reached out, the list and the company's page show "Direct · Riley
@@ -305,7 +314,8 @@ Everything about one application:
 - **At a glance**: what this application needs, by the same rules as
   [Today](#today-home) (a reply to read, to-dos due by today or undated, an offer to
   answer in the next two weeks, a round waiting for an outcome, a follow-up due, gone quiet,
-  waiting to hear back), each with how long it's been ("for 12 days", "overdue by 2 days");
+  waiting to hear back, or a round done with nothing heard since, as its badge says, unless you're
+  already waiting on a reply), each with how long it's been ("for 12 days", "overdue by 2 days");
   then what's coming up (booked rounds and ones not booked yet, later to-dos and follow-ups,
   an offer due later, a snooze); then its key dates as "3 weeks ago": added, applied, moved to
   its current stage, the last call, email or message, the last interview, and the last
