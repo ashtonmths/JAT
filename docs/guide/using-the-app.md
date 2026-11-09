@@ -831,18 +831,21 @@ must match; case and accents don't matter.
 
 ## Picking dates
 
-Every calendar rings today in indigo, so you can see where you are. Weeks start on Monday, and
-dates read day, month, year ("31 Oct 2026", "30 Oct 2026, 19:25"), whatever language your
-browser is set to.
+Every calendar rings today in indigo, so you can see where you are. Weeks start on Monday. In
+English, dates read day, month, year ("31 Oct 2026", "30 Oct 2026, 19:25"), whatever your
+browser's own date settings; in Chinese they read the Chinese way ("2026年10月31日"). You can also
+type a date into a date box, written the same way the box shows it.
 
 ## Language
 
 The language button at the top right (beside light/dark mode, showing a globe and your current
 language's name) lists the languages the app
-comes in, each by its own name. For now that's English, with more *Coming soon!*. Your choice
-is kept in this browser; until you pick one, the app follows your browser's language if it
-has it, and English otherwise. What you've typed (companies, notes, stage names you've renamed
-or added) is never translated.
+comes in, each by its own name: English and 简体中文 (Simplified Chinese), with *More coming soon*.
+Your choice is kept in this browser; until you pick one, the app follows your browser's language
+if it has it, and English otherwise. A browser set to Simplified Chinese in any form (`zh`,
+`zh-CN`, `zh-Hans`, `zh-SG`) gets Chinese; one set to Traditional Chinese (`zh-TW`, `zh-HK`)
+stays in English until there's a Traditional translation. What you've typed (companies, notes,
+stage names you've renamed or added) is never translated; the default stage names are.
 
 Under the languages, *Don't see your language?* opens [a guide to adding one](adding-a-language.md)
 on GitHub, in a new tab. It's an ordinary link: the app itself never fetches anything from there.

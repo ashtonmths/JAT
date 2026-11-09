@@ -199,10 +199,23 @@ the [releases](https://github.com/waddington/job-application-tracker/releases) a
 | 🏅 | **Recruiter scorecard**: roles sent, interview rate, where they ended up, time to first update and last contact, per recruiter and per agency |
 | 💷 | **Offer comparison**: salary, bonus, equity, pension and holiday, or day rate, IR35 and length for contracts, side by side with a worth-a-year figure; replies due show on Today |
 | 🔎 | **Search everything**: one box (press <kbd>/</kbd>) finds applications, people and their emails and phone numbers, interview debriefs, calls and meetings, offers, timeline entries, Markdown notes, CVs, files, emails and links |
+| 🌐 | **Use it in your language**: English and 简体中文 (Simplified Chinese), from the language menu or your browser's language, with dates and numbers written the local way; your own data stays as you wrote it (see [Languages](#-languages)) |
 | 💾 | **Backups built in**: automatic git snapshots of your private data folder, readable JSON Lines export, a one-click zip of everything (or `jat archive`), one-command restore |
 
 The full plan is in the [product requirements](docs/prd/tracker.md) and the
 [roadmap](docs/ROADMAP.yaml): next up are Windows support, a one-command install and Docker.
+
+## 🌐 Languages
+
+The whole app comes in **English** and **简体中文** (Simplified Chinese): every page, message and date. It
+picks your browser's language, and the language menu in the header switches it (your choice is
+remembered). The data you type in stays as you wrote it.
+
+<img src="docs/screenshots/language-menu.png" alt="The language menu in the header, open: English, 简体中文, More coming soon, and Don't see your language?" width="420">
+
+More are coming. The translations are made with AI, so if something reads wrong in your language,
+please [open an issue](https://github.com/waddington/job-application-tracker/issues) or a pull request. To add
+a language, see [adding a language](docs/guide/adding-a-language.md).
 
 ## 🤔 Why not a spreadsheet, Notion, Huntr or Teal?
 
