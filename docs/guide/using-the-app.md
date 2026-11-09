@@ -246,7 +246,8 @@ The round's badge, on board cards, list rows and the quick view, says what the r
 - marked done, with nothing heard since: "Round 1 · Screen · waiting to hear back". Something heard
   is a stage move since the round (a move you undid doesn't count), an offer added since, or a later
   round (even one cancelled); then the badge shows just the round's name. A booked later round is the
-  current round instead.
+  current round instead. A round without a time counts from when you marked it done, and editing it
+  afterwards doesn't change that. An archived application isn't waiting.
 
 The list's *Route* column and each board card name the application's recruiter. Through an agency,
 the list shows "Alex Morgan · Northwind Talent" and the card "Alex Morgan". Applied directly
