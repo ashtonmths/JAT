@@ -183,7 +183,7 @@ class NoteStore:
     def read(self, rel_path: str) -> Note:
         path = self._abs(rel_path)
         mtime = datetime.fromtimestamp(path.stat().st_mtime, UTC)
-        return parse(path.read_text(encoding="utf-8"), rel_path, mtime)
+        return parse(path.read_text(encoding="utf-8-sig"), rel_path, mtime)
 
     def create(self, title: str, body: str, links: list[str]) -> Note:
         now = utcnow().replace(microsecond=0)
