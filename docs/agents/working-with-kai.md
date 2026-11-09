@@ -25,8 +25,9 @@ where things run. Quotes are Kai's words.
   express permssion for you to auto merge and release". So after the cycle (review, fix, re-review the fixes, checks
   on the final commit), merge and release without asking. A major needs Kai's explicit yes every time. The auto-mode
   check doesn't read CLAUDE.md and can still block a merge ("Merge Without Review", often after fixes landed post-
-  review): `.claude/settings.json` allows `tools/dev/merge.sh` and `ship.sh` for that reason. If it still blocks,
-  ask Kai and give the `!` command; never work around it.
+  review): `.claude/settings.json` allows `tools/dev/merge.sh` and `ship.sh`, which should let them run (run them as
+  `tools/dev/merge.sh N`, relative, as the rules match the text). If it still blocks, ask Kai and give the `!`
+  command; never work around it.
 - **Plan before building when asked:** "dont do anything yet, give me a PR plan"; "noooo noo no no, dont buikld antyhing
   eyt … undo all of that. i want to know what each PR would be". Write the plan (an RFC in `docs/rfc/`, roadmap tasks)
   and stop; build on "lets get building" / "do the first item". Fact-check a plan before merging it (one plan had 15
