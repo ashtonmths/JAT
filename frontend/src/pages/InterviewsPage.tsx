@@ -23,6 +23,7 @@ import { roundStatus } from "../components/Interviews";
 import { RescheduleButton, RescheduledBadge, wasText } from "../components/Reschedule";
 import { RecruiterLine } from "../components/RecruiterLine";
 import { roundLabel } from "../utils/rounds";
+import text from "../text.module.css";
 import { formatDateTime } from "../utils/time";
 
 /** Mark an open round done (or, once its time has passed, that it didn't happen), move a booked one
@@ -81,7 +82,7 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
             return (
               <Table.Tr key={i.id}>
                 <Table.Td>
-                  <Text size="sm">
+                  <Text size="sm" className={text.keepWords}>
                     {i.needs_new_time_since
                       ? wasText(i)
                       : !when

@@ -1,0 +1,8 @@
+/*
+ * Short labels in narrow places (table headers, dates, "2 days ago"): wrap only at spaces, as
+ * English does, so Chinese doesn't break inside a word ("2 天 / 前", "申 / 请"). It changes
+ * nothing for English or other languages written with spaces between words.
+ */
+.keepWords {
+  word-break: keep-all;
+}

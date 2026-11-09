@@ -11,7 +11,10 @@ const today = { defaultProps: { highlightToday: true }, classNames: { day: class
 
 /** The app's theme for a language (only the date pickers' pattern differs between languages). */
 export function themeFor(lang: string) {
-  const picker = (valueFormat: string) => ({ ...today, defaultProps: { ...today.defaultProps, valueFormat } });
+  const picker = (valueFormat: string) => ({
+    ...today,
+    defaultProps: { ...today.defaultProps, valueFormat },
+  });
   return createTheme({
     primaryColor: "indigo",
     defaultRadius: "md",

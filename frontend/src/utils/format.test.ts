@@ -28,6 +28,8 @@ const TODAY_SHOWS: Record<DatePattern, [string, string]> = {
   monthYear: ["MMM YYYY", "Mar 2026"],
   dayMonthTime: ["D MMM, HH:mm", "5 Mar, 09:07"],
   time: ["HH:mm", "09:07"],
+  pickerDate: ["D MMM YYYY", "5 Mar 2026"],
+  pickerDateTime: ["D MMM YYYY HH:mm", "5 Mar 2026 09:07"],
 };
 
 describe("formatDay", () => {
