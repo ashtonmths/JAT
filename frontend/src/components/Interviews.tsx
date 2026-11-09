@@ -41,6 +41,35 @@ export function roundStatus(round: RoundLike): { label: string; color: string } 
 
 const shortDate = (iso: string) => formatShortWeekday(iso, i18n.language);
 
+// The round an application is at. A server from before `waiting_to_hear_back` doesn't send it:
+// such a round shows just its name once done, as before.
+type CurrentRound = Omit<NonNullable<ApplicationRow["current_round"]>, "waiting_to_hear_back"> & {
+  waiting_to_hear_back?: boolean;
+};
+
+/**
+ * What the badge says after a round's name: its time, or what it's waiting for.
+ * - waiting for a new time: "needs a new time";
+ * - booked (a time or deadline): the day, "Thu 2 Oct", also once that has passed until it's marked done;
+ * - not booked (no time or deadline, still to happen): "not booked yet";
+ * - done with nothing heard since: "waiting to hear back". The server works that out
+ *   (`waiting_to_hear_back`, see `waiting_to_hear_back` in domain/interviews.py): no stage move,
+ *   offer or later round since it happened;
+ * - otherwise (done and something has happened since) just its name.
+ */
+export function roundBadgeText(round: CurrentRound): string {
+  const label = roundLabel(round);
+  const when = round.starts_at ?? round.deadline_at;
+  if (round.status === "scheduled") {
+    if (round.needs_new_time_since) return i18n.t("interviews:needsNewTime.roundBadge", { label });
+    if (when) return i18n.t("interviews:badgeWhen", { label, when: shortDate(when) });
+    return i18n.t("interviews:badgeNotBooked", { label });
+  }
+  if (round.status === "done" && round.waiting_to_hear_back)
+    return i18n.t("interviews:badgeWaiting", { label });
+  return label;
+}
+
 /**
  * The round an application is at ("Round 2 · System design test · Thu 2 Oct"), for cards, rows
  * and headers. Only shown while the application is in an active stage: once there's an offer or
@@ -51,7 +80,7 @@ export function RoundBadge({
   stageKind,
   size = "sm",
 }: {
-  round: ApplicationRow["current_round"];
+  round: CurrentRound | null | undefined;
   stageKind: string;
   size?: "xs" | "sm";
 }) {
@@ -59,8 +88,6 @@ export function RoundBadge({
   if (!round || stageKind !== "active") return null;
   const when = round.starts_at ?? round.deadline_at;
   const pending = round.status === "scheduled" && !!round.needs_new_time_since;
-  const upcoming = round.status === "scheduled" && when;
-  const label = roundLabel(round);
   return (
     <Tooltip label={pending ? wasText(round) : when ? formatDateTime(when) : ""} disabled={!when}>
       <Badge
@@ -74,11 +101,7 @@ export function RoundBadge({
         style={{ textTransform: "none", maxWidth: "100%" }}
         styles={{ label: { whiteSpace: "normal", overflow: "visible", textAlign: "left" } }}
       >
-        {pending
-          ? i18n.t("interviews:needsNewTime.roundBadge", { label })
-          : upcoming
-            ? i18n.t("interviews:badgeWhen", { label, when: shortDate(when) })
-            : label}
+        {roundBadgeText(round)}
       </Badge>
     </Tooltip>
   );

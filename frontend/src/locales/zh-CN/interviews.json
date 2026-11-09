@@ -1,6 +1,8 @@
 {
   "label": "第 {{round}} 轮 · {{what}}",
   "badgeWhen": "{{label}} · {{when}}",
+  "badgeNotBooked": "{{label}} · 尚未预约",
+  "badgeWaiting": "{{label}} · 等待回复",
   "kindNames": {
     "screen": "初筛",
     "hiring_manager": "用人经理面",

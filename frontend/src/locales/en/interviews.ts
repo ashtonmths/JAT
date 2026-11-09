@@ -6,6 +6,12 @@ export default {
   label: "Round {{round}} · {{what}}",
   // The round badge on cards and rows, when it's booked: "Round 2 · Technical · Thu 2 Oct".
   badgeWhen: "{{label}} · {{when}}",
+  // The badge for a round with no time or deadline yet, so it still needs booking:
+  // "Round 1 · First chat · not booked yet" (the words of notBooked, as needsNewTime.roundBadge does).
+  badgeNotBooked: "{{label}} · not booked yet",
+  // The badge for a round marked done with nothing since (no stage move, offer or later round):
+  // "Round 1 · First chat · waiting to hear back". The same words as Today's Waiting to hear back.
+  badgeWaiting: "{{label}} · waiting to hear back",
   // A round with no description goes by its kind ("other" reads "Interview" here).
   kindNames: {
     screen: "Screen",

@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { formatDateTime } from "../utils/time";
-import { RoundBadge, roundStatus } from "./Interviews";
+import { RoundBadge, roundBadgeText, roundStatus } from "./Interviews";
 import { wasText } from "./Reschedule";
 
 // How a round waiting for a new time shows wherever rounds show, word for word.
@@ -51,5 +51,50 @@ describe("a round waiting for a new time", () => {
       </MantineProvider>,
     );
     expect(screen.getByText("Round 2 · System design test · needs a new time")).toBeInTheDocument();
+  });
+});
+
+// What the round badge on the board, list and quick view says after the round's name.
+describe("the round badge", () => {
+  const round = { ...waiting, needs_new_time_since: null, needs_new_time_by: null };
+
+  it("gives a booked round's day, even once it has passed until it's marked done", () => {
+    expect(roundBadgeText({ ...round, starts_at: "2030-03-14T10:00:00Z" })).toBe(
+      "Round 2 · System design test · Thu 14 Mar",
+    );
+    expect(roundBadgeText({ ...round, starts_at: "2020-03-14T10:00:00Z" })).toBe(
+      "Round 2 · System design test · Sat 14 Mar",
+    );
+    expect(roundBadgeText({ ...round, starts_at: null, deadline_at: "2030-03-15T17:00:00Z" })).toBe(
+      "Round 2 · System design test · Fri 15 Mar",
+    );
+  });
+
+  it("says a round with no time or deadline is not booked yet", () => {
+    expect(roundBadgeText({ ...round, starts_at: null })).toBe(
+      "Round 2 · System design test · not booked yet",
+    );
+  });
+
+  it("says a done round with nothing heard since is waiting to hear back", () => {
+    const done = { ...round, status: "done", waiting_to_hear_back: true };
+    expect(roundBadgeText(done)).toBe("Round 2 · System design test · waiting to hear back");
+    // Undated (marked done without ever being booked) too.
+    expect(roundBadgeText({ ...done, starts_at: null })).toBe(
+      "Round 2 · System design test · waiting to hear back",
+    );
+  });
+
+  it("gives only the name of a done round with something since, or from an older server", () => {
+    expect(roundBadgeText({ ...round, status: "done", waiting_to_hear_back: false })).toBe(
+      "Round 2 · System design test",
+    );
+    expect(roundBadgeText({ ...round, status: "done" })).toBe("Round 2 · System design test");
+  });
+
+  it("still says a round waiting for a new time needs one, whatever its time", () => {
+    expect(roundBadgeText({ ...waiting, starts_at: null })).toBe(
+      "Round 2 · System design test · needs a new time",
+    );
   });
 });
