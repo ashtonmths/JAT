@@ -413,8 +413,8 @@ def _with_rounds(session: Session, rows: list[S.ApplicationRow]) -> list[S.Appli
     """
     current = interviews_svc.current_rounds(session, (r.id for r in rows))
     booked = interviews_svc.booked_ahead(session, (r.id for r in rows), datetime.now(UTC))
-    # Only an open application's round shows, so only those are worked out.
-    active = {r.id: r.stage for r in rows if r.stage_kind == "active"}
+    # Only an open application waits to hear back: in an active stage and not archived.
+    active = {r.id: r.stage for r in rows if r.stage_kind == "active" and not r.archived}
     waiting = interviews_svc.waiting_to_hear_back(session, current, active)
     for r in rows:
         if (interview := current.get(r.id)) is not None:

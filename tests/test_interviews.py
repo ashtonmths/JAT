@@ -452,6 +452,16 @@ def test_a_closed_application_is_not_waiting(client, seeded):
     assert _waiting(client, app["id"]) is False
 
 
+def test_an_archived_application_is_not_waiting(client, seeded):
+    app = _app(client, seeded)
+    _done_round(client, app["id"])
+    assert _waiting(client, app["id"]) is True
+    client.patch(f"/api/v1/applications/{app['id']}", json={"archived": True})
+    assert _waiting(client, app["id"]) is False  # still in an active stage, but put away
+    rows = client.get("/api/v1/applications", params={"archived": True}).json()
+    assert [r["current_round"]["waiting_to_hear_back"] for r in rows if r["id"] == app["id"]] == [False]
+
+
 def test_an_offer_after_the_round_is_a_decision(client, seeded):
     app = _app(client, seeded)
     _done_round(client, app["id"], "Final")
