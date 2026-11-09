@@ -32,7 +32,7 @@ def render() -> str:
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
     out = Path(args[0]) if args else DEFAULT_OUT
-    out.write_text(render())
+    out.write_text(render(), encoding="utf-8", newline="\n")
     print(f"wrote {out}")
     return 0
 

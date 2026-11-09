@@ -74,7 +74,8 @@ class SnapshotStatus:
 def debounce_from_config(data_dir: Path) -> float:
     path = data_dir / "config.toml"
     try:
-        value = tomllib.loads(path.read_text()).get("snapshot", {}).get("debounce_seconds", DEFAULT_DEBOUNCE)
+        raw = tomllib.loads(path.read_text(encoding="utf-8-sig"))
+        value = raw.get("snapshot", {}).get("debounce_seconds", DEFAULT_DEBOUNCE)
     except (OSError, tomllib.TOMLDecodeError):
         return DEFAULT_DEBOUNCE
     if isinstance(value, bool) or not isinstance(value, int | float) or value < 0:
@@ -89,6 +90,7 @@ def _git(data_dir: Path, *args: str, timeout: float = 30) -> subprocess.Complete
             ["git", "-C", str(data_dir), *args],
             capture_output=True,
             text=True,
+            encoding="utf-8",
             timeout=timeout,
             check=False,
             stdin=subprocess.DEVNULL,
@@ -167,7 +169,7 @@ class SnapshotService:
         """Exclusive across processes (the app and `jat snapshot`/`jat push`)."""
         git_dir = self.data_dir / ".git"
         lock_path = (git_dir if git_dir.is_dir() else self.data_dir) / LOCK_NAME
-        with open(lock_path, "w") as fh:
+        with open(lock_path, "w", encoding="utf-8") as fh:
             try:
                 fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
