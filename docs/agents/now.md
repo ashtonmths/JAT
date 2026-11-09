@@ -1,102 +1,111 @@
 # Now: state and live plan
 
-Snapshot 2026-11-08, after #273 (main at `29e9ec8`, v1.19.5). Refresh this file before each compaction. Before
+Snapshot 2026-11-09, after #287 (main at `566f635`, v1.19.12). Refresh this file before each compaction. Before
 trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and `docs/ROADMAP.yaml`.
 
 ## State
 
-- Released up to **v1.19.5**. No open PRs; only `main` locally and on GitHub, unless this snapshot is older than the last
-  merge.
+- Released up to **v1.19.12**. Our own PRs: none open; only `main` locally and on GitHub.
+- **Open PRs from a contributor** (issue #230's author, Windows work; Kai reviews them, see *Contributors' PRs* in
+  working-with-kai.md): #283 `windows-starts`, #284 `utf8-everywhere`, #285 `windows-time-zones`. Not merged.
 - **All 17 Simplified Chinese string files are in** (still a draft: shown only on a dev server, `?lang=zh-CN`).
 - Kai's tracker on 8770 still needs a restart for #254's *Rejected* badge on roles (Ctrl+C, `uv run jat serve`). Since
-  then everything is frontend, tooling or docs.
-- Tests on main: pytest 1,309, browser 713 (#271's full run).
+  then everything is frontend, tooling or docs (v1.19.6's change is only what `jat init` writes).
+- Tests on main: pytest 1,311, browser 717 (#286's full run).
 - Dependabot: #32 and #33, both minimatch in dev tools only; the fix (minimatch 11) waits for eslint and redocly. Leave
   them open unless Kai dismisses them.
 - Background jobs of this session: the PM dashboard on 8767 and the zh-CN demo API on 8891
   (`uv run jat --data-dir /home/kai/.claude/jobs/cf5328f4/tmp/zh/demo serve --dev --port 8891`). A session restart
   stops both; restart the dashboard at once, the demo API only when a zh-CN task needs it. If that folder is gone (a new
   session gets a new job folder), seed one with `uv run python scripts/seed_demo.py <dir>`.
+- The user-level after-compaction hook is still **not** in `~/.claude/settings.json` (checked 2026-11-09; the JSON
+  is under *Waiting on Kai*).
 
-## Done since the last snapshot (2026-11-07 / 08)
+## Done since the last snapshot (2026-11-08 / 09)
 
-- #264 Backlog task `generalise-agent-tooling` (make the Claude Code-only tooling work with other agents; plan first).
-- #265 the helper scripts in `tools/dev/`; #266 these notes and the after-compaction hook.
-- Chinese string files, by builder agents with the lead running the workflows: #268 `today`, #267 `people`, #269
-  `errors`, #273 `insights`. No release (draft).
-- Bugs Kai picked: #270 `fix-add-another-role-carries-over` (v1.19.4); #271 `fix-offer-kind-pin-flaky` (v1.19.5: the
-  pin now holds GET /roles until the form opens, capped at 5 s, and only then marks itself expected-to-fail).
-- #272 `bugs-stale-key-pattern`: Kai asked whether other boxes are tied to a time instead of their record. Seven bugs share
-  that cause: three new (`fix-stale-edit-other-dialogs` medium, `fix-today-reschedule-lost-when-due` low,
-  `fix-midnight-drops-open-edits` low) and four linked (`fix-rename-drops-unsaved-about`, `fix-applied-date-wipe`,
-  `fix-stale-edit-after-save`, `fix-note-reopen-stale`). One shared fix is planned, `fix-stale-key-pattern` (P7). Kai
-  said not to fix them yet.
+- Six bugs Kai picked as easy and low-risk, by builder agents in parallel (after "my usage limit refreshed, do it in
+  paralel with agents"), merged one at a time: #278 `fix-archive-lock-not-ignored` (v1.19.6), #276
+  `fix-deleted-application-documents-stale` (v1.19.7), #275 `fix-menu-recruiters-section` (v1.19.8), #277
+  `fix-version-label-repeats` (v1.19.9), #279 `fix-refused-delete-stale-page` (v1.19.10, refreshes only after a coded
+  refusal: `isRefusal` in `api/client.ts`), #281 `fix-offer-loading-says-none` (v1.19.11).
+- #280 `bugs-loading-state-pattern`: Kai asked whether other places show "nothing here" while loading. Four more bugs
+  (`fix-roles-card-loading-says-none`, `fix-calls-card-loading-says-none`, `fix-today-done-loading-says-none`,
+  `fix-today-recent-loading-says-none`) and a planned shared fix, `fix-loading-state-pattern` (a `QueryState` with
+  animated skeletons; needs Kai's go on skeletons vs loaders and the new "couldn't load" text).
+- #282 `review-process-check`: Kai worried reviews weren't finding things. Planted bugs were all caught; small fixes are
+  mostly right first time. Three planned tasks: `review-brief-blind`, `review-break-attempt`, `review-seeded-canary`.
+- #286 `today-coming-up-pill` (v1.19.12): today's rounds and calls in Coming up show the to-dos' orange *Today* pill at
+  the left of the Reschedule line (placement settled on a demo with Kai); a call's buttons now fade like a round's.
+- #287 `pm-code-lines-split`: the dashboard's Code tile shows source · tests · other (they add up to the total).
+- Contributor PR reviews for Kai (nothing posted): #285 (tzdata right; asks: drop the `fcntl` MagicMock from
+  `tests/conftest.py`, and a test that switches off the system time-zone files) and #283 (works in simulation, Linux
+  unchanged; asks: Windows checks in one place, two test fixes, a Prettier fix; nine smaller items kept as Kai's
+  follow-ups after merging). Kai has the drafted comments.
 
-## Kai's latest asks (2026-11-07 / 08)
+## Kai's latest asks (2026-11-08 / 09)
 
-1. "the compaction doc is very long…" and "do it, but make sure that the files to be read after resuming do actually
-   get read…" → #266. The user-level hook needs Kai: the auto-mode check refused editing `~/.claude/settings.json`.
-   Kai was given this to add next to `"env"` (not confirmed added; check `jq .hooks ~/.claude/settings.json`):
-   ```json
-   "hooks": { "SessionStart": [ { "matcher": "compact", "hooks": [ { "type": "command",
-     "command": "/home/kai/Documents/Projects/job-application-tracker/tools/dev/after_compact.sh --user", "timeout": 30 } ] } ] },
-   ```
-2. "actually dont paralleisd im close to usage limit" (2026-11-07), then on 2026-11-08 "do today and people in parallel
-   with agents, not yourself": translations and fixes go to builder agents.
-3. "choose 3 easy bugs to fix…" → listed; "do 1, do 3 but ensure there is a maximum time limit for the test so it cant
-   wait forever, on bug 2 … investigate this pattern of bug and report back and add to roadmap, dont fix yet" → #270,
-   #271, #272.
-4. "of the new chinese work, are there other tasks to pick up that are not translations" → listed (below); then
-   "actually just do the last translation" → #273. The three tooling gaps were offered, not taken up.
-5. "update teh compaction doc" → this refresh.
+1. "choose 6 low-risk, small, quick, easy bugs" → "do those 6, but before doing 3 check if this is a pattern…" → the six
+   bug PRs and #280.
+2. "im concerned that code reviews are not finding things to fix…" → the check; "add all 3 suggestions to the roadmap"
+   → #282.
+3. Issue #230: a reply drafted for Kai; how FOSS projects handle contributors; which of #283–#285 first (#285, #283,
+   #284); "use /agent-team to do a code review" of #285 and #283 (plus `/code-review:code-review` on #283), comments
+   drafted as one top-level comment, encouraging, only blockers, and only claiming what Kai did.
+4. "a small area … for today in coming up" → ideas → the pill → #286. "lines of code … total, tests, source" → #287.
+5. "update compact doc" → this refresh.
 
 ## Next
 
-Nothing Kai asked for is unfinished. Report and wait. When Kai picks, the likely next items are:
+Nothing Kai asked for is unfinished. Report and wait. Likely next, when Kai says:
 
-- **`i18n-zh-cn-layout`** (`next`): CJK fonts, clipped labels, and capitals styling that turns Offer into OFFER on stage
-  badges and section headings (Today's 待答复的 Offer). Can start now.
-- **`i18n-zh-cn-switch-on`** (`next`, minor): into `LANGUAGES`, drop the dev-only gate, load on demand, README "Use it
-  in your language"; decide about plain `zh`/`zh-Hans` browsers. All 17 files are in, so it's unblocked.
-- Then `-demo-data` (Kai to confirm), `-screenshots` (show Kai first), `-readme`, `-website` (Kai to confirm), `-listing`
-  (Kai approves the exact text).
-- **Tooling gaps offered, not on the roadmap:** `apply_review.py` and the consistency pass mishandle keys carrying the
-  namespace prefix (`errors.x`, `insights:x`; seen on `errors` and `insights`, fixed by hand); `screenshots.py` can't
-  click (tabs) or make a save fail (error toasts), so builders wrote throwaway helpers; `pages.json` points at an agency
-  by literal id (people) because agencies can't be looked up by name. Add them only if Kai says.
+- **Contributor PRs:** once the contributor pushes changes, re-run the full checks on their new commit (and the Windows
+  simulation for #283), then Kai's bump/CHANGELOG/roadmap and merge on Kai's go. Order: #285, #283 (minor: 1.20.0),
+  #284 (conflicts with #283 in `snapshot/git.py` and `datadir.py`). Kai tests #283 on Windows himself.
+- **`i18n-zh-cn-layout`** and **`i18n-zh-cn-switch-on`** (both `next`), then `-demo-data`, `-screenshots` (show Kai
+  first), `-readme`, `-website`, `-listing`.
+- **Planned, waiting for Kai's go:** `fix-loading-state-pattern`, `fix-stale-key-pattern`, the three review-process
+  tasks.
+- **Tooling gaps offered, not on the roadmap:** namespace-prefixed keys in `apply_review.py`/`assemble.py`;
+  `screenshots.py` can't click; `pages.json` uses a literal agency id. Add them only if Kai says.
 
-**How a translation or fix ran this round** (keep doing it this way unless Kai says otherwise):
-- A builder agent per item (`isolation: "worktree"`, no `name`), briefed by `/home/kai/.claude/jobs/cf5328f4/tmp/deps/zh-builder-brief.md`
-  (translations; it's outside the repo, so if it's gone, rewrite it from `scripts/i18n/translate/README.md`, which has
-  every step) or `tools/dev/briefs/bug-fix.md` (bugs). Builders have **no Workflow tool**: they stop at each workflow
-  step with an args file; the lead runs the workflow (`scriptPath` in the builder's worktree), saves `.result` from the
-  task output file into the builder's `var/i18n/zh-CN/<ns>/` (translate.json, review.json, rereview-1.json) and resumes
-  the builder with SendMessage.
-- One Sonnet reviewer per bug PR (diff saved to a file, Read-only); the lead adds the bump (`tools/dev/bump.py`), runs
-  `tools/dev/checks.sh` (full for app or test changes), merges with `tools/dev/merge.sh`, then
-  `tools/dev/ship.sh <version|-> <pr> <agent worktree folder> <branch>` from the main checkout. Agent worktrees stay
-  locked: `git worktree remove -f -f` them and delete their branches if `ship.sh` couldn't.
-- Merge order: whatever's checks are already running goes first; the next branch merges main and reruns its checks.
+**How bug fixes ran this round** (keep doing it this way unless Kai says otherwise):
+- A builder agent per bug (`isolation: "worktree"`, no `name`), briefed with `tools/dev/briefs/bug-fix.md` plus any
+  decision already made. Builders open draft PRs; the lead reviews, bumps, merges and releases one at a time.
+- One Sonnet reviewer per PR, given the diff as a file; the lead fixes its should_fix items, proves each test fails
+  without the fix (temporarily restoring main's file), adds the bump (`tools/dev/bump.py`), runs `tools/dev/checks.sh`,
+  merges (`tools/dev/merge.sh`) and ships (`tools/dev/ship.sh <version> <pr> <worktree> <branch>` from the main
+  checkout), then `git worktree remove -f -f` the agent's worktree and delete its branch. Every merge moves main, so
+  the next PR merges main and reruns its checks; stop a run that's about to be stale rather than finishing it.
+- Translations: the builder brief at `/home/kai/.claude/jobs/cf5328f4/tmp/deps/zh-builder-brief.md` (outside the repo;
+  if gone, rewrite it from `scripts/i18n/translate/README.md`); builders have no Workflow tool, the lead runs the
+  workflows for them.
 
 **Simplified Chinese decisions** (Kai): `zh-CN`; Traditional browsers stay English; "More coming soon"; AI translation,
 corrections by issue or PR; a draft until switch-on; no release while a draft; Opus translates and judges, Sonnet and Opus
-review; no screenshots in PRs. Cost this round: today about 4M, people 4.3M, errors and insights each about 3.5M (the
-review workflows are the biggest share).
+review; no screenshots in PRs.
 
 ## Waiting on Kai (don't start)
 
+- **The user-level hook:** add to `~/.claude/settings.json` next to `"env"` (the auto-mode check refuses this edit):
+  ```json
+  "hooks": { "SessionStart": [ { "matcher": "compact", "hooks": [ { "type": "command",
+    "command": "/home/kai/Documents/Projects/job-application-tracker/tools/dev/after_compact.sh --user", "timeout": 30 } ] } ] },
+  ```
+- **Contributor PRs #283–#285:** Kai posts the drafted comments and tests #283 on Windows.
+- **Repo gaps offered for contributors, no answer:** `CONTRIBUTING.md` and the PR template tell contributors to update
+  `CHANGELOG.md`, but Kai asked them to leave it; and PRs get no automatic checks (a GitHub Actions job, perhaps with a
+  `windows-latest` Python run).
 - **The MCP server:** the `mcp-*` tasks wait on the 11 decisions in `docs/rfc/mcp.md` §14.
-- **Windows** (`docs/rfc/windows.md`): `windows-starts` first; issue #230's author picks a task. Don't post for Kai.
-- **Backlog to plan with Kai:** `generalise-agent-tooling`, `fix-stale-key-pattern`, `code-cleanup`,
-  `delivery-speed-improvements`, `recruiter-open-application-mark`, `i18n-search`, the P11 test gaps,
-  `tests-reorganise`, Docker, `packaged-install`, `desktop-app`, `hosted-version`, `demo-site`.
+- **Backlog to plan with Kai:** `generalise-agent-tooling`, `code-cleanup`, `delivery-speed-improvements`,
+  `recruiter-open-application-mark`, `i18n-search`, the P11 test gaps, `tests-reorganise`, Docker, `packaged-install`,
+  `desktop-app`, `hosted-version`, `demo-site`.
 - **Left alone** (Kai, 2026-11-02): `notes-documents-improve`, `timeline-improve`, `people-you-meet`.
 - **Offered, no answer:** the GitHub description and topics from #96; a short brand name; tile rows on other pages;
-  dropping *Screen* from the default workflow; linking the recruiter in the Applications list; rebuilding `demo.gif`.
-- **Open bugs:** 67 in phase B, 1 high (`fix-applied-date-wipe`, also in the stale-key family). None is fixed without
-  Kai's go. Quick ones left from the last pick: `fix-backup-same-site` (a behaviour change to the backup route, look
-  first), `fix-archive-lock-not-ignored` (trivial, rare). Two lack rating fields: `fix-escape-closes-quick-view`,
-  `fix-phone-header-overlap` (likely a duplicate of `fix-phone-header-overflow`).
+  dropping *Screen* from the default workflow; linking the recruiter in the Applications list; rebuilding `demo.gif`;
+  day headings or a countdown for Today's Coming up.
+- **Open bugs:** 64 in phase B, 1 high (`fix-applied-date-wipe`, in the stale-key family). None is fixed without Kai's
+  go. Two lack rating fields: `fix-escape-closes-quick-view`, `fix-phone-header-overlap` (likely a duplicate of
+  `fix-phone-header-overflow`).
 
 ## Noticed, not promised
 
