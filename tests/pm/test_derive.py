@@ -6,7 +6,15 @@ from tempfile import TemporaryDirectory
 from unittest import mock
 
 from tools.pm import derive, render
-from tools.pm.live import Collector, Commit, Snapshot, count_code, keep_last_good, parse_prs
+from tools.pm.live import (
+    Collector,
+    Commit,
+    Snapshot,
+    count_by_kind,
+    count_code,
+    keep_last_good,
+    parse_prs,
+)
 from tools.pm.roadmap import Live, PullRequest, apply_live, from_data
 from tools.pm.server import Dashboard
 
@@ -144,6 +152,30 @@ class CodeCountTests(unittest.TestCase):
             (root / "notes.md").write_text("words\n" * 50)
             files = ["a.py", "b.spec.ts", "plain.ts", "schema.d.ts", "notes.md", "gone.py"]
             self.assertEqual(count_code(root, files), (13, 4))
+
+    def test_lines_split_into_source_tests_and_other_adding_up_to_the_total(self):
+        sizes = {
+            "src/app.py": 10,  # source: the app
+            "frontend/src/a.tsx": 7,
+            "frontend/src/a.test.tsx": 4,  # tests, though among the source
+            "tests/test_app.py": 3,
+            "tests/helpers.py": 2,  # set-up under tests/ is test code too
+            "frontend/e2e/fixtures.ts": 5,
+            "tests/pm/test_board.py": 6,  # the dashboard's tests: other
+            "tools/pm/render.py": 8,  # the dashboard: other
+            "frontend/vite.config.ts": 1,  # config: other
+            "website/src/page.astro": 9,  # the website: other
+            "frontend/src/schema.d.ts": 50,  # generated: never counted
+        }
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, n in sizes.items():
+                (root / name).parent.mkdir(parents=True, exist_ok=True)
+                (root / name).write_text("x\n" * n)
+            files = [*sizes, "tests/gone.py"]
+            by_kind = count_by_kind(root, files)
+            self.assertEqual(by_kind, {"source": 17, "tests": 14, "other": 24})
+            self.assertEqual(sum(by_kind.values()), count_code(root, files)[0])
 
 
 class ParseTests(unittest.TestCase):
@@ -305,8 +337,20 @@ class OverviewTests(unittest.TestCase):
         return render.overview(roadmap(prs), Snapshot(live=Live(prs=list(prs)), **kw), NOW)
 
     def test_the_strip_of_numbers(self):
-        html = self.html(pr(1, "worktree-a"), pr(2, "worktree-c", "OPEN", merged=""), lines=1234, tests=56)
-        for text in ("1 of 3 tasks done", "1 merged, 2 total", "1,234 <small>lines</small>", "56 tests defined"):
+        html = self.html(
+            pr(1, "worktree-a"),
+            pr(2, "worktree-c", "OPEN", merged=""),
+            lines=1234,
+            tests=56,
+            by_kind={"source": 700, "tests": 500, "other": 34},
+        )
+        for text in (
+            "1 of 3 tasks done",
+            "1 merged, 2 total",
+            "1,234 <small>lines</small>",
+            "56 tests defined",
+            "700 source · 500 tests · 34 other",
+        ):
             self.assertIn(text, html)
         self.assertIn('<span class="now">now</span>', html)
 
