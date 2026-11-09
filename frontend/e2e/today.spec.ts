@@ -151,8 +151,10 @@ test.describe("what it shows", () => {
       // Its Reschedule fades like every other row's, round or call.
       expect(await strength(row(title).getByRole("button", { name: "Reschedule" }))).toBeLessThan(1);
     }
-    // Tomorrow's call keeps its date and gets no pill.
-    await expect(row("Roles for the new year").getByText("Today", { exact: true })).toHaveCount(0);
+    // Tomorrow's call keeps its date and gets no pill (found first, so the check can't pass on nothing).
+    const tomorrow = row("Roles for the new year");
+    await expect(tomorrow.getByRole("button", { name: "Reschedule" })).toBeVisible();
+    await expect(tomorrow.getByText("Today", { exact: true })).toHaveCount(0);
   });
 
   test("how long someone usually takes to reply", async ({ page }) => {
