@@ -57,7 +57,11 @@ where things run. Quotes are Kai's words.
   `/code-review:code-review` alongside, saying which found each finding); otherwise plain `general-purpose` subagents.
   **Never give a one-off agent a `name`**: named agents become teammates that don't report back by themselves.
 - **UI changes: Kai sees them first** when asked ("show me the mock server before merging so i can review the ui"): a
-  demo URL on seeded data with the case on screen, then build the test and ship on "ship it".
+  demo URL on seeded data with the case on screen, then build the test and ship on "ship it". For a layout PR Kai
+  asked for a before-and-after table of screenshots in the PR description ("| Item | Before | After |"), and to merge it
+  himself ("this one dont automerge"): images on a throwaway `pr-shots/<task>` branch, demo data only.
+- **English text and layout are Kai's call in translation work:** a fix that changes English waits for Kai's yes, and
+  language-specific CSS stays as small as possible (`docs/rfc/zh-cn.md`, *Layout*).
 - **Contributors' PRs** (issue #230's author sends the Windows work):
   - Never comment on a PR or issue: "dont comment on the PR, report back to me here". Kai posts.
   - Don't trust the contributor's testing: "i cant trust the external contributor, i would do testing myself". Check

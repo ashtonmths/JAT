@@ -7,11 +7,11 @@ import { DatesProvider } from "@mantine/dates";
 import { Notifications } from "@mantine/notifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { router as defaultRouter } from "./router";
-import { theme } from "./theme";
+import { themeFor } from "./theme";
 import { dayjsLocale } from "./utils/format";
 
 export function App({ router = defaultRouter }: { router?: typeof defaultRouter }) {
@@ -21,6 +21,7 @@ export function App({ router = defaultRouter }: { router?: typeof defaultRouter 
   const [queryClient] = useState(
     () => new QueryClient({ defaultOptions: { queries: { staleTime: 10_000, refetchOnWindowFocus: true } } }),
   );
+  const theme = useMemo(() => themeFor(i18n.language), [i18n.language]);
   return (
     <MantineProvider theme={theme} defaultColorScheme="auto">
       <DatesProvider settings={{ locale: dayjsLocale(i18n.language), firstDayOfWeek: 1 }}>

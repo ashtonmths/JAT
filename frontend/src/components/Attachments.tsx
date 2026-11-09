@@ -30,6 +30,7 @@ import {
   type AttachmentItem,
 } from "../api/attachmentHooks";
 import { i18n } from "../i18n";
+import text from "../text.module.css";
 import { formatDate, formatDateTime } from "../utils/time";
 
 /** An icon for the file's type. */
@@ -204,7 +205,7 @@ export function AttachmentsCard({
         )}
         {fromThem.length > 0 && (
           <>
-            <Text size="xs" c="dimmed" fw={600} tt="uppercase">
+            <Text size="xs" c="dimmed" fw={600} className={text.caps}>
               {inherited!.label}
             </Text>
             {fromThem.map((att) => (
