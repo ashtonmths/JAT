@@ -100,6 +100,7 @@ test.describe("a browser set to Simplified Chinese", () => {
     };
     const contoso = apps.find((a) => a.company_name === "Contoso")!;
     const agencies = await get<{ id: string }[]>("agencies");
+    expect(agencies.length, "the demo data has an agency").toBeGreaterThan(0);
     const detailPages = [
       `/applications/${contoso.id}`,
       `/roles/${contoso.role_id}`,
@@ -129,9 +130,11 @@ test.describe("a browser set to Simplified Chinese", () => {
       for (const s of strings(await links.json())) data.add(s.trim());
     }
     for (const s of strings(en.stages)) data.delete(s);
-    // Search highlights split a title into pieces: a piece of your data is data too.
-    const isData = (text: string) =>
-      data.has(text) || [...data].some((d) => d.length > text.length && d.includes(text));
+    // Search highlights split a title into pieces, so there (only) a piece of your data is data
+    // too: elsewhere a note saying "Applied via LinkedIn" mustn't hide an untranslated "Applied".
+    const isData = (text: string, path: string) =>
+      data.has(text) ||
+      (path.startsWith("/search") && [...data].some((d) => d.length > text.length && d.includes(text)));
     const left: Record<string, string[]> = {};
     for (const path of [...PAGES, ...detailPages]) {
       await page.goto(path);
@@ -139,7 +142,7 @@ test.describe("a browser set to Simplified Chinese", () => {
       // then nothing still loading.
       await expect(page.getByRole("heading").nth(1)).toBeVisible();
       await expect(page.locator(".mantine-Loader-root, .mantine-Skeleton-root")).toHaveCount(0);
-      const english = (await textOnScreen(page)).filter((text) => isEnglish(text) && !isData(text));
+      const english = (await textOnScreen(page)).filter((text) => isEnglish(text) && !isData(text, path));
       if (english.length) left[path] = [...new Set(english)];
     }
     expect(left).toEqual({});
