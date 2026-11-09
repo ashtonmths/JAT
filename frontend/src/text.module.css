@@ -5,6 +5,8 @@
  */
 .keepWords {
   word-break: keep-all;
+  /* A label too long to fit still breaks rather than spilling out of its box. */
+  overflow-wrap: break-word;
 }
 
 /* Small headings in capitals ("OFFERS AWAITING A REPLY"). */
