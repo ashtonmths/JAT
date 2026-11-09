@@ -235,6 +235,19 @@ describe("the app's English", () => {
     expect(i18n.t("selftest:days", { count: 1 })).toBe("1 day");
     expect(i18n.t("selftest:days", { count: 3 })).toBe("3 days");
   });
+
+  it("puts the page's language and the tab's title in the language shown", async () => {
+    expect(document.documentElement.lang).toBe("en");
+    expect(document.title).toBe("Job Application Tracker");
+    await i18n.changeLanguage("zh-CN");
+    try {
+      expect(document.documentElement.lang).toBe("zh-CN");
+      expect(document.title).toBe("求职申请追踪器");
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+    expect(document.title).toBe("Job Application Tracker");
+  });
 });
 
 describe("pseudo-language", () => {
@@ -303,15 +316,31 @@ describe("pickLanguage", () => {
     expect(pickLanguage({ search: "?lang=EN-gb", dev: true })).toBe("en");
   });
 
+  it("gives Simplified Chinese to a browser asking for it, however it's written, and not Traditional", () => {
+    for (const code of ["zh-CN", "zh-cn", "zh", "zh-Hans", "zh-Hans-CN", "zh-SG", "zh-Hans-SG"]) {
+      expect(pickLanguage({ browser: [code] }), code).toBe("zh-CN");
+    }
+    expect(pickLanguage({ browser: ["zh_CN"] }), "zh_CN").toBe("zh-CN");
+    for (const code of ["zh-TW", "zh-HK", "zh-MO", "zh-Hant", "zh-Hant-TW", "zh-CHT", "zh-yue", "ja-JP"]) {
+      expect(pickLanguage({ browser: [code] }), code).toBe("en");
+    }
+    // The browser's order wins: Traditional first, then Simplified, gives Simplified; English first stays English.
+    expect(pickLanguage({ browser: ["zh-TW", "zh-CN"] })).toBe("zh-CN");
+    expect(pickLanguage({ browser: ["en-GB", "zh-CN"] })).toBe("en");
+    // A saved choice beats the browser, both ways.
+    expect(pickLanguage({ stored: "zh-CN", browser: ["en-GB"] })).toBe("zh-CN");
+    expect(pickLanguage({ stored: "en", browser: ["zh-CN"] })).toBe("en");
+  });
+
   it("shows a draft language only for ?lang= on a dev server", () => {
-    const drafts = ["zh-CN"];
-    expect(pickLanguage({ search: "?lang=zh-CN", dev: true, drafts })).toBe("zh-CN");
-    expect(pickLanguage({ search: "?lang=zh-cn", dev: true, drafts })).toBe("zh-CN");
+    const drafts = ["ja-JP"]; // a made-up draft: Japanese isn't being translated
+    expect(pickLanguage({ search: "?lang=ja-JP", dev: true, drafts })).toBe("ja-JP");
+    expect(pickLanguage({ search: "?lang=ja-jp", dev: true, drafts })).toBe("ja-JP");
     // Never in a built app, and never from a saved choice or the browser: a draft isn't offered.
-    expect(pickLanguage({ search: "?lang=zh-CN", dev: false, drafts })).toBe("en");
-    expect(pickLanguage({ stored: "zh-CN", browser: ["zh-CN"], dev: true, drafts })).toBe("en");
+    expect(pickLanguage({ search: "?lang=ja-JP", dev: false, drafts })).toBe("en");
+    expect(pickLanguage({ stored: "ja-JP", browser: ["ja-JP"], dev: true, drafts })).toBe("en");
     // Not a draft (yet): the URL asks for nothing the app has.
-    expect(pickLanguage({ search: "?lang=zh-CN", dev: true, drafts: [] })).toBe("en");
+    expect(pickLanguage({ search: "?lang=ja-JP", dev: true, drafts: [] })).toBe("en");
     // An exact draft wins over a shipped language's prefix: "en-XB" is a draft, not "en".
     expect(pickLanguage({ search: "?lang=en-XB", dev: true, drafts: ["en-XB"] })).toBe("en-XB");
   });

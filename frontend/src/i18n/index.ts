@@ -84,10 +84,16 @@ export function createI18n({ lng, resources, strict = false, pseudo = false, rea
   return instance;
 }
 
-/** Keep <html lang> on the language shown, for screen readers and the browser's own tools. */
+/**
+ * Keep <html lang> on the language shown, for screen readers and the browser's own tools, and
+ * the tab's title in it too (index.html's is English, for the moment before this runs).
+ */
 function followLanguage(instance: I18n) {
   if (typeof document === "undefined") return;
-  const set = (lng: string) => document.documentElement.setAttribute("lang", lng);
+  const set = (lng: string) => {
+    document.documentElement.setAttribute("lang", lng);
+    document.title = instance.t("common:app.name");
+  };
   set(instance.language);
   instance.on("languageChanged", set);
 }
@@ -109,10 +115,9 @@ export const i18n = createI18n({
           dev: env.DEV,
         }),
   strict: isStrict(env),
-  // Draft languages load only on a dev server, so production builds don't carry them
-  // (i18n-zh-cn-switch-on drops this gate). Test import.meta.env.DEV itself: Vite only
-  // replaces the whole expression, so the build can drop the import.
-  resources: import.meta.env.DEV ? { "zh-CN": zhCN } : {},
+  // Every shipped language. A draft language loads only on a dev server: put it behind
+  // `import.meta.env.DEV ? { … } : {}` (that exact expression, so the build can drop it).
+  resources: { "zh-CN": zhCN },
   pseudo: env.DEV,
   react: true,
 });

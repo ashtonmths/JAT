@@ -131,8 +131,9 @@ test.describe("language", () => {
     const english = page.getByRole("menuitem", { name: "English" });
     await expect(english).toHaveAttribute("aria-current", "true");
     await expect(english).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("menuitem", { name: "Coming soon!" })).toBeDisabled();
-    // Each language, Coming soon! and the link to the guide: no more than those.
+    await expect(page.getByRole("menuitem", { name: "简体中文" })).toHaveAttribute("lang", "zh-CN");
+    await expect(page.getByRole("menuitem", { name: "More coming soon" })).toBeDisabled();
+    // Each language, More coming soon and the link to the guide: no more than those.
     await expect(page.getByRole("menuitem")).toHaveCount(LANGUAGES.length + 2);
   });
 
@@ -154,7 +155,7 @@ test.describe("language", () => {
     await expect(link).toHaveAttribute("rel", "noopener noreferrer");
     expect(toGitHub).toEqual([]);
 
-    // Down from the button, past the languages, skipping the greyed-out Coming soon!
+    // Down from the button, past the languages, skipping the greyed-out More coming soon.
     for (let i = 0; i <= LANGUAGES.length; i++) await page.keyboard.press("ArrowDown");
     await expect(link).toBeFocused();
     const popup = page.waitForEvent("popup");
