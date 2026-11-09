@@ -47,27 +47,36 @@ type CurrentRound = Omit<NonNullable<ApplicationRow["current_round"]>, "waiting_
   waiting_to_hear_back?: boolean;
 };
 
+// A round settled in time (booked, or done and decided) is violet; one in between, waiting for a
+// time or an answer, is pink: a colour of its own, which no other badge, pill or stage uses (only the
+// Timeline's lane for calls), and which reads apart from violet in light and dark mode.
+const SETTLED = "violet";
+const IN_BETWEEN = "pink";
+
 /**
- * What the badge says after a round's name: its time, or what it's waiting for.
- * - waiting for a new time: "needs a new time";
+ * What the badge says after a round's name (its time, or what it's waiting for) and its colour,
+ * decided together so every badge agrees:
+ * - waiting for a new time: "needs a new time", in between;
  * - booked (a time or deadline): the day, "Thu 2 Oct", also once that has passed until it's marked done;
- * - not booked (no time or deadline, still to happen): "not booked yet";
- * - done with nothing heard since: "waiting to hear back". The server works that out
+ * - not booked (no time or deadline, still to happen): "not booked yet", in between;
+ * - done with nothing heard since: "waiting to hear back", in between. The server works that out
  *   (`waiting_to_hear_back`, see `waiting_to_hear_back` in domain/interviews.py): no stage move,
  *   offer or later round since it happened;
  * - otherwise (done and something has happened since) just its name.
  */
-export function roundBadgeText(round: CurrentRound): string {
+export function roundBadge(round: CurrentRound): { text: string; color: string } {
   const label = roundLabel(round);
   const when = round.starts_at ?? round.deadline_at;
   if (round.status === "scheduled") {
-    if (round.needs_new_time_since) return i18n.t("interviews:needsNewTime.roundBadge", { label });
-    if (when) return i18n.t("interviews:badgeWhen", { label, when: shortDate(when) });
-    return i18n.t("interviews:badgeNotBooked", { label });
+    if (round.needs_new_time_since)
+      return { text: i18n.t("interviews:needsNewTime.roundBadge", { label }), color: IN_BETWEEN };
+    if (when)
+      return { text: i18n.t("interviews:badgeWhen", { label, when: shortDate(when) }), color: SETTLED };
+    return { text: i18n.t("interviews:badgeNotBooked", { label }), color: IN_BETWEEN };
   }
   if (round.status === "done" && round.waiting_to_hear_back)
-    return i18n.t("interviews:badgeWaiting", { label });
-  return label;
+    return { text: i18n.t("interviews:badgeWaiting", { label }), color: IN_BETWEEN };
+  return { text: label, color: SETTLED };
 }
 
 /**
@@ -88,12 +97,14 @@ export function RoundBadge({
   if (!round || stageKind !== "active") return null;
   const when = round.starts_at ?? round.deadline_at;
   const pending = round.status === "scheduled" && !!round.needs_new_time_since;
+  const { text, color } = roundBadge(round);
   return (
     <Tooltip label={pending ? wasText(round) : when ? formatDateTime(when) : ""} disabled={!when}>
       <Badge
         size={size}
         variant="light"
-        color={pending ? "red" : "violet"}
+        color={color}
+        data-round-state={color === IN_BETWEEN ? "in-between" : "settled"}
         leftSection={<IconCalendarEvent size={12} />}
         // Wrap rather than cut off on narrow board cards.
         h="auto"
@@ -101,7 +112,7 @@ export function RoundBadge({
         style={{ textTransform: "none", maxWidth: "100%" }}
         styles={{ label: { whiteSpace: "normal", overflow: "visible", textAlign: "left" } }}
       >
-        {roundBadgeText(round)}
+        {text}
       </Badge>
     </Tooltip>
   );

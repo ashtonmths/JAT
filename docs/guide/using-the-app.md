@@ -239,7 +239,9 @@ The **board** shows a column per stage. Drag a card to move it; the usual next s
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
 switch on *Show closed stages*, but appear while you drag so you can drop a card on them. Cards show the current interview round.
 
-The round's badge, on board cards, list rows and the quick view, says what the round needs:
+The round's badge, on board cards, list rows and the quick view, says what the round needs. It's
+purple when the round is settled (booked, or done and heard back), and pink while it's in between,
+waiting for a time or an answer (not booked yet, needs a new time, waiting to hear back):
 - booked: its day, "Round 2 · Technical · Thu 12 Nov" (still, once that day has passed, until you mark it done);
 - no time or deadline yet: "Round 1 · Screen · not booked yet";
 - can't go ahead at its time: "Round 2 · Technical · needs a new time";

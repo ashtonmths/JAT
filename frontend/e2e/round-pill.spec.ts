@@ -1,4 +1,4 @@
-import type { APIRequestContext } from "@playwright/test";
+import type { APIRequestContext, Locator, Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures";
 
@@ -28,22 +28,35 @@ const withRound = async (request: APIRequestContext, company: string, round: obj
   return { appId: app.id, roundId: made.id };
 };
 
+/** A round pill, by its text. */
+const pill = (page: Page, text: string | RegExp) =>
+  page.locator("[data-round-state]").filter({ hasText: text });
+/** A round waiting for a time or an answer: pink, apart from a booked round's violet. */
+const expectInBetween = async (badge: Locator) => {
+  await expect(badge).toHaveAttribute("data-round-state", "in-between");
+  await expect(badge).toHaveAttribute("style", /--mantine-color-pink-/);
+};
+
 test("a round with no time says it's not booked yet, until it's booked", async ({ page, request }) => {
   const { roundId } = await withRound(request, "Unbooked Pill Co", { title: "Pill first chat" });
 
   await page.goto("/applications?view=board");
-  await expect(page.getByText("Round 1 · Pill first chat · not booked yet")).toBeVisible();
+  const unbooked = pill(page, "Round 1 · Pill first chat · not booked yet");
+  await expect(unbooked).toBeVisible();
+  await expectInBetween(unbooked);
 
   await page.goto("/applications?view=list");
   const row = page.getByRole("row").filter({ hasText: "Unbooked Pill Co" });
   await expect(row).toContainText("Round 1 · Pill first chat · not booked yet");
 
-  // Booked, it gives its day instead.
+  // Booked, it gives its day instead, in the booked round's violet.
   await patch(request, `interviews/${roundId}`, { starts_at: inDays(3) });
   await page.goto("/applications?view=board");
-  const card = page.getByText(/^Round 1 · Pill first chat · /).filter({ hasNotText: "not booked yet" });
-  await expect(card.first()).toBeVisible();
-  await expect(page.getByText("Round 1 · Pill first chat · not booked yet")).toBeHidden();
+  const booked = pill(page, /^Round 1 · Pill first chat · /);
+  await expect(booked).toBeVisible();
+  await expect(booked).not.toContainText("not booked yet");
+  await expect(booked).toHaveAttribute("data-round-state", "settled");
+  await expect(booked).toHaveAttribute("style", /--mantine-color-violet-/);
 });
 
 test("a done round with nothing since says it's waiting to hear back", async ({ page, request }) => {
@@ -55,7 +68,8 @@ test("a done round with nothing since says it's waiting to hear back", async ({ 
   const waiting = "Round 1 · Pill tech chat · waiting to hear back";
 
   await page.goto("/applications?view=board");
-  await expect(page.getByText(waiting)).toBeVisible();
+  await expect(pill(page, waiting)).toBeVisible();
+  await expectInBetween(pill(page, waiting));
 
   await page.goto("/applications?view=list");
   const row = page.getByRole("row").filter({ hasText: "Waiting Pill Co" });
