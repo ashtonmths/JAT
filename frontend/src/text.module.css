@@ -6,3 +6,18 @@
 .keepWords {
   word-break: keep-all;
 }
+
+/* Small headings in capitals ("OFFERS AWAITING A REPLY"). */
+.caps {
+  text-transform: uppercase;
+}
+
+/*
+ * Chinese has no capitals, and capitals turn the Latin words it borrows into shouting
+ * ("已获 OFFER" for "已获 Offer"), so these and Mantine's badges, capitals by default, are left
+ * as written. The one place where a language gets its own CSS (docs/rfc/zh-cn.md).
+ */
+:lang(zh) .caps,
+:lang(zh) :global(.mantine-Badge-root) {
+  text-transform: none;
+}

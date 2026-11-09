@@ -58,6 +58,7 @@ import { HowItWorks } from "../components/HowItWorks";
 import { PersonChase, waitingOrChased } from "../components/PersonChase";
 import { StageBadge } from "../components/StageBadge";
 import { i18n } from "../i18n";
+import text from "../text.module.css";
 import { formatDay } from "../utils/format";
 import { roundLabel } from "../utils/rounds";
 import { stageName } from "../utils/stageName";
@@ -136,7 +137,14 @@ function SectionLabel({ title, count, hint }: { title: string; count: number; hi
       events={{ hover: true, focus: true, touch: true }}
     >
       <Group gap={6} style={{ alignSelf: "flex-start" }} tabIndex={0}>
-        <Title order={4} fz="xs" fw={700} c="dimmed" tt="uppercase" style={{ letterSpacing: "0.04em" }}>
+        <Title
+          order={4}
+          fz="xs"
+          fw={700}
+          c="dimmed"
+          className={text.caps}
+          style={{ letterSpacing: "0.04em" }}
+        >
           {title}
         </Title>
         {count > 0 && (
