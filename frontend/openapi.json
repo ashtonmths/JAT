@@ -5392,6 +5392,11 @@
             "format": "date-time",
             "title": "Updated At",
             "type": "string"
+          },
+          "waiting_to_hear_back": {
+            "default": false,
+            "title": "Waiting To Hear Back",
+            "type": "boolean"
           }
         },
         "required": [
@@ -10771,6 +10776,11 @@
               }
             ],
             "title": "Title"
+          },
+          "waiting_to_hear_back": {
+            "default": false,
+            "title": "Waiting To Hear Back",
+            "type": "boolean"
           }
         },
         "required": [

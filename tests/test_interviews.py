@@ -1,6 +1,6 @@
 from datetime import UTC, datetime, timedelta, timezone
 
-from jat.db.models import Event
+from jat.db.models import Event, Interview
 
 from .factories import post
 
@@ -387,3 +387,97 @@ def test_delete_is_logged_and_moves_the_current_round(client, seeded):
     detail = client.get(f"/api/v1/applications/{app['id']}").json()
     assert detail["current_round"]["label"] == "Round 1 · Screen"
     assert "Round 2 · Onsite removed" in _interview_events(client, app["id"])
+
+
+def _waiting(client, app_id: str) -> bool | None:
+    """Whether the application's current round is waiting to hear back (None: it has no current round)."""
+    current = client.get(f"/api/v1/applications/{app_id}").json()["current_round"]
+    return None if current is None else current["waiting_to_hear_back"]
+
+
+def _done_round(client, app_id: str, title: str = "First chat") -> dict:
+    url = f"/api/v1/applications/{app_id}/interviews"
+    return post(client, url, {"title": title, "status": "done", "starts_at": _iso(-3)})
+
+
+def test_a_done_round_with_nothing_since_is_waiting_to_hear_back(client, seeded):
+    app = _app(client, seeded)
+    _done_round(client, app["id"])
+    assert _waiting(client, app["id"]) is True
+    # The board and list say so too, not only the application.
+    row = client.get("/api/v1/applications", params={"stage": "interviewing"}).json()[0]
+    assert row["current_round"]["waiting_to_hear_back"] is True
+
+
+def test_a_round_still_to_come_is_not_waiting(client, seeded):
+    app = _app(client, seeded)
+    undated = post(client, f"/api/v1/applications/{app['id']}/interviews", {"title": "First chat"})
+    assert _waiting(client, app["id"]) is False  # not booked yet
+    client.patch(f"/api/v1/interviews/{undated['id']}", json={"starts_at": _iso(2)})
+    assert _waiting(client, app["id"]) is False  # booked
+    client.patch(f"/api/v1/interviews/{undated['id']}", json={"starts_at": _iso(-1)})
+    assert _waiting(client, app["id"]) is False  # its time has passed, but it isn't marked done
+
+
+def test_a_cancelled_round_is_not_waiting(client, seeded):
+    app = _app(client, seeded)
+    only = post(client, f"/api/v1/applications/{app['id']}/interviews", {"title": "First chat", "starts_at": _iso(-1)})
+    client.patch(f"/api/v1/interviews/{only['id']}", json={"status": "cancelled"})
+    assert _waiting(client, app["id"]) is None  # a round that didn't happen is never the current one
+
+
+def test_a_stage_move_after_the_round_is_a_decision(client, seeded):
+    app = _app(client, seeded)
+    _done_round(client, app["id"])
+    client.post(f"/api/v1/applications/{app['id']}/move", json={"to_stage": "final"})
+    assert _waiting(client, app["id"]) is False
+    # Undone, it's back where it was: still waiting.
+    client.post(f"/api/v1/applications/{app['id']}/undo", json={})
+    assert _waiting(client, app["id"]) is True
+
+
+def test_a_stage_move_before_the_round_is_not_a_decision(client, seeded):
+    app = _app(client, seeded, stage="screen")
+    client.post(f"/api/v1/applications/{app['id']}/move", json={"to_stage": "interviewing", "occurred_at": _iso(-5)})
+    _done_round(client, app["id"])
+    assert _waiting(client, app["id"]) is True
+
+
+def test_a_closed_application_is_not_waiting(client, seeded):
+    app = _app(client, seeded)
+    _done_round(client, app["id"])
+    client.post(f"/api/v1/applications/{app['id']}/move", json={"to_stage": "rejected"})
+    assert _waiting(client, app["id"]) is False
+
+
+def test_an_offer_after_the_round_is_a_decision(client, seeded):
+    app = _app(client, seeded)
+    _done_round(client, app["id"], "Final")
+    post(client, f"/api/v1/applications/{app['id']}/offers", {})
+    assert _waiting(client, app["id"]) is False
+
+
+def test_a_later_round_is_a_decision(client, seeded):
+    app = _app(client, seeded)
+    _done_round(client, app["id"])
+    second = post(client, f"/api/v1/applications/{app['id']}/interviews", {"title": "Technical"})
+    # The next round is current: not booked yet, so not waiting.
+    current = client.get(f"/api/v1/applications/{app['id']}").json()["current_round"]
+    assert (current["round"], current["waiting_to_hear_back"]) == (2, False)
+    # Called off, round 1 is current again, but something has happened since it.
+    client.patch(f"/api/v1/interviews/{second['id']}", json={"status": "cancelled"})
+    current = client.get(f"/api/v1/applications/{app['id']}").json()["current_round"]
+    assert (current["round"], current["waiting_to_hear_back"]) == (1, False)
+
+
+def test_a_take_home_handed_in_early_counts_from_when_it_was_done(client, seeded):
+    app = _app(client, seeded)
+    url = f"/api/v1/applications/{app['id']}/interviews"
+    task = post(client, url, {"kind": "coding_task", "deadline_at": _iso(4)})
+    client.patch(f"/api/v1/interviews/{task['id']}", json={"status": "done"})
+    assert _waiting(client, app["id"]) is True
+    # Handed in a minute ago (times are to the second, so a move now would be at the same time).
+    with client.app.state.sessions.begin() as session:
+        session.get(Interview, task["id"]).updated_at = datetime.now(UTC) - timedelta(minutes=1)
+    client.post(f"/api/v1/applications/{app['id']}/move", json={"to_stage": "final"})
+    assert _waiting(client, app["id"]) is False  # moved on before its deadline: they've decided

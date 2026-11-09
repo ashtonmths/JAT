@@ -3060,6 +3060,11 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /**
+             * Waiting To Hear Back
+             * @default false
+             */
+            waiting_to_hear_back: boolean;
         };
         /** InterviewPatch */
         InterviewPatch: {
@@ -4726,6 +4731,11 @@ export interface components {
             status: string;
             /** Title */
             title: string | null;
+            /**
+             * Waiting To Hear Back
+             * @default false
+             */
+            waiting_to_hear_back: boolean;
         };
         /** RouteStatsOut */
         RouteStatsOut: {

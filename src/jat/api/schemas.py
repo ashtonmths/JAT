@@ -658,6 +658,10 @@ class RoundSummary(Out):
     # Both null when it doesn't (and from servers before this).
     needs_new_time_since: datetime | None = None
     needs_new_time_by: RescheduleBy | None = None
+    # It's done and nothing has been heard since: no stage move, offer or later round after it
+    # (`waiting_to_hear_back` in domain/interviews.py has the rule). Only worked out while the
+    # application is in an active stage; false otherwise (and from servers before this).
+    waiting_to_hear_back: bool = False
 
 
 class RebookTodoIn(In):
