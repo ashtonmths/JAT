@@ -129,7 +129,8 @@ wide screen *Your move* is on the left and the other two sit beside it:
   **Pass**.
 
 **Coming up**: nothing to do yet. Interviews, task deadlines, [calls](#calls-and-meetings) and
-to-dos with a later date, soonest first, then rounds not booked yet.
+to-dos with a later date, soonest first, then rounds not booked yet. A round or call on today has
+an orange *Today* pill under its title, like a to-do due today.
 
 Rows about an application name its recruiter after the company and role, in grey. Interview and
 offer rows show "Contoso · Backend Engineer · Alex Morgan", with the name linked to their page;
