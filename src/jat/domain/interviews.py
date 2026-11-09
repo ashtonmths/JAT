@@ -98,12 +98,26 @@ def _order(interview: Interview) -> tuple[int, datetime, str]:
     return (interview.round or 0, _when(interview), interview.id)
 
 
-def _happened_at(interview: Interview) -> datetime:
-    """When a done round happened: its time, or when it was last saved if that's earlier (a take-home
-    handed in before its deadline) or it has no time (it was never booked). Saved means marked done
-    or edited since, so an edit can make it later than it was, never earlier."""
+def _marked_done_at(events: list[Event], interview_id: str) -> datetime | None:
+    """When a round was last marked done, from its timeline entries as recorded (each saves the round's
+    status then): the first entry saying done since the last one that didn't. Later edits of a done
+    round don't move it. None for a round with no such entry."""
+    done_at: datetime | None = None
+    for event in sorted(events, key=lambda e: e.seq):  # the order they were recorded in
+        data = event.data or {}
+        if data.get("interview_id") != interview_id:
+            continue
+        done_at = (done_at or event.occurred_at) if data.get("status") == "done" else None
+    return done_at
+
+
+def _happened_at(interview: Interview, events: list[Event]) -> datetime:
+    """When a done round happened: its time, or when it was marked done if that's earlier (a take-home
+    handed in before its deadline) or it has no time (it was never booked). Without a timeline entry
+    for that, when it was last saved stands in."""
+    done_at = _marked_done_at(events, interview.id) or interview.updated_at
     when = interview.starts_at or interview.deadline_at
-    return min(when, interview.updated_at) if when else interview.updated_at
+    return min(when, done_at) if when else done_at
 
 
 def waiting_to_hear_back(session: Session, current: dict[str, Interview], stages: dict[str, str]) -> set[str]:
@@ -123,17 +137,19 @@ def waiting_to_hear_back(session: Session, current: dict[str, Interview], stages
     if not done:
         return set()
     ids = list(done)
-    moves: dict[str, list[Event]] = {}
+    moves: dict[str, list[Event]] = {}  # stage moves
     stmt = (
         select(Event)
         .options(
             load_only(Event.application_id, Event.occurred_at, Event.seq, Event.from_stage, Event.to_stage, Event.data)
         )
-        .where(Event.application_id.in_(ids), Event.kind == svc.STAGE_CHANGE)
+        .where(Event.application_id.in_(ids), Event.kind.in_((svc.STAGE_CHANGE, "interview")))
         .order_by(Event.occurred_at, Event.seq)
     )
+    rounds: dict[str, list[Event]] = {}  # the rounds' own timeline entries
     for event in session.scalars(stmt):
-        moves.setdefault(event.application_id, []).append(event)
+        into = moves if event.kind == svc.STAGE_CHANGE else rounds
+        into.setdefault(event.application_id, []).append(event)
     offers: dict[str, list[datetime]] = {}
     for app_id, created in session.execute(
         select(Offer.application_id, Offer.created_at).where(Offer.application_id.in_(ids))
@@ -150,7 +166,7 @@ def waiting_to_hear_back(session: Session, current: dict[str, Interview], stages
 
     out: set[str] = set()
     for app_id, interview in done.items():
-        at = _happened_at(interview)
+        at = _happened_at(interview, rounds.get(app_id, []))
         if any(created > at for created in offers.get(app_id, [])):
             continue
         if any(_order(other) > _order(interview) for other in cancelled.get(app_id, [])):

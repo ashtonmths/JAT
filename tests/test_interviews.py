@@ -1,5 +1,7 @@
 from datetime import UTC, datetime, timedelta, timezone
 
+from sqlalchemy import select
+
 from jat.db.models import Event, Interview
 
 from .factories import post
@@ -477,7 +479,32 @@ def test_a_take_home_handed_in_early_counts_from_when_it_was_done(client, seeded
     client.patch(f"/api/v1/interviews/{task['id']}", json={"status": "done"})
     assert _waiting(client, app["id"]) is True
     # Handed in a minute ago (times are to the second, so a move now would be at the same time).
-    with client.app.state.sessions.begin() as session:
-        session.get(Interview, task["id"]).updated_at = datetime.now(UTC) - timedelta(minutes=1)
+    _mark_done_at(client, task["id"], datetime.now(UTC) - timedelta(minutes=1))
     client.post(f"/api/v1/applications/{app['id']}/move", json={"to_stage": "final"})
     assert _waiting(client, app["id"]) is False  # moved on before its deadline: they've decided
+
+
+def _mark_done_at(client, interview_id: str, when: datetime) -> None:
+    """Backdate the timeline entry that marked a round done (and the round's last save with it)."""
+    with client.app.state.sessions.begin() as session:
+        for event in session.scalars(select(Event).where(Event.kind == "interview")):
+            if (event.data or {}).get("interview_id") == interview_id and event.data.get("status") == "done":
+                event.occurred_at = when
+        session.get(Interview, interview_id).updated_at = when
+
+
+def test_editing_a_done_round_later_doesnt_undo_a_decision(client, seeded):
+    app = _app(client, seeded)
+    with client.app.state.sessions.begin() as session:  # added last week
+        for event in session.scalars(select(Event).where(Event.application_id == app["id"])):
+            event.occurred_at -= timedelta(days=7)
+    url = f"/api/v1/applications/{app['id']}/interviews"
+    chat = post(client, url, {"title": "First chat"})  # never booked: no time of its own
+    client.patch(f"/api/v1/interviews/{chat['id']}", json={"status": "done"})
+    _mark_done_at(client, chat["id"], datetime.now(UTC) - timedelta(days=2))  # done on Monday
+    move = {"to_stage": "final", "occurred_at": _iso(-1)}  # moved on on Tuesday
+    client.post(f"/api/v1/applications/{app['id']}/move", json=move)
+    assert _waiting(client, app["id"]) is False
+    # Its debrief written up on Wednesday: still decided.
+    client.patch(f"/api/v1/interviews/{chat['id']}", json={"debrief": "Friendly; asked about on-call"})
+    assert _waiting(client, app["id"]) is False
