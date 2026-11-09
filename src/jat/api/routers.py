@@ -388,8 +388,8 @@ def _rows_query():
     )
 
 
-def _round_summary(interview: Interview, *, waiting: bool = False) -> S.RoundSummary:
-    return S.RoundSummary(
+def _round_summary(interview: Interview, *, waiting: bool = False) -> S.CurrentRound:
+    return S.CurrentRound(
         id=interview.id,
         round=interview.round,
         title=interview.title,

@@ -658,9 +658,15 @@ class RoundSummary(Out):
     # Both null when it doesn't (and from servers before this).
     needs_new_time_since: datetime | None = None
     needs_new_time_by: RescheduleBy | None = None
+
+
+class CurrentRound(RoundSummary):
+    """An application's current round, with what only the application can tell."""
+
     # It's done and nothing has been heard since: no stage move, offer or later round after it
     # (`waiting_to_hear_back` in domain/interviews.py has the rule). Only worked out while the
-    # application is in an active stage; false otherwise (and from servers before this).
+    # application is open (an active stage, not archived); false otherwise. Servers before this
+    # leave it out. Not on InterviewOut: a round by itself can't tell.
     waiting_to_hear_back: bool = False
 
 
@@ -729,7 +735,7 @@ class ApplicationRow(ApplicationOut):
     stage_kind: str
     days_since_activity: int
     stale: bool
-    current_round: RoundSummary | None = None
+    current_round: CurrentRound | None = None
 
 
 REJECTION_FEEDBACK_MAX = 10_000  # characters: room for a pasted feedback email

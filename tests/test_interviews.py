@@ -404,8 +404,10 @@ def _done_round(client, app_id: str, title: str = "First chat") -> dict:
 
 def test_a_done_round_with_nothing_since_is_waiting_to_hear_back(client, seeded):
     app = _app(client, seeded)
-    _done_round(client, app["id"])
+    done = _done_round(client, app["id"])
     assert _waiting(client, app["id"]) is True
+    # Only the application can tell, so a round on its own doesn't say (rather than always false).
+    assert "waiting_to_hear_back" not in client.get(f"/api/v1/interviews/{done['id']}").json()
     # The board and list say so too, not only the application.
     row = client.get("/api/v1/applications", params={"stage": "interviewing"}).json()[0]
     assert row["current_round"]["waiting_to_hear_back"] is True
