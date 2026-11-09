@@ -3,10 +3,10 @@
 // including the pseudo-language.
 
 /** Languages the app ships. A language moves here from DRAFT_LANGUAGES when every namespace is translated. */
-export const LANGUAGES = ["en"] as const;
+export const LANGUAGES = ["en", "zh-CN"] as const;
 export type Language = (typeof LANGUAGES)[number];
 /** Each language's name in itself, as the switch lists it: never translated. */
-export const LANGUAGE_NAMES: Record<Language, string> = { en: "English" };
+export const LANGUAGE_NAMES: Record<Language, string> = { en: "English", "zh-CN": "简体中文" };
 /**
  * Languages still being translated, by code, each with its name in itself. A draft is offered to
  * nobody: only a dev server shows it, with ?lang=<code> or the switch, so its translation can be
@@ -14,7 +14,7 @@ export const LANGUAGE_NAMES: Record<Language, string> = { en: "English" };
  * English. Move it to LANGUAGES when every namespace is translated (catalog.test.ts checks this;
  * docs/guide/adding-a-language.md "Translating in parts").
  */
-export const DRAFT_LANGUAGES: Readonly<Record<string, string>> = { "zh-CN": "简体中文" };
+export const DRAFT_LANGUAGES: Readonly<Record<string, string>> = {};
 export const FALLBACK: Language = "en";
 /** The guide the switch links to. A test checks the file is there, so don't move it without this. */
 export const ADD_LANGUAGE_GUIDE =
@@ -40,7 +40,20 @@ function match<T extends string>(list: readonly T[], code: string | null | undef
   );
 }
 
-const shipped = (code: string | null | undefined): Language | undefined => match(LANGUAGES, code);
+/**
+ * A browser's code for Simplified Chinese, however it's written: zh, zh-CN, zh-SG, zh-Hans,
+ * zh-Hans-CN. Traditional Chinese (zh-TW, zh-HK, zh-MO, zh-Hant…) isn't, and stays English
+ * until it has its own translation (docs/rfc/zh-cn.md).
+ */
+export function isSimplifiedChinese(code: string): boolean {
+  const [lang, ...rest] = code.toLowerCase().split("-");
+  if (lang !== "zh") return false;
+  if (rest.includes("hans")) return true;
+  return !rest.some((part) => ["hant", "tw", "hk", "mo"].includes(part));
+}
+
+const shipped = (code: string | null | undefined): Language | undefined =>
+  match(LANGUAGES, code) ?? (code && isSimplifiedChinese(code) ? "zh-CN" : undefined);
 
 export interface LanguageSources {
   /** location.search, e.g. "?lang=pseudo". Only read when `dev`. */

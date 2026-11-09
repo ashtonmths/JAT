@@ -109,10 +109,9 @@ export const i18n = createI18n({
           dev: env.DEV,
         }),
   strict: isStrict(env),
-  // Draft languages load only on a dev server, so production builds don't carry them
-  // (i18n-zh-cn-switch-on drops this gate). Test import.meta.env.DEV itself: Vite only
-  // replaces the whole expression, so the build can drop the import.
-  resources: import.meta.env.DEV ? { "zh-CN": zhCN } : {},
+  // Every shipped language. A draft language loads only on a dev server: put it behind
+  // `import.meta.env.DEV ? { … } : {}` (that exact expression, so the build can drop it).
+  resources: { "zh-CN": zhCN },
   pseudo: env.DEV,
   react: true,
 });
