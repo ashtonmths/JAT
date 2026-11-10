@@ -78,19 +78,21 @@ where things run. Quotes are Kai's words.
     review of external PRs before agents run the code themselves"). Read every changed line first, for anything
     that runs on install, import or test: tests, `conftest.py`, scripts, `pyproject.toml` and `package.json`
     scripts, build config, lockfile entries (hashes against PyPI or npm). Only then does the lead run `uv sync`,
-    pytest, pnpm or `checks.sh` on it; reviewer agents stay read-only and don't run it.
+    pytest, pnpm or `checks.sh` on it; reviewer agents stay read-only and don't run it (the auto-mode check blocks
+    them anyway: gotchas.md, *Other*). This gate comes before the full checks in the bullet above, and again for
+    every new commit they push.
   - **Finishing a contributor's PR ourselves: carry it (pattern B)** (Kai, 2026-11-10: "yes I prefer B, and its
     cleaner for changelog and version bump etc"). Main issues still go back to the contributor in Kai's comment;
     when Kai says to fix them ourselves, fetch their branch (`git fetch <fork url> <branch>`) into our own
     `worktree-<task>` branch, add our fixes, the bump and the roadmap update on top, and open our own PR. It goes
     through the review-fix cycle and merges with a merge commit, so their commits land unchanged under their name.
-    Never push to their fork, and never merge theirs first and fix on main afterwards (main would be broken in
-    between). Kai asked for the PR body to open with a friendly note tagging the author (`@login`) to say their
+    Never push to their fork, and never merge theirs first and fix on main afterwards (main would have the bug, and no version
+    bump, until the fix lands). Kai asked for the PR body to open with a friendly note tagging the author (`@login`) to say their
     work is merged, in Kai's voice (his Slack voice notes, kept outside this repo: ask Kai where), added
     just before merging so it's true when they're notified. #298 carried #285.
-  - **`Closes #N` on the carrying PR closes their PR as closed, not merged** (#298 closed #285 that way, even though
-    all its commits are on main). Without it, GitHub might mark theirs merged once its last commit is on main; not
-    tried yet. Never `Closes` the contributor's issue (#230 tracks the whole Windows plan).
+  - **No `Closes #N` for their PR on the carrying PR:** #298 had `Closes #285`, and #285 was closed, not merged, even
+    though all its commits are on main. Never `Closes` the contributor's issue either (#230 tracks the whole Windows
+    plan).
   - The draft is one top-level comment ("i will leave only top-level comments, not on specific lines of code"),
     leading with encouragement ("nice job etc"), asking only for what blocks merging ("that feels like a lot of
     feedback"); the rest becomes Kai's follow-ups. Precise enough for the contributor's AI to act on (their PRs look
