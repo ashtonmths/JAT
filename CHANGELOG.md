@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.22.1 (2026-11-10)
+
+- Time zones work on Windows: the IANA time-zone database (`tzdata`) now comes with the tracker on every platform, so Insights' weekly activity works there. Also, an Insights time zone that's a folder in the database, such as `Europe`, gives the unknown time zone error instead of a server error (#298).
+
 ## 1.22.0 (2026-11-10)
 
 - Recruiters has an In progress filter: the people you have an open application with (as its recruiter, Interested included) or a pitched role still to decide, with how many on the tab; each person's card says how many applications are in progress and roles are to decide. (#296).
