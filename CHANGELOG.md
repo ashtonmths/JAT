@@ -7,7 +7,8 @@ Numbers in brackets are pull requests.
 
 ## 1.22.1 (2026-11-10)
 
-- Time zones work on Windows: the IANA time-zone database (`tzdata`) now comes with the tracker on every platform, so Insights' weekly activity works there. Also, an Insights time zone that's a folder in the database, such as `Europe`, gives the unknown time zone error instead of a server error (#298).
+- The IANA time-zone database (`tzdata`) now comes with the tracker on every platform, so Insights' weekly activity will work on Windows once the tracker runs there. (#298).
+- Insights: a time zone like `Europe`, a folder in the database rather than a zone, gives the unknown time zone error instead of a server error. (#298).
 
 ## 1.22.0 (2026-11-10)
 

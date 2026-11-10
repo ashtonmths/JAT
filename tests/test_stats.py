@@ -142,6 +142,21 @@ def test_weekly_activity_uses_local_weeks_across_a_clock_change(client, seeded):
     assert [(w["start"], w["interviews"]) for w in weeks] == [("2026-10-12", 0), ("2026-10-19", 2), ("2026-10-26", 1)]
 
 
+def test_weekly_activity_gives_a_422_when_the_zone_lookup_fails_with_an_os_error(client, monkeypatch):
+    # With tzdata, a folder such as "Europe" raises IsADirectoryError on Python 3.12 and PermissionError on
+    # Windows, not ZoneInfoNotFoundError. Faked here so the test means the same on any Python.
+    def is_a_folder(key):
+        raise IsADirectoryError(key)
+
+    def locked(key):
+        raise PermissionError(key)
+
+    monkeypatch.setattr("jat.api.insights.ZoneInfo", is_a_folder)
+    assert client.get("/api/v1/insights/activity", params={"tz": "Europe"}).status_code == 422
+    monkeypatch.setattr("jat.api.insights.ZoneInfo", locked)
+    assert client.get("/api/v1/insights/activity", params={"tz": "Europe"}).status_code == 422
+
+
 def test_stats_count_reopened_applications_where_they_went(client, seeded):
     a = post(client, "/api/v1/applications", {"role_id": seeded["role"]["id"], "stage": "applied"})
     for stage in ("interviewing", "screen", "ghosted", "final"):  # back to Screen, ghosted, then back
