@@ -67,7 +67,7 @@ Each of these cost time once. Add a line when something new does.
   matched the worktree's name). A TypeScript error stops the build, so every test fails for one reason.
   `e2e_spec.sh` printed nothing when a spec failed to load at all (a JSON import), which looked like a pass: confirm
   with `pnpm e2e e2e/<file>` and read its "N passed" line. A spec can't `import` the locale JSON files (Node wants an
-  import attribute): read them with `readFileSync` (`e2e/chinese.spec.ts`).
+  import attribute): read them with `readFileSync` (`frontend/e2e/chinese.spec.ts`).
 - A `test.fail` must not rest on timing: freeze time with `page.clock.setFixedTime`, hold requests in `page.route`. It must
   go green for any shape of fix: check the outcome, not the wording.
 - Check `toBeHidden` only after something else has loaded. After "nothing happened", watch for non-GET requests. A mocked

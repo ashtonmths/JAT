@@ -16,7 +16,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 - Kai's tracker on 8770 needs a restart (Ctrl+C, `uv run jat serve`) if it hasn't had one since v1.20.0: #289 changed
   the API (round pills' *Waiting to hear back*). Everything since is frontend, scripts or docs.
 - Tests on main: pytest 1,328, browser 723 (#296's full run).
-- Dependabot: #32 and #33, both minimatch in dev tools only; the fix (minimatch 11) waits for eslint and redocly. Leave
+- Dependabot alerts #32 and #33, both minimatch in dev tools only; the fix (minimatch 11) waits for eslint and redocly. Leave
   them open unless Kai dismisses them.
 - Background jobs of this session: the PM dashboard on 8767 and the zh-CN demo API on 8891 (on the session's job
   folder `tmp/zh/demo`). A session restart stops both; restart the dashboard at once, a demo only when a task needs one
@@ -35,7 +35,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
   dates read with dayjs's `customParseFormat`), `word-break: keep-all` on short labels, no forced capitals in Chinese
   (`:lang(zh)` in `frontend/src/text.module.css`, the one language-specific rule), date boxes one per line on phones.
 - #294 `i18n-zh-cn-switch-on` (v1.21.0): Chinese shipped; *More coming soon*; the tab title follows the language;
-  `e2e/chinese.spec.ts` checks every page in Chinese has none of the English catalog left; README *Languages* section
+  `frontend/e2e/chinese.spec.ts` checks every page in Chinese has none of the English catalog left; README *Languages* section
   with `docs/screenshots/language-menu.png`.
 - #293 `i18n-zh-cn-demo-data` (v1.21.1, a builder): `scripts/demo_content.py` holds the demo's words (EN and ZH_CN);
   English unchanged (a full dump matched); Chinese phones `+86 000 0000 000N`.
