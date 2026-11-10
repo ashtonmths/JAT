@@ -5,12 +5,12 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 
 ## State
 
-- Released up to **v1.22.0**. Our own PRs: none open. Branches: `main`, plus `worktree-pr-screenshots` on GitHub
+- Released up to **v1.22.1** (#298, which carried #285). Our own PRs: none open. Branches: `main`, plus `worktree-pr-screenshots` on GitHub
   (shelved work, kept on purpose: see `pr-screenshots` on the roadmap).
 - **Simplified Chinese is switched on** (v1.21.0): in the language menu, and given to browsers asking for `zh`, `zh-CN`,
   `zh-Hans` or `zh-SG`. Chinese demo data: `scripts/seed_demo.py --lang zh-CN` (v1.21.1).
 - **Open PRs from a contributor** (issue #230's author, Windows work; Kai reviews them, see *Contributors' PRs* in
-  working-with-kai.md): #283 `windows-starts`, #284 `utf8-everywhere`, #285 `windows-time-zones`. Not merged.
+  working-with-kai.md): #283 `windows-starts`, #284 `utf8-everywhere`. Not merged. #285 `windows-time-zones` was carried in #298 (v1.22.1).
 - **Merging and releasing:** Kai's standing yes after the review-fix cycle (working-with-kai.md). `.claude/settings.json`
   allows `tools/dev/merge.sh` and `ship.sh` (#295); run them relative (`tools/dev/merge.sh N`) and they go through.
 - Kai's tracker on 8770 needs a restart (Ctrl+C, `uv run jat serve`) if it hasn't had one since v1.20.0: #289 changed
@@ -71,7 +71,7 @@ Nothing Kai asked for is unfinished. Report and wait. Likely next, when Kai says
 
 - **Chinese:** `i18n-zh-cn-screenshots` (show Kai first), `-readme`, `-website`, `-listing` (Kai approves the text).
 - **Contributor PRs:** once the contributor pushes changes, re-run the full checks on their new commit (and the Windows
-  simulation for #283), then the bump, CHANGELOG, roadmap and merge on Kai's go. Order: #285, #283, #284.
+  simulation for #283), then the bump, CHANGELOG, roadmap and merge on Kai's go. Order: #283, then #284 (#285 is done).
 - **Planned, waiting for Kai's go:** `generalise-agent-tooling` (plan in chat above), `docs-no-machine-paths`,
   `review-merge-script`, `pr-screenshots`, `interview-process-plan`, `fix-loading-state-pattern`, `fix-stale-key-pattern`,
   the three review-process tasks.
@@ -95,7 +95,7 @@ little as possible; a fix that changes English needs Kai's yes.
   "hooks": { "SessionStart": [ { "matcher": "compact", "hooks": [ { "type": "command",
     "command": "/home/kai/Documents/Projects/job-application-tracker/tools/dev/after_compact.sh --user", "timeout": 30 } ] } ] },
   ```
-- **Contributor PRs #283–#285:** Kai posts the drafted comments and tests #283 on Windows.
+- **Contributor PRs #283–#284:** Kai posts the drafted comments and tests #283 on Windows.
 - **Repo gaps offered for contributors, no answer:** `CONTRIBUTING.md` and the PR template tell contributors to update
   `CHANGELOG.md`, but Kai asked them to leave it; and PRs get no automatic checks.
 - **The MCP server:** the `mcp-*` tasks wait on the 11 decisions in `docs/rfc/mcp.md` §14.

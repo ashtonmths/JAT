@@ -334,7 +334,9 @@ def weekly_activity(
     """
     try:
         zone = ZoneInfo(tz)
-    except (ZoneInfoNotFoundError, ValueError) as exc:
+    # OSError: with tzdata installed, a folder in the database such as "Europe" raises IsADirectoryError
+    # (PermissionError on Windows) instead of ZoneInfoNotFoundError.
+    except (ZoneInfoNotFoundError, ValueError, OSError) as exc:
         detail = f"unknown time zone {tz!r}"
         raise CodedError(422, detail, "time_zone_unknown", {"tz": tz, "quoted_tz": repr(tz)}) from exc
     if start is None:
