@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.22.0 (2026-11-10)
+
+- Recruiters has an In progress filter: the people you have an open application with (as its recruiter, Interested included) or a pitched role still to decide, with how many on the tab; each person's card says how many applications are in progress and roles are to decide. (#296).
+
 ## 1.21.1 (2026-11-09)
 
 - Chinese demo data: scripts/seed_demo.py --lang zh-CN fills a demo folder with made-up Chinese companies, recruiters, roles, notes and offers in CNY, for trying the app or taking screenshots in Chinese. The English demo is unchanged. (#293).
