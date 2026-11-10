@@ -2,7 +2,10 @@
 
 ## It won't run on Windows
 
-Windows isn't supported: the app uses Unix file locking. It runs on Linux and macOS.
+Windows isn't supported yet: the tracker runs on Linux and macOS. Support is being built in
+steps. The tracker now starts on Windows, with git snapshots turned off there (the sidebar's
+connection tooltip says "snapshots off on Windows"), but other parts still need work, so don't
+use it for your real data on Windows yet.
 
 ## "No data directory configured"
 
