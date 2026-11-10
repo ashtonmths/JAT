@@ -132,16 +132,17 @@ the `createI18n` call at the bottom (the app's own one, with `react: true`):
 ```ts
 import en from "../locales/en";
 import pl from "../locales/pl";
+import zhCN from "../locales/zh-CN";
 ```
 
 ```ts
   strict: isStrict(env),
-  resources: { pl, ...(import.meta.env.DEV ? { "zh-CN": zhCN } : {}) },
+  resources: { "zh-CN": zhCN, pl },
   pseudo: env.DEV,
 ```
 
-Keep what's already on that line: languages still being translated (drafts, below) sit inside
-the `import.meta.env.DEV ? … : {}` part, so only a dev server loads them. A code with a hyphen
+Keep what's already on that line. Languages still being translated (drafts, below) go inside an
+`import.meta.env.DEV ? { … } : {}` part, so only a dev server loads them. A code with a hyphen
 needs a name without one: `import ptBR from "../locales/pt-BR"`, then `"pt-BR": ptBR`.
 
 **`utils/format.ts`** holds dates and numbers. Import the calendar's month and day names under the
@@ -165,6 +166,8 @@ lower-case code (`pt-br`):
     {
       weekdayDayMonth: "dddd, D MMMM",
       shortWeekdayDayMonth: "ddd, D MMM",
+      shortWeekdayDayMonthTime: "ddd, D MMM, HH:mm",
+      shortWeekdayDayMonthYearTime: "ddd, D MMM YYYY, HH:mm",
       shortWeekdayDayMonthYear: "ddd, D MMM YYYY",
       dayMonth: "D MMM",
       dayMonthYear: "D MMM YYYY",
@@ -172,6 +175,9 @@ lower-case code (`pt-br`):
       monthYear: "MMM YYYY",
       dayMonthTime: "D MMM, HH:mm",
       time: "HH:mm",
+      // A date box shows its date this way, and reads a typed one the same way.
+      pickerDate: "D MMM YYYY",
+      pickerDateTime: "D MMM YYYY HH:mm",
     },
   ],
 ```
@@ -179,6 +185,7 @@ lower-case code (`pt-br`):
 ```ts
 const NUMBER_LOCALE = new Map<string, string>([
   ["en", "en-GB"],
+  ["zh-cn", "zh-CN"],
   ["pl", "pl-PL"],
 ]);
 ```
@@ -187,8 +194,8 @@ const NUMBER_LOCALE = new Map<string, string>([
 with a hyphen needs quotes (`"pt-BR": "Português (Brasil)"`):
 
 ```ts
-export const LANGUAGES = ["en", "pl"] as const;
-export const LANGUAGE_NAMES: Record<Language, string> = { en: "English", pl: "Polski" };
+export const LANGUAGES = ["en", "zh-CN", "pl"] as const;
+export const LANGUAGE_NAMES: Record<Language, string> = { en: "English", "zh-CN": "简体中文", pl: "Polski" };
 ```
 
 ## 6. Try it
@@ -205,6 +212,9 @@ uv run jat --data-dir /tmp/jat-demo serve --dev --port 8771
 ```bash
 JAT_API_URL=http://127.0.0.1:8771 pnpm --dir frontend dev
 ```
+
+(`seed_demo.py --lang zh-CN` fills the folder with Chinese companies, people and notes instead. Its words
+are in `scripts/demo_content.py`, one table per language, so a demo in your language is a new table there.)
 
 Open <http://127.0.0.1:5173> and choose your language from the button at the top right, beside
 light and dark mode. (Adding `?lang=pl` to the address does the same.) It works however much you've
@@ -224,8 +234,8 @@ request. You can add a language a few areas at a time instead, as a **draft**. A
 to nobody: only the dev server shows it, so people never see it half done. The areas you haven't
 translated yet show in English.
 
-Simplified Chinese is on its way in like this already (`frontend/src/locales/zh-CN/`), following a
-[glossary](../i18n/zh-CN.md). To help with it, open an issue rather than starting it again.
+Simplified Chinese came in like this (`frontend/src/locales/zh-CN/`), following a
+[glossary](../i18n/zh-CN.md), and is now switched on. To suggest a better translation, open an issue or a pull request.
 
 **Translating with AI agents.** If you use Claude Code, the tools in
 [`scripts/i18n/translate/`](../../scripts/i18n/translate/README.md) do a draft's files one at a time: they make the
@@ -246,13 +256,13 @@ way. Your language needs a glossary first, and the draft set up as in step 3 bel
    top and its name in the list below: delete both for every file you didn't copy. It has to list
    exactly the files in the folder, or the checks fail.
 3. Make step 5's edits, with two differences. In `i18n/index.ts`, put it inside the dev-only part,
-   `import.meta.env.DEV ? { "zh-CN": zhCN, pl } : {}`, so production builds don't carry it. In
+   `resources: { "zh-CN": zhCN, ...(import.meta.env.DEV ? { pl } : {}) }`, so production builds don't carry it. In
    `i18n/language.ts`, put the language in `DRAFT_LANGUAGES`, not `LANGUAGES` and
    `LANGUAGE_NAMES`. A code with a hyphen needs quotes:
 
    ```ts
    export const DRAFT_LANGUAGES: Readonly<Record<string, string>> = { pl: "Polski" };
-   // or, for Simplified Chinese: { "zh-CN": "简体中文" }
+   // or, with a region: { "pt-BR": "Português (Brasil)" }
    ```
 
 4. Try it as in step 6: choose *Polski (draft)* from the language button, or add `?lang=pl` to the

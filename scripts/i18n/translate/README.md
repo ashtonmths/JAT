@@ -12,7 +12,8 @@ One string file (`frontend/src/locales/en/<ns>.ts`) at a time, one pull request 
 - The language's glossary and style rules, `docs/i18n/<lang>.md` (Chinese: `docs/i18n/zh-CN.md`).
 - The language set up in the app as a draft (`DRAFT_LANGUAGES`, its folder and `index.ts`, the dev-only
   line in `i18n/index.ts`): the guide's "Translating in parts".
-- The demo data on a dev server, since only a dev server shows a draft language:
+- The demo data on a dev server, since only a dev server shows a draft language. Use the English demo
+  (no `--lang`): `pages.json` finds pages by the English demo's names.
 
   ```bash
   rm -rf /tmp/jat-i18n-demo && uv run python scripts/seed_demo.py /tmp/jat-i18n-demo  # it wants a new, empty folder

@@ -144,7 +144,7 @@ describe("the frame", () => {
 });
 
 describe("the language switch", () => {
-  it("lists English, ticked, and Coming soon! greyed out", async () => {
+  it("lists English, ticked, Simplified Chinese in its own name, and More coming soon greyed out", async () => {
     mockApi({ "/api/v1/health": HEALTH });
     renderAt("/no-such-page");
     const button = await screen.findByRole("button", { name: "Language: English" });
@@ -153,7 +153,10 @@ describe("the language switch", () => {
     const english = await screen.findByRole("menuitem", { name: "English", hidden: true });
     expect(english).toHaveAttribute("aria-current", "true");
     expect(english).toHaveAttribute("lang", "en");
-    expect(screen.getByRole("menuitem", { name: "Coming soon!", hidden: true })).toBeDisabled();
+    const chinese = screen.getByRole("menuitem", { name: "简体中文", hidden: true });
+    expect(chinese).not.toHaveAttribute("aria-current");
+    expect(chinese).toHaveAttribute("lang", "zh-CN");
+    expect(screen.getByRole("menuitem", { name: "More coming soon", hidden: true })).toBeDisabled();
   });
 
   it("links to the guide for adding a language, in a new tab, and says so to a screen reader", async () => {

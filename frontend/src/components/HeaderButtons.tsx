@@ -89,7 +89,7 @@ export function NewApplicationButton({
 
 /**
  * Change the language by hand (docs/rfc/i18n.md §6): the shipped languages by their own names,
- * then "Coming soon!" until a second one ships. The choice is kept in this browser. In dev, the
+ * then a greyed-out "More coming soon". The choice is kept in this browser. In dev, the
  * pseudo-language and any draft languages are offered too, and never kept. Last, a plain link to
  * the guide for adding a language: the app fetches nothing, and the browser only goes there if
  * you open it.

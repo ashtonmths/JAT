@@ -5,6 +5,26 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.22.0 (2026-11-10)
+
+- Recruiters has an In progress filter: the people you have an open application with (as its recruiter, Interested included) or a pitched role still to decide, with how many on the tab; each person's card says how many applications are in progress and roles are to decide. (#296).
+
+## 1.21.1 (2026-11-09)
+
+- Chinese demo data: scripts/seed_demo.py --lang zh-CN fills a demo folder with made-up Chinese companies, recruiters, roles, notes and offers in CNY, for trying the app or taking screenshots in Chinese. The English demo is unchanged. (#293).
+
+## 1.21.0 (2026-11-09)
+
+- Simplified Chinese (简体中文) is switched on: choose it from the language menu, or get it automatically from a browser set to Simplified Chinese (zh, zh-CN, zh-Hans, zh-SG); dates, numbers and the tab's title follow, and the menu's Coming soon! is now More coming soon. The README has a Languages section. (#294).
+
+## 1.20.0 (2026-11-09)
+
+- Round pills on the board, the list and the quick view show what a round is waiting for: a separate pink badge says Not booked yet, Waiting to hear back (a done round with no decision since) or Needs a new time, and At a glance says when a done round is waiting to hear back. The API's current round gains waiting_to_hear_back. (#289).
+
+## 1.19.12 (2026-11-09)
+
+- On Today, a round or call happening today has an orange Today pill under its title in Coming up, like a to-do due today; and a call's buttons now fade until you point at the row, like a round's (#286).
+
 ## 1.19.11 (2026-11-08)
 
 - An application with an offer no longer says No offer yet while its offers are loading, or after they fail to load (#281).

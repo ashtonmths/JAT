@@ -192,7 +192,15 @@ def kpis(roadmap: Roadmap, snapshot: Snapshot, now: datetime) -> str:
         else kpi("Commits today", str(today), f"{last_hour} in the last hour", f'<div class="spark">{spark}</div>'),
         kpi("Code", "—", UNKNOWN_GIT)
         if no_code
-        else kpi("Code", f"{snapshot.lines:,} <small>lines</small>", f"{snapshot.tests:,} tests defined"),
+        else kpi(
+            "Code",
+            f"{snapshot.lines:,} <small>lines</small>",
+            f"{snapshot.tests:,} tests defined",
+            f'<div class="note" title="Source: the app (src/, frontend/src/). Tests: its tests. '
+            f'Other: the PM dashboard, scripts, the website and config.">'
+            f"{snapshot.by_kind.get('source', 0):,} source · {snapshot.by_kind.get('tests', 0):,} tests · "
+            f"{snapshot.by_kind.get('other', 0):,} other</div>",
+        ),
     ]
     return f'<div class="kpis">{"".join(cards)}</div>'
 

@@ -1276,3 +1276,42 @@ test.describe("spaces around a detail", () => {
     );
   });
 });
+
+test.describe("in progress", () => {
+  test("lists only the people you have something open with, and says how much on their card", async ({
+    page,
+    request,
+  }) => {
+    const idOf = async (made: Promise<{ json(): Promise<unknown> }>) =>
+      ((await (await made).json()) as { id: string }).id;
+    // Its own names, so a retry or another test's people never clash with it.
+    const name = `Pitching Person ${test.info().workerIndex}-${test.info().retry}-${Date.now()}`;
+    const contact_id = await idOf(request.post("/api/v1/contacts", { data: { name } }));
+    const company_id = await idOf(request.post("/api/v1/companies", { data: { name: `${name} Co` } }));
+    const card = page.locator(".mantine-Card-root", { has: page.getByRole("link", { name, exact: true }) });
+    const showInProgress = async () => {
+      await page.goto("/recruiters");
+      await page.getByText(/^In progress · \d+$/).click();
+      await expect(page.locator(".mantine-Card-root").first()).toBeVisible();
+    };
+
+    // Nothing with them yet: not listed.
+    await showInProgress();
+    await expect(card).toBeHidden();
+
+    // A role they pitch, not decided on yet, puts them in.
+    const role_id = await idOf(
+      request.post("/api/v1/roles", { data: { company_id, title: "Pitched Engineer", contact_id } }),
+    );
+    await showInProgress();
+    await expect(card.getByText("1 role to decide")).toBeVisible();
+
+    // Applying through them: counted once, as the application, not as a role to decide too.
+    await request.post("/api/v1/applications", {
+      data: { role_id, route: "direct", recruiter_id: contact_id },
+    });
+    await showInProgress();
+    await expect(card.getByText("1 application in progress")).toBeVisible();
+    await expect(card.getByText(/to decide/)).toBeHidden();
+  });
+});

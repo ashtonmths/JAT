@@ -12,7 +12,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, load_only
 
-from jat.db.models import Application, Interview
+from jat.db.models import Application, Event, Interview, Offer
 
 from . import applications as svc
 
@@ -76,6 +76,7 @@ def current_rounds(session: Session, application_ids: Iterable[str]) -> dict[str
         Interview.starts_at,
         Interview.deadline_at,
         Interview.created_at,
+        Interview.updated_at,
         Interview.needs_new_time_since,
         Interview.needs_new_time_by,
     )
@@ -85,12 +86,108 @@ def current_rounds(session: Session, application_ids: Iterable[str]) -> dict[str
     for app_id, interviews in by_app.items():
         upcoming = [i for i in interviews if i.status == "scheduled"]
         if upcoming:
-            out[app_id] = min(upcoming, key=lambda i: (i.round or 0, _when(i), i.id))
+            out[app_id] = min(upcoming, key=_order)
             continue
         happened = [i for i in interviews if i.status == "done"]
         if happened:
-            out[app_id] = max(happened, key=lambda i: (i.round or 0, _when(i), i.id))
+            out[app_id] = max(happened, key=_order)
     return out
+
+
+def _order(interview: Interview) -> tuple[int, datetime, str]:
+    return (interview.round or 0, _when(interview), interview.id)
+
+
+def _marked_done_at(events: list[Event], interview_id: str) -> datetime | None:
+    """When a round was last marked done, from its timeline entries as recorded (each saves the round's
+    status then): the first entry saying done since the last one that didn't. Later edits of a done
+    round don't move it. None for a round with no such entry."""
+    done_at: datetime | None = None
+    for event in sorted(events, key=lambda e: e.seq):  # the order they were recorded in
+        data = event.data or {}
+        if data.get("interview_id") != interview_id:
+            continue
+        done_at = (done_at or event.occurred_at) if data.get("status") == "done" else None
+    return done_at
+
+
+def _happened_at(interview: Interview, events: list[Event]) -> datetime:
+    """When a done round happened: its time, or when it was marked done if that's earlier (a take-home
+    handed in before its deadline) or it has no time (it was never booked). Without a timeline entry
+    for that, when it was last saved stands in."""
+    done_at = _marked_done_at(events, interview.id) or interview.updated_at
+    when = interview.starts_at or interview.deadline_at
+    return min(when, done_at) if when else done_at
+
+
+def waiting_to_hear_back(session: Session, current: dict[str, Interview], stages: dict[str, str]) -> set[str]:
+    """Applications whose current round is done with nothing heard since: "Waiting to hear back".
+
+    The rule: the current round is done (so no round is still to come; `current_rounds` picks a
+    scheduled one first), and since it happened there's been no decision. A decision is any of
+      - a stage move: the application's stage now isn't the one it was at when the round happened
+        (a move that was undone, or moved away and back, leaves it the same, so it still waits);
+        a rejection, a withdrawal and an accepted offer are moves too;
+      - an offer recorded after the round;
+      - a later round, even a cancelled one (a booked one would be the current round instead).
+    `stages` is each application's stage now, by id. An application whose current round isn't done
+    (booked, not booked yet, or waiting for a new time) is never in the result.
+    """
+    done = {app_id: i for app_id, i in current.items() if i.status == "done" and app_id in stages}
+    if not done:
+        return set()
+    ids = list(done)
+    moves: dict[str, list[Event]] = {}  # stage moves
+    stmt = (
+        select(Event)
+        .options(
+            load_only(Event.application_id, Event.occurred_at, Event.seq, Event.from_stage, Event.to_stage, Event.data)
+        )
+        .where(Event.application_id.in_(ids), Event.kind.in_((svc.STAGE_CHANGE, "interview")))
+        .order_by(Event.occurred_at, Event.seq)
+    )
+    rounds: dict[str, list[Event]] = {}  # the rounds' own timeline entries
+    for event in session.scalars(stmt):
+        into = moves if event.kind == svc.STAGE_CHANGE else rounds
+        into.setdefault(event.application_id, []).append(event)
+    offers: dict[str, list[datetime]] = {}
+    for app_id, created in session.execute(
+        select(Offer.application_id, Offer.created_at).where(Offer.application_id.in_(ids))
+    ):
+        offers.setdefault(app_id, []).append(created)
+    cancelled: dict[str, list[Interview]] = {}
+    columns = load_only(
+        Interview.application_id, Interview.round, Interview.starts_at, Interview.deadline_at, Interview.created_at
+    )
+    for interview in session.scalars(
+        select(Interview).options(columns).where(Interview.application_id.in_(ids), Interview.status == "cancelled")
+    ):
+        cancelled.setdefault(interview.application_id, []).append(interview)
+
+    out: set[str] = set()
+    for app_id, interview in done.items():
+        at = _happened_at(interview, rounds.get(app_id, []))
+        if any(created > at for created in offers.get(app_id, [])):
+            continue
+        if any(_order(other) > _order(interview) for other in cancelled.get(app_id, [])):
+            continue
+        if _stage_at(moves.get(app_id, []), at) not in (None, stages[app_id]):
+            continue
+        out.add(app_id)
+    return out
+
+
+def _stage_at(moves: list[Event], at: datetime) -> str | None:
+    """The stage an application was at, at a time, from its stage moves in order (None if it has none)."""
+    before = [m for m in moves if m.occurred_at <= at]
+    if before:
+        return before[-1].to_stage
+    # Added after the round (filled in afterwards): the stage it was added at. One added at a later
+    # stage than the first has the app's own filled-in steps to it (`svc.is_implied`).
+    added = [m for m in moves if m.from_stage is None or svc.is_implied(m)]
+    if added:
+        return added[-1].to_stage
+    return moves[0].from_stage if moves else None
 
 
 _MESSAGES: dict[str, svc.EventMsgKey] = {

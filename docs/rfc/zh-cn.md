@@ -1,8 +1,8 @@
 # Simplified Chinese (zh-CN): the plan
 
-Status: in progress. The pilot (`i18n-zh-cn-applications`, the applications strings) merged in #239; every other
-task waits for Kai's go (Kai, 2026-11-05: "after that file is translated and gets merged, dont continue after that
-until isay").
+Status: switched on (`i18n-zh-cn-switch-on`, 2026-11-09). Every string file, the layout and the switch-on are in; the
+demo data, screenshots, Chinese README, website and GitHub listing follow, each on Kai's go (Kai, 2026-11-05: "after
+that file is translated and gets merged, dont continue after that until isay").
 
 Simplified Chinese is the first language after English: the language research (`docs/rfc/i18n.md` §13a) ranked it first.
 The roadmap tasks are `i18n-zh-cn-*` in phase P8 of `docs/ROADMAP.yaml`.
@@ -20,11 +20,20 @@ The roadmap tasks are `i18n-zh-cn-*` in phase P8 of `docs/ROADMAP.yaml`.
 - **Reviewers:** Sonnet and Opus, each separately ("perhaps we can drop haiku"); Opus translates and settles
   disagreements.
 - **No screenshots in the PRs** ("no screenshots in the PR"). They're taken to translate and review, and stay outside the
-  repo.
+  repo. The exception is the layout PR (2026-11-09): Kai reviews it from a before-and-after table of screenshots in its
+  description, hosted on a throwaway branch, and merges it himself.
+- **Layout: English stays as it is, with as little language-specific CSS as possible** (Kai, 2026-11-09: "im not
+  expecting any changes to english language version. if there are some needed then wait for my approval firtst";
+  "ideally we want to reduce the language-specific css as much as possible … balacne between langauge-specific css and
+  making english chagnes too"). Fixes that work for every language without changing English come first (fonts last in
+  the list, `word-break: keep-all` on short labels, date patterns per language); a fix that changes English waits for
+  Kai's yes. Kai chose: no forced capitals in Chinese (`:lang(zh)` in `text.module.css`, the one language-specific rule),
+  and the date boxes one per line on phones in every language.
 - **This replaces `docs/rfc/i18n.md` §14 for Chinese** where they differ: there are Chinese screenshots (not English
   only), and the website only says the app comes in several languages (no translated site for now).
-- **Which browsers get it:** only those asking for `zh-CN`. Plain `zh` or `zh-Hans` doesn't match yet; whether it should is
-  decided in `i18n-zh-cn-switch-on`.
+- **Which browsers get it:** any asking for Simplified Chinese, however written: `zh`, `zh-CN`, `zh-SG`, `zh-Hans`,
+  `zh-Hans-CN` (decided at switch-on, 2026-11-09; `isSimplifiedChinese` in `frontend/src/i18n/language.ts`).
+  Traditional Chinese (`zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`) stays English.
 - **No saved context pack.** A saved list of where each key is used would go stale as the code changes, so each run looks
   up the context fresh from the code it's translating.
 - "Coming soon!" in the language menu becomes "More coming soon". Search is left as it is (`i18n-search` comes later).

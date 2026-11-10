@@ -22,7 +22,8 @@ uv run jat --data-dir ~/job-search-data <command> [options]
 
 Other scripts:
 
-- `uv run python scripts/seed_demo.py <new empty folder>`: made-up demo data.
+- `uv run python scripts/seed_demo.py <new empty folder>`: made-up demo data. Add `--lang zh-CN` for the same
+  demo with Chinese companies, people and notes.
 - `python3 -m tools.pm`: the project's build dashboard (roadmap and PR status) at
   http://127.0.0.1:8767; only interesting if you're working on the tracker itself.
 
