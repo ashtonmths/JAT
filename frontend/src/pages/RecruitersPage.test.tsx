@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
-import { mockApi, row, WORKFLOW } from "../test/mockApi";
+import { mockApi, roleSummary, row, WORKFLOW } from "../test/mockApi";
 
 function renderAt(path: string) {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: [path] }))} />);
@@ -113,6 +113,42 @@ describe("recruiters", () => {
         favourite: true,
       }),
     );
+  });
+
+  it("filters to the people you have something in progress with, and counts it on their cards", async () => {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/agencies": agencies,
+      "/api/v1/contacts": contacts,
+      "/api/v1/companies": [],
+      // Alex: two open applications (Interested counts) and one closed; Sam: only a rejected one.
+      "/api/v1/applications": [
+        row({ id: "a1", recruiter_id: "c1", stage: "applied" }),
+        row({ id: "a2", recruiter_id: "c1", stage: "interested", stage_name: "Interested" }),
+        row({ id: "a3", recruiter_id: "c1", stage: "rejected", stage_kind: "closed" }),
+        row({ id: "a4", recruiter_id: "c2", stage: "rejected", stage_kind: "closed" }),
+      ],
+      // Jo pitched a role still to decide and one marked interested; Sam's pitched role was passed.
+      "/api/v1/role-summaries": [
+        roleSummary({ id: "r1", contact_id: "c3", status: "to_decide" }),
+        roleSummary({ id: "r2", contact_id: "c3", status: "interested" }),
+        roleSummary({ id: "r3", contact_id: "c2", status: "passed" }),
+      ],
+      "/api/v1/health": {},
+    });
+    renderAt("/recruiters");
+    const card = async (name: string) =>
+      (await screen.findByRole("link", { name })).closest(".mantine-Card-root") as HTMLElement;
+    expect(
+      await within(await card("Alex Morgan")).findByText("2 applications in progress"),
+    ).toBeInTheDocument();
+    expect(within(await card("Jo Freelance")).getByText("2 roles to decide")).toBeInTheDocument();
+    expect(within(await card("Sam Patel")).queryByText(/in progress|to decide/)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("In progress · 2"));
+    await waitFor(() => expect(screen.queryByRole("link", { name: "Sam Patel" })).not.toBeInTheDocument());
+    expect(screen.getByRole("link", { name: "Alex Morgan" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Jo Freelance" })).toBeInTheDocument();
   });
 
   it("puts a ghost before the name of someone who ghosted you", async () => {
