@@ -171,7 +171,7 @@ def windows(monkeypatch):
     """Fake Windows: what the code reads at call time, and no fcntl (as there)."""
     monkeypatch.setattr("jat.platform.IS_WINDOWS", True)
     monkeypatch.setattr("jat.platform.fcntl", None)
-    monkeypatch.delenv("JAT_WINDOWS_SNAPSHOTS", raising=False)
+    monkeypatch.setenv("JAT_WINDOWS_SNAPSHOTS", "0")  # wins over a developer's .env
 
 
 def test_snapshots_allowed_everywhere_but_windows(monkeypatch):

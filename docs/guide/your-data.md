@@ -67,7 +67,7 @@ nothing shows up in `git log` until you've been idle for a minute.
 
 If the folder isn't a git repo, snapshots are off and the app still works; the sidebar's
 connection tooltip says "data dir isn't a git repo". On Windows, snapshots are off for now
-even in a git repo ([why](troubleshooting.md#it-wont-run-on-windows)).
+even in a git repo ([why](troubleshooting.md#windows)).
 
 To turn them on, stop the app and make the folder a git repo. You get full history, and with a
 remote (below) an off-machine backup for free:

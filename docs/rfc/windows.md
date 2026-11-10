@@ -20,7 +20,8 @@ ModuleNotFoundError: No module named 'fcntl'
 ```
 
 `fcntl` is part of Python on Linux and macOS but not on Windows. The tracker uses it for one
-thing: a file lock in `src/jat/snapshot/git.py` around its **snapshots**.
+thing: a file lock around its **snapshots** (in `src/jat/snapshot/git.py`; since `windows-starts`, in
+`src/jat/platform.py`).
 
 A snapshot is the tracker's automatic git commit. When the data folder is a git repo, about a
 minute after your last change the app writes the database out to `export/` as readable JSON

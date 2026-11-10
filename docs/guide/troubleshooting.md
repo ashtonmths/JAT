@@ -1,6 +1,6 @@
 # Troubleshooting
 
-## It won't run on Windows
+## Windows
 
 Windows isn't supported yet: the tracker runs on Linux and macOS. Support is being built in
 steps. The tracker now starts on Windows, with git snapshots turned off there (the sidebar's
