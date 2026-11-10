@@ -51,6 +51,7 @@
     "backup_shut_down": "快照服务已关闭",
     "backup_snapshot_failed": "快照失败：{{reason}}",
     "backup_snapshots_off": "数据目录不是 git 仓库，因此快照已关闭。",
+    "backup_snapshots_off_windows": "Windows 上暂时关闭了快照。如需测试，请设置 JAT_WINDOWS_SNAPSHOTS=1，并使用测试数据文件夹。",
     "cv_file_applications_invalid": "application_ids：只能是这个文件对应的申请。",
     "cv_file_document_required": "选择要添加到的文档，或为新文档命名。",
     "cv_file_missing": "你的数据文件夹中缺少 {{name}}。",

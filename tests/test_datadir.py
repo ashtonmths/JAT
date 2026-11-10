@@ -39,7 +39,7 @@ def test_gitignore_keeps_existing_lines(tmp_path):
 
 def test_gitignore_covers_the_snapshot_lock(tmp_path):
     """Without a .git folder the snapshot lock sits in the data folder itself, so it must be ignored."""
-    from jat.snapshot.git import LOCK_NAME
+    from jat.platform import LOCK_NAME
 
     path = tmp_path / "data"
     init_data_dir(path)

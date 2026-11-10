@@ -8,8 +8,8 @@ interface Health {
   schema: string | null;
   schema_head: string;
   git_repo: boolean;
+  // Missing from a server older than 1.23.0 (one still running after an update).
   snapshots_enabled?: boolean;
-  unix?: boolean;
   windows?: boolean;
 }
 
@@ -35,8 +35,7 @@ export function ApiStatus() {
   const { data, isError, isPending } = useHealth();
 
   const snapshotsOn = data ? (data.snapshots_enabled ?? data.git_repo) : false;
-  const isUnix = data ? Boolean(data.unix ?? !data.windows) : true;
-  const windowsNoSnapshots = data ? !isUnix && !snapshotsOn && data.git_repo : false;
+  const versions = data ? { version: String(data.version), schema: data.schema ?? "?" } : {};
 
   const [color, label, detail] = isPending
     ? ["gray", t("api.connecting"), t("api.connectingHint")]
@@ -46,13 +45,10 @@ export function ApiStatus() {
           snapshotsOn ? "teal" : "yellow",
           t("api.connected"),
           snapshotsOn
-            ? t("api.detailsBackups", { version: String(data.version), schema: data.schema ?? "?" })
-            : windowsNoSnapshots
-              ? t("api.detailsWindowsNoSnapshots", {
-                  version: String(data.version),
-                  schema: data.schema ?? "?",
-                })
-              : t("api.detailsNoGit", { version: String(data.version), schema: data.schema ?? "?" }),
+            ? t("api.detailsBackups", versions)
+            : data.git_repo && data.windows
+              ? t("api.detailsWindowsNoSnapshots", versions)
+              : t("api.detailsNoGit", versions),
         ];
 
   return (

@@ -95,11 +95,10 @@ def init_data_dir(
     commit: bool = True,
     code_root: Path = CODE_ROOT,
     *,
-    windows_snapshots: bool | None = None,
+    windows_snapshots: bool = False,
 ) -> InitReport:
-    """Create the layout. Idempotent: existing files are never overwritten."""
-    from .config import Settings
-
+    """Create the layout. Idempotent: existing files are never overwritten. On Windows the
+    layout isn't committed unless `windows_snapshots` (JAT_WINDOWS_SNAPSHOTS=1) is set."""
     check_outside_code_repo(path, code_root)
     report = InitReport(path=path)
     if not path.exists():
@@ -119,8 +118,8 @@ def init_data_dir(
         report.created.append("config.toml")
     report.gitignore_added = _ensure_gitignore(path)
     report.is_git_repo = is_git_repo(path)
-    ws = Settings().windows_snapshots if windows_snapshots is None else windows_snapshots
-    if commit and snapshots_allowed(ws) and report.is_git_repo and (report.created or report.gitignore_added):
+    changed = report.created or report.gitignore_added
+    if commit and snapshots_allowed(windows_snapshots) and report.is_git_repo and changed:
         report.committed = _commit_scaffold(path)
     return report
 

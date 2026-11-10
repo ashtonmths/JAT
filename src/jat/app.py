@@ -20,7 +20,7 @@ from .api.routers import router as api_v1
 from .config import Settings, resolve_data_dir
 from .datadir import CODE_ROOT, check_outside_code_repo, is_git_repo
 from .db import current_revision, db_path, head_revision, make_engine, session_factory
-from .platform import IS_WINDOWS
+from .platform import is_windows
 from .security import LocalOnly
 from .snapshot.git import SnapshotService
 from .storage.files import MAX_BYTES
@@ -50,10 +50,7 @@ def _api_router() -> APIRouter:
     def health(request: Request) -> dict:
         state: AppState = request.app.state.jat
         engine = request.app.state.engine
-        snapshots: SnapshotService = getattr(request.app.state, "snapshots", None)
-        snapshots_enabled = snapshots.enabled if snapshots is not None else state.git_repo
-        is_windows = IS_WINDOWS
-        is_unix = not IS_WINDOWS
+        snapshots: SnapshotService = request.app.state.snapshots
         return {
             "status": "ok",
             "version": __version__,
@@ -61,9 +58,8 @@ def _api_router() -> APIRouter:
             "schema_head": head_revision(),
             "data_dir": str(state.data_dir),
             "git_repo": state.git_repo,
-            "snapshots_enabled": snapshots_enabled,
-            "unix": is_unix,
-            "windows": is_windows,
+            "snapshots_enabled": snapshots.enabled,
+            "windows": is_windows(),
         }
 
     return api
@@ -110,16 +106,12 @@ def create_app(
     dev: bool = False,
     snapshot_debounce: float | None = None,
     bind_host: str | None = None,
-    windows_snapshots: bool | None = None,
+    windows_snapshots: bool = False,
 ) -> FastAPI:
     """Build the app for a data directory whose database already exists and is migrated."""
     check_outside_code_repo(data_dir)
     if not db_path(data_dir).exists():
         raise RuntimeError(f"No database at {db_path(data_dir)}. Run `jat init` first.")
-
-    ws = Settings().windows_snapshots if windows_snapshots is None else windows_snapshots
-    if IS_WINDOWS and ws:
-        print("note: Windows snapshots are experimental")
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -146,7 +138,7 @@ def create_app(
         data_dir,
         engine,
         debounce_seconds=snapshot_debounce,
-        windows_snapshots=ws,
+        windows_snapshots=windows_snapshots,
     )
     app.state.writes.subscribe(app.state.snapshots.mark_dirty)
     if dev:

@@ -8,6 +8,7 @@ from jat.app import create_app
 from jat.cli import main
 from jat.datadir import init_data_dir
 from jat.db import db_path, make_engine, migrate
+from jat.platform import lock_path, snapshots_allowed
 from jat.snapshot.git import SnapshotError, SnapshotService, debounce_from_config
 
 
@@ -165,45 +166,79 @@ def test_debounce_config(tmp_path):
     assert debounce_from_config(tmp_path) == 60
 
 
-def test_windows_snapshots_off_by_default(git_repo, monkeypatch):
+@pytest.fixture
+def windows(monkeypatch):
+    """Fake Windows: what the code reads at call time, and no fcntl (as there)."""
     monkeypatch.setattr("jat.platform.IS_WINDOWS", True)
-    monkeypatch.delenv("JAT_WINDOWS_SNAPSHOTS", raising=False)
-    service = SnapshotService(git_repo, make_engine(db_path(git_repo)), debounce_seconds=0)
-    assert service.enabled is False
-    with pytest.raises(SnapshotError, match="Snapshots are off on Windows"):
-        service.snapshot_now()
-    with pytest.raises(SnapshotError, match="Snapshots are off on Windows"):
-        service.push()
-
-
-def test_windows_snapshots_enabled_with_switch(git_repo, monkeypatch):
-    monkeypatch.setattr("jat.platform.IS_WINDOWS", True)
-    monkeypatch.setenv("JAT_WINDOWS_SNAPSHOTS", "1")
-    service = SnapshotService(git_repo, make_engine(db_path(git_repo)), debounce_seconds=0)
-    assert service.enabled is True
-    # Verify the lock is a no-op when fcntl is None (as on Windows in step 1)
     monkeypatch.setattr("jat.platform.fcntl", None)
-    with service._process_lock():
-        pass
-
-
-def test_windows_init_commit_off_without_switch(git_repo, monkeypatch):
-    monkeypatch.setattr("jat.platform.IS_WINDOWS", True)
     monkeypatch.delenv("JAT_WINDOWS_SNAPSHOTS", raising=False)
-    target = git_repo / "sub"
-    target.mkdir()
-    subprocess.run(["git", "init", "-q", "-b", "main", str(target)], check=True)
-    report = init_data_dir(target)
-    assert report.is_git_repo is True
-    assert report.committed is False
 
 
-def test_windows_init_commit_on_with_switch(git_repo, monkeypatch):
+def test_snapshots_allowed_everywhere_but_windows(monkeypatch):
+    assert snapshots_allowed(False) and snapshots_allowed(True)
     monkeypatch.setattr("jat.platform.IS_WINDOWS", True)
-    monkeypatch.setenv("JAT_WINDOWS_SNAPSHOTS", "1")
-    target = git_repo / "sub2"
-    target.mkdir()
-    subprocess.run(["git", "init", "-q", "-b", "main", str(target)], check=True)
-    report = init_data_dir(target)
-    assert report.is_git_repo is True
-    assert report.committed is True
+    assert not snapshots_allowed(False)
+    assert snapshots_allowed(True)
+
+
+def test_windows_snapshots_are_off_in_a_git_repo(data_repo, windows):
+    before = commits(data_repo)
+    service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0)
+    assert service.enabled is False
+    with pytest.raises(SnapshotError, match="off on Windows") as snap:
+        service.snapshot_now()
+    with pytest.raises(SnapshotError, match="off on Windows") as push:
+        service.push()
+    assert snap.value.code == push.value.code == "backup_snapshots_off_windows"
+    assert commits(data_repo) == before
+
+
+def test_windows_snapshots_run_with_the_switch_and_no_lock(data_repo, windows):
+    service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0, windows_snapshots=True)
+    assert service.enabled is True
+    assert service.snapshot_now()
+    assert not lock_path(data_repo).exists()  # no fcntl: the lock was a no-op, never opened
+
+
+def test_errors_inside_the_lock_pass_through(data_repo):
+    service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0)
+    with pytest.raises(PermissionError, match="disk says no"), service.fresh_export():
+        raise PermissionError("disk says no")  # not reported as a lock failure
+
+
+def test_failing_to_take_the_lock_is_backup_lock_failed(data_repo, monkeypatch):
+    class StuckLock:
+        LOCK_EX, LOCK_NB, LOCK_UN = 2, 4, 8
+
+        @staticmethod
+        def flock(fh, op):
+            if op & StuckLock.LOCK_NB:
+                raise BlockingIOError
+            raise OSError("stuck")
+
+    monkeypatch.setattr("jat.platform.fcntl", StuckLock)
+    service = SnapshotService(data_repo, make_engine(db_path(data_repo)), debounce_seconds=0)
+    with pytest.raises(SnapshotError, match="couldn't lock") as exc:
+        service.snapshot_now()
+    assert exc.value.code == "backup_lock_failed"
+
+
+def test_windows_init_commits_the_layout_only_with_the_switch(tmp_path, git_env, windows):
+    off, on = tmp_path / "off", tmp_path / "on"
+    for repo in (off, on):
+        subprocess.run(["git", "init", "-q", "-b", "main", str(repo)], check=True)
+    assert init_data_dir(off).committed is False
+    assert init_data_dir(on, windows_snapshots=True).committed is True
+
+
+def test_windows_cli_says_snapshots_are_off(data_repo, windows, capsys):
+    assert main(["--data-dir", str(data_repo), "init"]) == 0
+    assert "git: snapshots are off on Windows" in capsys.readouterr().out
+    assert main(["--data-dir", str(data_repo), "snapshot"]) == 2
+    assert "off on Windows" in capsys.readouterr().err
+
+
+def test_health_on_windows_says_snapshots_are_off(data_repo, windows):
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_repo, snapshot_debounce=0))
+    body = client.get("/api/v1/health").json()
+    assert (body["git_repo"], body["snapshots_enabled"], body["windows"]) == (True, False, True)

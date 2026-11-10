@@ -30,7 +30,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Engine
 
 from ..datadir import is_git_repo
-from ..platform import IS_WINDOWS, LOCK_NAME, process_lock, snapshots_allowed
+from ..platform import LockError, is_windows, process_lock, snapshots_allowed
 from .export import export_db
 
 if TYPE_CHECKING:
@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 
 TRACKED = ("export", "notes", "files", "config.toml", ".gitignore")
 DEFAULT_DEBOUNCE = 60.0
+WINDOWS_OFF = "Snapshots are off on Windows for now. Set JAT_WINDOWS_SNAPSHOTS=1 to test them on a test data folder."
 NO_PROMPT_ENV = {
     "GIT_TERMINAL_PROMPT": "0",
     "GIT_SSH_COMMAND": "ssh -o BatchMode=yes",
@@ -115,14 +116,11 @@ class SnapshotService:
         engine: Engine,
         debounce_seconds: float | None = None,
         *,
-        windows_snapshots: bool | None = None,
+        windows_snapshots: bool = False,
     ):
-        from ..config import Settings
-
         self.data_dir = data_dir
         self.engine = engine
-        ws = Settings().windows_snapshots if windows_snapshots is None else windows_snapshots
-        self.enabled = is_git_repo(data_dir) and snapshots_allowed(ws)
+        self.enabled = is_git_repo(data_dir) and snapshots_allowed(windows_snapshots)
         self.debounce = debounce_from_config(data_dir) if debounce_seconds is None else debounce_seconds
         self._state = threading.Lock()  # short critical sections: flags and the timer
         self._work = threading.Lock()  # held while exporting and committing
@@ -177,14 +175,14 @@ class SnapshotService:
         try:
             with process_lock(self.data_dir):
                 yield
-        except OSError as exc:
-            git_dir = self.data_dir / ".git"
-            lock_path = (git_dir if git_dir.is_dir() else self.data_dir) / LOCK_NAME
+        except LockError as exc:  # only taking the lock; errors inside the block pass through
             raise SnapshotError(
-                f"couldn't lock {lock_path}: {exc}",
-                "backup_lock_failed",
-                {"path": str(lock_path), "reason": str(exc)},
+                str(exc), "backup_lock_failed", {"path": str(exc.path), "reason": str(exc.cause)}
             ) from exc
+
+    def _off_on_windows(self) -> bool:
+        """Snapshots are off only because this is Windows (a git repo, JAT_WINDOWS_SNAPSHOTS unset)."""
+        return is_windows() and is_git_repo(self.data_dir)
 
     @contextlib.contextmanager
     def fresh_export(self) -> Iterator[None]:
@@ -214,11 +212,8 @@ class SnapshotService:
     def snapshot_now(self, message: str | None = None, *, _force: bool = False) -> str | None:
         """Export and commit now. Returns the new commit sha, or None if nothing changed."""
         if not self.enabled:
-            if IS_WINDOWS and is_git_repo(self.data_dir):
-                raise SnapshotError(
-                    "Snapshots are off on Windows. Set JAT_WINDOWS_SNAPSHOTS=1 to test them.",
-                    "backup_snapshots_off",
-                )
+            if self._off_on_windows():
+                raise SnapshotError(WINDOWS_OFF, "backup_snapshots_off_windows")
             raise SnapshotError("The data directory isn't a git repo, so snapshots are off.", "backup_snapshots_off")
         with self._state:
             if self._closed and not _force:
@@ -275,11 +270,8 @@ class SnapshotService:
     def push(self) -> str:
         """Snapshot any pending changes, then `git push` (never forced, never prompts)."""
         if not self.enabled:
-            if IS_WINDOWS and is_git_repo(self.data_dir):
-                raise SnapshotError(
-                    "Snapshots are off on Windows. Set JAT_WINDOWS_SNAPSHOTS=1 to test them.",
-                    "backup_not_a_repo",
-                )
+            if self._off_on_windows():
+                raise SnapshotError(WINDOWS_OFF, "backup_snapshots_off_windows")
             raise SnapshotError("The data directory isn't a git repo.", "backup_not_a_repo")
         remote = self._remote()
         if not remote:
