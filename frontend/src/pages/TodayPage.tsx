@@ -58,6 +58,7 @@ import { HowItWorks } from "../components/HowItWorks";
 import { PersonChase, waitingOrChased } from "../components/PersonChase";
 import { StageBadge } from "../components/StageBadge";
 import { i18n } from "../i18n";
+import text from "../text.module.css";
 import { formatDay } from "../utils/format";
 import { roundLabel } from "../utils/rounds";
 import { stageName } from "../utils/stageName";
@@ -136,7 +137,14 @@ function SectionLabel({ title, count, hint }: { title: string; count: number; hi
       events={{ hover: true, focus: true, touch: true }}
     >
       <Group gap={6} style={{ alignSelf: "flex-start" }} tabIndex={0}>
-        <Title order={4} fz="xs" fw={700} c="dimmed" tt="uppercase" style={{ letterSpacing: "0.04em" }}>
+        <Title
+          order={4}
+          fz="xs"
+          fw={700}
+          c="dimmed"
+          className={text.caps}
+          style={{ letterSpacing: "0.04em" }}
+        >
           {title}
         </Title>
         {count > 0 && (
@@ -209,18 +217,26 @@ function AppLine({
  * The shape of a row that needs you: who or what on the left, its stage and status on the
  * right (kept on one line), anything about how they usually reply under the name, and the
  * buttons on their own line, left-aligned, so rows look the same whatever the column's width.
+ * `lead` starts that line at full strength (the buttons fade until you point at the row).
  */
 function Row({
   who,
   habit,
   status,
   actions,
+  lead,
 }: {
   who: ReactNode;
   habit?: ReactNode;
   status: ReactNode;
   actions?: ReactNode;
+  lead?: ReactNode;
 }) {
+  const buttons = actions && (
+    <Group gap={6} wrap="wrap" className={classes.actions}>
+      {actions}
+    </Group>
+  );
   return (
     <Stack gap={4}>
       <Group justify="space-between" wrap="nowrap" align="flex-start" gap="sm">
@@ -230,12 +246,25 @@ function Row({
         </Group>
       </Group>
       {habit}
-      {actions && (
-        <Group gap={6} wrap="wrap" className={classes.actions}>
-          {actions}
+      {lead ? (
+        <Group gap={6} wrap="wrap">
+          {lead}
+          {buttons}
         </Group>
+      ) : (
+        buttons
       )}
     </Stack>
+  );
+}
+
+/** The to-dos' orange Today pill, first on the buttons line of a round or call in Coming up that's on today. */
+function TodayPill() {
+  const { t } = useTranslation("todos");
+  return (
+    <Badge size="xs" variant="light" color="orange">
+      {t("today")}
+    </Badge>
   );
 }
 
@@ -243,10 +272,12 @@ function InterviewLine({
   interview,
   action,
   todo,
+  lead,
 }: {
   interview: Interview;
   action?: ReactNode;
   todo?: Todo; // a round waiting for a new time: the to-do to book it, shown with it rather than twice
+  lead?: ReactNode; // first on the buttons line, like the Today pill
 }) {
   const { t } = useTranslation("today");
   const when = interview.starts_at ?? interview.deadline_at;
@@ -286,6 +317,7 @@ function InterviewLine({
         )
       }
       actions={action}
+      lead={lead}
     />
   );
 }
@@ -496,11 +528,30 @@ export function TodayPage() {
   const todosNow = todos.filter((t) => !t.due_on || t.due_on <= day);
   const todosLater = todos.filter((t) => t.due_on && t.due_on > day);
   // Calls, interviews and dated to-dos in one list by time; rounds not booked yet go last.
+  // One on today (your local day, by its start or deadline) gets the Today pill, first on its
+  // buttons line, under the title as on a to-do.
+  const isToday = (at?: string | null) => !!at && dayjs(at).format("YYYY-MM-DD") === today;
+  // A call's buttons fade until you point at the row, like a round's (Row does that for rounds);
+  // the pill stays outside the fade, as it's information, not a button.
+  const callActions = (at: string | null | undefined, buttons: ReactNode) => (
+    <>
+      {isToday(at) && <TodayPill />}
+      <Group gap={6} className={classes.actions}>
+        {buttons}
+      </Group>
+    </>
+  );
   const comingUp = [
     ...meetings.map((m) => ({
       key: m.id,
       at: m.starts_at,
-      node: <MeetingLine key={m.id} meeting={m} action={<CallRescheduleButton meeting={m} />} />,
+      node: (
+        <MeetingLine
+          key={m.id}
+          meeting={m}
+          action={callActions(m.starts_at, <CallRescheduleButton meeting={m} />)}
+        />
+      ),
     })),
     ...(data?.upcoming ?? []).map((i) => ({
       key: i.id,
@@ -510,6 +561,7 @@ export function TodayPage() {
           key={i.id}
           interview={i}
           action={i.starts_at ? <RescheduleButton interview={i} /> : undefined}
+          lead={isToday(i.starts_at ?? i.deadline_at) && <TodayPill />}
         />
       ),
     })),
@@ -765,7 +817,11 @@ export function TodayPage() {
                       key={m.id}
                       meeting={m}
                       todo={rebook.get(m.id)}
-                      action={<CallRescheduleButton meeting={m} />}
+                      action={
+                        <Group gap={6} className={classes.actions}>
+                          <CallRescheduleButton meeting={m} />
+                        </Group>
+                      }
                     />
                   ))}
                 </Section>

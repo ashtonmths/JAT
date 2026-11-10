@@ -46,7 +46,8 @@ export default {
   language: {
     label: "Language",
     current: "Language: {{name}}",
-    comingSoon: "Coming soon!",
+    // Greyed out under the languages: more are on their way.
+    comingSoon: "More coming soon",
     pseudo: "Pseudo-language (dev)",
     // A language still being translated, shown only on a dev server: its name in itself.
     draft: "{{name}} (draft)",

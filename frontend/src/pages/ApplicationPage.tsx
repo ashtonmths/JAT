@@ -8,6 +8,7 @@ import {
   Group,
   Loader,
   Select,
+  SimpleGrid,
   Stack,
   Switch,
   TagsInput,
@@ -62,7 +63,8 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
     <Card withBorder>
       <Stack gap="sm">
         <Title order={4}>{t("details.title")}</Title>
-        <Group grow align="flex-start">
+        {/* One per line on a phone, where three in a row leave no room for the date. */}
+        <SimpleGrid cols={{ base: 1, xs: 3 }}>
           <DateInput
             label={t("details.appliedOn")}
             clearable
@@ -83,7 +85,7 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
             value={snoozed}
             onChange={(v) => setSnoozed(toDate(v))}
           />
-        </Group>
+        </SimpleGrid>
         <TagsInput label={t("details.tags")} value={tags} onChange={setTags} />
         <Group justify="space-between">
           <Switch

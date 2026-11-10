@@ -1,7 +1,7 @@
 {
   "name": "jat-frontend",
   "private": true,
-  "version": "1.19.11",
+  "version": "1.22.0",
   "type": "module",
   "engines": {
     "node": ">=22.12"

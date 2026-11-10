@@ -1547,7 +1547,7 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
-            current_round?: components["schemas"]["RoundSummary"] | null;
+            current_round?: components["schemas"]["CurrentRound"] | null;
             /** Days Since Activity */
             days_since_activity: number;
             /** Documents */
@@ -1677,7 +1677,7 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
-            current_round?: components["schemas"]["RoundSummary"] | null;
+            current_round?: components["schemas"]["CurrentRound"] | null;
             /** Days Since Activity */
             days_since_activity: number;
             /** Follow Up On */
@@ -2382,6 +2382,37 @@ export interface components {
             params: components["schemas"]["DocumentSentParams"];
         };
         /**
+         * CurrentRound
+         * @description An application's current round, with what only the application can tell.
+         */
+        CurrentRound: {
+            /** Deadline At */
+            deadline_at: string | null;
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+            /** Needs New Time By */
+            needs_new_time_by?: ("me" | "them" | "mutual" | "neither") | null;
+            /** Needs New Time Since */
+            needs_new_time_since?: string | null;
+            /** Round */
+            round: number | null;
+            /** Starts At */
+            starts_at: string | null;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string | null;
+            /**
+             * Waiting To Hear Back
+             * @default false
+             */
+            waiting_to_hear_back: boolean;
+        };
+        /**
          * CvFile
          * @description A file that looks like a CV, attached to applications, roles or people: one per distinct
          *     file (by content).
@@ -2713,7 +2744,7 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
-            current_round?: components["schemas"]["RoundSummary"] | null;
+            current_round?: components["schemas"]["CurrentRound"] | null;
             /** Days Since Activity */
             days_since_activity: number;
             /** Follow Up On */
@@ -3852,7 +3883,7 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
-            current_round?: components["schemas"]["RoundSummary"] | null;
+            current_round?: components["schemas"]["CurrentRound"] | null;
             /** Days Since Activity */
             days_since_activity: number;
             /** Follow Up On */
@@ -4700,32 +4731,6 @@ export interface components {
              */
             key: "event.roundScheduled";
             params: components["schemas"]["RoundParams"];
-        };
-        /**
-         * RoundSummary
-         * @description The round an application is at, for the board and list: "Round 2 · System design test".
-         */
-        RoundSummary: {
-            /** Deadline At */
-            deadline_at: string | null;
-            /** Id */
-            id: string;
-            /** Kind */
-            kind: string;
-            /** Label */
-            label: string;
-            /** Needs New Time By */
-            needs_new_time_by?: ("me" | "them" | "mutual" | "neither") | null;
-            /** Needs New Time Since */
-            needs_new_time_since?: string | null;
-            /** Round */
-            round: number | null;
-            /** Starts At */
-            starts_at: string | null;
-            /** Status */
-            status: string;
-            /** Title */
-            title: string | null;
         };
         /** RouteStatsOut */
         RouteStatsOut: {

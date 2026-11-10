@@ -388,8 +388,8 @@ def _rows_query():
     )
 
 
-def _round_summary(interview: Interview) -> S.RoundSummary:
-    return S.RoundSummary(
+def _round_summary(interview: Interview, *, waiting: bool = False) -> S.CurrentRound:
+    return S.CurrentRound(
         id=interview.id,
         round=interview.round,
         title=interview.title,
@@ -400,6 +400,7 @@ def _round_summary(interview: Interview) -> S.RoundSummary:
         deadline_at=interview.deadline_at,
         needs_new_time_since=interview.needs_new_time_since,
         needs_new_time_by=interview.needs_new_time_by,
+        waiting_to_hear_back=waiting,
     )
 
 
@@ -412,9 +413,12 @@ def _with_rounds(session: Session, rows: list[S.ApplicationRow]) -> list[S.Appli
     """
     current = interviews_svc.current_rounds(session, (r.id for r in rows))
     booked = interviews_svc.booked_ahead(session, (r.id for r in rows), datetime.now(UTC))
+    # Only an open application waits to hear back: in an active stage and not archived.
+    active = {r.id: r.stage for r in rows if r.stage_kind == "active" and not r.archived}
+    waiting = interviews_svc.waiting_to_hear_back(session, current, active)
     for r in rows:
         if (interview := current.get(r.id)) is not None:
-            r.current_round = _round_summary(interview)
+            r.current_round = _round_summary(interview, waiting=r.id in waiting)
         if r.id in booked:  # any round still to come, even if an earlier one is awaiting an outcome
             r.stale = False
     return rows
