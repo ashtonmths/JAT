@@ -430,14 +430,18 @@ The **Recruiters** page lists everyone as small tiles, favourites first, then A 
 people at companies and independents. Each tile has their job title, a chip for their agency
 or company (click it to open that page), *Waiting* or *Reply to read* if that's where things
 stand (or *Ghosted* / *Not interested*, with a **×** to take it off; someone who ghosted you
-also gets a ghost before their name), and every email, phone number and link (click to email, call or open; long ones end in
+also gets a ghost before their name), what you have in progress with them (*2 applications in progress*,
+*1 role to decide*), and every email, phone number and link (click to email, call or open; long ones end in
 "…", and hovering shows them in full). The pencil edits a person; open their page to delete
 them.
 
 - **Search** matches names, job titles, agencies, companies, emails and numbers.
-- **All / Agencies / Companies / Independent / Favourites / Ghosted** narrows it to agency
-  recruiters, people at companies, independents, your favourites, or everyone who ghosted you
-  (with how many).
+- **All / Agencies / Companies / Independent / In progress / Favourites / Ghosted** narrows it to agency
+  recruiters, people at companies, independents, the people you have something in progress with,
+  your favourites, or everyone who ghosted you (the last three with how many). *In progress* means
+  an application through them that's still open (at any stage that isn't closed, *Interested*
+  included, and not archived), or a role they pitched that you haven't decided on yet (still to
+  decide, or marked interested without applying).
 - **Agencies**: every agency as a chip with how many people and applications in progress it
   has, including ones with nobody in them yet.
 

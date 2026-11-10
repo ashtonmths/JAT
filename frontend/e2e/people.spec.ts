@@ -1276,3 +1276,31 @@ test.describe("spaces around a detail", () => {
     );
   });
 });
+
+test.describe("in progress", () => {
+  test("lists only the people you have something open with, and says how much on their card", async ({
+    page,
+    request,
+  }) => {
+    const idOf = async (made: Promise<{ json(): Promise<unknown> }>) =>
+      ((await (await made).json()) as { id: string }).id;
+    const contact_id = await idOf(request.post("/api/v1/contacts", { data: { name: "Pitching Person" } }));
+    const company_id = await idOf(request.post("/api/v1/companies", { data: { name: "Pitched Role Co" } }));
+    const inProgress = page.getByText(/^In progress · \d+$/);
+
+    await page.goto("/recruiters");
+    await inProgress.click();
+    await expect(page.getByRole("link", { name: "Alex Morgan" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Pitching Person" })).toBeHidden();
+    const before = Number((await inProgress.textContent())!.split("·")[1]);
+
+    // A role they pitch, not decided on yet, puts them in.
+    await request.post("/api/v1/roles", { data: { company_id, title: "Pitched Engineer", contact_id } });
+    await page.reload();
+    await page.getByText(`In progress · ${before + 1}`).click();
+    const card = page.locator(".mantine-Card-root", {
+      has: page.getByRole("link", { name: "Pitching Person" }),
+    });
+    await expect(card.getByText("1 role to decide")).toBeVisible();
+  });
+});
