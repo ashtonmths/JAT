@@ -91,8 +91,8 @@ export default {
     independent: "Independent",
     favourites: "Favourites · {{n}}",
     ghosted: "Ghosted · {{n}}",
-    // The people you're working with now: an application still open (Interested counts) or a
-    // role they pitched that you haven't decided on.
+    // The people you're working with now: an application through them still open (Interested
+    // counts) or a role they pitched that you haven't decided on.
     inProgress: "In progress · {{n}}",
     // On a person's card, when not zero.
     cardApplications_one: "{{count}} application in progress",

@@ -439,9 +439,10 @@ them.
 - **All / Agencies / Companies / Independent / In progress / Favourites / Ghosted** narrows it to agency
   recruiters, people at companies, independents, the people you have something in progress with,
   your favourites, or everyone who ghosted you (the last three with how many). *In progress* means
-  an application through them that's still open (at any stage that isn't closed, *Interested*
-  included, and not archived), or a role they pitched that you haven't decided on yet (still to
-  decide, or marked interested without applying).
+  an application with them as its recruiter that's still open (at any stage that isn't closed,
+  *Interested* included, and not archived), or a role they pitched that you haven't decided on yet
+  (it has no application). A pitched role you've started on counts once, as its application; a
+  hiring manager or referrer on an application doesn't count, only its recruiter.
 - **Agencies**: every agency as a chip with how many people and applications in progress it
   has, including ones with nobody in them yet.
 

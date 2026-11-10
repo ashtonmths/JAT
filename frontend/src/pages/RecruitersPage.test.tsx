@@ -45,6 +45,7 @@ describe("recruiters", () => {
       "/api/v1/agencies": agencies,
       "/api/v1/contacts": contacts,
       "/api/v1/companies": [],
+      "/api/v1/role-summaries": [],
       "/api/v1/applications": [row({ agency_id: "ag1" })],
       "/api/v1/health": {},
     });
@@ -87,6 +88,7 @@ describe("recruiters", () => {
       "/api/v1/agencies": agencies,
       "/api/v1/contacts": [contacts[0], { ...contacts[1], favourite: true }, contacts[2]],
       "/api/v1/companies": [],
+      "/api/v1/role-summaries": [],
       "/api/v1/applications": [],
       "/api/v1/health": {},
     });
@@ -128,10 +130,13 @@ describe("recruiters", () => {
         row({ id: "a3", recruiter_id: "c1", stage: "rejected", stage_kind: "closed" }),
         row({ id: "a4", recruiter_id: "c2", stage: "rejected", stage_kind: "closed" }),
       ],
-      // Jo pitched a role still to decide and one marked interested; Sam's pitched role was passed.
+      // Jo pitched two roles still to decide. Alex pitched the role behind a2, which is
+      // "interested" because it has that application: counted once, as the application. Sam's
+      // pitched role was passed.
       "/api/v1/role-summaries": [
         roleSummary({ id: "r1", contact_id: "c3", status: "to_decide" }),
-        roleSummary({ id: "r2", contact_id: "c3", status: "interested" }),
+        roleSummary({ id: "r2", contact_id: "c3", status: "to_decide" }),
+        roleSummary({ id: "r4", contact_id: "c1", status: "interested", application_ids: ["a2"] }),
         roleSummary({ id: "r3", contact_id: "c2", status: "passed" }),
       ],
       "/api/v1/health": {},
@@ -142,6 +147,7 @@ describe("recruiters", () => {
     expect(
       await within(await card("Alex Morgan")).findByText("2 applications in progress"),
     ).toBeInTheDocument();
+    expect(within(await card("Alex Morgan")).queryByText(/to decide/)).not.toBeInTheDocument();
     expect(within(await card("Jo Freelance")).getByText("2 roles to decide")).toBeInTheDocument();
     expect(within(await card("Sam Patel")).queryByText(/in progress|to decide/)).not.toBeInTheDocument();
 
@@ -162,6 +168,7 @@ describe("recruiters", () => {
         { ...contacts[2], closed_as: "not_interested", closed_on: "2026-10-01" },
       ],
       "/api/v1/companies": [],
+      "/api/v1/role-summaries": [],
       "/api/v1/applications": [],
       "/api/v1/health": {},
     });
@@ -197,6 +204,7 @@ describe("recruiters", () => {
         },
       ],
       "/api/v1/companies": [{ id: "co1", name: "Fabrikam", website: null, created_at: "", updated_at: "" }],
+      "/api/v1/role-summaries": [],
       "/api/v1/applications": [],
       "/api/v1/health": {},
     });

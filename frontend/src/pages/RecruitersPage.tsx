@@ -268,12 +268,13 @@ export function RecruitersPage() {
   const { data: apps } = useApplications({});
   const { data: companies } = useCompanies();
   const { data: roles } = useRoleSummaries({});
-  // Wait for everyone and where they work, so no one shows as Independent for a moment.
-  const isLoading = agenciesLoading || !contacts || !companies;
+  // Wait for everyone, where they work and what's in progress with them, so no one shows as
+  // Independent, or the In progress count as 0, for a moment.
+  const isLoading = agenciesLoading || !contacts || !companies || !apps || !roles;
 
-  // What's in progress with each person: applications through them still open (not archived,
-  // at an active stage, Interested included), and roles they pitched you haven't decided on
-  // (to decide, or marked interested without applying).
+  // What's in progress with each person, as their recruiter: applications through them still
+  // open (not archived, at an active stage, Interested included), and roles they pitched with no
+  // application yet (to decide). A pitched role you've started on counts once, as its application.
   const workByPerson = new Map<string, Work>();
   const add = (id: string | null | undefined, key: keyof Work) => {
     if (!id) return;
@@ -283,8 +284,7 @@ export function RecruitersPage() {
   };
   for (const a of apps ?? [])
     if (a.stage_kind === "active" && !a.archived) add(a.recruiter_id, "applications");
-  for (const r of roles ?? [])
-    if (r.status === "to_decide" || r.status === "interested") add(r.contact_id, "roles");
+  for (const r of roles ?? []) if (r.status === "to_decide") add(r.contact_id, "roles");
   const workOf = (c: Contact) => workByPerson.get(c.id) ?? NO_WORK;
   const [q, setQ] = useState("");
   const [show, setShow] = useState<Show>("all");
