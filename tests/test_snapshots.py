@@ -166,7 +166,7 @@ def test_debounce_config(tmp_path):
 
 
 def test_windows_snapshots_off_by_default(git_repo, monkeypatch):
-    monkeypatch.setattr("sys.platform", "win32")
+    monkeypatch.setattr("jat.platform.IS_WINDOWS", True)
     monkeypatch.delenv("JAT_WINDOWS_SNAPSHOTS", raising=False)
     service = SnapshotService(git_repo, make_engine(db_path(git_repo)), debounce_seconds=0)
     assert service.enabled is False
@@ -177,17 +177,18 @@ def test_windows_snapshots_off_by_default(git_repo, monkeypatch):
 
 
 def test_windows_snapshots_enabled_with_switch(git_repo, monkeypatch):
-    monkeypatch.setattr("sys.platform", "win32")
+    monkeypatch.setattr("jat.platform.IS_WINDOWS", True)
     monkeypatch.setenv("JAT_WINDOWS_SNAPSHOTS", "1")
     service = SnapshotService(git_repo, make_engine(db_path(git_repo)), debounce_seconds=0)
     assert service.enabled is True
-    # Verify the lock is a no-op on Windows
+    # Verify the lock is a no-op when fcntl is None (as on Windows in step 1)
+    monkeypatch.setattr("jat.platform.fcntl", None)
     with service._process_lock():
         pass
 
 
 def test_windows_init_commit_off_without_switch(git_repo, monkeypatch):
-    monkeypatch.setattr("sys.platform", "win32")
+    monkeypatch.setattr("jat.platform.IS_WINDOWS", True)
     monkeypatch.delenv("JAT_WINDOWS_SNAPSHOTS", raising=False)
     target = git_repo / "sub"
     target.mkdir()
@@ -198,7 +199,7 @@ def test_windows_init_commit_off_without_switch(git_repo, monkeypatch):
 
 
 def test_windows_init_commit_on_with_switch(git_repo, monkeypatch):
-    monkeypatch.setattr("sys.platform", "win32")
+    monkeypatch.setattr("jat.platform.IS_WINDOWS", True)
     monkeypatch.setenv("JAT_WINDOWS_SNAPSHOTS", "1")
     target = git_repo / "sub2"
     target.mkdir()

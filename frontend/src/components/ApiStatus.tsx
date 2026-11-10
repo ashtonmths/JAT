@@ -36,7 +36,7 @@ export function ApiStatus() {
 
   const snapshotsOn = data ? (data.snapshots_enabled ?? data.git_repo) : false;
   const isUnix = data ? Boolean(data.unix ?? !data.windows) : true;
-  const windowsNoSnapshots = data ? (!isUnix && !snapshotsOn && data.git_repo) : false;
+  const windowsNoSnapshots = data ? !isUnix && !snapshotsOn && data.git_repo : false;
 
   const [color, label, detail] = isPending
     ? ["gray", t("api.connecting"), t("api.connectingHint")]
@@ -48,7 +48,10 @@ export function ApiStatus() {
           snapshotsOn
             ? t("api.detailsBackups", { version: String(data.version), schema: data.schema ?? "?" })
             : windowsNoSnapshots
-              ? t("api.detailsWindowsNoSnapshots", { version: String(data.version), schema: data.schema ?? "?" })
+              ? t("api.detailsWindowsNoSnapshots", {
+                  version: String(data.version),
+                  schema: data.schema ?? "?",
+                })
               : t("api.detailsNoGit", { version: String(data.version), schema: data.schema ?? "?" }),
         ];
 

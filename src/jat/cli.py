@@ -9,6 +9,7 @@ from pathlib import Path
 from .config import ConfigError, Settings, resolve_data_dir
 from .datadir import DataDirError, check_outside_code_repo, init_data_dir, is_git_repo
 from .db import MigrationError, current_revision, db_path, head_revision, make_engine, migrate
+from .platform import IS_WINDOWS, snapshots_allowed
 from .snapshot import ExportError, RestoreError, export_data_dir, restore_data_dir
 from .snapshot.export import META_FILE
 from .snapshot.git import SnapshotError
@@ -35,9 +36,7 @@ def cmd_init(args) -> int:
     if report.gitignore_added:
         print("  .gitignore: added " + ", ".join(report.gitignore_added))
     if report.is_git_repo:
-        if sys.platform in ("linux", "darwin"):
-            print("  git: " + ("committed the layout" if report.committed else "nothing to commit"))
-        elif sys.platform == "win32" and not settings.windows_snapshots:
+        if not snapshots_allowed(settings.windows_snapshots):
             print("  git: snapshots are off on Windows")
         else:
             print("  git: " + ("committed the layout" if report.committed else "nothing to commit"))
@@ -108,7 +107,7 @@ def cmd_serve(args) -> int:
     os.environ["JAT_DEV"] = "1" if args.dev else "0"
     os.environ["JAT_HOST"] = host  # the app only answers to this host (and loopback names)
     print(f"Job Application Tracker: http://{host}:{port}  (data: {path})")
-    if sys.platform == "win32" and settings.windows_snapshots:
+    if IS_WINDOWS and settings.windows_snapshots:
         print("note: Windows snapshots are experimental")
     if args.dev:
         print("dev mode: API reloads on change; run `pnpm --dir frontend dev` for the UI on :5173")
@@ -140,11 +139,7 @@ def _service(path: Path):
 
 def cmd_snapshot(args) -> int:
     settings = Settings()
-    if sys.platform in ("linux", "darwin") or settings.windows_snapshots:
-        commit = _service(_data_dir(args)).snapshot_now()
-        print(f"committed snapshot {commit}" if commit else "nothing changed since the last snapshot")
-        return 0
-    if sys.platform == "win32":
+    if not snapshots_allowed(settings.windows_snapshots):
         print("snapshots are off on Windows (set JAT_WINDOWS_SNAPSHOTS=1 to test them)")
         return 0
     commit = _service(_data_dir(args)).snapshot_now()
@@ -154,12 +149,7 @@ def cmd_snapshot(args) -> int:
 
 def cmd_push(args) -> int:
     settings = Settings()
-    if sys.platform in ("linux", "darwin") or settings.windows_snapshots:
-        service = _service(_data_dir(args))
-        service.snapshot_now()
-        print(service.push() or "pushed")
-        return 0
-    if sys.platform == "win32":
+    if not snapshots_allowed(settings.windows_snapshots):
         print("snapshots are off on Windows (set JAT_WINDOWS_SNAPSHOTS=1 to test them)")
         return 0
     service = _service(_data_dir(args))

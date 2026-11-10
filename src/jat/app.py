@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import sys
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,6 +20,7 @@ from .api.routers import router as api_v1
 from .config import Settings, resolve_data_dir
 from .datadir import CODE_ROOT, check_outside_code_repo, is_git_repo
 from .db import current_revision, db_path, head_revision, make_engine, session_factory
+from .platform import IS_WINDOWS
 from .security import LocalOnly
 from .snapshot.git import SnapshotService
 from .storage.files import MAX_BYTES
@@ -52,8 +52,8 @@ def _api_router() -> APIRouter:
         engine = request.app.state.engine
         snapshots: SnapshotService = getattr(request.app.state, "snapshots", None)
         snapshots_enabled = snapshots.enabled if snapshots is not None else state.git_repo
-        is_unix = sys.platform in ("linux", "darwin")
-        is_windows = sys.platform == "win32"
+        is_windows = IS_WINDOWS
+        is_unix = not IS_WINDOWS
         return {
             "status": "ok",
             "version": __version__,
@@ -118,9 +118,7 @@ def create_app(
         raise RuntimeError(f"No database at {db_path(data_dir)}. Run `jat init` first.")
 
     ws = Settings().windows_snapshots if windows_snapshots is None else windows_snapshots
-    if sys.platform in ("linux", "darwin"):
-        pass
-    elif sys.platform == "win32" and ws:
+    if IS_WINDOWS and ws:
         print("note: Windows snapshots are experimental")
 
     @asynccontextmanager

@@ -11,9 +11,10 @@ Layout (see docs/rfc/stack.md §4):
 from __future__ import annotations
 
 import subprocess
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from .platform import snapshots_allowed
 
 CODE_ROOT = Path(__file__).resolve().parents[2]
 DB_NAME = "tracker.sqlite3"
@@ -119,13 +120,7 @@ def init_data_dir(
     report.gitignore_added = _ensure_gitignore(path)
     report.is_git_repo = is_git_repo(path)
     ws = Settings().windows_snapshots if windows_snapshots is None else windows_snapshots
-    if sys.platform in ("linux", "darwin"):
-        can_commit = commit
-    elif sys.platform == "win32":
-        can_commit = commit and ws
-    else:
-        can_commit = commit
-    if can_commit and report.is_git_repo and (report.created or report.gitignore_added):
+    if commit and snapshots_allowed(ws) and report.is_git_repo and (report.created or report.gitignore_added):
         report.committed = _commit_scaffold(path)
     return report
 

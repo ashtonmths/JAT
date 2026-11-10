@@ -19,7 +19,6 @@ from __future__ import annotations
 import contextlib
 import os
 import subprocess
-import sys
 import threading
 import tomllib
 from collections.abc import Iterator
@@ -31,19 +30,14 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Engine
 
 from ..datadir import is_git_repo
+from ..platform import IS_WINDOWS, LOCK_NAME, process_lock, snapshots_allowed
 from .export import export_db
 
 if TYPE_CHECKING:
     from ..api.errors import ErrorCode, ErrorParams
 
-try:
-    import fcntl
-except ImportError:
-    fcntl = None  # None on Windows; step 1 treats lock as no-op
-
 TRACKED = ("export", "notes", "files", "config.toml", ".gitignore")
 DEFAULT_DEBOUNCE = 60.0
-LOCK_NAME = "jat-snapshot.lock"
 NO_PROMPT_ENV = {
     "GIT_TERMINAL_PROMPT": "0",
     "GIT_SSH_COMMAND": "ssh -o BatchMode=yes",
@@ -128,12 +122,7 @@ class SnapshotService:
         self.data_dir = data_dir
         self.engine = engine
         ws = Settings().windows_snapshots if windows_snapshots is None else windows_snapshots
-        if sys.platform in ("linux", "darwin"):
-            self.enabled = is_git_repo(data_dir)
-        elif sys.platform == "win32":
-            self.enabled = is_git_repo(data_dir) and ws
-        else:
-            self.enabled = is_git_repo(data_dir)
+        self.enabled = is_git_repo(data_dir) and snapshots_allowed(ws)
         self.debounce = debounce_from_config(data_dir) if debounce_seconds is None else debounce_seconds
         self._state = threading.Lock()  # short critical sections: flags and the timer
         self._work = threading.Lock()  # held while exporting and committing
@@ -185,27 +174,17 @@ class SnapshotService:
     @contextlib.contextmanager
     def _process_lock(self) -> Iterator[None]:
         """Exclusive across processes (the app and `jat snapshot`/`jat push`)."""
-        if fcntl is not None:
+        try:
+            with process_lock(self.data_dir):
+                yield
+        except OSError as exc:
             git_dir = self.data_dir / ".git"
             lock_path = (git_dir if git_dir.is_dir() else self.data_dir) / LOCK_NAME
-            with open(lock_path, "w") as fh:
-                try:
-                    fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                except BlockingIOError:
-                    try:
-                        fcntl.flock(fh, fcntl.LOCK_EX)  # wait for the other snapshot to finish
-                    except OSError as exc:
-                        raise SnapshotError(
-                            f"couldn't lock {lock_path}: {exc}",
-                            "backup_lock_failed",
-                            {"path": str(lock_path), "reason": str(exc)},
-                        ) from exc
-                try:
-                    yield
-                finally:
-                    fcntl.flock(fh, fcntl.LOCK_UN)
-        else:
-            yield
+            raise SnapshotError(
+                f"couldn't lock {lock_path}: {exc}",
+                "backup_lock_failed",
+                {"path": str(lock_path), "reason": str(exc)},
+            ) from exc
 
     @contextlib.contextmanager
     def fresh_export(self) -> Iterator[None]:
@@ -235,12 +214,7 @@ class SnapshotService:
     def snapshot_now(self, message: str | None = None, *, _force: bool = False) -> str | None:
         """Export and commit now. Returns the new commit sha, or None if nothing changed."""
         if not self.enabled:
-            if sys.platform in ("linux", "darwin"):
-                raise SnapshotError(
-                    "The data directory isn't a git repo, so snapshots are off.",
-                    "backup_snapshots_off",
-                )
-            if sys.platform == "win32" and is_git_repo(self.data_dir):
+            if IS_WINDOWS and is_git_repo(self.data_dir):
                 raise SnapshotError(
                     "Snapshots are off on Windows. Set JAT_WINDOWS_SNAPSHOTS=1 to test them.",
                     "backup_snapshots_off",
@@ -301,9 +275,7 @@ class SnapshotService:
     def push(self) -> str:
         """Snapshot any pending changes, then `git push` (never forced, never prompts)."""
         if not self.enabled:
-            if sys.platform in ("linux", "darwin"):
-                raise SnapshotError("The data directory isn't a git repo.", "backup_not_a_repo")
-            if sys.platform == "win32" and is_git_repo(self.data_dir):
+            if IS_WINDOWS and is_git_repo(self.data_dir):
                 raise SnapshotError(
                     "Snapshots are off on Windows. Set JAT_WINDOWS_SNAPSHOTS=1 to test them.",
                     "backup_not_a_repo",
