@@ -86,13 +86,14 @@ where things run. Quotes are Kai's words.
     when Kai says to fix them ourselves, fetch their branch (`git fetch <fork url> <branch>`) into our own
     `worktree-<task>` branch, add our fixes, the bump and the roadmap update on top, and open our own PR. It goes
     through the review-fix cycle and merges with a merge commit, so their commits land unchanged under their name.
-    Never push to their fork, and never merge theirs first and fix on main afterwards (main would have the bug, and no version
-    bump, until the fix lands). Kai asked for the PR body to open with a friendly note tagging the author (`@login`) to say their
-    work is merged, in Kai's voice (his Slack voice notes, kept outside this repo: ask Kai where), added
-    just before merging so it's true when they're notified. #298 carried #285.
-  - **No `Closes #N` for their PR on the carrying PR:** #298 had `Closes #285`, and #285 was closed, not merged, even
-    though all its commits are on main. Never `Closes` the contributor's issue either (#230 tracks the whole Windows
-    plan).
+    Never push to their fork, and never merge theirs first and fix on main afterwards (main would have their bug,
+    and no version bump, until the fix lands). Kai asked for the PR body to open with a friendly note tagging the
+    author (`@login`) to say their work is merged, in Kai's voice (his Slack voice notes, kept outside this repo:
+    ask Kai where), added just before merging so it's true when they're notified. #298 carried #285.
+  - **No `Closes #N` for their PR on the carrying PR:** #298 had `Closes #285`, and #285 was closed, not merged,
+    even though all its commits are on main. Never `Closes` the contributor's issue either (#230 tracks the whole
+    Windows plan). Instead, write `Carries #N` in the body; their PR then stays open after the merge, and Kai
+    decides how it's closed (he posts on contributors' PRs).
   - The draft is one top-level comment ("i will leave only top-level comments, not on specific lines of code"),
     leading with encouragement ("nice job etc"), asking only for what blocks merging ("that feels like a lot of
     feedback"); the rest becomes Kai's follow-ups. Precise enough for the contributor's AI to act on (their PRs look
