@@ -9,6 +9,9 @@ Each of these cost time once. Add a line when something new does.
   tools. Split the commands; edit files with Edit. A refused command ran nothing. Subagents inherit the limit: run a
   review from the worktree it reviews, or give the reviewer the diff as a file (`gh pr diff N > <tmp>/prN.diff`).
 - **A `cd` persists** to later Bash calls: after `cd frontend`, relative paths break. Use absolute paths, or `cd` back.
+- **The Edit tool drops a trailing space at the end of new_string** (2026-11-09/10, twice in ROADMAP.yaml: `{id: x, `
+  became `{id: x,name:`). Don't end an old_string/new_string pair on a space; anchor on a whole field (`name: "…`)
+  instead, and check `git diff origin/main -- docs/ROADMAP.yaml` shows only your lines.
 - **zsh aborts a whole command line on an unmatched glob** (`grep --include=*.tsx`): later commands never run, so "no
   output" can mean "not run". Quote globs or use plain paths.
 - **Never `open(p, "w").write(f(open(p).read()))`**: write mode truncates first. Recover tracked files with
@@ -62,6 +65,9 @@ Each of these cost time once. Add a line when something new does.
   need through the API, don't rely on counts.
 - Run one spec with `pnpm e2e e2e/<file>` or `tools/dev/e2e_spec.sh <file>` (a bare word matches paths: "today" once
   matched the worktree's name). A TypeScript error stops the build, so every test fails for one reason.
+  `e2e_spec.sh` printed nothing when a spec failed to load at all (a JSON import), which looked like a pass: confirm
+  with `pnpm e2e e2e/<file>` and read its "N passed" line. A spec can't `import` the locale JSON files (Node wants an
+  import attribute): read them with `readFileSync` (`frontend/e2e/chinese.spec.ts`).
 - A `test.fail` must not rest on timing: freeze time with `page.clock.setFixedTime`, hold requests in `page.route`. It must
   go green for any shape of fix: check the outcome, not the wording.
 - Check `toBeHidden` only after something else has loaded. After "nothing happened", watch for non-GET requests. A mocked
