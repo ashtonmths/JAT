@@ -1,7 +1,7 @@
 # RFC: running the tracker on Windows
 
-**Status:** in progress (2026-11-05). Built: `windows-time-zones`. The tracker runs on Linux
-and macOS only until `windows-starts` lands.
+**Status:** in progress (2026-11-05). Built: `windows-time-zones`, `windows-starts`. The
+tracker starts on Windows, but is supported on Linux and macOS only until `windows-support`.
 **Roadmap:** `windows-starts`, `utf8-everywhere`, `windows-time-zones`, `static-file-types`,
 `data-gitattributes`, `locked-file-retry` and `windows-testing`, then `windows-support`; later,
 `windows-snapshots`. `windows-starts` is planned first, but the small fixes don't depend on it
