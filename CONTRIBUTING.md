@@ -38,7 +38,7 @@ git clone https://github.com/waddington/job-application-tracker.git
 cd job-application-tracker
 uv sync
 pnpm --dir frontend install
-uv run python scripts/seed_demo.py /tmp/jat-demo     # made-up demo data
+uv run python scripts/seed_demo.py /tmp/jat-demo     # made-up demo data (--lang zh-CN: in Chinese)
 ```
 
 Run the API with reloading, and the web UI with hot reloading, in two terminals:

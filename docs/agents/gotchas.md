@@ -9,6 +9,9 @@ Each of these cost time once. Add a line when something new does.
   tools. Split the commands; edit files with Edit. A refused command ran nothing. Subagents inherit the limit: run a
   review from the worktree it reviews, or give the reviewer the diff as a file (`gh pr diff N > <tmp>/prN.diff`).
 - **A `cd` persists** to later Bash calls: after `cd frontend`, relative paths break. Use absolute paths, or `cd` back.
+- **The Edit tool drops a trailing space at the end of new_string** (2026-11-09/10, twice in ROADMAP.yaml: `{id: x, `
+  became `{id: x,name:`). Don't end an old_string/new_string pair on a space; anchor on a whole field (`name: "…`)
+  instead, and check `git diff origin/main -- docs/ROADMAP.yaml` shows only your lines.
 - **zsh aborts a whole command line on an unmatched glob** (`grep --include=*.tsx`): later commands never run, so "no
   output" can mean "not run". Quote globs or use plain paths.
 - **Never `open(p, "w").write(f(open(p).read()))`**: write mode truncates first. Recover tracked files with
@@ -23,7 +26,11 @@ Each of these cost time once. Add a line when something new does.
 - **Isolated agents** (`isolation: "worktree"`) can't write to the job folder; their worktrees stay locked after they
   finish (`git worktree remove -f -f` once merged). A forked agent can't use EnterWorktree from the main checkout.
 - **EnterWorktree refuses** when the worktree is already the cwd; you're isolated anyway.
-- **The main checkout is read-only for edits** in this session (pull, worktree remove and `pnpm build` are fine).
+- **The main checkout is read-only for edits** in this session (pull, worktree remove and `pnpm build` are fine). When
+  Kai wants a file there, write it in the job folder and give Kai a `!` command to copy it in.
+- **Reviewer agents' Bash is refused while the lead's session is inside a worktree** (2026-11-09): set up a PR's
+  worktree with `git worktree add` and work in it by absolute path, without EnterWorktree, until the reviewers finish.
+- **The auto-mode check won't let an agent run an external contributor's code**: the lead runs the checks itself.
 - **`!` commands run in the session's current folder**, maybe a worktree: tell Kai to run things like
   `playwright --ui` in their own terminal.
 - **The auto-mode permission check** can block `gh pr merge` or a release: ask Kai, never work around it. It also refused
@@ -58,6 +65,9 @@ Each of these cost time once. Add a line when something new does.
   need through the API, don't rely on counts.
 - Run one spec with `pnpm e2e e2e/<file>` or `tools/dev/e2e_spec.sh <file>` (a bare word matches paths: "today" once
   matched the worktree's name). A TypeScript error stops the build, so every test fails for one reason.
+  `e2e_spec.sh` printed nothing when a spec failed to load at all (a JSON import), which looked like a pass: confirm
+  with `pnpm e2e e2e/<file>` and read its "N passed" line. A spec can't `import` the locale JSON files (Node wants an
+  import attribute): read them with `readFileSync` (`frontend/e2e/chinese.spec.ts`).
 - A `test.fail` must not rest on timing: freeze time with `page.clock.setFixedTime`, hold requests in `page.route`. It must
   go green for any shape of fix: check the outcome, not the wording.
 - Check `toBeHidden` only after something else has loaded. After "nothing happened", watch for non-GET requests. A mocked
@@ -126,7 +136,11 @@ Each of these cost time once. Add a line when something new does.
   `jat.insights.rounds`) and error toasts need a click or a failed save. Builders wrote throwaway helpers in `var/`;
   fake every non-GET request so the shared demo data never changes.
 - **`merge_main.sh` reverted a done task** again (`i18n-zh-cn-people` came back as `next`): check the roadmap diff after
-  every merge of main.
+  every merge of main. Its dedupe can also drop a task's `status:` field (`fix-offer-loading-says-none`), and then
+  `bump.py` fails: put the status back by hand. `bump.py` also needs `pnpm install` in the worktree first
+  ("openapi-typescript: not found").
+- **Screenshot pixel diffs prove English didn't change**: `screenshots.py <url> <lang> layout en` before and after,
+  then compare the PNGs with Pillow (`ImageChops.difference(...).getbbox()`); same size and no box means identical.
 
 ## Other
 
@@ -137,3 +151,11 @@ Each of these cost time once. Add a line when something new does.
 - Reviewers find real bugs in code that passes its tests, usually false claims when a source fails: ask them to check what
   a page claims, and look at real pages (a screenshot found #150's broken logo). Fact-check public docs and plans before
   merging them. Agents disagree: check the code.
+- **Small fixes rarely get a must_fix; that's fine** (2026-11-08, `review-process-check`): planted bugs were all caught.
+  A brief with only the bug and the diff, plus "try to break it", found more on #281 than briefs describing the fix.
+- **Simulating Windows on Linux:** Linux's `fcntl` is built in, so a stub on `PYTHONPATH` can't hide it. A launcher that
+  sets `sys.modules["fcntl"] = None` before `from jat.cli import main`, then (optionally) `sys.platform = "win32"`
+  *after* the import (earlier, asyncio looks for Windows-only modules), then `main(argv)`. For time zones,
+  `PYTHONTZPATH=` (empty) leaves only the `tzdata` package, as on Windows. Neither proves it runs on real Windows.
+- **Vite's hot reload can silently keep old code** on `TodayPage.tsx` ("Could not Fast Refresh (useNextActions export
+  is incompatible)"): if a dev page doesn't show a change, restart Vite with `--force` before debugging the code.

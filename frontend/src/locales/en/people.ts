@@ -91,6 +91,14 @@ export default {
     independent: "Independent",
     favourites: "Favourites · {{n}}",
     ghosted: "Ghosted · {{n}}",
+    // The people you're working with now: an application through them still open (Interested
+    // counts) or a role they pitched that you haven't decided on.
+    inProgress: "In progress · {{n}}",
+    // On a person's card, when not zero.
+    cardApplications_one: "{{count}} application in progress",
+    cardApplications_other: "{{count}} applications in progress",
+    cardRoles_one: "{{count}} role to decide",
+    cardRoles_other: "{{count}} roles to decide",
     agencyLabel_one: "{{name}}: {{count}} person",
     agencyLabel_other: "{{name}}: {{count}} people",
     agencyLabelActive_one: "{{name}}: {{count}} person, {{active}} in progress",

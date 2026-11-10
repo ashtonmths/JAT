@@ -1,18 +1,23 @@
 """Fill a throwaway data directory with fictional demo data (for screenshots and trying things out).
 
     uv run python scripts/seed_demo.py /tmp/jat-demo
+    uv run python scripts/seed_demo.py --lang zh-CN /tmp/jat-demo-zh   # the same demo in Chinese
     uv run jat --data-dir /tmp/jat-demo serve
 
 Every name here is invented; example.com addresses only. Refuses any directory that isn't
-new or empty, so it can't mix demo data into real data.
+new or empty, so it can't mix demo data into real data. The words are in `demo_content.py`,
+one table per language; the shape of the data (stages, rounds, dates) is here and the same in each.
 """
 
 from __future__ import annotations
 
+import argparse
 import sys
 from datetime import UTC, date, datetime, timedelta
 from io import BytesIO
 from pathlib import Path
+
+from demo_content import CONTENT
 
 from jat.datadir import init_data_dir
 from jat.db import db_path, make_engine, migrate, session_factory
@@ -72,13 +77,14 @@ def days_ago(n: float) -> datetime:
     return NOW - timedelta(days=n)
 
 
-def add_moves(s, by_title: dict[str, Application]) -> None:
+def add_moves(s, apps: dict[str, Application], reasons: tuple[str, str]) -> None:
     """Moved rounds for Insights' Rescheduling block: three at one company and recruiter, one from
     the round's Edit form (no who) and one from before moves kept a record (only the count)."""
     s.flush()
+    away, clash = reasons
 
-    def move_round(title: str, round_no: int, by: str | None, reason: str = "", pushed_days: int = 2) -> None:
-        app = by_title[title]
+    def move_round(key: str, round_no: int, by: str | None, reason: str = "", pushed_days: int = 2) -> None:
+        app = apps[key]
         interview = s.query(Interview).filter_by(application_id=app.id, round=round_no).one()
         was = interview.starts_at - timedelta(days=pushed_days)
         interview.rescheduled_count += 1
@@ -90,101 +96,58 @@ def add_moves(s, by_title: dict[str, Application]) -> None:
         ev.occurred_at = was - timedelta(days=3)  # in the past, so it isn't today's news
         app.last_activity_at = last_activity
 
-    move_round("Senior Python Developer", 1, "them", "Their manager is away")
+    move_round("wideworld", 1, "them", away)
     # Moved twice: two days early to a day early, then to its final time.
-    twice = s.query(Interview).filter_by(application_id=by_title["Senior Python Developer"].id, round=2).one()
+    twice = s.query(Interview).filter_by(application_id=apps["wideworld"].id, round=2).one()
     final_time = twice.starts_at
     twice.starts_at = final_time - timedelta(days=1)
-    move_round("Senior Python Developer", 2, "me", "A clash with another interview", 1)
+    move_round("wideworld", 2, "me", clash, 1)
     twice.starts_at = final_time
-    move_round("Senior Python Developer", 2, "them", pushed_days=1)
-    move_round("Senior Python Developer", 3, "mutual", pushed_days=3)
-    move_round("Senior Software Engineer", 1, None)
-    older = s.query(Interview).filter_by(application_id=by_title["Senior Backend Engineer"].id, round=1).one()
+    move_round("wideworld", 2, "them", pushed_days=1)
+    move_round("wideworld", 3, "mutual", pushed_days=3)
+    move_round("litware", 1, None)
+    older = s.query(Interview).filter_by(application_id=apps["contoso"].id, round=1).one()
     older.rescheduled_count = 1
 
 
-# Interview rounds held on the day an application reached a stage: (stage, description, kind).
-ROUNDS = [
-    ("screen", "Recruiter screen", "screen"),
-    ("interviewing", "Engineering manager chat", "hiring_manager"),
-    ("final", "Final with the CTO", "final"),
-]
+# Interview rounds held on the day an application reached a stage: (stage, kind). The titles are
+# in the content table, under the stage.
+ROUNDS = [("screen", "screen"), ("interviewing", "hiring_manager"), ("final", "final")]
 
-# (company, role, route, agency, recruiter, path through stages with days-ago, tags)
+# (application, company, route, agency, recruiter, path through stages with days-ago). The keys
+# look up the names, titles and tags in the content table.
 APPLICATIONS = [
+    ("contoso", "contoso", "agency", "northwind", "alex", [("applied", 24), ("screen", 18), ("interviewing", 9)]),
+    ("fabrikam", "fabrikam", "direct", None, None, [("applied", 12)]),
+    ("tailspin", "tailspin", "agency", "northwind", "alex", [("applied", 30), ("rejected", 20)]),
     (
-        "Contoso",
-        "Senior Backend Engineer",
+        "wideworld",
+        "wideworld",
         "agency",
-        "Northwind Talent",
-        "Alex Morgan",
-        [("applied", 24), ("screen", 18), ("interviewing", 9)],
-        ["python", "fintech"],
-    ),
-    ("Fabrikam", "Staff Platform Engineer", "direct", None, None, [("applied", 12)], ["kubernetes"]),
-    (
-        "Tailspin Toys",
-        "Engineering Manager",
-        "agency",
-        "Northwind Talent",
-        "Alex Morgan",
-        [("applied", 30), ("rejected", 20)],
-        ["management"],
-    ),
-    (
-        "Wide World Importers",
-        "Senior Python Developer",
-        "agency",
-        "Blue Yonder Recruitment",
-        "Sam Patel",
+        "blue",
+        "sam",
         [("applied", 15), ("screen", 11), ("interviewing", 6), ("final", 2), ("offer", 1)],
-        ["python", "remote"],
     ),
-    ("Adventure Works", "Backend Engineer (Go)", "direct", None, None, [("applied", 3)], ["go"]),
+    ("adventure", "adventure", "direct", None, None, [("applied", 3)]),
     (
-        "Litware",
-        "Senior Software Engineer",
+        "litware",
+        "litware",
         "referral",
         None,
         None,
         [("applied", 40), ("screen", 35), ("interviewing", 28), ("final", 21), ("offer", 3)],
-        ["python"],
     ),
-    (
-        "Proseware",
-        "Data Platform Engineer",
-        "agency",
-        "Blue Yonder Recruitment",
-        "Sam Patel",
-        [("applied", 26), ("ghosted", 4)],
-        ["data"],
-    ),
-    ("Northwind Traders", "Lead Engineer", "direct", None, None, [], ["leadership"]),
-    (
-        "Coho Winery",
-        "Full-stack Engineer",
-        "agency",
-        "Northwind Talent",
-        "Jordan Lee",
-        [("applied", 9)],
-        ["typescript", "react"],
-    ),
+    ("proseware", "proseware", "agency", "blue", "sam", [("applied", 26), ("ghosted", 4)]),
+    ("northwind", "northwind", "direct", None, None, []),
+    ("coho", "coho", "agency", "northwind", "jordan", [("applied", 9)]),
     # The same job applied for twice: directly first, then through a recruiter (duplicate warning).
-    ("Coho Winery", "Senior Full-stack Engineer", "direct", None, None, [("applied", 14)], ["typescript"]),
-    (
-        "Alpine Ski House",
-        "Site Reliability Engineer",
-        "direct",
-        None,
-        None,
-        [("applied", 50), ("screen", 45), ("withdrawn", 40)],
-        ["sre"],
-    ),
+    ("coho_direct", "coho", "direct", None, None, [("applied", 14)]),
+    ("alpine", "alpine", "direct", None, None, [("applied", 50), ("screen", 45), ("withdrawn", 40)]),
 ]
 
 
-def seed(path: Path) -> None:
+def seed(path: Path, lang: str = "en") -> None:
+    c = CONTENT[lang]
     # Only ever a missing or empty directory, so demo data can't land in real data (or ~).
     if path.exists() and any(path.iterdir()):
         sys.exit(f"{path} isn't empty; pick a new or empty directory for demo data.")
@@ -195,35 +158,36 @@ def seed(path: Path) -> None:
         agencies: dict[str, Agency] = {}
         recruiters: dict[str, Contact] = {}
         companies: dict[str, Company] = {}
-        first_app: dict[str, Application] = {}
-        by_title: dict[str, Application] = {}  # role title -> application (titles are unique here)
-        for company, title, route, agency_name, recruiter_name, path_, tags in APPLICATIONS:
+        first_app: dict[str, Application] = {}  # company key -> its first application
+        apps: dict[str, Application] = {}  # application key -> application
+        for key, company, route, agency_key, recruiter_key, path_ in APPLICATIONS:
+            title, tags = c["apps"][key]
             if company not in companies:
-                companies[company] = Company(
-                    name=company, website=f"https://{company.lower().replace(' ', '')}.example.com"
-                )
+                name, website = c["companies"][company]
+                companies[company] = Company(name=name, website=website)
                 s.add(companies[company])
             agency = recruiter = None
-            if agency_name:
-                agency = agencies.get(agency_name)
+            if agency_key:
+                agency = agencies.get(agency_key)
+                agency_name, domain = c["agencies"][agency_key]
                 if agency is None:
-                    agency = agencies[agency_name] = Agency(name=agency_name)
+                    agency = agencies[agency_key] = Agency(name=agency_name)
                     s.add(agency)
                     s.flush()
-                recruiter = recruiters.get(recruiter_name)
+                recruiter = recruiters.get(recruiter_key)
                 if recruiter is None:
-                    recruiter = recruiters[recruiter_name] = Contact(
-                        name=recruiter_name, agency_id=agency.id, title="Senior Consultant"
+                    recruiter_name, handle = c["recruiters"][recruiter_key]
+                    recruiter = recruiters[recruiter_key] = Contact(
+                        name=recruiter_name, agency_id=agency.id, title=c["recruiter_title"]
                     )
                     s.add(recruiter)
                     s.flush()
-                    handle = recruiter_name.lower().replace(" ", ".")
                     s.add(
                         ContactDetail(
                             contact_id=recruiter.id,
                             kind="email",
                             label="work",
-                            value=f"{handle}@{agency_name.split()[0].lower()}.example.com",
+                            value=f"{handle}@{domain}.example.com",
                         )
                     )
                     s.add(
@@ -231,12 +195,14 @@ def seed(path: Path) -> None:
                             contact_id=recruiter.id,
                             kind="phone",
                             label="mobile",
-                            value="+44 7700 900" + str(len(recruiters)).zfill(3),
+                            value=c["phone"].format(n=len(recruiters)),
                             position=1,
                         )
                     )
             s.flush()
-            role = Role(company_id=companies[company].id, title=title, work_mode="hybrid")
+            role = Role(
+                company_id=companies[company].id, title=title, work_mode="hybrid", location=c["locations"].get(key)
+            )
             if recruiter:  # their pitch, added just before the application
                 role.contact_id = recruiter.id
                 role.created_at = days_ago((path_[0][1] if path_ else 5) + 3)
@@ -261,20 +227,24 @@ def seed(path: Path) -> None:
                 move(s, W, app, stage, occurred_at=days_ago(ago))
             if recruiter and path_:
                 log_activity(
-                    s, app, "call", summary=f"Intro call with {recruiter.name}", occurred_at=days_ago(path_[0][1] + 1)
+                    s,
+                    app,
+                    "call",
+                    summary=c["intro_call"].format(name=recruiter.name),
+                    occurred_at=days_ago(path_[0][1] + 1),
                 )
-            by_title[title] = app
+            apps[key] = app
             # Interview rounds for the stages it went through, and the next one if it's mid-process.
             reached = dict(path_)
-            rounds = [(reached[stage], title, kind) for stage, title, kind in ROUNDS if stage in reached]
+            rounds = [(reached[stage], c["rounds"][stage], kind) for stage, kind in ROUNDS if stage in reached]
             if path_ and path_[-1][0] == "interviewing":
-                rounds.append((-2, "System design test", "system_design"))  # in two days
-            for n, (ago, title, kind) in enumerate(rounds, start=1):
+                rounds.append((-2, c["rounds"]["system_design"], "system_design"))  # in two days
+            for n, (ago, round_title, kind) in enumerate(rounds, start=1):
                 s.add(
                     Interview(
                         application_id=app.id,
                         round=n,
-                        title=title,
+                        title=round_title,
                         kind=kind,
                         status="done" if ago >= 0 else "scheduled",
                         starts_at=days_ago(ago),
@@ -283,256 +253,209 @@ def seed(path: Path) -> None:
                     )
                 )
             first_app.setdefault(company, app)
-        add_moves(s, by_title)
+        add_moves(s, apps, c["move_reasons"])
         # Notes are Markdown files under notes/, indexed in the database.
         store = NoteStore(path)
+        (call_title, call_body), (plan_title, plan_body) = c["notes"]
         for title, body, links in [
             (
-                "Call with Alex about Contoso",
-                "## Role\n\n- Payments platform, **Python + Kafka**\n- Hybrid, 2 days in London\n\n"
-                "## Money\n\n| | |\n|---|---|\n| Day rate | £650 |\n| IR35 | Outside |\n\n"
-                "- [ ] Send updated CV\n- [x] Confirm availability\n",
-                [f"application:{first_app['Contoso'].id}", f"company:{companies['Contoso'].id}"],
+                call_title,
+                call_body,
+                [f"application:{first_app['contoso'].id}", f"company:{companies['contoso'].id}"],
             ),
-            (
-                "Job search plan",
-                "Focus on **fintech** and **platform** roles.\n\n1. Five applications a week\n2. Chase after 7 days\n",
-                [],
-            ),
+            (plan_title, plan_body, []),
         ]:
             store.index(s, store.create(title, body, links))
         # Two offers to compare: a permanent package and a contract.
         s.add_all(
             [
                 Offer(
-                    application_id=first_app["Litware"].id,
+                    application_id=first_app["litware"].id,
                     employment_type="permanent",
-                    currency="GBP",
-                    salary=95_000,
-                    bonus=9_500,
-                    equity="Share options, 4-year vest",
-                    equity_value=4_000,
-                    pension_percent=6,
-                    holiday_days=28,
-                    benefits="Private health, £1,000 learning budget",
+                    currency=c["currency"],
                     received_on=date.today() - timedelta(days=3),
                     respond_by=date.today() + timedelta(days=4),
+                    **c["offer_permanent"],
                 ),
                 Offer(
-                    application_id=first_app["Wide World Importers"].id,
+                    application_id=first_app["wideworld"].id,
                     employment_type="contract",
-                    currency="GBP",
-                    day_rate=600,
-                    ir35="outside",
+                    currency=c["currency"],
                     contract_months=6,
                     received_on=date.today() - timedelta(days=1),
                     respond_by=date.today() + timedelta(days=9),
+                    **c["offer_contract"],
                 ),
             ]
         )
         # Calls with a recruiter that aren't about one application: one had, one booked.
         first_recruiter = next(iter(recruiters.values()))
+        catch_up_title, catch_up_notes = c["catch_up"]
         catch_up = Meeting(
             contact_id=first_recruiter.id,
             kind="call",
-            title="Market catch-up",
+            title=catch_up_title,
             status="done",
             starts_at=days_ago(6),
-            notes="Contract market is picking up. Three roles to look at: **Fabrikam**, "
-            "**Proseware** and a fintech startup.",
+            notes=catch_up_notes,
         )
         s.add(catch_up)
         s.flush()
         # The roles from that call: two still to decide, one passed on.
-        startup = Company(name="Northwind Pay", website="https://pay.northwind.example.com")
+        startup_name, startup_website = c["companies"]["startup"]
+        startup = Company(name=startup_name, website=startup_website)
         s.add(startup)
         s.flush()
         pitched = dict(contact_id=first_recruiter.id, meeting_id=catch_up.id, created_at=days_ago(6))
+        contract_role = Role(company_id=companies["fabrikam"].id, work_mode="remote", **c["role_contract"], **pitched)
+        founding_role = Role(company_id=startup.id, **c["role_founding"], **pitched)
         s.add_all(
             [
+                contract_role,
+                founding_role,
                 Role(
-                    company_id=companies["Fabrikam"].id,
-                    title="Platform Engineer (contract)",
-                    employment_type="contract",
-                    day_rate=625,
-                    ir35="outside",
-                    work_mode="remote",
-                    **pitched,
-                ),
-                Role(
-                    company_id=startup.id,
-                    title="Founding Backend Engineer",
-                    salary_min=90_000,
-                    salary_max=110_000,
-                    **pitched,
-                ),
-                Role(
-                    company_id=companies["Proseware"].id,
-                    title="Data Engineer",
+                    company_id=companies["proseware"].id,
                     decision="passed",
-                    decision_reason="Mostly BI work, not what I'm after",
                     decided_on=date.today() - timedelta(days=5),
+                    **c["role_passed"],
                     **pitched,
                 ),
             ]
         )
+        earlier_title, earlier_notes = c["earlier_catch_up"]
+        new_year_title, new_year_agenda = c["new_year"]
         s.add_all(
             [
                 Meeting(
                     contact_id=first_recruiter.id,
                     kind="call",
-                    title="Earlier catch-up",
+                    title=earlier_title,
                     status="done",
                     starts_at=days_ago(30),
-                    notes="Introductions; sent over my CV.",
+                    notes=earlier_notes,
                 ),
                 Meeting(
                     contact_id=first_recruiter.id,
                     kind="video",
-                    title="Roles for the new year",
+                    title=new_year_title,
                     starts_at=days_ago(-1),
                     meeting_url="https://meet.example.com/catch-up",
-                    agenda="- Day rates for platform roles\n- Anything fully remote?",
+                    agenda=new_year_agenda,
                 ),
             ]
         )
-        sam, jordan = recruiters["Sam Patel"], recruiters["Jordan Lee"]
-        sam_call = Meeting(
-            contact_id=sam.id, kind="call", title="Contract roles", status="done", starts_at=days_ago(19)
+        sam, jordan = recruiters["sam"], recruiters["jordan"]
+        sam_call = Meeting(contact_id=sam.id, kind="call", title=c["sam_call"], status="done", starts_at=days_ago(19))
+        jordan_call = Meeting(
+            contact_id=jordan.id, kind="video", title=c["jordan_call"], status="done", starts_at=days_ago(12)
         )
-        jordan_call = Meeting(contact_id=jordan.id, kind="video", title="Intro", status="done", starts_at=days_ago(12))
         s.add_all([sam_call, jordan_call])
         s.flush()
         s.add_all(
             [
                 Role(
-                    company_id=companies["Adventure Works"].id,
-                    title="Contract SRE",
+                    company_id=companies["adventure"].id,
                     employment_type="contract",
-                    ir35="inside",
                     decision="passed",
-                    decision_reason="Inside IR35, and five days in the office",
                     decided_on=date.today() - timedelta(days=17),
                     contact_id=sam.id,
                     meeting_id=sam_call.id,
                     created_at=days_ago(19),
+                    **c["role_sre"],
                 ),
                 Role(
-                    company_id=companies["Tailspin Toys"].id,
-                    title="Senior Frontend Engineer",
+                    company_id=companies["tailspin"].id,
                     work_mode="hybrid",
                     contact_id=jordan.id,
                     meeting_id=jordan_call.id,
                     created_at=days_ago(12),
+                    **c["role_frontend"],
                 ),
             ]
         )
         # They've replied and it's waiting to be read: on an application, and from a recruiter.
-        first_app["Fabrikam"].reply_to_read_since = date.today()
+        first_app["fabrikam"].reply_to_read_since = date.today()
         other_recruiter = [r for r in recruiters.values() if r.id != first_recruiter.id][0]
         other_recruiter.reply_to_read_since = date.today() - timedelta(days=1)
         # Waiting to hear back: one just sent, one past its stage's limit (red: time to chase),
         # and a recruiter taking longer than they usually do.
-        by_title["Backend Engineer (Go)"].awaiting_reply_since = date.today() - timedelta(days=2)
-        by_title["Full-stack Engineer"].awaiting_reply_since = date.today() - timedelta(days=8)
+        apps["adventure"].awaiting_reply_since = date.today() - timedelta(days=2)
+        apps["coho"].awaiting_reply_since = date.today() - timedelta(days=8)
         first_recruiter.awaiting_reply_since = date.today() - timedelta(days=4)
-        recruiters["Jordan Lee"].favourite = True
+        recruiters["jordan"].favourite = True
         # A follow-up that's due, a call whose time has passed (How did it go?), and a round
         # that isn't booked yet, so every section of Today has something in it.
-        by_title["Lead Engineer"].follow_up_on = date.today() - timedelta(days=1)
-        s.add(
-            Meeting(
-                contact_id=recruiters["Sam Patel"].id,
-                kind="call",
-                title="Feedback on the final",
-                starts_at=days_ago(1),
-            )
-        )
+        apps["northwind"].follow_up_on = date.today() - timedelta(days=1)
+        s.add(Meeting(contact_id=recruiters["sam"].id, kind="call", title=c["feedback_call"], starts_at=days_ago(1)))
         s.add(
             Interview(
-                application_id=by_title["Senior Backend Engineer"].id,
+                application_id=apps["contoso"].id,
                 round=4,
-                title="Final with the CTO",
+                title=c["rounds"]["final"],
                 kind="final",
                 status="scheduled",
             )
         )
         # To-dos in your own words: about a person, a company, a role, and one about nothing.
-        fabrikam_role = s.query(Role).filter_by(title="Platform Engineer (contract)").one()
+        s.flush()
+        todo_person, todo_company, todo_role, todo_done = c["todos"]
         s.add_all(
             [
-                Todo(text="They messaged me on LinkedIn: reply", entity_type="contact", entity_id=first_recruiter.id),
+                Todo(text=todo_person, entity_type="contact", entity_id=first_recruiter.id),
+                Todo(text=todo_company, entity_type="company", entity_id=startup.id, due_on=date.today()),
                 Todo(
-                    text="See what Northwind Pay actually builds: do I like the product?",
-                    entity_type="company",
-                    entity_id=startup.id,
-                    due_on=date.today(),
-                ),
-                Todo(
-                    text="Ask who's on the platform team",
+                    text=todo_role,
                     entity_type="role",
-                    entity_id=fabrikam_role.id,
+                    entity_id=contract_role.id,
                     due_on=date.today() + timedelta(days=2),
                 ),
-                Todo(text="Update my portfolio site", done_at=days_ago(2)),
+                Todo(text=todo_done, done_at=days_ago(2)),
                 # Alex usually gets back within a couple of working days; Sam takes longer.
                 *(
-                    Reply(contact_id=recruiters[name].id, waited_since=start, replied_on=start + timedelta(days=gap))
-                    for name, start, gap in (
-                        ("Alex Morgan", date(2026, 9, 7), 2),
-                        ("Alex Morgan", date(2026, 9, 18), 3),
-                        ("Alex Morgan", date(2026, 9, 28), 1),
-                        ("Sam Patel", date(2026, 9, 8), 6),
-                        ("Sam Patel", date(2026, 9, 22), 9),
+                    Reply(contact_id=recruiters[key].id, waited_since=start, replied_on=start + timedelta(days=gap))
+                    for key, start, gap in (
+                        ("alex", date(2026, 9, 7), 2),
+                        ("alex", date(2026, 9, 18), 3),
+                        ("alex", date(2026, 9, 28), 1),
+                        ("sam", date(2026, 9, 8), 6),
+                        ("sam", date(2026, 9, 22), 9),
                     )
                 ),
             ]
         )
         # A CV with two versions and a cover letter, recorded against most applications, so
         # Insights can compare them.
-        cv = Document(kind="cv", name="Backend CV")
-        letter = Document(kind="cover_letter", name="Short cover letter")
+        cv_name, v2_label, v3_label, v3_notes = c["cv"]
+        letter_name, plain_label = c["letter"]
+        cv = Document(kind="cv", name=cv_name)
+        letter = Document(kind="cover_letter", name=letter_name)
         s.add_all([cv, letter])
         s.flush()
-        v2 = DocumentVersion(document_id=cv.id, label="v2", created_at=days_ago(60))
-        v3 = DocumentVersion(
-            document_id=cv.id, label="v3 (impact first)", notes="Leads with results", created_at=days_ago(45)
-        )
-        plain = DocumentVersion(document_id=letter.id, label="plain", created_at=days_ago(60))
+        v2 = DocumentVersion(document_id=cv.id, label=v2_label, created_at=days_ago(60))
+        v3 = DocumentVersion(document_id=cv.id, label=v3_label, notes=v3_notes, created_at=days_ago(45))
+        plain = DocumentVersion(document_id=letter.id, label=plain_label, created_at=days_ago(60))
         s.add_all([v2, v3, plain])
         s.flush()
         sent = {
-            v2: [
-                "Engineering Manager",
-                "Data Platform Engineer",
-                "Staff Platform Engineer",
-                "Senior Full-stack Engineer",
-                "Site Reliability Engineer",
-            ],
-            v3: [
-                "Senior Backend Engineer",
-                "Senior Python Developer",
-                "Senior Software Engineer",
-                "Backend Engineer (Go)",
-                "Full-stack Engineer",
-            ],
-            plain: ["Senior Software Engineer", "Staff Platform Engineer", "Site Reliability Engineer"],
+            v2: ["tailspin", "proseware", "fabrikam", "coho_direct", "alpine"],
+            v3: ["contoso", "wideworld", "litware", "adventure", "coho"],
+            plain: ["litware", "fabrikam", "alpine"],
         }
-        for version, titles in sent.items():
-            for title in titles:
-                s.add(ApplicationDocument(application_id=by_title[title].id, document_version_id=version.id))
+        for version, keys in sent.items():
+            for key in keys:
+                s.add(ApplicationDocument(application_id=apps[key].id, document_version_id=version.id))
         # A document with no versions yet, so its empty state shows.
-        s.add(Document(kind="other", name="Portfolio"))
+        s.add(Document(kind="other", name=c["portfolio"]))
         # Files: a CV attached to an application with none recorded and to its role (waiting to be
         # adopted on Documents), a job description on a role (shown on its application too), and
         # a rate card from a recruiter. Tiny made-up PDFs.
         files = FileStore(path)
-        lead = by_title["Lead Engineer"]
-        for entity_type, entity_id, name, text in [
-            ("application", lead.id, "CV 2026.pdf", "CV"),
-            ("role", lead.role_id, "CV 2026.pdf", "CV"),
-            ("role", by_title["Staff Platform Engineer"].role_id, "Job description.pdf", "Job description"),
-            ("contact", recruiters["Sam Patel"].id, "Contract rates.pdf", "Rates"),
+        lead = apps["northwind"]
+        for entity_type, entity_id, (name, text) in [
+            ("application", lead.id, c["files"]["cv"]),
+            ("role", lead.role_id, c["files"]["cv"]),
+            ("role", apps["fabrikam"].role_id, c["files"]["jd"]),
+            ("contact", recruiters["sam"].id, c["files"]["rates"]),
         ]:
             stored = files.save(BytesIO(tiny_pdf(text)), name)
             s.add(
@@ -560,63 +483,43 @@ def seed(path: Path) -> None:
                     data={"attachment_id": stored.id},
                 )
         # Links on an application, a role, a company and a person.
+        on_app, on_role, on_company, on_person = c["links"]
         s.add_all(
             [
-                Link(
-                    entity_type="application",
-                    entity_id=by_title["Senior Backend Engineer"].id,
-                    url="https://careers.contoso.example.com/jobs/1234",
-                    title="Job ad",
-                ),
-                Link(
-                    entity_type="role",
-                    entity_id=s.query(Role).filter_by(title="Founding Backend Engineer").one().id,
-                    url="https://pay.northwind.example.com/careers",
-                ),
-                Link(
-                    entity_type="company",
-                    entity_id=companies["Contoso"].id,
-                    url="https://contoso.example.com/engineering",
-                    title="Engineering blog",
-                ),
-                Link(
-                    entity_type="contact",
-                    entity_id=recruiters["Alex Morgan"].id,
-                    url="https://northwindtalent.example.com/team/alex-morgan",
-                    title="Profile",
-                ),
+                Link(entity_type="application", entity_id=apps["contoso"].id, url=on_app[0], title=on_app[1]),
+                Link(entity_type="role", entity_id=founding_role.id, url=on_role[0], title=on_role[1]),
+                Link(entity_type="company", entity_id=companies["contoso"].id, url=on_company[0], title=on_company[1]),
+                Link(entity_type="contact", entity_id=recruiters["alex"].id, url=on_person[0], title=on_person[1]),
             ]
         )
         # Two offers that ended: one you turned down before withdrawing, one the company took back
         # before rejecting you. Each on its application's timeline, as the app records it.
-        for title, ended_ago, offer in [
+        for key, ended_ago, offer in [
             (
-                "Site Reliability Engineer",
+                "alpine",
                 41,
                 Offer(
                     status="declined",
                     employment_type="permanent",
-                    currency="GBP",
-                    salary=88_000,
-                    holiday_days=25,
+                    currency=c["currency"],
                     received_on=date.today() - timedelta(days=43),
-                    notes="Five days in the office",
+                    **c["offer_declined"],
                 ),
             ),
             (
-                "Engineering Manager",
+                "tailspin",
                 21,
                 Offer(
                     status="withdrawn",
                     employment_type="fixed_term",
-                    currency="GBP",
-                    salary=105_000,
+                    currency=c["currency"],
                     contract_months=12,
                     received_on=date.today() - timedelta(days=23),
+                    **c["offer_withdrawn"],
                 ),
             ),
         ]:
-            app = by_title[title]
+            app = apps[key]
             offer.application_id = app.id
             s.add(offer)
             s.flush()
@@ -630,6 +533,8 @@ def seed(path: Path) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit(__doc__)
-    seed(Path(sys.argv[1]).expanduser().resolve())
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("dir", help="a new or empty folder for the demo data")
+    parser.add_argument("--lang", choices=sorted(CONTENT), default="en", help="the language of the demo's words")
+    args = parser.parse_args()
+    seed(Path(args.dir).expanduser().resolve(), args.lang)

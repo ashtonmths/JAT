@@ -129,7 +129,8 @@ wide screen *Your move* is on the left and the other two sit beside it:
   **Pass**.
 
 **Coming up**: nothing to do yet. Interviews, task deadlines, [calls](#calls-and-meetings) and
-to-dos with a later date, soonest first, then rounds not booked yet.
+to-dos with a later date, soonest first, then rounds not booked yet. A round or call on today has
+an orange *Today* pill under its title, like a to-do due today.
 
 Rows about an application name its recruiter after the company and role, in grey. Interview and
 offer rows show "Contoso · Backend Engineer · Alex Morgan", with the name linked to their page;
@@ -238,6 +239,18 @@ The **board** shows a column per stage. Drag a card to move it; the usual next s
 highlighted while you drag. Closed stages (Rejected, Withdrawn…) are hidden unless you
 switch on *Show closed stages*, but appear while you drag so you can drop a card on them. Cards show the current interview round.
 
+The round's purple badge, on board cards, list rows and the quick view, names the round, with its
+day once booked: "Round 2 · Technical · Thu 12 Nov" (still, once that day has passed, until you mark
+it done). While the round is waiting for a time or an answer, a small pink badge beside it says what
+for (on a narrow card it goes on the next line):
+- **Not booked yet**: it has no time or deadline yet;
+- **Needs a new time**: it can't go ahead at its time (its old day isn't shown);
+- **Waiting to hear back**: you marked it done and nothing has been heard since. Something heard is
+  a stage move since the round (a move you undid doesn't count), an offer added since, or a later
+  round (even one cancelled); then there's just the round's badge. A booked later round is the
+  current round instead. A round without a time counts from when you marked it done, and editing it
+  afterwards doesn't change that. An archived application isn't waiting.
+
 The list's *Route* column and each board card name the application's recruiter. Through an agency,
 the list shows "Alex Morgan · Northwind Talent" and the card "Alex Morgan". Applied directly
 with an in-house recruiter who reached out, the list and the company's page show "Direct · Riley
@@ -304,7 +317,8 @@ Everything about one application:
 - **At a glance**: what this application needs, by the same rules as
   [Today](#today-home) (a reply to read, to-dos due by today or undated, an offer to
   answer in the next two weeks, a round waiting for an outcome, a follow-up due, gone quiet,
-  waiting to hear back), each with how long it's been ("for 12 days", "overdue by 2 days");
+  waiting to hear back, or a round done with nothing heard since, as its badge says, unless you're
+  already waiting on a reply), each with how long it's been ("for 12 days", "overdue by 2 days");
   then what's coming up (booked rounds and ones not booked yet, later to-dos and follow-ups,
   an offer due later, a snooze); then its key dates as "3 weeks ago": added, applied, moved to
   its current stage, the last call, email or message, the last interview, and the last
@@ -416,14 +430,19 @@ The **Recruiters** page lists everyone as small tiles, favourites first, then A 
 people at companies and independents. Each tile has their job title, a chip for their agency
 or company (click it to open that page), *Waiting* or *Reply to read* if that's where things
 stand (or *Ghosted* / *Not interested*, with a **×** to take it off; someone who ghosted you
-also gets a ghost before their name), and every email, phone number and link (click to email, call or open; long ones end in
+also gets a ghost before their name), what you have in progress with them (*2 applications in progress*,
+*1 role to decide*), and every email, phone number and link (click to email, call or open; long ones end in
 "…", and hovering shows them in full). The pencil edits a person; open their page to delete
 them.
 
 - **Search** matches names, job titles, agencies, companies, emails and numbers.
-- **All / Agencies / Companies / Independent / Favourites / Ghosted** narrows it to agency
-  recruiters, people at companies, independents, your favourites, or everyone who ghosted you
-  (with how many).
+- **All / Agencies / Companies / Independent / In progress / Favourites / Ghosted** narrows it to agency
+  recruiters, people at companies, independents, the people you have something in progress with,
+  your favourites, or everyone who ghosted you (the last three with how many). *In progress* means
+  an application with them as its recruiter that's still open (at any stage that isn't closed,
+  *Interested* included, and not archived), or a role they pitched that you haven't decided on yet
+  (it has no application). A pitched role you've started on counts once, as its application; a
+  hiring manager or referrer on an application doesn't count, only its recruiter.
 - **Agencies**: every agency as a chip with how many people and applications in progress it
   has, including ones with nobody in them yet.
 
@@ -817,18 +836,21 @@ must match; case and accents don't matter.
 
 ## Picking dates
 
-Every calendar rings today in indigo, so you can see where you are. Weeks start on Monday, and
-dates read day, month, year ("31 Oct 2026", "30 Oct 2026, 19:25"), whatever language your
-browser is set to.
+Every calendar rings today in indigo, so you can see where you are. Weeks start on Monday. In
+English, dates read day, month, year ("31 Oct 2026", "30 Oct 2026, 19:25"), however your
+browser writes dates elsewhere; in Chinese they read the Chinese way ("2026年10月31日"). You can also
+type a date into a date box, written the same way the box shows it.
 
 ## Language
 
 The language button at the top right (beside light/dark mode, showing a globe and your current
 language's name) lists the languages the app
-comes in, each by its own name. For now that's English, with more *Coming soon!*. Your choice
-is kept in this browser; until you pick one, the app follows your browser's language if it
-has it, and English otherwise. What you've typed (companies, notes, stage names you've renamed
-or added) is never translated.
+comes in, each by its own name: English and 简体中文 (Simplified Chinese), with *More coming soon*.
+Your choice is kept in this browser; until you pick one, the app follows your browser's language
+if it has it, and English otherwise. A browser set to Simplified Chinese in any form (`zh`,
+`zh-CN`, `zh-Hans`, `zh-SG`) gets Chinese; Traditional Chinese (`zh-TW`, `zh-HK`) on its own
+gets English until there's a Traditional translation. What you've typed (companies, notes,
+stage names you've renamed or added) is never translated; the default stage names are.
 
 Under the languages, *Don't see your language?* opens [a guide to adding one](adding-a-language.md)
 on GitHub, in a new tab. It's an ordinary link: the app itself never fetches anything from there.

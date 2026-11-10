@@ -1,0 +1,10 @@
+/* On a phone the version gets its own line, so the date box beside Add is wide enough for a date. */
+@media (max-width: 35.99em) {
+  .addRow.addRow {
+    flex-wrap: wrap;
+  }
+
+  .version {
+    flex-basis: 100% !important;
+  }
+}

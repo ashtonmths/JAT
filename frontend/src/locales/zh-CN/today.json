@@ -150,6 +150,7 @@
     "noDate": "无日期",
     "replyToOffer": "{{date}}前答复 Offer",
     "notBooked": "{{label}}：尚未预约",
+    "roundWaiting": "{{label}}：等待回复",
     "howDidItGo": "{{label}} 结果如何？",
     "needsNewTime": "{{label}} 待定新时间",
     "roundWhen": "{{until}} · {{at}}",

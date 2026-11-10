@@ -17,10 +17,17 @@ where things run. Quotes are Kai's words.
   time ("no dont ocmbine them"). After merging main into an already-reviewed PR, compare its own diff before and after
   (`git diff origin/main...HEAD --stat`, then `git diff origin/main --stat`); only a changed diff needs a fresh review.
 - **Fan out only when Kai asks** ("fan out massively" meant a 20-agent workflow). On 2026-11-07, near the usage limit:
-  "actually dont paralleisd im close to usage limit dont want to go over". Until Kai lifts that: no parallel builders,
-  one reviewer per PR (Sonnet for small or docs PRs), no workflows.
-- **Merging and releasing** follow CLAUDE.md; "merge once ready and update local main". A major needs Kai's explicit yes
-  every time. If a permission check blocks a merge or release, ask Kai and give the `!` command; never work around it.
+  "actually dont paralleisd im close to usage limit dont want to go over". Lifted on 2026-11-09: "my usage limit
+  refreshed, do it in paralel with agents" (builder agents per bug, merged one at a time). If Kai mentions the limit
+  again: no parallel builders, one reviewer per PR (Sonnet for small or docs PRs), no workflows.
+- **Merging and releasing** follow CLAUDE.md; "merge once ready and update local main". Confirmed 2026-11-09: "yes you
+  can merge and release going forward as long as you follow review-fix iterative cycle. i thought i had alrady granted
+  express permssion for you to auto merge and release". So after the cycle (review, fix, re-review the fixes, checks
+  on the final commit), merge and release without asking. A major needs Kai's explicit yes every time. The auto-mode
+  check doesn't read CLAUDE.md and can still block a merge ("Merge Without Review", often after fixes landed post-
+  review): `.claude/settings.json` allows `tools/dev/merge.sh` and `ship.sh`, which should let them run (run them as
+  `tools/dev/merge.sh N`, relative, as the rules match the text). If it still blocks, ask Kai and give the `!`
+  command; never work around it.
 - **Plan before building when asked:** "dont do anything yet, give me a PR plan"; "noooo noo no no, dont buikld antyhing
   eyt … undo all of that. i want to know what each PR would be". Write the plan (an RFC in `docs/rfc/`, roadmap tasks)
   and stop; build on "lets get building" / "do the first item". Fact-check a plan before merging it (one plan had 15
@@ -52,8 +59,27 @@ where things run. Quotes are Kai's words.
   for Kai to post; never post for Kai. Dates in English are day, month, year ("31 Oct 2026").
 - **Privacy:** never copy names from Kai's screenshots (real companies and recruiters) into the repo, commits or PRs.
   Never POST, PATCH or DELETE against Kai's tracker on 8770; GETs to check health or a migration are fine.
-- **No agent-team skill here**; plain `general-purpose` subagents. **Never give a one-off agent a `name`**: named agents
-  become teammates that don't report back by themselves.
+- **No agent-team skill here** unless Kai names it ("use /agent-team to do a code review" for contributors' PRs, with
+  `/code-review:code-review` alongside, saying which found each finding); otherwise plain `general-purpose` subagents.
+  **Never give a one-off agent a `name`**: named agents become teammates that don't report back by themselves.
+- **UI changes: Kai sees them first** when asked ("show me the mock server before merging so i can review the ui"): a
+  demo URL on seeded data with the case on screen, then build the test and ship on "ship it". For a layout PR Kai
+  asked for a before-and-after table of screenshots in the PR description ("| Item | Before | After |"), and to merge it
+  himself ("this one dont automerge"): images on a throwaway `pr-shots/<task>` branch, demo data only.
+- **English text and layout are Kai's call in translation work:** a fix that changes English waits for Kai's yes, and
+  language-specific CSS stays as small as possible (`docs/rfc/zh-cn.md`, *Layout*).
+- **Contributors' PRs** (issue #230's author sends the Windows work):
+  - Never comment on a PR or issue: "dont comment on the PR, report back to me here". Kai posts.
+  - Don't trust the contributor's testing: "i cant trust the external contributor, i would do testing myself". Check
+    lockfile hashes against PyPI, read every line (tests and `conftest.py` run as Kai), run the full checks and the
+    browser tests in a throwaway worktree on seeded data, and simulate Windows where possible (gotchas.md, *Other*).
+    Kai tests on Windows himself.
+  - The draft is one top-level comment ("i will leave only top-level comments, not on specific lines of code"),
+    leading with encouragement ("nice job etc"), asking only for what blocks merging ("that feels like a lot of
+    feedback"); the rest becomes Kai's follow-ups. Precise enough for the contributor's AI to act on (their PRs look
+    AI-assisted), with a short why per ask.
+  - **A draft claims only what Kai did:** "you lie in that comment, i didnt run it with fcntl unavailable". Say "the
+    review (partly AI-assisted) shows…", never "I ran…" for work the lead did.
 
 ## How Kai works
 

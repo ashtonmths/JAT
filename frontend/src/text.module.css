@@ -1,0 +1,25 @@
+/*
+ * Short labels in narrow places (table headers, dates, "2 days ago"): wrap only at spaces, as
+ * English does, so Chinese doesn't break inside a word ("2 天 / 前", "申 / 请"). It changes
+ * nothing for English or other languages written with spaces between words.
+ */
+.keepWords {
+  word-break: keep-all;
+  /* A label too long to fit still breaks rather than spilling out of its box. */
+  overflow-wrap: break-word;
+}
+
+/* Small headings in capitals ("OFFERS AWAITING A REPLY"). */
+.caps {
+  text-transform: uppercase;
+}
+
+/*
+ * Chinese has no capitals, and capitals turn the Latin words it borrows into shouting
+ * ("已获 OFFER" for "已获 Offer"), so these and Mantine's badges, capitals by default, are left
+ * as written. The one place where a language gets its own CSS (docs/rfc/zh-cn.md).
+ */
+:lang(zh) .caps,
+:lang(zh) :global(.mantine-Badge-root) {
+  text-transform: none;
+}

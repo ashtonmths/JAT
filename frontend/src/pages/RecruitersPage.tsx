@@ -37,10 +37,12 @@ import { ReplyHabit } from "../components/ReplyHabit";
 import type { Contact } from "../api/client";
 import { FavouriteMark, FavouriteToggle, GhostMark } from "../components/GhostMark";
 import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
+import { useRoleSummaries } from "../api/roleHooks";
 import { useCreateAgency } from "../api/peopleHooks";
 import { contactHref } from "../components/ContactCard";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { closedLabel, UndoClosed } from "../components/PersonChase";
+import text from "../text.module.css";
 import { formatDate } from "../utils/time";
 
 const WEB_LINK = /^https?:\/\//;
@@ -95,8 +97,25 @@ const DETAIL_ICONS = {
 
 type Where = { kind: "agency" | "company"; id: string; name: string } | null;
 
-/** One person, small: name, title, their agency or company as a chip, every way to reach them. */
-function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where; onEdit: () => void }) {
+/** What you're doing with someone now: applications still open with them, and roles they pitched still to decide. */
+type Work = { applications: number; roles: number };
+const NO_WORK: Work = { applications: 0, roles: 0 };
+
+/**
+ * One person, small: name, title, their agency or company as a chip, what you have in progress
+ * with them, every way to reach them.
+ */
+function PersonTile({
+  contact,
+  where,
+  work,
+  onEdit,
+}: {
+  contact: Contact;
+  where: Where;
+  work: Work;
+  onEdit: () => void;
+}) {
   const { t } = useTranslation("people");
   const ghosted = contact.closed_as === "ghosted";
   return (
@@ -193,6 +212,20 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
             )}
           </Group>
         )}
+        {(work.applications > 0 || work.roles > 0) && (
+          <Group gap={10}>
+            {work.applications > 0 && (
+              <Text size="xs" c="blue">
+                {t("recruiters.cardApplications", { count: work.applications })}
+              </Text>
+            )}
+            {work.roles > 0 && (
+              <Text size="xs" c="blue">
+                {t("recruiters.cardRoles", { count: work.roles })}
+              </Text>
+            )}
+          </Group>
+        )}
         <ReplyHabit contact={contact} />
         {contact.details.map((d) => {
           const Icon = DETAIL_ICONS[d.kind as keyof typeof DETAIL_ICONS] ?? IconPoint;
@@ -226,7 +259,7 @@ function PersonTile({ contact, where, onEdit }: { contact: Contact; where: Where
   );
 }
 
-type Show = "all" | "agency" | "company" | "independent" | "favourites" | "ghosted";
+type Show = "all" | "agency" | "company" | "independent" | "inProgress" | "favourites" | "ghosted";
 
 export function RecruitersPage() {
   const { t } = useTranslation("people");
@@ -234,8 +267,25 @@ export function RecruitersPage() {
   const { data: contacts } = useContacts();
   const { data: apps } = useApplications({});
   const { data: companies } = useCompanies();
-  // Wait for everyone and where they work, so no one shows as Independent for a moment.
-  const isLoading = agenciesLoading || !contacts || !companies;
+  const { data: roles } = useRoleSummaries({});
+  // Wait for everyone, where they work and what's in progress with them, so no one shows as
+  // Independent, or the In progress count as 0, for a moment.
+  const isLoading = agenciesLoading || !contacts || !companies || !apps || !roles;
+
+  // What's in progress with each person, as their recruiter: applications through them still
+  // open (not archived, at an active stage, Interested included), and roles they pitched with no
+  // application yet (to decide). A pitched role you've started on counts once, as its application.
+  const workByPerson = new Map<string, Work>();
+  const add = (id: string | null | undefined, key: keyof Work) => {
+    if (!id) return;
+    const work = workByPerson.get(id) ?? { ...NO_WORK };
+    work[key] += 1;
+    workByPerson.set(id, work);
+  };
+  for (const a of apps ?? [])
+    if (a.stage_kind === "active" && !a.archived) add(a.recruiter_id, "applications");
+  for (const r of roles ?? []) if (r.status === "to_decide") add(r.contact_id, "roles");
+  const workOf = (c: Contact) => workByPerson.get(c.id) ?? NO_WORK;
   const [q, setQ] = useState("");
   const [show, setShow] = useState<Show>("all");
   const [newAgency, setNewAgency] = useState(false);
@@ -261,6 +311,7 @@ export function RecruitersPage() {
     .filter((c) => {
       if (show === "ghosted") return c.closed_as === "ghosted";
       if (show === "favourites") return c.favourite;
+      if (show === "inProgress") return workByPerson.has(c.id);
       const kind = whereOf(c)?.kind ?? "independent";
       return show === "all" || show === kind;
     })
@@ -321,6 +372,12 @@ export function RecruitersPage() {
             { value: "company", label: t("recruiters.companies") },
             { value: "independent", label: t("recruiters.independent") },
             {
+              value: "inProgress",
+              label: t("recruiters.inProgress", {
+                n: (contacts ?? []).filter((c) => workByPerson.has(c.id)).length,
+              }),
+            },
+            {
               value: "favourites",
               label: t("recruiters.favourites", { n: (contacts ?? []).filter((c) => c.favourite).length }),
             },
@@ -335,7 +392,7 @@ export function RecruitersPage() {
       </Group>
       {agencyList.length > 0 && (
         <Group gap={6} align="center">
-          <Text size="xs" c="dimmed" fw={600} tt="uppercase">
+          <Text size="xs" c="dimmed" fw={600} className={text.caps}>
             {t("recruiters.agencies")}
           </Text>
           {agencyList.map((a) => {
@@ -381,7 +438,13 @@ export function RecruitersPage() {
           </Text>
           <SimpleGrid cols={{ base: 1, xs: 2, md: 3, xl: 4 }} spacing="sm" verticalSpacing="sm">
             {shown.map((c) => (
-              <PersonTile key={c.id} contact={c} where={whereOf(c)} onEdit={() => setEditing(c)} />
+              <PersonTile
+                key={c.id}
+                contact={c}
+                where={whereOf(c)}
+                work={workOf(c)}
+                onEdit={() => setEditing(c)}
+              />
             ))}
           </SimpleGrid>
         </>

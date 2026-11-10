@@ -269,7 +269,7 @@ describe("two counts in one line", () => {
   });
 });
 
-// The real text files. Other languages are JSON next to locales/en (none ship yet).
+// The real text files. Other languages are JSON next to locales/en.
 const others = import.meta.glob<Record<string, string>>("../locales/*/*.json", {
   eager: true,
   import: "default",

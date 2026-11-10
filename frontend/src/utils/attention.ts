@@ -190,6 +190,20 @@ export function glance({ app, stage, interviews, offers, todos, today, now }: Gl
       }
     }
 
+    // Its latest round is done and nothing has been heard since, as its badge says (the server's rule:
+    // no stage move, offer or later round since). Said once: the application's own "Waiting to hear
+    // back" below covers it when you're already waiting on a reply.
+    const last = app.current_round;
+    if (last?.status === "done" && last.waiting_to_hear_back && !app.awaiting_reply_since) {
+      const at = last.starts_at ?? last.deadline_at;
+      attention.push({
+        key: `round-${last.id}`,
+        label: t("today:glance.roundWaiting", { label: roundLabel(last) }),
+        when: at ? lasting(dayOf(at), today) : t("today:glance.noDate"), // never booked: as an unbooked round says
+        tone: "gray", // as the application's own waiting is
+      });
+    }
+
     const snoozed = app.snoozed_until !== null && app.snoozed_until > today;
     const followUpDue =
       app.follow_up_on !== null && app.follow_up_on <= today && !app.reply_to_read_since && !snoozed;

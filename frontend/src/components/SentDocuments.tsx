@@ -9,6 +9,7 @@ import { Trans, useTranslation } from "react-i18next";
 import type { ApplicationDetail } from "../api/client";
 import { documentKind, useDocuments, useSendDocument, useUnsendDocument } from "../api/documentHooks";
 import { formatDate } from "../utils/time";
+import classes from "./SentDocuments.module.css";
 
 /** Which CV and cover-letter versions went with this application, and when. */
 export function SentDocumentsCard({ app }: { app: ApplicationDetail }) {
@@ -82,8 +83,9 @@ export function SentDocumentsCard({ app }: { app: ApplicationDetail }) {
             />
           </Text>
         ) : (
-          <Group align="flex-end" gap="xs" wrap="nowrap">
+          <Group align="flex-end" gap="xs" wrap="nowrap" className={classes.addRow}>
             <Select
+              className={classes.version}
               size="xs"
               label={t("sent.version")}
               placeholder={t("sent.pick")}
