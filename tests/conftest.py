@@ -1,13 +1,5 @@
 import os
 import subprocess
-import sys
-
-try:
-    import fcntl  # noqa: F401
-except ImportError:
-    import unittest.mock
-
-    sys.modules["fcntl"] = unittest.mock.MagicMock()
 
 import pytest
 from fastapi.testclient import TestClient
