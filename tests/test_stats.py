@@ -123,6 +123,8 @@ def test_weekly_activity(client, seeded):
     assert len(default) == 12 and date.fromisoformat(default[-1]["start"]).weekday() == 0
     assert client.get("/api/v1/insights/activity", params={"weeks": 0}).status_code == 422
     assert client.get("/api/v1/insights/activity", params={"tz": "Mars/Olympus"}).status_code == 422
+    # A folder in the time-zone database, not a zone: a 422, not a 500.
+    assert client.get("/api/v1/insights/activity", params={"tz": "Europe"}).status_code == 422
 
 
 def test_weekly_activity_uses_local_weeks_across_a_clock_change(client, seeded):

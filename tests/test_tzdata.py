@@ -45,3 +45,4 @@ def test_iana_timezones_available(tzdata_only):
     for tz_name in zones:
         zone = zoneinfo.ZoneInfo(tz_name)
         assert zone.key == tz_name
+    assert set(zones) <= zoneinfo.available_timezones()
