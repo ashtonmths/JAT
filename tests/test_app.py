@@ -52,23 +52,34 @@ def test_spa_routes_and_assets(data_dir, dist):
 
 
 def test_static_file_types_override_system_registry(data_dir, dist, monkeypatch):
-    """Windows registry often maps .js to text/plain; verify fixed MIME types are served."""
-    monkeypatch.setattr("mimetypes.guess_type", lambda path: ("text/plain", None))
-
+    """Windows' registry often maps .js to text/plain, and the page then loads blank. Fake that system guess where
+    Starlette makes it, and check the app's own files still get their fixed types."""
+    monkeypatch.setattr("starlette.responses.guess_type", lambda *args, **kwargs: ("text/plain", None))
     (dist / "assets" / "module.mjs").write_text("export const x = 1;")
     (dist / "assets" / "style.css").write_text("body { color: red; }")
+    (dist / "assets" / "font.woff2").write_bytes(b"woff2")
     (dist / "site.webmanifest").write_text('{"name": "JAT"}')
     (dist / "data.json").write_text('{"key": "value"}')
-
     client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
 
-    # JavaScript and CSS must never be served as text/plain
-    assert "text/javascript" in client.get("/assets/app.js").headers["content-type"]
-    assert "text/javascript" in client.get("/assets/module.mjs").headers["content-type"]
-    assert "text/css" in client.get("/assets/style.css").headers["content-type"]
-    assert "image/svg+xml" in client.get("/favicon.svg").headers["content-type"]
-    assert "application/manifest+json" in client.get("/site.webmanifest").headers["content-type"]
-    assert "application/json" in client.get("/data.json").headers["content-type"]
+    def served(path: str, method: str = "GET") -> str:
+        return client.request(method, path).headers["content-type"]
+
+    assert served("/assets/app.js") == "text/javascript; charset=utf-8"
+    assert served("/assets/app.js", "HEAD") == "text/javascript; charset=utf-8"
+    assert served("/assets/module.mjs") == "text/javascript; charset=utf-8"
+    assert served("/assets/style.css") == "text/css; charset=utf-8"
+    assert served("/assets/font.woff2") == "font/woff2"
+    assert served("/favicon.svg") == "image/svg+xml"
+    assert served("/site.webmanifest") == "application/manifest+json"
+    assert served("/data.json") == "application/json"
+    assert served("/") == "text/html; charset=utf-8"
+
+
+def test_static_files_still_answer_not_modified(data_dir, dist):
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
+    etag = client.get("/assets/app.js").headers["etag"]
+    assert client.get("/assets/app.js", headers={"if-none-match": etag}).status_code == 304
 
 
 def test_api_paths_never_fall_through_to_spa(data_dir, dist):
