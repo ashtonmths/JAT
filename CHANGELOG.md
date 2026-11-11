@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.13 (2026-11-11)
+
+- Groundwork for the Interviews calendar view: date and summary helpers, with tests (nothing changes on screen yet). (#325).
+
 ## 1.23.12 (2026-11-11)
 
 - Search results show a note's text without its Markdown marks (**bold**, links, headings…) in the snippet; titles, names, file names and links stay as written. (#320).
