@@ -649,6 +649,8 @@ test.describe("comparing", () => {
     await page.getByRole("button", { name: "Edit", exact: true }).click();
     await theDialog(page).getByLabel("Name").fill("Offer After Co");
     await theDialog(page).getByRole("button", { name: "Save", exact: true }).click();
+    // The dialog stays open until the fresh data is in, and its title shows the new name meanwhile.
+    await expect(theDialog(page)).toBeHidden();
     await expect(page.getByRole("heading", { name: "Offer After Co", level: 2 })).toBeVisible();
     await menu(page, "Offers").click();
     await expect(page.getByRole("link", { name: "Offer After Co" })).toBeVisible();
