@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -19,7 +20,7 @@ from .api.deps import WorkflowCache, WriteNotifier
 from .api.errors import CodedError, coded_error_handler
 from .api.routers import router as api_v1
 from .config import Settings, resolve_data_dir
-from .datadir import CODE_ROOT, check_outside_code_repo, is_git_repo
+from .datadir import CODE_ROOT, check_outside_code_repo, ensure_gitattributes, is_git_repo
 from .db import current_revision, db_path, head_revision, make_engine, session_factory
 from .platform import is_windows
 from .security import LocalOnly
@@ -188,7 +189,13 @@ def create_app(
     engine = make_engine(db_path(data_dir))
     app.state.engine = engine
     app.state.sessions = session_factory(engine)
-    app.state.jat = AppState(data_dir=data_dir, git_repo=is_git_repo(data_dir))
+    git_repo = is_git_repo(data_dir)
+    if git_repo:
+        # A data folder from before .gitattributes gets it; the next snapshot commits it. A read-only folder or an
+        # unreadable .gitattributes mustn't stop the app: each snapshot tries again and reports what went wrong.
+        with contextlib.suppress(OSError, UnicodeError):
+            ensure_gitattributes(data_dir)
+    app.state.jat = AppState(data_dir=data_dir, git_repo=git_repo)
     app.state.workflow = WorkflowCache(data_dir)
     app.state.writes = WriteNotifier()
     app.state.snapshots = SnapshotService(

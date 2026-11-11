@@ -4,7 +4,7 @@ import pytest
 
 from jat.cli import main
 from jat.config import ConfigError, Settings, resolve_data_dir
-from jat.datadir import CODE_ROOT, DataDirError, init_data_dir
+from jat.datadir import CODE_ROOT, GITATTRIBUTES_ENTRIES, DataDirError, init_data_dir
 from jat.db import head_revision
 
 
@@ -18,11 +18,12 @@ def test_init_creates_layout_and_is_idempotent(tmp_path):
     assert {"export/", "notes/", "files/", "config.toml"} <= set(report.created)
     assert (path / "notes" / ".gitkeep").exists()
     assert "tracker.sqlite3" in (path / ".gitignore").read_text()
+    assert (path / ".gitattributes").read_text(encoding="utf-8").splitlines()[1:] == list(GITATTRIBUTES_ENTRIES)
     assert not report.is_git_repo and not report.committed
 
     (path / "config.toml").write_text("# edited\n")
     again = init_data_dir(path)
-    assert again.created == [] and again.gitignore_added == []
+    assert again.created == [] and again.gitignore_added == [] and again.gitattributes_added == []
     assert (path / "config.toml").read_text() == "# edited\n"
 
 
@@ -50,6 +51,59 @@ def test_gitignore_covers_the_snapshot_lock(tmp_path):
     assert LOCK_NAME in init_data_dir(path).gitignore_added
 
 
+def test_gitattributes_keeps_existing_lines(tmp_path):
+    path = tmp_path / "data"
+    path.mkdir()
+    (path / ".gitattributes").write_text("*.pdf binary\nexport/** text eol=lf\n", encoding="utf-8-sig")  # Notepad
+    report = init_data_dir(path)
+    raw = (path / ".gitattributes").read_bytes()
+    assert raw.startswith(b"*.pdf binary\nexport/** text eol=lf\n")  # theirs first, BOM gone
+    assert b"\r" not in raw
+    assert report.gitattributes_added == [e for e in GITATTRIBUTES_ENTRIES if e != "export/** text eol=lf"]
+
+
+def test_gitattributes_keeps_text_lf_and_uploads_byte_for_byte_under_windows_git(git_repo):
+    """Git for Windows converts line endings (core.autocrlf=true); set that here and check what git stores."""
+    subprocess.run(["git", "-C", str(git_repo), "config", "core.autocrlf", "true"], check=True)
+    init_data_dir(git_repo)
+    eml = b"From: a@example.com\r\nSubject: hi\r\n\r\nbody\r\n"
+    (git_repo / "files" / "2026").mkdir()
+    (git_repo / "files" / "2026" / "mail.eml").write_bytes(eml)
+    (git_repo / "files" / "top.eml").write_bytes(eml)
+    (git_repo / "notes" / "call.md").write_bytes(b"# Call\r\n\r\nnotes\r\n")  # say an editor saved it with CRLF
+    (git_repo / "own.txt").write_bytes(b"the user's own file\r\n")
+    subprocess.run(["git", "-C", str(git_repo), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(git_repo), "commit", "-q", "-m", "x"], check=True)
+
+    def stored(path: str) -> bytes:
+        return subprocess.run(
+            ["git", "-C", str(git_repo), "show", f"HEAD:{path}"], capture_output=True, check=True
+        ).stdout
+
+    assert stored("files/2026/mail.eml") == eml  # byte for byte, nested
+    assert stored("files/top.eml") == eml  # and at the top of files/
+    assert stored("notes/call.md") == b"# Call\n\nnotes\n"  # LF
+    assert stored("own.txt") == b"the user's own file\n"  # the user's own: git's own setting, not ours
+
+
+def test_a_data_folder_from_before_gets_gitattributes_with_its_next_snapshot(git_repo):
+    from jat.db import db_path, make_engine, migrate
+    from jat.snapshot.git import SnapshotService
+
+    init_data_dir(git_repo, windows_snapshots=True)
+    migrate(db_path(git_repo))
+    (git_repo / ".gitattributes").unlink()  # as a folder made before .gitattributes existed
+    subprocess.run(["git", "-C", str(git_repo), "commit", "-qam", "no attributes"], check=True)
+    SnapshotService(git_repo, make_engine(db_path(git_repo)), debounce_seconds=0, windows_snapshots=True).snapshot_now()
+    tracked = subprocess.run(["git", "-C", str(git_repo), "ls-files"], capture_output=True, text=True).stdout
+    assert ".gitattributes" in tracked.splitlines()
+
+
+def test_init_says_it_added_gitattributes(tmp_path, capsys):
+    assert main(["--data-dir", str(tmp_path / "d"), "init"]) == 0
+    assert "  .gitattributes: added export/** text eol=lf" in capsys.readouterr().out
+
+
 def test_refuses_data_dir_inside_code_repo():
     with pytest.raises(DataDirError):
         init_data_dir(CODE_ROOT / "data")
@@ -64,7 +118,7 @@ def test_commits_scaffold_in_git_repo(git_repo):
     assert "initialise job-application-tracker data layout" in git_log(git_repo)
     tracked = subprocess.run(["git", "-C", str(git_repo), "ls-files"], capture_output=True, text=True).stdout
     assert "README.md" not in tracked
-    assert "config.toml" in tracked and "notes/.gitkeep" in tracked
+    assert "config.toml" in tracked and ".gitattributes" in tracked and "notes/.gitkeep" in tracked
     assert init_data_dir(git_repo).committed is False
 
 
@@ -112,3 +166,33 @@ def test_cli_init_restores_fresh_clone(tmp_path, capsys):
 
 def test_cli_export_needs_db(tmp_path):
     assert main(["--data-dir", str(tmp_path / "none"), "export"]) == 2
+
+
+def test_the_app_adds_gitattributes_to_a_data_folder_from_before(git_repo):
+    from jat.app import create_app
+    from jat.db import db_path, migrate
+
+    init_data_dir(git_repo, windows_snapshots=True)
+    migrate(db_path(git_repo))
+    (git_repo / ".gitattributes").unlink()
+    create_app(git_repo, dist=git_repo / "none")
+    assert (git_repo / ".gitattributes").read_text(encoding="utf-8").splitlines()[1:] == list(GITATTRIBUTES_ENTRIES)
+
+
+def test_an_unreadable_gitattributes_doesnt_stop_the_app(git_repo):
+    from jat.app import create_app
+    from jat.db import db_path, migrate
+
+    init_data_dir(git_repo, windows_snapshots=True)
+    migrate(db_path(git_repo))
+    (git_repo / ".gitattributes").write_bytes(b"# caf\xe9\n")  # not UTF-8
+    create_app(git_repo, dist=git_repo / "none")  # no exception
+
+
+def test_gitattributes_ignores_trailing_spaces_and_keeps_one_header(tmp_path):
+    path = tmp_path / "data"
+    init_data_dir(path)
+    lines = (path / ".gitattributes").read_text(encoding="utf-8").splitlines()
+    (path / ".gitattributes").write_text("\n".join([lines[0], lines[1] + "  ", *lines[3:]]) + "\n", encoding="utf-8")
+    assert init_data_dir(path).gitattributes_added == [GITATTRIBUTES_ENTRIES[1]]
+    assert (path / ".gitattributes").read_text(encoding="utf-8").count("# Job Application Tracker") == 1

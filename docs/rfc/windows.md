@@ -1,8 +1,8 @@
 # RFC: running the tracker on Windows
 
 **Status:** in progress (2026-11-05). Built: `windows-time-zones`, `windows-starts`, `static-file-types`,
-`utf8-everywhere`. The tracker starts on Windows, but is supported on Linux and macOS only until
-`windows-support`.
+`utf8-everywhere`, `data-gitattributes`. The tracker starts on Windows, but is supported on Linux and
+macOS only until `windows-support`.
 **Roadmap:** `windows-starts`, `utf8-everywhere`, `windows-time-zones`, `static-file-types`,
 `data-gitattributes`, `locked-file-retry` and `windows-testing`, then `windows-support`; later,
 `windows-snapshots`. `windows-starts` is planned first, but the small fixes don't depend on it
@@ -26,7 +26,7 @@ thing: a file lock around its **snapshots** (in `src/jat/snapshot/git.py`; since
 
 A snapshot is the tracker's automatic git commit. When the data folder is a git repo, about a
 minute after your last change the app writes the database out to `export/` as readable JSON
-Lines, then commits `export/`, `notes/`, `files/`, `config.toml` and `.gitignore` with git.
+Lines, then commits `export/`, `notes/`, `files/`, `config.toml`, `.gitignore` and `.gitattributes` with git.
 It never pushes; that's `jat push`. The lock makes sure two processes (the running app and a
 `jat snapshot` or `jat push` in another terminal) never snapshot at the same moment.
 
@@ -61,8 +61,8 @@ is-Windows check, so the rest of the code never imports it. On Windows it's all 
 
 The sidebar's status dot, which today says "backups on" for any data folder that's a git repo,
 will say snapshots are off on Windows. Just below it, the **Download a backup** link writes a
-fresh export and zips your data (`export/`, `notes/`, `files/`, `config.toml` and
-`.gitignore`, with instructions for restoring), and it works without git. Copying the data
+fresh export and zips your data (`export/`, `notes/`, `files/`, `config.toml`,
+`.gitignore` and `.gitattributes`, with instructions for restoring), and it works without git. Copying the data
 folder while the app is stopped is also a complete backup.
 
 With snapshots off, `export/` isn't rewritten as you work, so between backups the database is
@@ -88,8 +88,6 @@ It's for testing only, on a test data folder, not your real one:
 - Until step 2 adds a Windows lock, there's no lock between processes. While `jat serve` is
   running, don't run `jat snapshot`, `jat push` or `jat archive`: two processes writing
   `export/` at once can commit or zip a mix of two moments.
-- Until `data-gitattributes` lands, git can change line endings in
-  committed notes and files.
 
 When the switch is set, the app says at startup that Windows snapshots are experimental.
 

@@ -35,6 +35,8 @@ def cmd_init(args) -> int:
     print("  created: " + (", ".join(report.created) or "nothing (already initialised)"))
     if report.gitignore_added:
         print("  .gitignore: added " + ", ".join(report.gitignore_added))
+    if report.gitattributes_added:
+        print("  .gitattributes: added " + ", ".join(report.gitattributes_added))
     if report.is_git_repo:
         if not snapshots_allowed(settings.windows_snapshots):
             print("  git: snapshots are off on Windows")

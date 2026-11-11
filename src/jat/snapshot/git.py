@@ -1,8 +1,8 @@
 """Debounced git snapshots of the data directory, and push on demand (docs/rfc/stack.md §5).
 
 After a write, the service waits until there have been no writes for `debounce_seconds`, then
-exports the database to export/*.jsonl and commits export/, notes/, files/, config.toml and
-.gitignore to the data repo. Only those paths are ever committed; anything else Kai has staged
+exports the database to export/*.jsonl and commits export/, notes/, files/, config.toml,
+.gitignore and .gitattributes to the data repo. Only those paths are ever committed; anything else Kai has staged
 stays staged. Pushing is explicit (`jat push` or the UI button), uses a plain `git push`, and
 never force-pushes.
 
@@ -29,14 +29,14 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import Engine
 
-from ..datadir import is_git_repo
+from ..datadir import ensure_gitattributes, is_git_repo
 from ..platform import LockError, is_windows, process_lock, snapshots_allowed
 from .export import export_db
 
 if TYPE_CHECKING:
     from ..api.errors import ErrorCode, ErrorParams
 
-TRACKED = ("export", "notes", "files", "config.toml", ".gitignore")
+TRACKED = ("export", "notes", "files", "config.toml", ".gitignore", ".gitattributes")
 DEFAULT_DEBOUNCE = 60.0
 WINDOWS_OFF = "Snapshots are off on Windows for now. Set JAT_WINDOWS_SNAPSHOTS=1 to test them on a test data folder."
 NO_PROMPT_ENV = {
@@ -228,6 +228,7 @@ class SnapshotService:
         try:
             with self._work, self._process_lock():
                 self._check_repo_state()
+                ensure_gitattributes(self.data_dir)  # a data folder from before it existed gets it, committed below
                 export_db(self.engine, self.data_dir / "export")
                 paths = [p for p in TRACKED if (self.data_dir / p).exists()]
                 add = _git(self.data_dir, "add", "--all", "--", *paths)

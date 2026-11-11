@@ -10,7 +10,7 @@ uv run jat --data-dir ~/job-search-data <command> [options]
 
 | Command | What it does |
 |---|---|
-| `init` | Creates the folder layout (`export/`, `notes/`, `files/`, `config.toml`, `.gitignore`) and the database, and commits the layout if the folder is a git repo (not on Windows for now). Safe to run again. On a folder with an `export/` but no database (a fresh clone), it rebuilds the database from the export. `--no-commit`: don't commit the layout. |
+| `init` | Creates the folder layout (`export/`, `notes/`, `files/`, `config.toml`, `.gitignore`, `.gitattributes`) and the database, and commits the layout if the folder is a git repo (not on Windows for now). Safe to run again. On a folder with an `export/` but no database (a fresh clone), it rebuilds the database from the export. `--no-commit`: don't commit the layout. |
 | `serve` | Runs the app (http://127.0.0.1:8770). Upgrades the database first if needed. `--port N`, `--host ADDR`, `--dev` (reload on code changes, for development). |
 | `info` | Shows the data folder, whether it's a git repo, the database version, and the address. |
 | `snapshot` | Writes `export/` and commits to the data repo now, instead of waiting for the automatic snapshot. Off on Windows for now. |

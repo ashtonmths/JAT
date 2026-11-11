@@ -6,6 +6,7 @@ Layout (see docs/rfc/stack.md §4):
     notes/            Markdown notes (committed)
     files/            attachments, CVs, cover letters, .eml (committed)
     config.toml       workflow stages, staleness thresholds, snapshot settings (committed)
+    .gitattributes    line endings: LF for export/, notes/ and config, uploads byte for byte (committed)
 """
 
 from __future__ import annotations
@@ -29,6 +30,16 @@ GITIGNORE_ENTRIES = (
     ".tmp/",  # uploads in progress
     ".tmp-*",  # atomic writes in progress (notes)
     "jat-snapshot.lock",  # snapshot lock, kept here when the folder has no .git
+)
+# Git for Windows converts line endings by default (core.autocrlf=true). These keep the app's text LF on every
+# computer and store uploads byte for byte; files of the user's own in the data folder are left alone.
+GITATTRIBUTES_ENTRIES = (
+    "export/** text eol=lf",
+    "notes/** text eol=lf",
+    "files/** -text -eol",
+    "config.toml text eol=lf",
+    ".gitignore text eol=lf",
+    ".gitattributes text eol=lf",
 )
 
 DEFAULT_CONFIG = """\
@@ -55,6 +66,7 @@ class InitReport:
     path: Path
     created: list[str] = field(default_factory=list)
     gitignore_added: list[str] = field(default_factory=list)
+    gitattributes_added: list[str] = field(default_factory=list)
     committed: bool = False
     is_git_repo: bool = False
 
@@ -99,6 +111,22 @@ def _ensure_gitignore(path: Path) -> list[str]:
     return missing
 
 
+def ensure_gitattributes(path: Path) -> list[str]:
+    """Add our line-ending rules to the data folder's .gitattributes; the lines that were missing. Run by `jat init`,
+    when the app starts and before each snapshot, so data folders made before it existed get it too."""
+    gitattributes = path / ".gitattributes"
+    existing = gitattributes.read_text(encoding="utf-8-sig").splitlines() if gitattributes.exists() else []
+    have = {line.strip() for line in existing}
+    missing = [e for e in GITATTRIBUTES_ENTRIES if e not in have]
+    if missing:
+        header = "# Job Application Tracker: line endings (Unix LF for export and notes, byte-for-byte for files)"
+        theirs = "\n".join(existing).rstrip("\n")
+        block = "\n".join([header, *missing] if header not in have else missing)
+        text = f"{theirs}\n\n{block}\n" if theirs else f"{block}\n"
+        gitattributes.write_text(text, encoding="utf-8", newline="\n")
+    return missing
+
+
 def init_data_dir(
     path: Path,
     commit: bool = True,
@@ -126,15 +154,16 @@ def init_data_dir(
         config.write_text(DEFAULT_CONFIG, encoding="utf-8", newline="\n")
         report.created.append("config.toml")
     report.gitignore_added = _ensure_gitignore(path)
+    report.gitattributes_added = ensure_gitattributes(path)
     report.is_git_repo = is_git_repo(path)
-    changed = report.created or report.gitignore_added
+    changed = report.created or report.gitignore_added or report.gitattributes_added
     if commit and snapshots_allowed(windows_snapshots) and report.is_git_repo and changed:
         report.committed = _commit_scaffold(path)
     return report
 
 
 def _commit_scaffold(path: Path) -> bool:
-    paths = [".gitignore", "config.toml", *(f"{d}/.gitkeep" for d in LAYOUT_DIRS)]
+    paths = [".gitignore", ".gitattributes", "config.toml", *(f"{d}/.gitkeep" for d in LAYOUT_DIRS)]
     paths = [p for p in paths if (path / p).exists()]
     git = ["git", "-C", str(path)]
     subprocess.run([*git, "add", "--", *paths], check=True, capture_output=True)

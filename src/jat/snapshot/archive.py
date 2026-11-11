@@ -1,7 +1,7 @@
 """A single-file backup of the data directory (PRD FR21): one zip you can keep anywhere.
 
 It holds what the data repo tracks: a fresh export/ (JSON Lines), notes/, files/,
-config.toml and .gitignore, under one top-level folder, plus RESTORE.md. The SQLite
+config.toml, .gitignore and .gitattributes, under one top-level folder, plus RESTORE.md. The SQLite
 database isn't included: `jat restore` rebuilds it from export/. Nor is .git (the history
 lives in the data repo) or .tmp. Symlinks are skipped, so nothing outside the data
 directory can end up in the archive.
