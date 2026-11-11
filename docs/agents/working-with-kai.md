@@ -68,45 +68,8 @@ where things run. Quotes are Kai's words.
   himself ("this one dont automerge"): images on a throwaway `pr-shots/<task>` branch, demo data only.
 - **English text and layout are Kai's call in translation work:** a fix that changes English waits for Kai's yes, and
   language-specific CSS stays as small as possible (`docs/rfc/zh-cn.md`, *Layout*).
-- **Contributors' PRs** (issue #230's author sends the Windows work):
-  - Never comment on a PR or issue: "dont comment on the PR, report back to me here". Kai posts.
-  - Don't trust the contributor's testing: "i cant trust the external contributor, i would do testing myself". Check
-    lockfile hashes against PyPI, read every line (tests and `conftest.py` run as Kai), run the full checks and the
-    browser tests in a throwaway worktree on seeded data, and simulate Windows where possible (gotchas.md, *Other*).
-    Windows checks run in Kai's Windows VM, which the lead drives over SSH and fixes from in the review-fix cycle
-    (Kai, 2026-11-11: "you should be able to control the tests from here, and then you can iterate review-fix
-    cycle"); Kai no longer tests each one by hand.
-  - **A thorough security review comes before any agent runs their code** (Kai, 2026-11-10: "we need throgh security
-    review of external PRs before agents run the code themselves"). Read every changed line first, for anything
-    that runs on install, import or test: tests, `conftest.py`, scripts, `pyproject.toml` and `package.json`
-    scripts, build config, lockfile entries (hashes against PyPI or npm). Only then does the lead run `uv sync`,
-    pytest, pnpm or `checks.sh` on it; reviewer agents stay read-only and don't run it (the auto-mode check blocks
-    them anyway: gotchas.md, *Other*). This gate comes before the full checks in the bullet above, and again for
-    every new commit they push.
-  - **Comment or carry, finding by finding** (Kai, 2026-11-11: "figure out what should be left as a comment for the
-    author to change/fix … vs what we carry and do ourselves. if you decuide we need to leave a comment on authors PR
-    then you must report back to me and wait for my approval - in fact i will post the comment myself"). Sort the
-    review's findings into "ask the author" and "we fix when carrying". If anything is for the author, report it and
-    the draft comment to Kai in the Claude Code chat only (never on GitHub or anywhere else) and stop until Kai has
-    posted it himself; otherwise carry the PR with every fix.
-  - **Finishing a contributor's PR ourselves: carry it (pattern B)** (Kai, 2026-11-10: "yes I prefer B, and its
-    cleaner for changelog and version bump etc"). Main issues still go back to the contributor in Kai's comment;
-    when Kai says to fix them ourselves, fetch their branch (`git fetch <fork url> <branch>`) into our own
-    `worktree-<task>` branch, add our fixes, the bump and the roadmap update on top, and open our own PR. It goes
-    through the review-fix cycle and merges with a merge commit, so their commits land unchanged under their name.
-    Never push to their fork, and never merge theirs first and fix on main afterwards (main would have their bug,
-    and no version bump, until the fix lands). Kai asked for the PR body to open with a friendly note tagging the
-    author (`@login`) to say their work is merged, in Kai's voice (his Slack voice notes, kept outside this repo:
-    ask Kai where), added just before merging so it's true when they're notified. #298 carried #285.
-  - **No `Closes #N` for their PR on the carrying PR; write `Carries #N`:** #298 had `Closes #285`, and #285 was
-    closed, not merged. #300 had only `Carries #283`, and GitHub marked #283 merged by itself once its commits
-    were on main (2026-11-11). Never `Closes` the contributor's issue either (#230 tracks the whole Windows plan).
-  - The draft is one top-level comment ("i will leave only top-level comments, not on specific lines of code"),
-    leading with encouragement ("nice job etc"), asking only for what blocks merging ("that feels like a lot of
-    feedback"); the rest becomes Kai's follow-ups. Precise enough for the contributor's AI to act on (their PRs look
-    AI-assisted), with a short why per ask.
-  - **A draft claims only what Kai did:** "you lie in that comment, i didnt run it with fcntl unavailable". Say "the
-    review (partly AI-assisted) shows…", never "I ran…" for work the lead did.
+- **Contributors' PRs** (issue #230's author sends the Windows work): the whole process, with Kai's instructions, is in
+  [contributor-prs.md](contributor-prs.md). Never comment on their PR or issue; Kai posts.
 
 ## How Kai works
 
