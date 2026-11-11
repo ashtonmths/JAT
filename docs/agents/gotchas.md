@@ -96,6 +96,9 @@ Each of these cost time once. Add a line when something new does.
 - jsdom: Mantine options and menu items render hidden (`hidden: true`); Selects have two elements per label; no
   `scrollIntoView` (stubbed); notifications persist across tests; `mouseenter` doesn't bubble. React Query retries a
   failed request 3 times (~7 s): mock every query a page waits on. `src/test/mockApi.ts` has the fixtures.
+- Key an editor by its record's id, never by `updated_at`, a version, the date, a list index or the section its row is
+  in. A form on a page holds its fields in `useDraft` (`src/utils/useDraft.ts`): it follows saved changes, keeps
+  unsaved edits, and Save sends only `draft.changes`.
 - Prove a test catches a bug by breaking the code and watching it fail.
 - TanStack Router: routes built from `NAV` aren't typed for `navigate({ to })`; navigate to `"."`.
 
