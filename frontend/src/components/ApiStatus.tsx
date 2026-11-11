@@ -35,7 +35,7 @@ export function ApiStatus() {
   const { data, isError, isPending } = useHealth();
 
   const snapshotsOn = data ? (data.snapshots_enabled ?? data.git_repo) : false;
-  const versions = data ? { version: String(data.version), schema: data.schema ?? "?" } : {};
+  const versions = { version: String(data?.version), schema: data?.schema ?? "?" };
 
   const [color, label, detail] = isPending
     ? ["gray", t("api.connecting"), t("api.connectingHint")]

@@ -47,7 +47,8 @@ const codes = {
   backup_shut_down: "snapshots are shut down",
   backup_snapshot_failed: "snapshot failed: {{reason}}",
   backup_snapshots_off: "The data directory isn't a git repo, so snapshots are off.",
-  backup_snapshots_off_windows: "Snapshots are off on Windows for now. Set JAT_WINDOWS_SNAPSHOTS=1 to test them on a test data folder.",
+  backup_snapshots_off_windows:
+    "Snapshots are off on Windows for now. Set JAT_WINDOWS_SNAPSHOTS=1 to test them on a test data folder.",
   cv_file_applications_invalid: "application_ids: only applications this file counts for.",
   cv_file_document_required: "Pick a document to add it to, or name a new one.",
   cv_file_missing: "{{name}} is missing from your data folder.",
