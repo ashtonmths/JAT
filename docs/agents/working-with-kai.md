@@ -73,7 +73,9 @@ where things run. Quotes are Kai's words.
   - Don't trust the contributor's testing: "i cant trust the external contributor, i would do testing myself". Check
     lockfile hashes against PyPI, read every line (tests and `conftest.py` run as Kai), run the full checks and the
     browser tests in a throwaway worktree on seeded data, and simulate Windows where possible (gotchas.md, *Other*).
-    Kai tests on Windows himself.
+    Windows checks run in Kai's Windows VM, which the lead drives over SSH and fixes from in the review-fix cycle
+    (Kai, 2026-11-11: "you should be able to control the tests from here, and then you can iterate review-fix
+    cycle"); Kai no longer tests each one by hand.
   - **A thorough security review comes before any agent runs their code** (Kai, 2026-11-10: "we need throgh security
     review of external PRs before agents run the code themselves"). Read every changed line first, for anything
     that runs on install, import or test: tests, `conftest.py`, scripts, `pyproject.toml` and `package.json`

@@ -28,6 +28,7 @@ tells the session to read these by full path; in a fresh session, `CLAUDE.md` sa
 | The Chinese translation | `docs/rfc/zh-cn.md`, the glossary `docs/i18n/zh-CN.md`, `scripts/i18n/translate/README.md`, `.claude/workflows/i18n-*.js` |
 | Browser tests | `frontend/e2e/fixtures.ts`, a neighbouring spec, [gotchas.md](gotchas.md) *Browser tests* |
 | A bug fix by a subagent | `tools/dev/briefs/bug-fix.md` |
+| Testing on real Windows | Kai's Windows 11 VM, `ssh winvm`. Its own README, in Kai's `windows-vm` project (Kai's user-level `CLAUDE.md` names it), covers starting and stopping it, resetting it to its clean snapshot and PowerShell's quirks: read it first. How this repo runs there: [gotchas.md](gotchas.md) *Windows VM* |
 | Plans waiting on Kai | `docs/rfc/mcp.md` (§14), `docs/rfc/windows.md`, `docs/rfc/docker.md` |
 | What a PR did and why | `gh pr view N`, `gh pr diff N`, `git log --oneline main` |
 | Anything said before a compaction | the session transcript (`~/.claude/projects/<project>/<session>.jsonl`): `grep` it for a quote, PR number or file name; never read it whole |

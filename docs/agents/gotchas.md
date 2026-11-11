@@ -157,5 +157,16 @@ Each of these cost time once. Add a line when something new does.
   sets `sys.modules["fcntl"] = None` before `from jat.cli import main`, then (optionally) `sys.platform = "win32"`
   *after* the import (earlier, asyncio looks for Windows-only modules), then `main(argv)`. For time zones,
   `PYTHONTZPATH=` (empty) leaves only the `tzdata` package, as on Windows. Neither proves it runs on real Windows.
+- **Windows VM** (`ssh winvm`; first used on #300, 2026-11-11): the real check, and where contributor code runs.
+  - Reset it to its clean snapshot before running a contributor's code, check out the branch in its `jat` clone
+    (`git fetch origin <branch>; git checkout -B <branch> FETCH_HEAD`), and shut it down when done.
+  - `uv sync --python 3.13`: with no Python pinned, uv picks 3.15, where `httptools` has no Windows wheel and the
+    build needs Visual C++ (bug `fix-python-315-install`).
+  - The remote shell is PowerShell 5.1: `;` not `&&`, and native tools' stderr comes back as red `NativeCommandError`
+    noise (filter it). `--lf` needs pytest's cache, so don't pass `-p no:cacheprovider` with it.
+  - `jat serve` blocks: start it with `Start-Process -PassThru -RedirectStandardOutput …` (set
+    `PYTHONUNBUFFERED=1` to see its output), query it with `Invoke-RestMethod`, then stop the `python`/`uv` processes.
+  - A test data repo needs `git config user.name/user.email` before a snapshot can commit.
+  - On Windows the whole suite isn't green yet (`windows-tests-green`): compare failures with that list.
 - **Vite's hot reload can silently keep old code** on `TodayPage.tsx` ("Could not Fast Refresh (useNextActions export
   is incompatible)"): if a dev page doesn't show a change, restart Vite with `--force` before debugging the code.
