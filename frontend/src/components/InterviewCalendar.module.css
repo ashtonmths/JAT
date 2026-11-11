@@ -38,7 +38,7 @@
 
 .day {
   background: var(--cal-cell);
-  min-height: 112px;
+  min-height: 96px;
   padding: 6px;
   display: flex;
   flex-direction: column;
@@ -56,6 +56,10 @@
 
 .day[data-outside] {
   background: var(--cal-outside);
+}
+
+.day[data-outside] .chip {
+  opacity: 0.55;
 }
 
 .day[data-outside] .dayNumber {
@@ -148,6 +152,11 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+}
+
+/* A week has room for a round's whole name. */
+.week .chipText {
+  white-space: normal;
 }
 
 .chipSub {

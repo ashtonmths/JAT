@@ -35,6 +35,7 @@ import { formatDay } from "../utils/format";
 import { joinList } from "../utils/list";
 import { roundLabel } from "../utils/rounds";
 import { useNow, useToday } from "../utils/useToday";
+import text from "../text.module.css";
 import classes from "./InterviewCalendar.module.css";
 import { roundStatus } from "./Interviews";
 import { RecruiterLine } from "./RecruiterLine";
@@ -108,7 +109,12 @@ function RoundDetails({ round, people }: { round: Interview; people: string[] })
         </div>
       )}
       <Group justify="space-between" gap="xs" mt={4} wrap="nowrap">
-        <Anchor component={Link} to={`/applications/${round.application_id}`} size="xs">
+        <Anchor
+          component={Link}
+          to={`/applications/${round.application_id}`}
+          size="xs"
+          className={text.keepWords}
+        >
           {t("calendar.openApplication")}
         </Anchor>
         <RoundActions interview={round} />
@@ -137,7 +143,9 @@ function RoundChip({ round, people, full }: { round: Interview; people: string[]
   };
   const keep = () => window.clearTimeout(timer.current);
   const status = roundStatus(round);
-  const time = formatDay(whenOf(round), "time", i18n.language);
+  // A take-home's deadline reads "Due 18:00".
+  const at = formatDay(whenOf(round), "time", i18n.language);
+  const time = round.starts_at ? at : t("due", { when: at });
   const label = roundLabel(round);
   const style = {
     "--chip-edge": `var(--mantine-color-${status.color}-filled)`,
@@ -154,7 +162,7 @@ function RoundChip({ round, people, full }: { round: Interview; people: string[]
         }
       }}
       position="right-start"
-      width={300}
+      width={340}
       withArrow
       shadow="md"
       keepMounted
@@ -478,7 +486,7 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
             </Title>
           </Group>
           <Group gap="sm" wrap="nowrap">
-            <Button size="xs" variant="default" disabled={isCurrent} onClick={() => setAnchor(today)}>
+            <Button size="xs" variant={isCurrent ? "subtle" : "default"} onClick={() => setAnchor(today)}>
               {t("calendar.today")}
             </Button>
             <SegmentedControl
