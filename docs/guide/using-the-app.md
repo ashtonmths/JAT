@@ -832,7 +832,8 @@ Type in the box at the top (or press <kbd>/</kbd>) and press Enter. It finds app
 companies, agencies, people (including their emails and phone numbers), interview prep and
 debriefs, calls and meetings (their agenda and notes), to-dos, offers, timeline entries, notes,
 documents, files, emails and links. Every word
-must match; case and accents don't matter.
+must match; case and accents don't matter. Under each result is the text around the match; from notes,
+role descriptions and call agendas and notes, it's plain text without their Markdown formatting.
 
 ## Picking dates
 
