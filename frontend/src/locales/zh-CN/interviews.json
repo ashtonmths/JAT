@@ -55,24 +55,28 @@
     }
   },
   "calendar": {
-    "period": "按月或按周显示",
+    "period": "按月或按年显示",
     "month": "月",
-    "week": "周",
+    "year": "年",
     "today": "今天",
     "previousMonth": "上个月",
     "nextMonth": "下个月",
-    "previousWeek": "上一周",
-    "nextWeek": "下一周",
-    "weekRange": "{{from}} – {{to}}",
+    "previousYear": "上一年",
+    "nextYear": "下一年",
     "timeRange": "{{from}}–{{to}}",
-    "roundLabel": "{{label}}，{{company}}，{{when}}",
-    "more_other": "另有 {{count}} 个",
-    "moreLabel_other": "{{day}}还有 {{count}} 轮面试",
+    "dayLabel_other": "{{day}}：{{count}} 轮面试",
+    "dayPanel": "所选日期的面试",
     "with": "面试官：{{people}}",
     "openApplication": "打开申请",
     "noRoundsMonth": "本月没有面试。",
-    "noRoundsWeek": "本周没有面试。",
+    "noRoundsYear": "今年没有面试。",
+    "noRoundsDay": "这一天没有面试。",
     "toBook": "尚待预约",
+    "monthStats": {
+      "held_other": "已完成 {{count}} 轮",
+      "comingUp_other": "即将进行 {{count}} 轮",
+      "companies_other": "{{count}} 家公司"
+    },
     "summary": {
       "label": "{{period}}概览",
       "held_other": "已完成",
@@ -84,9 +88,9 @@
       "moreThanMonth_other": "比 {{month}}多 {{count}} 轮",
       "fewerThanMonth_other": "比 {{month}}少 {{count}} 轮",
       "sameAsMonth": "与 {{month}}轮数相同",
-      "moreThanWeek_other": "比上周多 {{count}} 轮",
-      "fewerThanWeek_other": "比上周少 {{count}} 轮",
-      "sameAsWeek": "与上周轮数相同"
+      "moreThanYear_other": "比 {{year}}多 {{count}} 轮",
+      "fewerThanYear_other": "比 {{year}}少 {{count}} 轮",
+      "sameAsYear": "与 {{year}}轮数相同"
     }
   },
   "card": {

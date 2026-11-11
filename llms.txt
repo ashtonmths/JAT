@@ -46,8 +46,8 @@ What it does:
   with no new time agreed yet can be marked as needing one (who, why, old time kept), with a
   to-do to book it that's ticked off when the new time is set
   (`POST`/`DELETE /api/v1/interviews/{id}/needs-new-time`).
-- An interviews calendar (the Interviews page's first view, or a list): a month or a week of
-  rounds on their days, coloured by status, with details and actions on hover or click, and the
+- An interviews calendar (the Interviews page's first view, or a list): a month or a whole year of
+  dots, coloured by status, with the chosen day's rounds and their actions in a panel beside, and the
   period's figures (held, coming up, cancelled, rescheduled, companies, against the period before).
 - Markdown notes as real files, links, attachments and `.eml` import onto the timeline;
   versioned CVs and cover letters.

@@ -1,190 +1,16 @@
 /*
- * The Interviews calendar. Colours come from Mantine's own variables, so it follows the theme; the few
- * that differ in dark mode are custom properties set again below (the build drops light-dark()).
+ * The Interviews calendar: a month of dots or a year of small months, and the chosen day's rounds
+ * beside. Colours come from Mantine's own variables, so it follows the theme; the few that differ in
+ * dark mode are custom properties set again below (the build drops light-dark()).
  */
 .root {
-  --cal-line: var(--mantine-color-gray-2);
-  --cal-cell: var(--mantine-color-white);
-  --cal-weekend: var(--mantine-color-gray-0);
-  --cal-outside: var(--mantine-color-gray-0);
-  --cal-head: var(--mantine-color-dimmed);
+  --cal-empty: var(--mantine-color-gray-3);
+  --cal-ring: var(--mantine-primary-color-filled);
 }
 
 :where([data-mantine-color-scheme="dark"]) .root {
-  --cal-line: var(--mantine-color-dark-4);
-  --cal-cell: var(--mantine-color-dark-6);
-  --cal-weekend: var(--mantine-color-dark-7);
-  --cal-outside: var(--mantine-color-dark-8);
-}
-
-/* The month or week: seven columns divided by hairlines (the grid's gap shows its background). */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 1px;
-  background: var(--cal-line);
-  border: 1px solid var(--cal-line);
-  border-radius: var(--mantine-radius-md);
-  overflow: hidden;
-}
-
-.weekday {
-  background: var(--cal-cell);
-  padding: 6px 8px;
-  font-size: var(--mantine-font-size-xs);
-  font-weight: 600;
-  color: var(--cal-head);
-}
-
-.day {
-  background: var(--cal-cell);
-  min-height: 96px;
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.week .day {
-  min-height: 300px;
-}
-
-.day[data-weekend] {
-  background: var(--cal-weekend);
-}
-
-.day[data-outside] {
-  background: var(--cal-outside);
-}
-
-.day[data-outside] .chip {
-  opacity: 0.55;
-}
-
-.day[data-outside] .dayNumber {
-  color: var(--mantine-color-dimmed);
-  opacity: 0.6;
-}
-
-.dayNumber {
-  align-self: flex-start;
-  min-width: 26px;
-  height: 26px;
-  padding: 0 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 13px;
-  font-size: var(--mantine-font-size-sm);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Today: a ring in the primary colour, as in every date picker (theme.module.css). */
-.day[data-today] .dayNumber {
-  border: 2px solid var(--mantine-primary-color-filled);
-  font-weight: 700;
-}
-
-:where([data-mantine-color-scheme="dark"]) .day[data-today] .dayNumber {
-  border-color: var(--mantine-color-indigo-4);
-}
-
-/*
- * A round: a tinted ticket with an edge in its status's colour (set per round as --chip-*). Cancelled
- * ones fade and are struck through; a moved one carries a small mark.
- */
-.chip {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  width: 100%;
-  min-width: 0;
-  padding: 3px 6px 3px 7px;
-  border-radius: var(--mantine-radius-sm);
-  border-left: 3px solid var(--chip-edge);
-  background: var(--chip-bg);
-  color: var(--chip-text);
-  font-size: var(--mantine-font-size-xs);
-  line-height: 1.35;
-  text-align: left;
-  transition: filter 120ms ease;
-}
-
-.chip:hover,
-.chip[aria-expanded="true"] {
-  filter: brightness(0.96);
-}
-
-:where([data-mantine-color-scheme="dark"]) .chip:hover,
-:where([data-mantine-color-scheme="dark"]) .chip[aria-expanded="true"] {
-  filter: brightness(1.18);
-}
-
-.chip:focus-visible {
-  outline: 2px solid var(--mantine-primary-color-filled);
-  outline-offset: 1px;
-}
-
-.chip[data-status="cancelled"] {
-  opacity: 0.6;
-}
-
-.chip[data-status="cancelled"] .chipText {
-  text-decoration: line-through;
-}
-
-.chipLine {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-}
-
-.chipTime {
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  flex: none;
-}
-
-.chipText {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-/* A week has room for a round's whole name. */
-.week .chipText {
-  white-space: normal;
-}
-
-.week .chipLine {
-  align-items: baseline;
-}
-
-.chipSub {
-  color: var(--mantine-color-text);
-  opacity: 0.75;
-}
-
-.moved {
-  flex: none;
-  margin-left: auto;
-  color: var(--mantine-color-yellow-light-color);
-}
-
-.more {
-  align-self: flex-start;
-  padding: 0 4px;
-  font-size: var(--mantine-font-size-xs);
-  font-weight: 600;
-  color: var(--mantine-color-dimmed);
-  border-radius: var(--mantine-radius-sm);
-}
-
-.more:hover {
-  color: var(--mantine-color-text);
+  --cal-empty: var(--mantine-color-dark-4);
+  --cal-ring: var(--mantine-color-indigo-4);
 }
 
 /* The figures for the period. */
@@ -209,34 +35,228 @@
   align-self: center;
 }
 
-/* On a phone: the period as an agenda, a date block beside each day's rounds. */
-.agendaDay {
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr);
-  gap: 12px;
-  padding: 10px 0;
-  border-top: 1px solid var(--cal-line);
-}
-
-.agendaDay:first-child {
-  border-top: 0;
-}
-
-.agendaDate {
-  display: flex;
-  flex-direction: column;
+.iconStat {
+  display: inline-flex;
   align-items: center;
-  line-height: 1.1;
+  gap: 4px;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--mantine-color-dimmed);
 }
 
-.agendaDate .dayNumber {
-  font-size: var(--mantine-font-size-lg);
-  font-weight: 650;
-  height: 34px;
-  min-width: 34px;
-  border-radius: 17px;
+.iconStat > span {
+  color: var(--mantine-color-text);
 }
 
-.agendaDay[data-today] .dayNumber {
-  border: 2px solid var(--mantine-primary-color-filled);
+/* The calendar beside the day panel, which stays in view while a year scrolls. */
+.withPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 32px;
+  align-items: start;
+}
+
+.main {
+  min-width: 0;
+}
+
+.panel {
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+}
+
+/* A month of dots. */
+.month {
+  position: relative;
+  isolation: isolate;
+}
+
+.dotGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  row-gap: 4px;
+}
+
+.month[data-large] .dotGrid {
+  row-gap: 8px;
+}
+
+.dotHead {
+  text-align: center;
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  padding-bottom: 6px;
+}
+
+.dotCell {
+  position: relative;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.month[data-large] .dotCell {
+  height: 76px;
+}
+
+/* Today: a ring in the primary colour, as in every date picker. The chosen day: a soft disc. */
+.dotCell[data-today]::before,
+.dotCell[data-chosen]::after {
+  content: "";
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.month[data-large] .dotCell[data-today]::before,
+.month[data-large] .dotCell[data-chosen]::after {
+  width: 52px;
+  height: 52px;
+}
+
+.dotCell[data-today]::before {
+  border: 2px solid var(--cal-ring);
+}
+
+.dotCell[data-chosen]::after {
+  background: var(--mantine-primary-color-light);
+  z-index: -1;
+}
+
+.cellNumber {
+  position: absolute;
+  top: 2px;
+  left: 8px;
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  font-variant-numeric: tabular-nums;
+}
+
+.smallDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cal-empty);
+}
+
+.month[data-large] .smallDot {
+  width: 9px;
+  height: 9px;
+}
+
+.bigDot {
+  --size: 16px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: var(--dot);
+  color: var(--mantine-color-white);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms ease;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.35);
+}
+
+.bigDot[data-size="2"] {
+  --size: 22px;
+}
+
+.bigDot[data-size="3"] {
+  --size: 27px;
+}
+
+.month[data-large] .bigDot {
+  --size: 24px;
+  font-size: 12px;
+}
+
+.month[data-large] .bigDot[data-size="2"] {
+  --size: 32px;
+}
+
+.month[data-large] .bigDot[data-size="3"] {
+  --size: 38px;
+}
+
+/* Only cancelled rounds that day: faded, more so on a light card. */
+.bigDot[data-tone="gray"] {
+  opacity: 0.45;
+}
+
+:where([data-mantine-color-scheme="dark"]) .bigDot[data-tone="gray"] {
+  --dot: var(--mantine-color-gray-6) !important;
+  opacity: 0.7;
+}
+
+.bigDot:hover {
+  transform: scale(1.12);
+}
+
+.bigDot:focus-visible {
+  outline: 2px solid var(--cal-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bigDot {
+    transition: none;
+  }
+}
+
+@media (max-width: 48em) {
+  .withPanel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .panel {
+    position: static;
+    max-height: none;
+  }
+
+  /* A year's twelve months are long on a phone: the chosen day's rounds come first. */
+  .withPanel[data-panel-first] .panel {
+    order: -1;
+  }
+
+  .month[data-large] .dotCell {
+    height: 58px;
+    padding-top: 12px;
+  }
+
+  .cellNumber {
+    top: 0;
+    left: 4px;
+    font-size: 10px;
+  }
+
+  /* Smaller dots in a phone's narrow days, so the day's number stays clear. */
+  .month[data-large] .bigDot {
+    --size: 18px;
+    font-size: 10px;
+  }
+
+  .month[data-large] .bigDot[data-size="2"] {
+    --size: 24px;
+  }
+
+  .month[data-large] .bigDot[data-size="3"] {
+    --size: 28px;
+  }
+
+  .month[data-large] .dotCell[data-today]::before,
+  .month[data-large] .dotCell[data-chosen]::after {
+    width: 40px;
+    height: 40px;
+  }
 }

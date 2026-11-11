@@ -274,12 +274,26 @@ describe("the interviews calendar", () => {
     label: "Round 3 · Final",
     starts_at: null,
   });
+  // Another day this month, done, for choosing a day.
+  const otherDay = dayjs(today)
+    .date(today.endsWith("-15") ? 16 : 15)
+    .format("YYYY-MM-DD");
+  const elsewhere = interview({
+    id: "i7",
+    round: 1,
+    title: "Intro call",
+    label: "Round 1 · Intro call",
+    company_name: "Fabrikam",
+    status: "done",
+    starts_at: dayjs(`${otherDay}T11:00:00`).toISOString(),
+  });
+  const dayName = (day: string) => formatDay(day, "weekdayDayMonth", "en");
 
   function mock() {
     mockApi({
       "/api/v1/workflow": WORKFLOW,
       "/api/v1/interviews": (url: URL) =>
-        url.searchParams.get("upcoming") ? [later] : [held, later, unbooked],
+        url.searchParams.get("upcoming") ? [later] : [held, later, unbooked, elsewhere],
       "/api/v1/interviews/titles": [],
       "/api/v1/contacts": contacts,
       "/api/v1/health": {},
@@ -292,20 +306,19 @@ describe("the interviews calendar", () => {
     expect(
       await screen.findByRole("heading", { name: formatDay(today, "monthNameYear", "en") }),
     ).toBeInTheDocument();
-    const cell = document.querySelector(`[data-day="${today}"]`) as HTMLElement;
-    expect(
-      within(cell).getByRole("button", { name: "Round 1 · Recruiter screen, Contoso, 00:05" }),
-    ).toBeInTheDocument();
-    expect(
-      within(cell).getByRole("button", { name: "Round 2 · Engineering manager chat, Contoso, 23:55" }),
-    ).toBeInTheDocument();
+    // Today's dot says how many; the panel beside starts on today, which has rounds.
+    expect(screen.getByRole("button", { name: `${dayName(today)}: 2 rounds` })).toHaveTextContent("2");
+    const panel = screen.getByRole("region", { name: "Rounds on the chosen day" });
+    expect(within(panel).getByText(dayName(today))).toBeInTheDocument();
+    expect(within(panel).getByText("Round 1 · Recruiter screen")).toBeInTheDocument();
+    expect(within(panel).getByText("Round 2 · Engineering manager chat")).toBeInTheDocument();
 
     const summary = screen.getByRole("region", { name: /^Summary for / });
     const stat = (id: string) => summary.querySelector(`[data-stat="${id}"]`)?.textContent;
-    expect(stat("held")).toBe("1held");
+    expect(stat("held")).toBe("2held");
     expect(stat("comingUp")).toBe("1coming up");
     expect(stat("rescheduled")).toBe("1rescheduled");
-    expect(stat("companies")).toBe("1company");
+    expect(stat("companies")).toBe("2companies");
 
     const toBook = screen
       .getByRole("heading", { name: "Still to book" })
@@ -314,26 +327,50 @@ describe("the interviews calendar", () => {
     expect(screen.queryByRole("heading", { name: "Coming up" })).toBeNull();
   });
 
-  it("shows a round's details when clicked, with its actions and a link to the application", async () => {
+  it("lists the day you choose beside, each round with its actions and a link to the application", async () => {
     mock();
     renderAt("/interviews");
-    fireEvent.click(
-      await screen.findByRole("button", { name: /^Round 2 · Engineering manager chat, Contoso/ }),
+    fireEvent.click(await screen.findByRole("button", { name: `${dayName(otherDay)}: 1 round` }));
+    const panel = screen.getByRole("region", { name: "Rounds on the chosen day" });
+    expect(within(panel).getByText(dayName(otherDay))).toBeInTheDocument();
+    expect(within(panel).getByText("Round 1 · Intro call")).toBeInTheDocument();
+    expect(within(panel).queryByText("Round 2 · Engineering manager chat")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: `${dayName(today)}: 2 rounds` }));
+    const card = within(panel)
+      .getByText("Round 2 · Engineering manager chat")
+      .closest("[data-round]") as HTMLElement;
+    expect(within(card).getByRole("link", { name: "Open the application" })).toHaveAttribute(
+      "href",
+      "/applications/a1",
     );
-    // jsdom has no layout, so Mantine takes the chip for scrolled away and hides the card (hideDetached):
-    // look for its contents hidden too. The browser test checks it shows (e2e/interviews-calendar.spec.ts).
-    const hidden = { hidden: true };
-    const open = await screen.findByRole("link", { name: "Open the application", ...hidden });
-    expect(open).toHaveAttribute("href", "/applications/a1");
-    expect(screen.getByText("With Riley Chen")).toBeInTheDocument();
-    expect(screen.getByText("Video call")).toBeInTheDocument();
-    for (const name of ["Reschedule", "Edit"]) {
-      const button = screen.getByRole("button", {
-        name: `${name} Round 2 · Engineering manager chat`,
-        ...hidden,
-      });
-      expect(button).toBeInTheDocument();
-    }
+    expect(within(card).getByText("With Riley Chen")).toBeInTheDocument();
+    expect(within(card).getByText("Video call")).toBeInTheDocument();
+    expect(
+      within(card).getByRole("button", { name: "Reschedule Round 2 · Engineering manager chat" }),
+    ).toBeInTheDocument();
+    fireEvent.click(within(card).getByRole("button", { name: "Edit Round 2 · Engineering manager chat" }));
+    expect(
+      await screen.findByRole("dialog", { name: "Edit Round 2 · Engineering manager chat" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the whole year as twelve months, with the year's figures, and remembers it", async () => {
+    mock();
+    renderAt("/interviews");
+    fireEvent.click(await screen.findByText("Year"));
+    const year = today.slice(0, 4);
+    expect(await screen.findByRole("heading", { name: year })).toBeInTheDocument();
+    for (const month of ["01", "06", "12"])
+      expect(
+        screen.getByRole("region", { name: formatDay(`${year}-${month}-01`, "monthNameYear", "en") }),
+      ).toBeInTheDocument();
+    const summary = screen.getByRole("region", { name: `Summary for ${year}` });
+    expect(summary.querySelector('[data-stat="held"]')?.textContent).toBe("2held");
+    expect(localStorage.getItem("jat.interviews.period")).toBe(JSON.stringify("year"));
+    fireEvent.click(screen.getByRole("button", { name: "Previous year" }));
+    expect(await screen.findByRole("heading", { name: String(Number(year) - 1) })).toBeInTheDocument();
+    expect(screen.getByText("No rounds this year.")).toBeInTheDocument();
   });
 
   it("switches to the list and remembers it", async () => {

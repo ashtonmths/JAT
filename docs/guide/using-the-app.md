@@ -543,22 +543,27 @@ Every interview round across all applications, as a **Calendar** (what the page 
 **List**: the switch at the top right, and the page remembers your choice in this browser.
 `/interviews?view=list` or `?view=calendar` opens one directly.
 
-**Calendar.** A month, or a week with **Week** (remembered too), Monday first; the arrows go back or
-forward a month or week, and **Today** comes back to now. Each round with a time sits on its day as
-a small ticket with its time and company (a week also shows the round's name): blue coming up,
-orange awaiting its outcome, green done, grey and struck through if cancelled, with a small mark if
-it was rescheduled. A take-home with only a deadline shows as "Due 18:00". A month's day with more
-rounds than fit says "+2 more"; click it for the rest. Hover over a round, or tab to it, to see its
-details: name, time, company and role, the interviewers and the format, with **Open the
-application** and the same Done, Reschedule and edit buttons as the list. Click it to keep the
-details open while you use them; click elsewhere or press Escape to close them.
+**Calendar.** **Month** shows one month of dots, Monday first. **Year** shows the twelve months of
+the year, small, each with how many rounds were held, are coming up, and how many companies (hover
+over a figure for its words). Your choice is remembered. The arrows go back or forward a month or a
+year, and **Today** comes back to now.
 
-Above the days, the period's figures: rounds held, awaiting outcome (if any), coming up, cancelled
-and rescheduled (if any), how many companies they're with (not counting cancelled rounds), and how
-the number of rounds that weren't cancelled compares with the month or week before. Under the
-calendar, **Still to book** lists the open rounds with no time yet and those that need a new time,
-with their buttons. On a phone the calendar is an agenda: only the days with rounds, one under
-another, each round in full.
+A quiet day is a small grey dot. A day with rounds has a bigger dot in its status's colour: orange
+if one is awaiting its outcome, else blue if one is coming up, else green if held, faded grey if they
+were all cancelled. With two or more rounds the dot is bigger and shows the number. Today has a ring.
+A round with only a deadline (a take-home) sits on its deadline's day.
+
+Beside the calendar, a panel lists one day's rounds. Click a dot to choose that day. Until you do,
+it shows today if today has rounds, else the next day that does. Each round has its name, time,
+company and role, the interviewers and the format, with **Open the application** and the same Done,
+Reschedule and edit buttons as the list.
+
+Above the calendar, the month's or year's figures: rounds held, awaiting outcome (if any), coming
+up, cancelled and rescheduled (if any), and how many companies they're with (not counting cancelled
+rounds). Under them, how the number of rounds that weren't cancelled compares with the month or year
+before. Under the calendar, **Still to book** lists the open rounds with no time yet and those that
+need a new time, with their buttons. On a phone the panel goes under the month, or above the year's
+twelve months.
 
 **List.** What's coming up, then everything earlier or cancelled. On each row:
 

@@ -69,32 +69,38 @@ export default {
   },
   // The calendar view (docs/rfc/interviews-calendar.md).
   calendar: {
-    period: "Show a month or a week",
+    period: "Show a month or a year",
     month: "Month",
-    week: "Week",
+    year: "Year",
     today: "Today",
     previousMonth: "Previous month",
     nextMonth: "Next month",
-    previousWeek: "Previous week",
-    nextWeek: "Next week",
-    // The week's heading: "9 Nov – 15 Nov 2026".
-    weekRange: "{{from}} – {{to}}",
+    previousYear: "Previous year",
+    nextYear: "Next year",
     // A round's time with its end: "Thu 12 Nov, 14:00–15:00".
     timeRange: "{{from}}–{{to}}",
-    // Read out by screen readers for a round on the calendar: "Round 2 · Technical, Contoso, 14:00".
-    roundLabel: "{{label}}, {{company}}, {{when}}",
-    // A day with more rounds than fit: "+2 more".
-    more_one: "+{{count}} more",
-    more_other: "+{{count}} more",
-    moreLabel_one: "{{count}} more round on {{day}}",
-    moreLabel_other: "{{count}} more rounds on {{day}}",
+    // A day's dot, read out by screen readers and shown on hover: "Thursday 12 November: 2 rounds".
+    dayLabel_one: "{{day}}: {{count}} round",
+    dayLabel_other: "{{day}}: {{count}} rounds",
+    // The panel beside the calendar with the chosen day's rounds, read out by screen readers.
+    dayPanel: "Rounds on the chosen day",
     with: "With {{people}}",
     openApplication: "Open the application",
     noRoundsMonth: "No rounds this month.",
-    noRoundsWeek: "No rounds this week.",
+    noRoundsYear: "No rounds this year.",
+    noRoundsDay: "No rounds on this day.",
     // Open rounds without a time, or whose time has to move, under the calendar.
     toBook: "Still to book",
-    // The figures for the month or week on screen, each a number then these words.
+    // Each month of the year view: small figures with icons, these words on hover.
+    monthStats: {
+      held_one: "{{count}} held",
+      held_other: "{{count}} held",
+      comingUp_one: "{{count}} coming up",
+      comingUp_other: "{{count}} coming up",
+      companies_one: "{{count}} company",
+      companies_other: "{{count}} companies",
+    },
+    // The figures for the month or year on screen, each a number then these words.
     summary: {
       label: "Summary for {{period}}",
       held_one: "held",
@@ -115,11 +121,12 @@ export default {
       fewerThanMonth_one: "{{count}} fewer round than {{month}}",
       fewerThanMonth_other: "{{count}} fewer rounds than {{month}}",
       sameAsMonth: "As many rounds as {{month}}",
-      moreThanWeek_one: "{{count}} more round than last week",
-      moreThanWeek_other: "{{count}} more rounds than last week",
-      fewerThanWeek_one: "{{count}} fewer round than last week",
-      fewerThanWeek_other: "{{count}} fewer rounds than last week",
-      sameAsWeek: "As many rounds as last week",
+      // The same against the year before: {{year}} is "2025".
+      moreThanYear_one: "{{count}} more round than {{year}}",
+      moreThanYear_other: "{{count}} more rounds than {{year}}",
+      fewerThanYear_one: "{{count}} fewer round than {{year}}",
+      fewerThanYear_other: "{{count}} fewer rounds than {{year}}",
+      sameAsYear: "As many rounds as {{year}}",
     },
   },
   // The Interviews card on an application.
