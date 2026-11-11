@@ -71,7 +71,7 @@ function LinkRow({ link }: { link: LinkItem }) {
   // Counts openings, so a save from an earlier opening doesn't close the editor reopened since.
   const opening = useRef(0);
   const startEditing = () => {
-    setTitle(link.title ?? "");
+    setTitle(sending.current ?? link.title ?? ""); // a title still being saved is the newest one
     open.current = true;
     opening.current += 1;
     setEditing(true);
