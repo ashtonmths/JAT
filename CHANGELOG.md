@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.23.1 (2026-11-11)
 
-- The app's own files are served with fixed types instead of the system's guess, so the page no longer loads blank on a Windows computer that maps .js to text/plain. (#305).
+- The app's own files are served with fixed types instead of the system's guess, so the page no longer loads blank on a Windows computer that maps .js to text/plain (#305, carrying #301).
 
 ## 1.23.0 (2026-11-10)
 

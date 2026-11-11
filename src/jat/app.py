@@ -130,7 +130,8 @@ class AppStaticFiles(StaticFiles):
     ) -> Response:
         response = super().file_response(full_path, stat_result, scope, status_code)
         media_type = static_type(full_path)
-        if media_type and "content-type" in response.headers:  # a 304 has no body and no type
+        # A 304 has no body and no type; a 206 keeps this type for its parts.
+        if media_type and "content-type" in response.headers:
             response.headers["content-type"] = (
                 f"{media_type}; charset=utf-8" if media_type.startswith("text/") else media_type
             )

@@ -82,6 +82,13 @@ def test_static_files_still_answer_not_modified(data_dir, dist):
     assert client.get("/assets/app.js", headers={"if-none-match": etag}).status_code == 304
 
 
+def test_part_of_a_static_file_keeps_its_type(data_dir, dist, monkeypatch):
+    monkeypatch.setattr("starlette.responses.guess_type", lambda *args, **kwargs: ("text/plain", None))
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
+    r = client.get("/assets/app.js", headers={"range": "bytes=0-6"})
+    assert (r.status_code, r.text, r.headers["content-type"]) == (206, "console", "text/javascript; charset=utf-8")
+
+
 def test_api_paths_never_fall_through_to_spa(data_dir, dist):
     client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
     for path in ("/api/v1/nope", "/api", "/api/"):
