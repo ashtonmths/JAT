@@ -29,7 +29,7 @@ Not translated:
 
 ## 1. Set up
 
-You need [uv](https://docs.astral.sh/uv/) (it brings Python 3.12), Node.js 22.12 or newer,
+You need [uv](https://docs.astral.sh/uv/) (it fetches Python 3.12 to 3.14 if you need it), Node.js 22.12 or newer,
 [pnpm](https://pnpm.io/), git, and Chrome (for the checks in steps 7 and 8). It runs on Linux or
 macOS. [Fork the repo](https://github.com/waddington/job-application-tracker/fork) on GitHub, then,
 with your own username in place of `your-username`:

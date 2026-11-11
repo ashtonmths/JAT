@@ -86,7 +86,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "What do developers need to run it?",
-    a: "Python 3.12+ with uv, Node.js 22.12+ with pnpm to build the web UI, and optionally git for automatic snapshots (`jat push` sends them to your private remote). The user guide covers a second computer and every command.",
+    a: "Python 3.12 to 3.14 with uv, Node.js 22.12+ with pnpm to build the web UI, and optionally git for automatic snapshots (`jat push` sends them to your private remote). The user guide covers a second computer and every command.",
   },
   {
     q: "Can I use it for non-software jobs?",

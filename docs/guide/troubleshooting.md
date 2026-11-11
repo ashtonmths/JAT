@@ -14,6 +14,10 @@ packages for it. The repo's `.python-version` asks for Python 3.12 to 3.14, so `
 repo folder picks one of those; if you've set `UV_PYTHON` or passed `--python`, choose 3.12, 3.13
 or 3.14 instead, for example `uv sync --python 3.13`.
 
+The range in `.python-version` is something uv understands; pyenv, asdf and mise expect a single
+version there and complain inside the repo folder. Use uv's commands (`uv sync`, `uv run`), or
+set your tool's version for the folder another way (for example `PYENV_VERSION=3.13`).
+
 ## "No data directory configured"
 
 `jat` doesn't know where your data is. Add `JAT_DATA_DIR=~/your-data-folder` to `.env` in
