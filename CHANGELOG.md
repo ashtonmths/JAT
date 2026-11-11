@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.3 (2026-11-11)
+
+- The data folder gets a .gitattributes that stops git changing line endings: uploads are committed byte for byte and notes and the export keep Unix line endings, including with Git for Windows. Existing data folders get it when the app starts (#308).
+
 ## 1.23.2 (2026-11-11)
 
 - Text files and git's output are read and written as UTF-8, not the system's default: on Windows a non-English character in .env, config.toml, .gitignore, a note or a commit message no longer comes out garbled, and a BOM from Notepad is accepted (#306, carrying #284).
