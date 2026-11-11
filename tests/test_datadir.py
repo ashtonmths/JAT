@@ -59,7 +59,7 @@ def test_refuses_data_dir_inside_code_repo():
 
 def test_commits_scaffold_in_git_repo(git_repo):
     (git_repo / "README.md").write_text("mine\n")  # untracked user file must not be committed
-    report = init_data_dir(git_repo)
+    report = init_data_dir(git_repo, windows_snapshots=True)  # on Windows only with the switch (test_snapshots)
     assert report.is_git_repo and report.committed
     assert "initialise job-application-tracker data layout" in git_log(git_repo)
     tracked = subprocess.run(["git", "-C", str(git_repo), "ls-files"], capture_output=True, text=True).stdout
