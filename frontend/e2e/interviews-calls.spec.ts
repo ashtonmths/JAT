@@ -103,7 +103,7 @@ const openApplication = async (page: Page, id: string) => {
   await expect(page.getByRole("button", { name: /^Add round \d+$/ })).toBeVisible();
 };
 const openInterviews = async (page: Page) => {
-  await page.goto("/interviews");
+  await page.goto("/interviews?view=list");
   await expect(page.getByRole("heading", { name: "Earlier and cancelled" })).toBeVisible();
 };
 const openPerson = async (page: Page, id: string) => {

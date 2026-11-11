@@ -1,58 +1,31 @@
 import {
-  ActionIcon,
   Anchor,
   Badge,
   Card,
   Group,
   Loader,
+  SegmentedControl,
   Stack,
   Table,
   Text,
   Title,
-  Tooltip,
 } from "@mantine/core";
-import { IconCalendarEvent, IconPencil } from "@tabler/icons-react";
+import { useLocalStorage } from "@mantine/hooks";
+import { IconCalendarEvent } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useInterviews, type Interview } from "../api/interviewHooks";
-import { InterviewFormModal } from "../components/InterviewFormModal";
-import { InterviewOutcome } from "../components/OutcomeNotes";
+import { InterviewCalendar } from "../components/InterviewCalendar";
 import { roundStatus } from "../components/Interviews";
-import { RescheduleButton, RescheduledBadge, wasText } from "../components/Reschedule";
+import { RescheduledBadge, wasText } from "../components/Reschedule";
 import { RecruiterLine } from "../components/RecruiterLine";
+import { RoundActions } from "../components/RoundActions";
+import { toBook } from "../utils/calendar";
 import { roundLabel } from "../utils/rounds";
 import text from "../text.module.css";
 import { formatDateTime } from "../utils/time";
-
-/** Mark an open round done (or, once its time has passed, that it didn't happen), move a booked one
- * to another time, or edit it. */
-function RoundActions({ interview }: { interview: Interview }) {
-  const { t } = useTranslation("interviews");
-  const [editing, setEditing] = useState(false);
-  const label = roundLabel(interview);
-  return (
-    <Group gap={4} wrap="nowrap" justify="flex-end">
-      <InterviewOutcome interview={interview} />
-      <RescheduleButton interview={interview} />
-      <Tooltip label={t("edit")}>
-        <ActionIcon variant="subtle" aria-label={t("editNamed", { label })} onClick={() => setEditing(true)}>
-          <IconPencil size={16} />
-        </ActionIcon>
-      </Tooltip>
-      {editing && (
-        <InterviewFormModal
-          opened
-          onClose={() => setEditing(false)}
-          applicationId={interview.application_id}
-          interview={interview}
-          nextRound={interview.round ?? 1}
-        />
-      )}
-    </Group>
-  );
-}
 
 function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty: string }) {
   const { t } = useTranslation("interviews");
@@ -127,29 +100,74 @@ function InterviewTable({ interviews, empty }: { interviews: Interview[]; empty:
   );
 }
 
-/** Every interview round across applications: what's coming up, then everything else, newest first. */
+type View = "calendar" | "list";
+
+/**
+ * Every interview round across applications: a calendar (the first choice), with the rounds still to
+ * book under it; or the list, what's coming up, then everything else, newest first.
+ */
 export function InterviewsPage() {
   const { t } = useTranslation("interviews");
+  const [view, setView] = useLocalStorage<View>({
+    key: "jat.interviews.view",
+    defaultValue: "calendar",
+    getInitialValueInEffect: false, // no flash of the calendar when the list was chosen
+  });
+  // ?view=list or ?view=calendar in the address opens that view (and remembers it), as on Applications.
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("view");
+    if (requested !== "list" && requested !== "calendar") return;
+    setView(requested);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("view");
+    window.history.replaceState(window.history.state, "", url);
+  }, [setView]);
   // "Upcoming" starts at your local midnight, so this morning's interview still counts today.
   const midnight = new Date();
   midnight.setHours(0, 0, 0, 0);
   const upcomingQuery = useInterviews({ upcoming: true, since: midnight.toISOString() });
   const allQuery = useInterviews({});
   const isLoading = upcomingQuery.isLoading || allQuery.isLoading;
+  const all = allQuery.data ?? [];
   const upcoming = upcomingQuery.data;
   const upcomingIds = new Set((upcoming ?? []).map((i) => i.id));
   // Waiting for a new time: on top, since it's yours to sort out. Their old time isn't coming up.
-  const waiting = (allQuery.data ?? []).filter((i) => i.status === "scheduled" && i.needs_new_time_since);
-  const rest = (allQuery.data ?? []).filter((i) => !upcomingIds.has(i.id) && !waiting.includes(i)).reverse();
+  const waiting = all.filter((i) => i.status === "scheduled" && i.needs_new_time_since);
+  const rest = all.filter((i) => !upcomingIds.has(i.id) && !waiting.includes(i)).reverse();
+  // On the calendar: those waiting for a new time and those with no time yet, under it.
+  const unbooked = toBook(all);
 
   return (
     <Stack maw={1100}>
-      <Group gap="sm">
-        <IconCalendarEvent size={26} stroke={1.6} />
-        <Title order={2}>{t("page.title")}</Title>
+      <Group justify="space-between">
+        <Group gap="sm">
+          <IconCalendarEvent size={26} stroke={1.6} />
+          <Title order={2}>{t("page.title")}</Title>
+        </Group>
+        <SegmentedControl
+          value={view}
+          onChange={(v) => setView(v as View)}
+          data={[
+            { value: "calendar", label: t("page.view.calendar") },
+            { value: "list", label: t("page.view.list") },
+          ]}
+          aria-label={t("page.view.label")}
+        />
       </Group>
       {isLoading ? (
         <Loader />
+      ) : view === "calendar" ? (
+        <>
+          <InterviewCalendar rounds={all} />
+          {unbooked.length > 0 && (
+            <Card withBorder>
+              <Title order={4} mb="sm">
+                {t("calendar.toBook")}
+              </Title>
+              <InterviewTable interviews={unbooked} empty="" />
+            </Card>
+          )}
+        </>
       ) : (
         <>
           {waiting.length > 0 && (

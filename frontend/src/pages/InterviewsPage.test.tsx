@@ -1,13 +1,21 @@
 import { createMemoryHistory } from "@tanstack/react-router";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import dayjs from "dayjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../App";
 import { makeRouter } from "../router";
 import { mockApi, row, WORKFLOW } from "../test/mockApi";
+import { formatDay } from "../utils/format";
 
 function renderAt(path: string) {
   render(<App router={makeRouter(createMemoryHistory({ initialEntries: [path] }))} />);
+}
+
+/** The Interviews page as a list (the calendar is the first choice). */
+function renderList() {
+  localStorage.setItem("jat.interviews.view", JSON.stringify("list"));
+  renderAt("/interviews");
 }
 
 const round2 = {
@@ -183,7 +191,7 @@ describe("interviews", () => {
       "/api/v1/interviews": (url: URL) => (url.searchParams.get("upcoming") ? [] : [past]),
       "/api/v1/health": {},
     });
-    renderAt("/interviews");
+    renderList();
     expect(await screen.findByText("Awaiting outcome")).toBeInTheDocument();
     expect(
       screen.getByText("Nothing booked. Add interview rounds from an application's page."),
@@ -197,7 +205,7 @@ describe("interviews", () => {
         url.searchParams.get("upcoming") ? [interview()] : [screenRound, interview()],
       "/api/v1/health": {},
     });
-    renderAt("/interviews");
+    renderList();
     const upcoming = (await screen.findByRole("heading", { name: "Coming up" })).closest(
       ".mantine-Card-root",
     )!;
@@ -223,7 +231,7 @@ describe("interviews", () => {
       "/api/v1/contacts": contacts,
       "/api/v1/health": {},
     });
-    renderAt("/interviews");
+    renderList();
     const upcoming = (await screen.findByRole("heading", { name: "Coming up" })).closest(
       ".mantine-Card-root",
     ) as HTMLElement;
@@ -251,5 +259,88 @@ describe("interviews", () => {
     expect(
       await screen.findByRole("dialog", { name: "Edit Round 2 · Engineering manager chat" }),
     ).toBeInTheDocument();
+  });
+});
+
+describe("the interviews calendar", () => {
+  // Rounds early and late today, so they're on this month's calendar whenever the test runs.
+  const today = dayjs().format("YYYY-MM-DD");
+  const held = interview({ ...screenRound, starts_at: dayjs(`${today}T00:05:00`).toISOString() });
+  const later = interview({ starts_at: dayjs(`${today}T23:55:00`).toISOString(), rescheduled_count: 1 });
+  const unbooked = interview({
+    id: "i9",
+    round: 3,
+    title: "Final",
+    label: "Round 3 · Final",
+    starts_at: null,
+  });
+
+  function mock() {
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/interviews": (url: URL) =>
+        url.searchParams.get("upcoming") ? [later] : [held, later, unbooked],
+      "/api/v1/interviews/titles": [],
+      "/api/v1/contacts": contacts,
+      "/api/v1/health": {},
+    });
+  }
+
+  it("is the first view: rounds on today, the month's figures, and those still to book under it", async () => {
+    mock();
+    renderAt("/interviews");
+    expect(
+      await screen.findByRole("heading", { name: formatDay(today, "monthNameYear", "en") }),
+    ).toBeInTheDocument();
+    const cell = document.querySelector(`[data-day="${today}"]`) as HTMLElement;
+    expect(
+      within(cell).getByRole("button", { name: "Round 1 · Recruiter screen, Contoso, 00:05" }),
+    ).toBeInTheDocument();
+    expect(
+      within(cell).getByRole("button", { name: "Round 2 · Engineering manager chat, Contoso, 23:55" }),
+    ).toBeInTheDocument();
+
+    const summary = screen.getByRole("region", { name: /^Summary for / });
+    const stat = (id: string) => summary.querySelector(`[data-stat="${id}"]`)?.textContent;
+    expect(stat("held")).toBe("1held");
+    expect(stat("comingUp")).toBe("1coming up");
+    expect(stat("rescheduled")).toBe("1rescheduled");
+    expect(stat("companies")).toBe("1company");
+
+    const toBook = screen
+      .getByRole("heading", { name: "Still to book" })
+      .closest(".mantine-Card-root") as HTMLElement;
+    expect(within(toBook).getByText("Round 3 · Final")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Coming up" })).toBeNull();
+  });
+
+  it("shows a round's details when clicked, with its actions and a link to the application", async () => {
+    mock();
+    renderAt("/interviews");
+    fireEvent.click(
+      await screen.findByRole("button", { name: /^Round 2 · Engineering manager chat, Contoso/ }),
+    );
+    // jsdom has no layout, so Mantine takes the chip for scrolled away and hides the card (hideDetached):
+    // look for its contents hidden too. The browser test checks it shows (e2e/interviews-calendar.spec.ts).
+    const hidden = { hidden: true };
+    const open = await screen.findByRole("link", { name: "Open the application", ...hidden });
+    expect(open).toHaveAttribute("href", "/applications/a1");
+    expect(screen.getByText("With Riley Chen")).toBeInTheDocument();
+    expect(screen.getByText("Video call")).toBeInTheDocument();
+    for (const name of ["Reschedule", "Edit"]) {
+      const button = screen.getByRole("button", {
+        name: `${name} Round 2 · Engineering manager chat`,
+        ...hidden,
+      });
+      expect(button).toBeInTheDocument();
+    }
+  });
+
+  it("switches to the list and remembers it", async () => {
+    mock();
+    renderAt("/interviews");
+    fireEvent.click(await screen.findByText("List"));
+    expect(await screen.findByRole("heading", { name: "Coming up" })).toBeInTheDocument();
+    expect(localStorage.getItem("jat.interviews.view")).toBe(JSON.stringify("list"));
   });
 });

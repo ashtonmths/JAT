@@ -60,6 +60,67 @@ export default {
     round: "Round",
     application: "Application",
     status: "Status",
+    // The switch at the top of the page: the tables, or the calendar (the first choice).
+    view: {
+      label: "View",
+      list: "List",
+      calendar: "Calendar",
+    },
+  },
+  // The calendar view (docs/rfc/interviews-calendar.md).
+  calendar: {
+    period: "Show a month or a week",
+    month: "Month",
+    week: "Week",
+    today: "Today",
+    previousMonth: "Previous month",
+    nextMonth: "Next month",
+    previousWeek: "Previous week",
+    nextWeek: "Next week",
+    // The week's heading: "9 Nov – 15 Nov 2026".
+    weekRange: "{{from}} – {{to}}",
+    // A round's time with its end: "Thu 12 Nov, 14:00–15:00".
+    timeRange: "{{from}}–{{to}}",
+    // Read out by screen readers for a round on the calendar: "Round 2 · Technical, Contoso, 14:00".
+    roundLabel: "{{label}}, {{company}}, {{when}}",
+    // A day with more rounds than fit: "+2 more".
+    more_one: "+{{count}} more",
+    more_other: "+{{count}} more",
+    moreLabel_one: "{{count}} more round on {{day}}",
+    moreLabel_other: "{{count}} more rounds on {{day}}",
+    with: "With {{people}}",
+    openApplication: "Open the application",
+    noRoundsMonth: "No rounds this month.",
+    noRoundsWeek: "No rounds this week.",
+    // Open rounds without a time, or whose time has to move, under the calendar.
+    toBook: "Still to book",
+    // The figures for the month or week on screen, each a number then these words.
+    summary: {
+      label: "Summary for {{period}}",
+      held_one: "held",
+      held_other: "held",
+      comingUp_one: "coming up",
+      comingUp_other: "coming up",
+      awaiting_one: "awaiting outcome",
+      awaiting_other: "awaiting outcome",
+      cancelled_one: "cancelled",
+      cancelled_other: "cancelled",
+      rescheduled_one: "rescheduled",
+      rescheduled_other: "rescheduled",
+      companies_one: "company",
+      companies_other: "companies",
+      // Rounds held or booked (not cancelled) against the period before: {{month}} is its name, "October".
+      moreThanMonth_one: "{{count}} more round than {{month}}",
+      moreThanMonth_other: "{{count}} more rounds than {{month}}",
+      fewerThanMonth_one: "{{count}} fewer round than {{month}}",
+      fewerThanMonth_other: "{{count}} fewer rounds than {{month}}",
+      sameAsMonth: "As many rounds as {{month}}",
+      moreThanWeek_one: "{{count}} more round than last week",
+      moreThanWeek_other: "{{count}} more rounds than last week",
+      fewerThanWeek_one: "{{count}} fewer round than last week",
+      fewerThanWeek_other: "{{count}} fewer rounds than last week",
+      sameAsWeek: "As many rounds as last week",
+    },
   },
   // The Interviews card on an application.
   card: {

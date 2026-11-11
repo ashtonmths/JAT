@@ -1,0 +1,229 @@
+/*
+ * The Interviews calendar. Colours come from Mantine's own variables, so it follows the theme; the few
+ * that differ in dark mode are custom properties set again below (the build drops light-dark()).
+ */
+.root {
+  --cal-line: var(--mantine-color-gray-2);
+  --cal-cell: var(--mantine-color-white);
+  --cal-weekend: var(--mantine-color-gray-0);
+  --cal-outside: var(--mantine-color-gray-0);
+  --cal-head: var(--mantine-color-dimmed);
+}
+
+:where([data-mantine-color-scheme="dark"]) .root {
+  --cal-line: var(--mantine-color-dark-4);
+  --cal-cell: var(--mantine-color-dark-6);
+  --cal-weekend: var(--mantine-color-dark-7);
+  --cal-outside: var(--mantine-color-dark-8);
+}
+
+/* The month or week: seven columns divided by hairlines (the grid's gap shows its background). */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--cal-line);
+  border: 1px solid var(--cal-line);
+  border-radius: var(--mantine-radius-md);
+  overflow: hidden;
+}
+
+.weekday {
+  background: var(--cal-cell);
+  padding: 6px 8px;
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 600;
+  color: var(--cal-head);
+}
+
+.day {
+  background: var(--cal-cell);
+  min-height: 112px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.week .day {
+  min-height: 300px;
+}
+
+.day[data-weekend] {
+  background: var(--cal-weekend);
+}
+
+.day[data-outside] {
+  background: var(--cal-outside);
+}
+
+.day[data-outside] .dayNumber {
+  color: var(--mantine-color-dimmed);
+  opacity: 0.6;
+}
+
+.dayNumber {
+  align-self: flex-start;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  font-size: var(--mantine-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Today: a ring in the primary colour, as in every date picker (theme.module.css). */
+.day[data-today] .dayNumber {
+  border: 2px solid var(--mantine-primary-color-filled);
+  font-weight: 700;
+}
+
+:where([data-mantine-color-scheme="dark"]) .day[data-today] .dayNumber {
+  border-color: var(--mantine-color-indigo-4);
+}
+
+/*
+ * A round: a tinted ticket with an edge in its status's colour (set per round as --chip-*). Cancelled
+ * ones fade and are struck through; a moved one carries a small mark.
+ */
+.chip {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  min-width: 0;
+  padding: 3px 6px 3px 7px;
+  border-radius: var(--mantine-radius-sm);
+  border-left: 3px solid var(--chip-edge);
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  font-size: var(--mantine-font-size-xs);
+  line-height: 1.35;
+  text-align: left;
+  transition: filter 120ms ease;
+}
+
+.chip:hover,
+.chip[aria-expanded="true"] {
+  filter: brightness(0.96);
+}
+
+:where([data-mantine-color-scheme="dark"]) .chip:hover,
+:where([data-mantine-color-scheme="dark"]) .chip[aria-expanded="true"] {
+  filter: brightness(1.18);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 1px;
+}
+
+.chip[data-status="cancelled"] {
+  opacity: 0.6;
+}
+
+.chip[data-status="cancelled"] .chipText {
+  text-decoration: line-through;
+}
+
+.chipLine {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.chipTime {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+
+.chipText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.chipSub {
+  color: var(--mantine-color-text);
+  opacity: 0.75;
+}
+
+.moved {
+  flex: none;
+  margin-left: auto;
+  color: var(--mantine-color-yellow-light-color);
+}
+
+.more {
+  align-self: flex-start;
+  padding: 0 4px;
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 600;
+  color: var(--mantine-color-dimmed);
+  border-radius: var(--mantine-radius-sm);
+}
+
+.more:hover {
+  color: var(--mantine-color-text);
+}
+
+/* The figures for the period. */
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.statNumber {
+  font-size: 1.5rem;
+  font-weight: 650;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.statDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot);
+  align-self: center;
+}
+
+/* On a phone: the period as an agenda, a date block beside each day's rounds. */
+.agendaDay {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--cal-line);
+}
+
+.agendaDay:first-child {
+  border-top: 0;
+}
+
+.agendaDate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.agendaDate .dayNumber {
+  font-size: var(--mantine-font-size-lg);
+  font-weight: 650;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 17px;
+}
+
+.agendaDay[data-today] .dayNumber {
+  border: 2px solid var(--mantine-primary-color-filled);
+}

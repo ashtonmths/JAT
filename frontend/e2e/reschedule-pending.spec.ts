@@ -206,7 +206,7 @@ test("the board, the quick view and the Interviews page show it too", async ({ p
   const marked = await request.post(`${API}/interviews/${round.id}/needs-new-time`, { data: { by: "me" } });
   expect(marked.ok()).toBe(true);
 
-  await page.goto("/interviews");
+  await page.goto("/interviews?view=list");
   const waiting = page.getByRole("heading", { name: "Needs a new time" }).locator("xpath=..");
   await expect(waiting.getByText(label)).toBeVisible();
   await expect(waiting.getByText(`Was ${stamp(round.starts_at)}. You needed the change.`)).toBeVisible();

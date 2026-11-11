@@ -33,7 +33,9 @@ export function roundDay(r: CalendarRound): string | null {
 
 /** Open rounds with no time yet, or whose time has to move: listed beside the calendar. */
 export function toBook<T extends CalendarRound>(rounds: readonly T[]): T[] {
-  return rounds.filter((r) => r.status === "scheduled" && (waitingForTime(r) || !(r.starts_at ?? r.deadline_at)));
+  return rounds.filter(
+    (r) => r.status === "scheduled" && (waitingForTime(r) || !(r.starts_at ?? r.deadline_at)),
+  );
 }
 
 /** Rounds by local day, each day's in time order. */
@@ -92,8 +94,21 @@ export interface Summary {
 }
 
 /** What the rounds on the calendar between `first` and `last` (whole days, inclusive) add up to. */
-export function summarise(rounds: readonly CalendarRound[], first: string, last: string, now: number): Summary {
-  const s: Summary = { held: 0, comingUp: 0, awaiting: 0, cancelled: 0, rescheduled: 0, companies: 0, total: 0 };
+export function summarise(
+  rounds: readonly CalendarRound[],
+  first: string,
+  last: string,
+  now: number,
+): Summary {
+  const s: Summary = {
+    held: 0,
+    comingUp: 0,
+    awaiting: 0,
+    cancelled: 0,
+    rescheduled: 0,
+    companies: 0,
+    total: 0,
+  };
   const companies = new Set<string>();
   for (const r of rounds) {
     const day = roundDay(r);

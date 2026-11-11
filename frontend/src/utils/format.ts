@@ -37,6 +37,14 @@ interface Patterns {
   dayMonthTime: string;
   /** 09:07 */
   time: string;
+  /** March 2026 (a calendar's heading) */
+  monthNameYear: string;
+  /** March (a calendar's previous month) */
+  monthName: string;
+  /** Thu (a calendar's column) */
+  shortWeekday: string;
+  /** 5 (a calendar's day) */
+  dayOfMonth: string;
   /** 5 Mar 2026, in a date picker's box (also how a typed date is read) */
   pickerDate: string;
   /** 5 Mar 2026 09:07, in a date-and-time picker's box */
@@ -58,6 +66,10 @@ const PATTERNS = new Map<string, Patterns>([
       monthYear: "MMM YYYY",
       dayMonthTime: "D MMM, HH:mm",
       time: "HH:mm",
+      monthNameYear: "MMMM YYYY",
+      monthName: "MMMM",
+      shortWeekday: "ddd",
+      dayOfMonth: "D",
       pickerDate: "D MMM YYYY",
       pickerDateTime: "D MMM YYYY HH:mm",
     },
@@ -76,6 +88,10 @@ const PATTERNS = new Map<string, Patterns>([
       monthYear: "YYYY[年]M[月]",
       dayMonthTime: "M[月]D[日] HH:mm",
       time: "HH:mm",
+      monthNameYear: "YYYY[年]M[月]",
+      monthName: "M[月]",
+      shortWeekday: "ddd",
+      dayOfMonth: "D",
       pickerDate: "YYYY[年]M[月]D[日]",
       pickerDateTime: "YYYY[年]M[月]D[日] HH:mm",
     },
