@@ -16,15 +16,20 @@ import {
   VisuallyHidden,
 } from "@mantine/core";
 import { IconConfetti } from "@tabler/icons-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { useMemo, useState, type ReactNode } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { InterviewOutcome } from "../components/OutcomeNotes";
-import { CallRescheduleButton } from "../components/CallReschedule";
-import { NeedsNewTimeBadge, RescheduleButton, wasText } from "../components/Reschedule";
+import { CallRescheduleButton, CallRescheduleDialog } from "../components/CallReschedule";
+import {
+  NeedsNewTimeBadge,
+  RescheduleButton,
+  RoundRescheduleDialog,
+  wasText,
+} from "../components/Reschedule";
 import { ReplyHabit } from "../components/ReplyHabit";
 import { PersonName } from "../components/GhostMark";
 import { RecruiterLine } from "../components/RecruiterLine";
@@ -39,6 +44,7 @@ import {
 } from "../api/hooks";
 import { useTimeline } from "../api/timelineHooks";
 import { type Interview } from "../api/interviewHooks";
+import { type Meeting } from "../api/meetingHooks";
 import { headline, type Offer } from "../api/offerHooks";
 import { useTodos, type Todo } from "../api/todoHooks";
 import {
@@ -76,6 +82,9 @@ export function useNextActions() {
     queryFn: async () =>
       unwrap(await api.GET("/api/v1/next-actions", { params: { query: { today, since } } })),
     refetchInterval: 5 * 60_000, // keeps "coming up" honest if the tab stays open
+    // At midnight the key's date changes: keep yesterday's page up while the new day loads, so
+    // nothing being typed into it is unmounted by a loader.
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -476,6 +485,43 @@ function Bucket({
   );
 }
 
+/** The round or call whose Reschedule (or Set new time) dialog is open, as it was when opened. */
+type Rescheduling =
+  | { kind: "round"; record: Interview; waiting: boolean }
+  | { kind: "call"; record: Meeting; waiting: boolean };
+
+/**
+ * Today's one Reschedule dialog, outside the sections and keyed by the round's or call's id, with the
+ * latest copy of it from whichever section it is in now (or as opened, if it has left them all).
+ */
+function RescheduleDialog({
+  target,
+  data,
+  onClose,
+}: {
+  target: Rescheduling;
+  data: ReturnType<typeof useNextActions>["data"];
+  onClose: () => void;
+}) {
+  const { id } = target.record;
+  if (target.kind === "round") {
+    const rounds = [
+      ...(data?.upcoming ?? []),
+      ...(data?.awaiting_outcome ?? []),
+      ...(data?.needs_new_time ?? []),
+    ];
+    const round = rounds.find((i) => i.id === id) ?? target.record;
+    return <RoundRescheduleDialog key={id} interview={round} waiting={target.waiting} onClose={onClose} />;
+  }
+  const calls = [
+    ...(data?.meetings ?? []),
+    ...(data?.meetings_to_close ?? []),
+    ...(data?.meetings_needs_new_time ?? []),
+  ];
+  const call = calls.find((m) => m.id === id) ?? target.record;
+  return <CallRescheduleDialog key={id} meeting={call} waiting={target.waiting} onClose={onClose} />;
+}
+
 /** A stage's colour, one shade darker, for its dot in the pipeline's legend. */
 const shade = (color: string) => `${color}.6`;
 
@@ -488,6 +534,9 @@ export function TodayPage() {
   const { t } = useTranslation("today");
   const { data, isLoading } = useNextActions();
   const [openId, setOpenId] = useState<string | null>(null);
+  // The Reschedule dialog belongs to the round or call, not its row: when its time passes, a refresh
+  // moves the row from Coming up to Waiting for an outcome, which would take a dialog inside it along.
+  const [rescheduling, setRescheduling] = useState<Rescheduling | null>(null);
   const { data: rows, isPending: appsPending, isError: appsFailed } = useApplications({});
   const { data: workflow } = useWorkflow();
   const { data: contacts, isPending: contactsPending, isError: contactsFailed } = useContacts();
@@ -533,6 +582,18 @@ export function TodayPage() {
   const isToday = (at?: string | null) => !!at && dayjs(at).format("YYYY-MM-DD") === today;
   // A call's buttons fade until you point at the row, like a round's (Row does that for rounds);
   // the pill stays outside the fade, as it's information, not a button.
+  const rescheduleRound = (i: Interview) => (
+    <RescheduleButton
+      interview={i}
+      onOpen={() => setRescheduling({ kind: "round", record: i, waiting: !!i.needs_new_time_since })}
+    />
+  );
+  const rescheduleCall = (m: Meeting) => (
+    <CallRescheduleButton
+      meeting={m}
+      onOpen={() => setRescheduling({ kind: "call", record: m, waiting: !!m.needs_new_time_since })}
+    />
+  );
   const callActions = (at: string | null | undefined, buttons: ReactNode) => (
     <>
       {isToday(at) && <TodayPill />}
@@ -545,13 +606,7 @@ export function TodayPage() {
     ...meetings.map((m) => ({
       key: m.id,
       at: m.starts_at,
-      node: (
-        <MeetingLine
-          key={m.id}
-          meeting={m}
-          action={callActions(m.starts_at, <CallRescheduleButton meeting={m} />)}
-        />
-      ),
+      node: <MeetingLine key={m.id} meeting={m} action={callActions(m.starts_at, rescheduleCall(m))} />,
     })),
     ...(data?.upcoming ?? []).map((i) => ({
       key: i.id,
@@ -560,7 +615,7 @@ export function TodayPage() {
         <InterviewLine
           key={i.id}
           interview={i}
-          action={i.starts_at ? <RescheduleButton interview={i} /> : undefined}
+          action={i.starts_at ? rescheduleRound(i) : undefined}
           lead={isToday(i.starts_at ?? i.deadline_at) && <TodayPill />}
         />
       ),
@@ -781,7 +836,7 @@ export function TodayPage() {
                       action={
                         <>
                           <InterviewOutcome interview={i} passed />
-                          <RescheduleButton interview={i} />
+                          {rescheduleRound(i)}
                         </>
                       }
                     />
@@ -793,7 +848,7 @@ export function TodayPage() {
                       action={
                         <Group gap={6} className={classes.actions}>
                           <MeetingOutcome meeting={m} />
-                          <CallRescheduleButton meeting={m} />
+                          {rescheduleCall(m)}
                         </Group>
                       }
                     />
@@ -809,7 +864,7 @@ export function TodayPage() {
                       key={i.id}
                       interview={i}
                       todo={rebook.get(i.id)}
-                      action={<RescheduleButton interview={i} />}
+                      action={rescheduleRound(i)}
                     />
                   ))}
                   {callsNeedNewTime.map((m) => (
@@ -819,7 +874,7 @@ export function TodayPage() {
                       todo={rebook.get(m.id)}
                       action={
                         <Group gap={6} className={classes.actions}>
-                          <CallRescheduleButton meeting={m} />
+                          {rescheduleCall(m)}
                         </Group>
                       }
                     />
@@ -964,6 +1019,9 @@ export function TodayPage() {
         </>
       )}
       <ApplicationDrawer id={openId} onClose={() => setOpenId(null)} />
+      {rescheduling && (
+        <RescheduleDialog target={rescheduling} data={data} onClose={() => setRescheduling(null)} />
+      )}
     </Stack>
   );
 }
