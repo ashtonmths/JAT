@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
   activeRounds,
@@ -47,6 +47,17 @@ describe("which day a round is on", () => {
     const days = byDay([late, other, early, round({ id: "x", starts_at: null })]);
     expect([...days.keys()]).toEqual(["2026-11-12", "2026-11-13"]);
     expect(days.get("2026-11-12")!.map((r) => r.id)).toEqual(["early", "late"]);
+  });
+
+  it("orders by the moment, not the text: zones compare right, a date-only deadline comes first", () => {
+    // 09:00 UTC is earlier than 11:00 at +01:00 (10:00 UTC), though "…T11" sorts after "…T09" as text,
+    // and 08:30 at -02:00 (10:30 UTC) is later than both, though it sorts first as text.
+    const plusOne = round({ id: "plusOne", starts_at: "2026-11-12T11:00:00+01:00" });
+    const utc = round({ id: "utc", starts_at: "2026-11-12T09:00:00Z" });
+    const minusTwo = round({ id: "minusTwo", starts_at: "2026-11-12T08:30:00-02:00" });
+    const dateOnly = round({ id: "dateOnly", starts_at: null, deadline_at: "2026-11-12" });
+    const order = (rs: CalendarRound[]) => [...byDay(rs).values()].flat().map((r) => r.id);
+    expect(order([minusTwo, plusOne, dateOnly, utc])).toEqual(["dateOnly", "utc", "plusOne", "minusTwo"]);
   });
 });
 
@@ -107,9 +118,99 @@ describe("a period's summary", () => {
     expect(activeRounds(s)).toBe(4);
   });
 
+  it("puts each status in one bucket, and leaves unknown ones and those waiting for a time out", () => {
+    const one = (overrides: Partial<CalendarRound>) =>
+      summarise([round({ starts_at: "2026-11-20T10:00:00", ...overrides })], "2026-11-01", "2026-11-30", NOW);
+    const zero = { held: 0, comingUp: 0, awaiting: 0, cancelled: 0, rescheduled: 0, companies: 0, total: 0 };
+    expect(one({})).toEqual({ ...zero, comingUp: 1, companies: 1, total: 1 });
+    expect(one({ starts_at: "2026-11-10T10:00:00" })).toEqual({
+      ...zero,
+      awaiting: 1,
+      companies: 1,
+      total: 1,
+    });
+    expect(one({ status: "done" })).toEqual({ ...zero, held: 1, companies: 1, total: 1 });
+    expect(one({ status: "cancelled" })).toEqual({ ...zero, cancelled: 1, total: 1 });
+    expect(one({ needs_new_time_since: "2026-11-09T10:00:00" })).toEqual(zero);
+    // Not a status the API has today (InterviewIn: scheduled, done, cancelled); a newer server's
+    // stays off the calendar rather than landing in a guessed bucket.
+    expect(one({ status: "no_show" })).toEqual(zero);
+    expect(byDay([round({ status: "no_show" })]).size).toBe(0);
+  });
+
+  it("counts a moved round as rescheduled unless it was then cancelled", () => {
+    const moved = { rescheduled_count: 1, starts_at: "2026-11-20T10:00:00" };
+    const s = summarise(
+      [round({ ...moved, id: "a" }), round({ ...moved, id: "b", status: "cancelled" })],
+      "2026-11-01",
+      "2026-11-30",
+      NOW,
+    );
+    expect(s.rescheduled).toBe(1);
+    expect(s.cancelled).toBe(1);
+  });
+
   it("is all zeros for an empty period", () => {
     const s = summarise(rounds, "2026-08-01", "2026-08-31", NOW);
     expect(s.total).toBe(0);
     expect(s.companies).toBe(0);
+  });
+});
+
+describe("in Europe/London, across the clock changes", () => {
+  const zone = process.env.TZ;
+  beforeAll(() => {
+    process.env.TZ = "Europe/London";
+  });
+  afterAll(() => {
+    if (zone === undefined) delete process.env.TZ;
+    else process.env.TZ = zone;
+  });
+
+  it("runs in that zone", () => {
+    expect(new Date("2026-07-01T12:00:00Z").getHours()).toBe(13);
+    expect(new Date("2026-12-01T12:00:00Z").getHours()).toBe(12);
+  });
+
+  it("the weeks with 29 Mar and 25 Oct 2026 are seven whole days, Monday to Sunday", () => {
+    expect(gridDays("2026-03-29", "week")).toEqual([
+      "2026-03-23",
+      "2026-03-24",
+      "2026-03-25",
+      "2026-03-26",
+      "2026-03-27",
+      "2026-03-28",
+      "2026-03-29",
+    ]);
+    expect(gridDays("2026-10-25", "week")).toEqual([
+      "2026-10-19",
+      "2026-10-20",
+      "2026-10-21",
+      "2026-10-22",
+      "2026-10-23",
+      "2026-10-24",
+      "2026-10-25",
+    ]);
+    expect(shiftPeriod("2026-03-26", "week", 1)).toBe("2026-04-02");
+    expect(shiftPeriod("2026-10-29", "week", -1)).toBe("2026-10-22");
+    // The months either side of a change still start on their Monday and are whole weeks.
+    expect(gridDays("2026-03-10", "month")[0]).toBe("2026-02-23");
+    expect(gridDays("2026-10-10", "month")).toHaveLength(35);
+  });
+
+  it("puts a round late at night on the local day, in summer and winter time", () => {
+    const at = (iso: string) => roundDay(round({ starts_at: iso }));
+    expect(at("2026-03-29T00:30:00Z")).toBe("2026-03-29"); // 00:30 GMT, before the change
+    expect(at("2026-03-29T23:30:00Z")).toBe("2026-03-30"); // 00:30 BST the next day
+    expect(at("2026-10-24T23:30:00Z")).toBe("2026-10-25"); // 00:30 BST on the day it ends
+    expect(at("2026-10-25T23:30:00Z")).toBe("2026-10-25"); // 23:30 GMT
+    const week = periodRange("2026-03-29", "week");
+    const s = summarise(
+      [round({ starts_at: "2026-03-29T22:30:00Z" }), round({ starts_at: "2026-03-29T23:30:00Z" })],
+      week.first,
+      week.last,
+      NOW,
+    );
+    expect(s.total).toBe(1);
   });
 });
