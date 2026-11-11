@@ -61,7 +61,8 @@
     "offlineHint": "用 `uv run jat serve` 启动",
     "connected": "已连接",
     "detailsBackups": "v{{version}} · schema {{schema}} · 已开启备份",
-    "detailsNoGit": "v{{version}} · schema {{schema}} · 数据目录不是 git 仓库"
+    "detailsNoGit": "v{{version}} · schema {{schema}} · 数据目录不是 git 仓库",
+    "detailsWindowsNoSnapshots": "v{{version}} · schema {{schema}} · Windows 上已关闭快照"
   },
   "version": {
     "short": "v{{version}}",

@@ -1,7 +1,7 @@
 # RFC: running the tracker on Windows
 
-**Status:** in progress (2026-11-05). Built: `windows-time-zones`. The tracker runs on Linux
-and macOS only until `windows-starts` lands.
+**Status:** in progress (2026-11-05). Built: `windows-time-zones`, `windows-starts`. The
+tracker starts on Windows, but is supported on Linux and macOS only until `windows-support`.
 **Roadmap:** `windows-starts`, `utf8-everywhere`, `windows-time-zones`, `static-file-types`,
 `data-gitattributes`, `locked-file-retry` and `windows-testing`, then `windows-support`; later,
 `windows-snapshots`. `windows-starts` is planned first, but the small fixes don't depend on it
@@ -20,7 +20,8 @@ ModuleNotFoundError: No module named 'fcntl'
 ```
 
 `fcntl` is part of Python on Linux and macOS but not on Windows. The tracker uses it for one
-thing: a file lock in `src/jat/snapshot/git.py` around its **snapshots**.
+thing: a file lock around its **snapshots** (in `src/jat/snapshot/git.py`; since `windows-starts`, in
+`src/jat/platform.py`).
 
 A snapshot is the tracker's automatic git commit. When the data folder is a git repo, about a
 minute after your last change the app writes the database out to `export/` as readable JSON
