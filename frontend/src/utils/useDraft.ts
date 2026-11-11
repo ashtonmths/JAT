@@ -42,9 +42,12 @@ export function useDraft<T extends object>(saved: T, id: string) {
     /**
      * After a save: for each field sent that the person hasn't changed since, take the value the
      * server stored (it may tidy it), until the refetched record catches up and the edit drops.
+     * Call the `saved` from the render that sent the save: it ignores the reply once the draft
+     * has moved to another record.
      */
     saved(sent: Partial<T>, reply: T) {
       setState((s) => {
+        if (s.id !== id) return s; // a reply for the record shown before; this draft is another's
         const next = { ...s.edits };
         for (const key of Object.keys(sent) as (keyof T)[]) {
           if (key in next && same(next[key], sent[key])) next[key] = reply[key];

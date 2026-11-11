@@ -73,6 +73,16 @@ describe("useDraft", () => {
     expect(result.current.values.tags).toEqual(["a", "b"]);
   });
 
+  it("a reply for the record shown before doesn't touch the next one's edits", () => {
+    const { result, rerender } = setup();
+    act(() => result.current.set("tags", ["same"]));
+    const { changes: sent, saved } = result.current;
+    rerender({ saved: start, id: "a2" });
+    act(() => result.current.set("tags", ["same"]));
+    act(() => saved(sent, { applied_on: null, tags: ["tidied"] }));
+    expect(result.current.values.tags).toEqual(["same"]);
+  });
+
   it("starts again for another record", () => {
     const { result, rerender } = setup();
     act(() => result.current.set("tags", ["mine"]));
