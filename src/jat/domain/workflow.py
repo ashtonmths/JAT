@@ -236,6 +236,6 @@ def load_workflow(data_dir: Path) -> Workflow:
         return DEFAULT_WORKFLOW
     try:
         config = tomllib.loads(path.read_text(encoding="utf-8-sig"))
-    except tomllib.TOMLDecodeError as exc:
+    except (UnicodeDecodeError, tomllib.TOMLDecodeError) as exc:  # e.g. saved as cp1252, not UTF-8
         raise WorkflowError(f"{path}: {exc}") from exc
     return workflow_from_config(config.get("workflow"))

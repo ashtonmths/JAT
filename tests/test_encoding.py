@@ -14,7 +14,7 @@ import pytest
 from jat.config import Settings
 from jat.datadir import _ensure_gitignore, init_data_dir
 from jat.db import head_revision
-from jat.domain.workflow import load_workflow
+from jat.domain.workflow import WorkflowError, load_workflow
 from jat.openapi import main as openapi_main
 from jat.snapshot.export import _read_export
 from jat.snapshot.git import _git, debounce_from_config
@@ -263,11 +263,12 @@ def test_git_output_that_isnt_utf8_doesnt_crash(git_repo: Path):
     assert _git(git_repo, "show", "HEAD:a.txt").stdout == "caf� in Latin-1\n"
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="Windows' own default (cp1252) already does this")
+@pytest.mark.skipif(sys.platform != "linux", reason="Windows' own default (cp1252) already does this; macOS is UTF-8")
 def test_these_pass_without_a_utf8_default():
     """On Linux the default encoding is UTF-8, so a missing encoding= only fails on Windows. Run this file's other
     tests again with an ASCII default (no UTF-8 mode, no locale coercion), so a missing encoding fails here too."""
     env = {**os.environ, "LC_ALL": "C", "LANG": "C", "PYTHONUTF8": "0", "PYTHONCOERCECLOCALE": "0"}
+    env["PYTHONIOENCODING"] = "utf-8"  # only its output, so a failure prints; files still use ASCII
     probe = subprocess.run(
         [sys.executable, "-c", "import locale; print(locale.getpreferredencoding(False))"],
         env=env,
@@ -286,3 +287,10 @@ def test_these_pass_without_a_utf8_default():
         errors="replace",
     )
     assert run.returncode == 0, run.stdout[-3000:]
+
+
+def test_a_config_toml_that_isnt_utf8_gives_a_clear_error(tmp_path: Path):
+    (tmp_path / "config.toml").write_bytes(b"[snapshot]\ndebounce_seconds = 5\n# caf\xe9\n")  # saved as cp1252
+    assert debounce_from_config(tmp_path) == 60  # snapshots fall back to the default, no crash
+    with pytest.raises(WorkflowError, match="config.toml"):
+        load_workflow(tmp_path)

@@ -76,7 +76,7 @@ def debounce_from_config(data_dir: Path) -> float:
     try:
         raw = tomllib.loads(path.read_text(encoding="utf-8-sig"))
         value = raw.get("snapshot", {}).get("debounce_seconds", DEFAULT_DEBOUNCE)
-    except (OSError, tomllib.TOMLDecodeError):
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError):  # e.g. saved as cp1252, not UTF-8
         return DEFAULT_DEBOUNCE
     if isinstance(value, bool) or not isinstance(value, int | float) or value < 0:
         return DEFAULT_DEBOUNCE
