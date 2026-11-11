@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.23.2 (2026-11-11)
 
-- Text files and git's output are read and written as UTF-8, not the system's default: on Windows a non-English character in .env, config.toml, .gitignore, a note or a commit message no longer comes out garbled, and a BOM from Notepad is accepted (#306).
+- Text files and git's output are read and written as UTF-8, not the system's default: on Windows a non-English character in .env, config.toml, .gitignore, a note or a commit message no longer comes out garbled, and a BOM from Notepad is accepted (#306, carrying #284).
 
 ## 1.23.1 (2026-11-11)
 
