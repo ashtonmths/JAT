@@ -41,7 +41,7 @@ import type { Schemas } from "../api/client";
 import { i18n } from "../i18n";
 import { beforeApplied } from "../utils/applied";
 import { callLabel } from "../utils/calls";
-import { formatDay } from "../utils/format";
+import { formatDay, withCurrency } from "../utils/format";
 import { joinList } from "../utils/list";
 import { stageName } from "../utils/stageName";
 import { useFavourite, useGhosted } from "./GhostMark";
@@ -92,11 +92,13 @@ function usePersonSuffix(contactId: string | null | undefined): string {
   return (favourite ? " ★" : "") + (ghosted ? t("ghosted") : "");
 }
 
-/** "£600 a day", "£80k–£95k": what it pays, if you know. */
+/** "£600 a day", "£80k–£95k", "$120k": what it pays, if you know, in the role's own currency
+ *  (pounds when it has none). */
 export function pay(role: RoleSummary): string | null {
-  const k = (n: number) => (n >= 1000 ? `£${Math.round(n / 1000)}k` : `£${n}`);
+  const cur = role.currency || "GBP";
+  const k = (n: number) => withCurrency(n >= 1000 ? `${Math.round(n / 1000)}k` : `${n}`, cur);
   if (role.day_rate) {
-    const rate = `£${role.day_rate}`;
+    const rate = withCurrency(`${role.day_rate}`, cur);
     const ir35 =
       role.ir35 && Object.hasOwn(DAY_RATE_IR35, role.ir35)
         ? DAY_RATE_IR35[role.ir35 as keyof typeof DAY_RATE_IR35]
@@ -180,7 +182,8 @@ export function RoleFormModal({
       salary_max: contract ? null : num(v.salaryMax),
       day_rate: contract ? num(v.dayRate) : null,
       ir35: contract ? v.ir35 : null,
-      currency: "GBP",
+      // No currency field yet (fix-role-form-forces-gbp): keep an edited role's own.
+      currency: role?.currency ?? "GBP",
       contact_id: v.contactId,
       meeting_id: v.contactId ? v.meetingId : null,
       description: blank(v.description),

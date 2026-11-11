@@ -37,6 +37,14 @@ interface Patterns {
   dayMonthTime: string;
   /** 09:07 */
   time: string;
+  /** March 2026 (a calendar's heading) */
+  monthNameYear: string;
+  /** March (a calendar's previous month) */
+  monthName: string;
+  /** Thu (a calendar's column) */
+  shortWeekday: string;
+  /** 5 (a calendar's day) */
+  dayOfMonth: string;
   /** 5 Mar 2026, in a date picker's box (also how a typed date is read) */
   pickerDate: string;
   /** 5 Mar 2026 09:07, in a date-and-time picker's box */
@@ -58,6 +66,10 @@ const PATTERNS = new Map<string, Patterns>([
       monthYear: "MMM YYYY",
       dayMonthTime: "D MMM, HH:mm",
       time: "HH:mm",
+      monthNameYear: "MMMM YYYY",
+      monthName: "MMMM",
+      shortWeekday: "ddd",
+      dayOfMonth: "D",
       pickerDate: "D MMM YYYY",
       pickerDateTime: "D MMM YYYY HH:mm",
     },
@@ -76,6 +88,10 @@ const PATTERNS = new Map<string, Patterns>([
       monthYear: "YYYY[年]M[月]",
       dayMonthTime: "M[月]D[日] HH:mm",
       time: "HH:mm",
+      monthNameYear: "YYYY[年]M[月]",
+      monthName: "M[月]",
+      shortWeekday: "ddd",
+      dayOfMonth: "D",
       pickerDate: "YYYY[年]M[月]D[日]",
       pickerDateTime: "YYYY[年]M[月]D[日] HH:mm",
     },
@@ -141,11 +157,15 @@ const SYMBOLS = new Map([
   ["EUR", "€"],
 ]);
 
+/** An amount already written out ("85,000", "80k") with its currency: "£85,000", "80k CHF". */
+export function withCurrency(amount: string, currency: string | null | undefined): string {
+  const symbol = SYMBOLS.get((currency ?? "").toUpperCase());
+  return symbol ? `${symbol}${amount}` : `${amount}${currency ? ` ${currency}` : ""}`;
+}
+
 /** "£85,000", "85,000 CHF", or "—" with no amount (api/offerHooks.ts money()). The currency is
  *  the offer's own; only the digits follow the language. */
 export function formatMoney(n: number | null | undefined, currency: string | null | undefined, lang: string) {
   if (n == null) return "—";
-  const symbol = SYMBOLS.get((currency ?? "").toUpperCase());
-  const digits = formatNumber(n, lang);
-  return symbol ? `${symbol}${digits}` : `${digits}${currency ? ` ${currency}` : ""}`;
+  return withCurrency(formatNumber(n, lang), currency);
 }

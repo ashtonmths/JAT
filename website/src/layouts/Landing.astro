@@ -5,7 +5,7 @@ import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
 import "@fontsource/instrument-serif/400-italic.css";
 import "../styles/landing.css";
-import { DESCRIPTION, FAQ, REPO, SITE_URL, TITLE } from "../data";
+import { DESCRIPTION, FAQ, plain, REPO, SITE_URL, TITLE } from "../data";
 
 const base = import.meta.env.BASE_URL;
 const og = new URL("og.png", SITE_URL).href;
@@ -32,7 +32,8 @@ const jsonLd = {
       applicationCategory: "BusinessApplication",
       applicationSubCategory: "Job search tracker",
       operatingSystem: "Linux, macOS",
-      softwareVersion: "1.23.9",
+      inLanguage: ["en", "zh-CN"],
+      softwareVersion: "1.23.16",
       license: "https://www.apache.org/licenses/LICENSE-2.0",
       isAccessibleForFree: true,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
@@ -45,6 +46,7 @@ const jsonLd = {
         "Offer comparison",
         "Sankey diagram of the job search funnel",
         "Markdown notes, files and exported emails",
+        "Interface in English and Simplified Chinese (简体中文)",
         "Private: no AI, no cloud, no account, no tracking; data stays on your computer",
       ],
     },
@@ -59,7 +61,7 @@ const jsonLd = {
       mainEntity: FAQ.map(({ q, a }) => ({
         "@type": "Question",
         name: q,
-        acceptedAnswer: { "@type": "Answer", text: a.replaceAll("`", "") },
+        acceptedAnswer: { "@type": "Answer", text: plain(a) },
       })),
     },
   ],

@@ -186,7 +186,7 @@ def seed(path: Path, lang: str = "en") -> None:
                         ContactDetail(
                             contact_id=recruiter.id,
                             kind="email",
-                            label="work",
+                            label=c["detail_labels"][0],
                             value=f"{handle}@{domain}.example.com",
                         )
                     )
@@ -194,7 +194,7 @@ def seed(path: Path, lang: str = "en") -> None:
                         ContactDetail(
                             contact_id=recruiter.id,
                             kind="phone",
-                            label="mobile",
+                            label=c["detail_labels"][1],
                             value=c["phone"].format(n=len(recruiters)),
                             position=1,
                         )
