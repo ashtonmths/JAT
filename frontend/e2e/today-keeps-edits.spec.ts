@@ -27,11 +27,16 @@ const NEW_DAY = "2027-01-21";
  * Holds the page's first request to `path` for the new day, so a test can look at the page while it
  * loads; release() lets it through and waits for the reply.
  */
-const holdNewDay = async (page: Page, path: string) => {
+const holdNewDay = async (page: Page, path: string, query: Record<string, string> = {}) => {
   let release: () => void = () => {};
+  // Only that request: a person's page also lists open to-dos for its calls card.
+  const wanted = (url: URL) =>
+    url.pathname === `${API}/${path}` &&
+    url.searchParams.get("today") === NEW_DAY &&
+    Object.entries(query).every(([k, v]) => url.searchParams.get(k) === v);
   const arrived = new Promise<void>((resolve) => {
     void page.route(
-      (url) => url.pathname === `${API}/${path}` && url.searchParams.get("today") === NEW_DAY,
+      wanted,
       async (route) => {
         resolve();
         await new Promise<void>((go) => (release = go));
@@ -43,9 +48,7 @@ const holdNewDay = async (page: Page, path: string) => {
   return {
     arrived,
     release: async () => {
-      const loaded = page.waitForResponse(
-        (r) => r.url().includes(`${API}/${path}`) && r.url().includes(`today=${NEW_DAY}`) && r.ok(),
-      );
+      const loaded = page.waitForResponse((r) => wanted(new URL(r.url())) && r.ok());
       release();
       await loaded;
     },
@@ -86,7 +89,7 @@ test.describe("at midnight", () => {
       entity_type: "contact",
       entity_id: person.id,
     });
-    const held = await holdNewDay(page, "todos");
+    const held = await holdNewDay(page, "todos", { entity_id: person.id, status: "all" });
     await page.goto(`/people/${person.id}`);
     await page.getByRole("button", { name: "Edit to-do: Send the late note" }).click();
     const editor = page.getByLabel("What needs doing");
