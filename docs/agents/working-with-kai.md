@@ -83,6 +83,11 @@ where things run. Quotes are Kai's words.
     pytest, pnpm or `checks.sh` on it; reviewer agents stay read-only and don't run it (the auto-mode check blocks
     them anyway: gotchas.md, *Other*). This gate comes before the full checks in the bullet above, and again for
     every new commit they push.
+  - **Comment or carry, finding by finding** (Kai, 2026-11-11: "figure out what should be left as a comment for the
+    author to change/fix … vs what we carry and do ourselves. if you decuide we need to leave a comment on authors PR
+    then you must report back to me and wait for my approval - in fact i will post the comment myself"). Sort the
+    review's findings into "ask the author" and "we fix when carrying". If anything is for the author, report it with
+    a draft comment and stop until Kai has posted it; otherwise carry the PR with every fix.
   - **Finishing a contributor's PR ourselves: carry it (pattern B)** (Kai, 2026-11-10: "yes I prefer B, and its
     cleaner for changelog and version bump etc"). Main issues still go back to the contributor in Kai's comment;
     when Kai says to fix them ourselves, fetch their branch (`git fetch <fork url> <branch>`) into our own
