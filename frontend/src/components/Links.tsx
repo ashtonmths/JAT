@@ -68,16 +68,21 @@ function LinkRow({ link }: { link: LinkItem }) {
   // The title being saved, and a newer one asked for meanwhile: one save at a time, never the same one twice.
   const sending = useRef<string | null>(null);
   const queued = useRef<string | null>(null);
+  // Counts openings, so a save from an earlier opening doesn't close the editor reopened since.
+  const opening = useRef(0);
   const startEditing = () => {
     setTitle(link.title ?? "");
     open.current = true;
+    opening.current += 1;
     setEditing(true);
   };
   const close = () => {
     open.current = false;
+    queued.current = null; // cancelling drops a title waiting to be saved
     setEditing(false);
   };
   const send = (value: string) => {
+    const from = opening.current;
     sending.current = value;
     update.mutate(
       { id: link.id, body: { title: value } },
@@ -85,11 +90,13 @@ function LinkRow({ link }: { link: LinkItem }) {
         onSuccess: () => {
           const next = queued.current;
           sending.current = queued.current = null;
+          if (!open.current) return; // cancelled meanwhile: nothing more to send or close
           if (next !== null && next !== value) send(next);
-          else close();
+          else if (next !== null || from === opening.current) close();
         },
         onError: () => {
-          sending.current = queued.current = null; // the box stays open to try again
+          // The box keeps the text to try again; a title queued behind the failed save is dropped.
+          sending.current = queued.current = null;
         },
       },
     );

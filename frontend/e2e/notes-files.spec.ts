@@ -646,6 +646,39 @@ test.describe("links", () => {
     expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Slowest");
   });
 
+  test("the X while a save is going drops a newer title, and a reopened rename stays open", async ({
+    page,
+    request,
+  }) => {
+    const { at, links } = await prepare(page, request, "Cancel Queue Link Co");
+    let release = () => {};
+    const held = new Promise<void>((done) => (release = done));
+    const patches: string[] = [];
+    await page.route(`**${API}/links/*`, async (route) => {
+      if (route.request().method() === "PATCH") {
+        patches.push(JSON.parse(route.request().postData() ?? "{}").title);
+        await held;
+      }
+      await route.continue();
+    });
+    const box = links.getByRole("textbox", { name: "Link title", exact: true });
+    await links.getByRole("button", { name: "Rename Old" }).click();
+    await box.fill("A");
+    await page.keyboard.press("Enter");
+    await expect.poll(() => patches.length).toBe(1);
+    await box.fill("B");
+    await page.keyboard.press("Enter"); // waits behind A
+    await links.getByRole("button", { name: "Cancel" }).click();
+    await expect(box).toBeHidden();
+    await links.getByRole("button", { name: "Rename Old" }).click();
+    await box.fill("Still typing");
+    release();
+    await expect.poll(async () => (await linksOn(request, "company", at.id))[0]?.title).toBe("A");
+    await pause(300);
+    expect(patches).toEqual(["A"]);
+    await expect(box).toHaveValue("Still typing");
+  });
+
   test("the tick saves a rename once, with no error", async ({ page, request }) => {
     const { at, links } = await prepare(page, request, "Tick Link Co");
     const writes = watchWrites(page);
