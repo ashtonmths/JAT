@@ -1,7 +1,8 @@
 # RFC: running the tracker on Windows
 
-**Status:** in progress (2026-11-05). Built: `windows-time-zones`. The tracker runs on Linux
-and macOS only until `windows-starts` lands.
+**Status:** in progress (2026-11-05). Built: `windows-time-zones`, `windows-starts`, `static-file-types`,
+`utf8-everywhere`. The tracker starts on Windows, but is supported on Linux and macOS only until
+`windows-support`.
 **Roadmap:** `windows-starts`, `utf8-everywhere`, `windows-time-zones`, `static-file-types`,
 `data-gitattributes`, `locked-file-retry` and `windows-testing`, then `windows-support`; later,
 `windows-snapshots`. `windows-starts` is planned first, but the small fixes don't depend on it
@@ -20,7 +21,8 @@ ModuleNotFoundError: No module named 'fcntl'
 ```
 
 `fcntl` is part of Python on Linux and macOS but not on Windows. The tracker uses it for one
-thing: a file lock in `src/jat/snapshot/git.py` around its **snapshots**.
+thing: a file lock around its **snapshots** (in `src/jat/snapshot/git.py`; since `windows-starts`, in
+`src/jat/platform.py`).
 
 A snapshot is the tracker's automatic git commit. When the data folder is a git repo, about a
 minute after your last change the app writes the database out to `export/` as readable JSON
@@ -86,7 +88,7 @@ It's for testing only, on a test data folder, not your real one:
 - Until step 2 adds a Windows lock, there's no lock between processes. While `jat serve` is
   running, don't run `jat snapshot`, `jat push` or `jat archive`: two processes writing
   `export/` at once can commit or zip a mix of two moments.
-- Until `utf8-everywhere` and `data-gitattributes` land, git can change line endings in
+- Until `data-gitattributes` lands, git can change line endings in
   committed notes and files.
 
 When the switch is set, the app says at startup that Windows snapshots are experimental.
@@ -108,7 +110,8 @@ Each is its own small pull request:
 - **`locked-file-retry`:** when another program has a note, an uploaded file or an export
   file open, retry briefly, then show a clear error instead of a server error. `jat restore
   --force` says to stop `jat serve` first instead of printing a traceback.
-- **`windows-testing`:** the Windows check written down as a short checklist in the guide:
+- **`windows-testing`:** the Windows check (run in the Windows VM, see Decisions) written down as a
+  short checklist in the guide:
   install, `jat init`, `jat serve`, the pages load, add an application, a note and a file,
   Download a backup, Insights' weekly activity, and `uv run pytest`.
 
@@ -147,7 +150,8 @@ elsewhere, and the switch goes.
   350 KB, maintained by the Python core team.
 - **Tested by hand on Windows.** Kai: "i can test on windows". Each Windows change gets a
   Windows run before it merges. A GitHub Actions Windows job is added only if Kai asks later
-  (the project has no test CI).
+  (the project has no test CI). Since 2026-11-11 the run happens in a Windows 11 virtual
+  machine on the maintainer's computer, which the maintaining agent drives over SSH.
 - **Versions:** decided per pull request by the rules in `CLAUDE.md` when it's built. Making
   the tracker start on a new platform is likely a minor release; the small fixes are likely
   patches.

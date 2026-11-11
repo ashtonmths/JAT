@@ -4254,6 +4254,7 @@
                   "backup_shut_down",
                   "backup_snapshot_failed",
                   "backup_snapshots_off",
+                  "backup_snapshots_off_windows",
                   "cv_file_applications_invalid",
                   "cv_file_document_required",
                   "cv_file_missing",
@@ -12878,7 +12879,7 @@
   },
   "info": {
     "title": "Job Application Tracker",
-    "version": "1.22.1"
+    "version": "1.23.2"
   },
   "openapi": "3.1.0",
   "paths": {

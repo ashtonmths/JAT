@@ -5,6 +5,19 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.2 (2026-11-11)
+
+- Text files and git's output are read and written as UTF-8, not the system's default: on Windows a non-English character in .env, config.toml, .gitignore, a note or a commit message no longer comes out garbled, and a BOM from Notepad is accepted (#306, carrying #284).
+
+## 1.23.1 (2026-11-11)
+
+- The app's own files are served with fixed types instead of the system's guess, so the page no longer loads blank on a Windows computer that maps .js to text/plain (#305, carrying #301).
+
+## 1.23.0 (2026-11-10)
+
+- The tracker starts on Windows, as the first step to supporting it: what can't work there yet (Unix file locking, git snapshots, `jat init`'s commit) is off on Windows, and the sidebar's connection tooltip says snapshots are off. `JAT_WINDOWS_SNAPSHOTS=1` turns snapshots back on there, for testing on a test data folder. Windows isn't supported yet. (#300, carrying #283).
+- `/api/v1/health` says whether snapshots are on and whether it's running on Windows. (#300).
+
 ## 1.22.1 (2026-11-10)
 
 - The IANA time-zone database (`tzdata`) now comes with the tracker on every platform, so Insights' weekly activity will work on Windows once the tracker runs there. (#298).

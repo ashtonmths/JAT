@@ -51,6 +51,7 @@ ErrorCode = Literal[
     "backup_shut_down",
     "backup_snapshot_failed",
     "backup_snapshots_off",
+    "backup_snapshots_off_windows",
     "cv_file_applications_invalid",
     "cv_file_document_required",
     "cv_file_missing",

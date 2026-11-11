@@ -14,6 +14,8 @@ import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .platform import snapshots_allowed
+
 CODE_ROOT = Path(__file__).resolve().parents[2]
 DB_NAME = "tracker.sqlite3"
 LAYOUT_DIRS = ("export", "notes", "files")
@@ -76,7 +78,12 @@ def check_outside_code_repo(path: Path, code_root: Path = CODE_ROOT) -> None:
 def is_git_repo(path: Path) -> bool:
     try:
         out = subprocess.run(
-            ["git", "-C", str(path), "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True
+            ["git", "-C", str(path), "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",  # a path git prints in another encoding mustn't crash this
+            check=True,
         ).stdout.strip()
     except (subprocess.CalledProcessError, OSError):
         return False
@@ -85,18 +92,22 @@ def is_git_repo(path: Path) -> bool:
 
 def _ensure_gitignore(path: Path) -> list[str]:
     gitignore = path / ".gitignore"
-    existing = gitignore.read_text().splitlines() if gitignore.exists() else []
+    existing = gitignore.read_text(encoding="utf-8-sig").splitlines() if gitignore.exists() else []
     missing = [e for e in GITIGNORE_ENTRIES if e not in existing]
     if missing:
         block = ["", "# Job Application Tracker: working files (rebuilt from export/ by `jat restore`)", *missing]
         text = "\n".join(existing).rstrip("\n")
-        gitignore.write_text((text + "\n" if text else "") + "\n".join(block).lstrip("\n") + "\n")
+        gitignore.write_text(
+            (text + "\n" if text else "") + "\n".join(block).lstrip("\n") + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
     return missing
 
 
 def _ensure_gitattributes(path: Path) -> list[str]:
     gitattributes = path / ".gitattributes"
-    existing = gitattributes.read_text(encoding="utf-8").splitlines() if gitattributes.exists() else []
+    existing = gitattributes.read_text(encoding="utf-8-sig").splitlines() if gitattributes.exists() else []
     missing = [e for e in GITATTRIBUTES_ENTRIES if e not in existing]
     if missing:
         block = [
@@ -105,12 +116,23 @@ def _ensure_gitattributes(path: Path) -> list[str]:
             *missing,
         ]
         text = "\n".join(existing).rstrip("\n")
-        gitattributes.write_text((text + "\n" if text else "") + "\n".join(block).lstrip("\n") + "\n", encoding="utf-8")
+        gitattributes.write_text(
+            (text + "\n" if text else "") + "\n".join(block).lstrip("\n") + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
     return missing
 
 
-def init_data_dir(path: Path, commit: bool = True, code_root: Path = CODE_ROOT) -> InitReport:
-    """Create the layout. Idempotent: existing files are never overwritten."""
+def init_data_dir(
+    path: Path,
+    commit: bool = True,
+    code_root: Path = CODE_ROOT,
+    *,
+    windows_snapshots: bool = False,
+) -> InitReport:
+    """Create the layout. Idempotent: existing files are never overwritten. On Windows the
+    layout isn't committed unless `windows_snapshots` (JAT_WINDOWS_SNAPSHOTS=1) is set."""
     check_outside_code_repo(path, code_root)
     report = InitReport(path=path)
     if not path.exists():
@@ -126,12 +148,13 @@ def init_data_dir(path: Path, commit: bool = True, code_root: Path = CODE_ROOT) 
             keep.touch()
     config = path / "config.toml"
     if not config.exists():
-        config.write_text(DEFAULT_CONFIG)
+        config.write_text(DEFAULT_CONFIG, encoding="utf-8", newline="\n")
         report.created.append("config.toml")
     report.gitignore_added = _ensure_gitignore(path)
     report.gitattributes_added = _ensure_gitattributes(path)
     report.is_git_repo = is_git_repo(path)
-    if commit and report.is_git_repo and (report.created or report.gitignore_added or report.gitattributes_added):
+    changed = report.created or report.gitignore_added or report.gitattributes_added
+    if commit and snapshots_allowed(windows_snapshots) and report.is_git_repo and changed:
         report.committed = _commit_scaffold(path)
     return report
 
