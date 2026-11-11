@@ -324,11 +324,20 @@ export function TodosCard({
   shownElsewhere?: string[]; // open ones the page shows with what they're for (a waiting call's)
 }) {
   const { t } = useTranslation("todos");
-  const { data: todos } = useTodos({ entity_type: entityType, entity_id: entityId, status: "all" });
+  const { data: todos, isPlaceholderData } = useTodos({
+    entity_type: entityType,
+    entity_id: entityId,
+    status: "all",
+  });
   const open = (todos ?? []).filter((x) => !x.done_at && !shownElsewhere.includes(x.id));
   const done = (todos ?? []).filter((x) => x.done_at).slice(0, 3);
   return (
-    <Card withBorder>
+    // Dimmed, but still there and usable, while it shows yesterday's list as a new day loads.
+    <Card
+      withBorder
+      aria-busy={isPlaceholderData || undefined}
+      style={{ opacity: isPlaceholderData ? 0.6 : undefined, transition: "opacity 150ms" }}
+    >
       <Stack gap="sm">
         <Group gap="xs">
           <Title order={4}>{t("title")}</Title>
