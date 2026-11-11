@@ -165,8 +165,9 @@ Each of these cost time once. Add a line when something new does.
 - **Windows VM** (`ssh winvm`; first used on #300, 2026-11-11): the real check, and where contributor code runs.
   - Reset it to its clean snapshot before running a contributor's code, check out the branch in its `jat` clone
     (`git fetch origin <branch>; git checkout -B <branch> FETCH_HEAD`), and shut it down when done.
-  - Plain `uv sync` since #312 (`.python-version` asks for 3.12 to 3.14). Before it, uv picked 3.15, where `httptools` and `uuid-utils` have no Windows wheels and the
-    build needs Visual C++ or Rust (bug `fix-python-315-install`); a branch older than #312 still needs `--python 3.13`.
+  - Plain `uv sync` since #312 (`.python-version` asks for 3.12 to 3.14). Before it, uv picked 3.15, where
+    `httptools` and `uuid-utils` have no Windows wheels and the build needs Visual C++ or Rust (bug
+    `fix-python-315-install`); a branch older than #312 still needs `--python 3.13`.
   - The remote shell is PowerShell 5.1: `;` not `&&`, and native tools' stderr comes back as red `NativeCommandError`
     noise (filter it). `--lf` needs pytest's cache, so don't pass `-p no:cacheprovider` with it.
   - `jat serve` blocks: start it with `Start-Process -PassThru -RedirectStandardOutput …` (set
