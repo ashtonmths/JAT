@@ -188,14 +188,27 @@
   --size: 38px;
 }
 
-/* Only cancelled rounds that day: faded, more so on a light card. */
+/* Only cancelled rounds that day: a soft grey, with a dark number on it so the count still reads. */
 .bigDot[data-tone="gray"] {
-  opacity: 0.45;
+  background: var(--mantine-color-gray-3);
+  color: var(--mantine-color-gray-8);
+  text-shadow: none;
 }
 
 :where([data-mantine-color-scheme="dark"]) .bigDot[data-tone="gray"] {
-  --dot: var(--mantine-color-gray-6) !important;
-  opacity: 0.7;
+  background: var(--mantine-color-dark-3);
+  color: var(--mantine-color-dark-9);
+}
+
+/* The panel's heading takes focus when a day is picked: a ring only for the keyboard. */
+.panelHeading:focus {
+  outline: none;
+}
+
+.panelHeading:focus-visible {
+  outline: 2px solid var(--cal-ring);
+  outline-offset: 2px;
+  border-radius: var(--mantine-radius-sm);
 }
 
 .bigDot:hover {
@@ -222,11 +235,6 @@
   .panel {
     position: static;
     max-height: none;
-  }
-
-  /* A year's twelve months are long on a phone: the chosen day's rounds come first. */
-  .withPanel[data-panel-first] .panel {
-    order: -1;
   }
 
   .month[data-large] .dotCell {

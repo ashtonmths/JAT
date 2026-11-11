@@ -64,7 +64,8 @@
     "previousYear": "上一年",
     "nextYear": "下一年",
     "timeRange": "{{from}}–{{to}}",
-    "dayLabel_other": "{{day}}：{{count}} 轮面试",
+    "dayLabel": "{{day}}：{{counts}}",
+    "dayLabelToday": "{{day}}（今天）：{{counts}}",
     "dayPanel": "所选日期的面试",
     "with": "面试官：{{people}}",
     "openApplication": "打开申请",
@@ -72,9 +73,12 @@
     "noRoundsYear": "今年没有面试。",
     "noRoundsDay": "这一天没有面试。",
     "toBook": "尚待预约",
-    "monthStats": {
+    "counts": {
+      "rounds_other": "{{count}} 轮面试",
       "held_other": "已完成 {{count}} 轮",
+      "awaiting_other": "等待结果 {{count}} 轮",
       "comingUp_other": "即将进行 {{count}} 轮",
+      "cancelled_other": "已取消 {{count}} 轮",
       "companies_other": "{{count}} 家公司"
     },
     "summary": {

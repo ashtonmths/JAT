@@ -79,9 +79,10 @@ export default {
     nextYear: "Next year",
     // A round's time with its end: "Thu 12 Nov, 14:00–15:00".
     timeRange: "{{from}}–{{to}}",
-    // A day's dot, read out by screen readers and shown on hover: "Thursday 12 November: 2 rounds".
-    dayLabel_one: "{{day}}: {{count}} round",
-    dayLabel_other: "{{day}}: {{count}} rounds",
+    // A day's dot, read out by screen readers and shown on hover, saying what its colour shows:
+    // "Thursday 12 November: 2 rounds, 1 awaiting outcome, 1 coming up". {{counts}} is a list of counts.
+    dayLabel: "{{day}}: {{counts}}",
+    dayLabelToday: "{{day}}, today: {{counts}}",
     // The panel beside the calendar with the chosen day's rounds, read out by screen readers.
     dayPanel: "Rounds on the chosen day",
     with: "With {{people}}",
@@ -91,12 +92,18 @@ export default {
     noRoundsDay: "No rounds on this day.",
     // Open rounds without a time, or whose time has to move, under the calendar.
     toBook: "Still to book",
-    // Each month of the year view: small figures with icons, these words on hover.
-    monthStats: {
+    // Counts in a day's label, and the words for a month's small figures in the year view (on hover).
+    counts: {
+      rounds_one: "{{count}} round",
+      rounds_other: "{{count}} rounds",
       held_one: "{{count}} held",
       held_other: "{{count}} held",
+      awaiting_one: "{{count}} awaiting outcome",
+      awaiting_other: "{{count}} awaiting outcome",
       comingUp_one: "{{count}} coming up",
       comingUp_other: "{{count}} coming up",
+      cancelled_one: "{{count}} cancelled",
+      cancelled_other: "{{count}} cancelled",
       companies_one: "{{count}} company",
       companies_other: "{{count}} companies",
     },

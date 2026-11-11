@@ -108,11 +108,13 @@ type View = "calendar" | "list";
  */
 export function InterviewsPage() {
   const { t } = useTranslation("interviews");
-  const [view, setView] = useLocalStorage<View>({
+  const [stored, setView] = useLocalStorage<View>({
     key: "jat.interviews.view",
     defaultValue: "calendar",
     getInitialValueInEffect: false, // no flash of the calendar when the list was chosen
   });
+  // Anything else stored there (edited by hand, or from another version) opens the calendar.
+  const view: View = stored === "list" ? "list" : "calendar";
   // ?view=list or ?view=calendar in the address opens that view (and remembers it), as on Applications.
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("view");

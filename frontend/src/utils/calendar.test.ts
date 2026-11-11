@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
@@ -62,30 +63,27 @@ describe("which day a round is on", () => {
 });
 
 describe("periods", () => {
-  it("a week runs Monday to Sunday, also from a Sunday", () => {
-    expect(periodRange("2026-11-11", "week")).toEqual({ first: "2026-11-09", last: "2026-11-15" });
-    expect(periodRange("2026-11-15", "week")).toEqual({ first: "2026-11-09", last: "2026-11-15" });
-  });
-
-  it("a month is its first to its last day", () => {
+  it("a month is its first to its last day, a year 1 January to 31 December", () => {
     expect(periodRange("2026-02-14", "month")).toEqual({ first: "2026-02-01", last: "2026-02-28" });
+    expect(periodRange("2028-02-29", "month")).toEqual({ first: "2028-02-01", last: "2028-02-29" });
+    expect(periodRange("2026-11-11", "year")).toEqual({ first: "2026-01-01", last: "2026-12-31" });
   });
 
   it("the month grid is whole weeks from the Monday before the 1st to the Sunday after the last", () => {
-    const days = gridDays("2026-11-11", "month");
+    const days = gridDays("2026-11-11");
     // 1 Nov 2026 is a Sunday, 30 Nov a Monday: six rows.
     expect(days[0]).toBe("2026-10-26");
     expect(days.at(-1)).toBe("2026-12-06");
     expect(days).toHaveLength(42);
     // February 2027 starts on a Monday and ends on a Sunday: exactly four rows.
-    expect(gridDays("2027-02-10", "month")).toHaveLength(28);
-    expect(gridDays("2026-11-11", "week")).toHaveLength(7);
+    expect(gridDays("2027-02-10")).toHaveLength(28);
   });
 
-  it("moves by a whole period, across a year", () => {
+  it("moves by a whole month or year, across a year's end and a leap day", () => {
     expect(shiftPeriod("2026-12-15", "month", 1)).toBe("2027-01-15");
     expect(shiftPeriod("2026-03-31", "month", -1)).toBe("2026-02-28");
-    expect(shiftPeriod("2026-12-30", "week", 1)).toBe("2027-01-06");
+    expect(shiftPeriod("2026-11-11", "year", -1)).toBe("2025-11-11");
+    expect(shiftPeriod("2028-02-29", "year", 1)).toBe("2029-02-28");
   });
 });
 
@@ -172,30 +170,28 @@ describe("in Europe/London, across the clock changes", () => {
     expect(new Date("2026-12-01T12:00:00Z").getHours()).toBe(12);
   });
 
-  it("the weeks with 29 Mar and 25 Oct 2026 are seven whole days, Monday to Sunday", () => {
-    expect(gridDays("2026-03-29", "week")).toEqual([
-      "2026-03-23",
-      "2026-03-24",
-      "2026-03-25",
-      "2026-03-26",
-      "2026-03-27",
-      "2026-03-28",
+  it("the months with a clock change are whole weeks, each day once, Monday to Sunday", () => {
+    for (const month of ["2026-03-10", "2026-10-10"]) {
+      const days = gridDays(month);
+      expect(new Set(days).size).toBe(days.length);
+      expect(days.length % 7).toBe(0);
+      expect(dayjs(days[0]).day()).toBe(1);
+    }
+    // March 2026 starts on a Sunday. The change is on Sunday the 29th, ending a row; the last row follows.
+    expect(gridDays("2026-03-10")[0]).toBe("2026-02-23");
+    expect(gridDays("2026-03-10").slice(-8)).toEqual([
       "2026-03-29",
+      "2026-03-30",
+      "2026-03-31",
+      "2026-04-01",
+      "2026-04-02",
+      "2026-04-03",
+      "2026-04-04",
+      "2026-04-05",
     ]);
-    expect(gridDays("2026-10-25", "week")).toEqual([
-      "2026-10-19",
-      "2026-10-20",
-      "2026-10-21",
-      "2026-10-22",
-      "2026-10-23",
-      "2026-10-24",
-      "2026-10-25",
-    ]);
-    expect(shiftPeriod("2026-03-26", "week", 1)).toBe("2026-04-02");
-    expect(shiftPeriod("2026-10-29", "week", -1)).toBe("2026-10-22");
-    // The months either side of a change still start on their Monday and are whole weeks.
-    expect(gridDays("2026-03-10", "month")[0]).toBe("2026-02-23");
-    expect(gridDays("2026-10-10", "month")).toHaveLength(35);
+    expect(gridDays("2026-10-10")).toHaveLength(35);
+    expect(shiftPeriod("2026-03-26", "month", 1)).toBe("2026-04-26");
+    expect(shiftPeriod("2026-10-29", "month", -1)).toBe("2026-09-29");
   });
 
   it("puts a round late at night on the local day, in summer and winter time", () => {
@@ -204,11 +200,12 @@ describe("in Europe/London, across the clock changes", () => {
     expect(at("2026-03-29T23:30:00Z")).toBe("2026-03-30"); // 00:30 BST the next day
     expect(at("2026-10-24T23:30:00Z")).toBe("2026-10-25"); // 00:30 BST on the day it ends
     expect(at("2026-10-25T23:30:00Z")).toBe("2026-10-25"); // 23:30 GMT
-    const week = periodRange("2026-03-29", "week");
+    // 23:30 BST on 31 Mar is in March; 23:30 UTC that day is 1 April where you are.
+    const march = periodRange("2026-03-29", "month");
     const s = summarise(
-      [round({ starts_at: "2026-03-29T22:30:00Z" }), round({ starts_at: "2026-03-29T23:30:00Z" })],
-      week.first,
-      week.last,
+      [round({ starts_at: "2026-03-31T22:30:00Z" }), round({ starts_at: "2026-03-31T23:30:00Z" })],
+      march.first,
+      march.last,
       NOW,
     );
     expect(s.total).toBe(1);

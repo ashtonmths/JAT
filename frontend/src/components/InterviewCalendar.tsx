@@ -24,13 +24,22 @@ import {
   IconClock,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import dayjs from "dayjs";
-import { useState, type CSSProperties, type ReactNode } from "react";
+import type { TFunction } from "i18next";
+import { useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useContacts } from "../api/hooks";
 import type { Interview } from "../api/interviewHooks";
-import { activeRounds, byDay, gridDays, periodRange, summarise, type Summary } from "../utils/calendar";
+import {
+  activeRounds,
+  byDay,
+  gridDays,
+  periodRange,
+  shiftPeriod,
+  summarise,
+  type Period,
+  type Summary,
+} from "../utils/calendar";
 import { formatDay } from "../utils/format";
 import { joinList } from "../utils/list";
 import { roundLabel } from "../utils/rounds";
@@ -42,8 +51,8 @@ import { RecruiterLine } from "./RecruiterLine";
 import { RescheduledBadge } from "./Reschedule";
 import { RoundActions } from "./RoundActions";
 
-/** What the calendar shows: one large month, or a year of small ones. */
-export type CalendarView = "month" | "year";
+type Names = (r: Interview) => string[];
+type Days = Map<string, Interview[]>;
 
 const FORMATS = {
   video: "form.formats.video",
@@ -52,21 +61,62 @@ const FORMATS = {
   take_home: "form.formats.take_home",
 } as const;
 
-const DAY = "YYYY-MM-DD";
-const MONTH = "month" as const;
-
 /** A round's time on the calendar: its start, else its deadline. */
 const whenOf = (r: Interview) => (r.starts_at ?? r.deadline_at)!;
 
-/** The first and last day of the month or year `anchor` is in. */
-function rangeOf(anchor: string, view: CalendarView) {
-  if (view === "month") return periodRange(anchor, MONTH);
-  const d = dayjs(anchor);
-  return { first: d.startOf("year").format(DAY), last: d.endOf("year").format(DAY) };
+const dotColor = (color: string) => ({ "--dot": `var(--mantine-color-${color}-filled)` }) as CSSProperties;
+
+/**
+ * A day's colour, from roundStatus: what most needs you first (orange, awaiting an outcome), then blue
+ * (coming up), teal (held), red (needs a new time), grey (cancelled).
+ */
+const TONES = ["orange", "blue", "teal", "red", "gray"];
+function tone(rounds: Interview[]): string {
+  const colors = rounds.map((r) => roundStatus(r).color);
+  return TONES.find((c) => colors.includes(c)) ?? "gray";
 }
 
-/** The same day a month or year earlier (-1) or later (1). */
-const shift = (anchor: string, view: CalendarView, by: number) => dayjs(anchor).add(by, view).format(DAY);
+/** The period's figures in the summary bar, in order, with each one's colour (none for companies). */
+const STATS = [
+  { id: "held", color: "teal", key: "calendar.summary.held", always: true },
+  { id: "awaiting", color: "orange", key: "calendar.summary.awaiting", always: false },
+  { id: "comingUp", color: "blue", key: "calendar.summary.comingUp", always: true },
+  { id: "cancelled", color: "gray", key: "calendar.summary.cancelled", always: false },
+  { id: "rescheduled", color: "yellow", key: "calendar.summary.rescheduled", always: false },
+  { id: "companies", color: null, key: "calendar.summary.companies", always: true },
+] as const satisfies readonly { id: keyof Summary; color: string | null; key: string; always: boolean }[];
+
+/** The statuses a day's rounds are in, for its label ("1 awaiting outcome, 1 coming up"). */
+const DAY_STATUSES = [
+  { id: "awaiting", key: "calendar.counts.awaiting" },
+  { id: "comingUp", key: "calendar.counts.comingUp" },
+  { id: "held", key: "calendar.counts.held" },
+  { id: "cancelled", key: "calendar.counts.cancelled" },
+] as const satisfies readonly { id: keyof Summary; key: string }[];
+
+/**
+ * What a day's dot says to a screen reader and on hover, as its colour can't: "Thursday 12 November,
+ * today: 2 rounds, 1 awaiting outcome, 1 coming up".
+ */
+function dayLabel(
+  t: TFunction<"interviews">,
+  lang: string,
+  day: string,
+  rounds: Interview[],
+  today: string,
+  now: number,
+) {
+  const s = summarise(rounds, day, day, now);
+  const parts = [
+    t("calendar.counts.rounds", { count: rounds.length }),
+    ...DAY_STATUSES.filter((d) => s[d.id] > 0).map((d) => t(d.key, { count: s[d.id] })),
+  ];
+  const name = formatDay(day, "weekdayDayMonth", lang);
+  const counts = joinList(parts);
+  return day === today
+    ? t("calendar.dayLabelToday", { day: name, counts })
+    : t("calendar.dayLabel", { day: name, counts });
+}
 
 /** Everything about a round, with its actions: a card in the day panel. */
 function RoundDetails({ round, people }: { round: Interview; people: string[] }) {
@@ -145,7 +195,7 @@ function PeriodSummary({
 }: {
   now: Summary;
   prev: Summary;
-  view: CalendarView;
+  view: Period;
   anchor: string;
 }) {
   const { t, i18n } = useTranslation("interviews");
@@ -157,42 +207,10 @@ function PeriodSummary({
       </Text>
     );
   }
-  const stats = [
-    { id: "held", n: now.held, color: "teal", text: t("calendar.summary.held", { count: now.held }) },
-    {
-      id: "awaiting",
-      n: now.awaiting,
-      color: "orange",
-      text: t("calendar.summary.awaiting", { count: now.awaiting }),
-    },
-    {
-      id: "comingUp",
-      n: now.comingUp,
-      color: "blue",
-      text: t("calendar.summary.comingUp", { count: now.comingUp }),
-    },
-    {
-      id: "cancelled",
-      n: now.cancelled,
-      color: "gray",
-      text: t("calendar.summary.cancelled", { count: now.cancelled }),
-    },
-    {
-      id: "rescheduled",
-      n: now.rescheduled,
-      color: "yellow",
-      text: t("calendar.summary.rescheduled", { count: now.rescheduled }),
-    },
-    {
-      id: "companies",
-      n: now.companies,
-      color: null,
-      text: t("calendar.summary.companies", { count: now.companies }),
-    },
-  ].filter((s) => s.n > 0 || s.id === "held" || s.id === "comingUp" || s.id === "companies");
+  const stats = STATS.filter((s) => s.always || now[s.id] > 0);
   const diff = activeRounds(now) - activeRounds(prev);
-  const month = formatDay(shift(anchor, "month", -1), "monthName", lang);
-  const year = formatDay(shift(anchor, "year", -1), "yearOnly", lang);
+  const month = formatDay(shiftPeriod(anchor, "month", -1), "monthName", lang);
+  const year = formatDay(shiftPeriod(anchor, "year", -1), "yearOnly", lang);
   const compare =
     view === "month"
       ? diff > 0
@@ -205,23 +223,27 @@ function PeriodSummary({
         : diff < 0
           ? t("calendar.summary.fewerThanYear", { count: -diff, year })
           : t("calendar.summary.sameAsYear", { year });
-  const bar = stats.filter((s) => ["held", "awaiting", "comingUp", "cancelled"].includes(s.id) && s.n > 0);
+  const bar = stats.filter(
+    (s) =>
+      (s.id === "held" || s.id === "awaiting" || s.id === "comingUp" || s.id === "cancelled") &&
+      now[s.id] > 0,
+  );
   return (
     <Stack gap={8}>
       <Group gap="lg" style={{ rowGap: 8 }}>
         {stats.map((s) => (
           <div key={s.id} className={classes.stat} data-stat={s.id}>
             {s.color && <span className={classes.statDot} style={dotColor(s.color)} />}
-            <span className={classes.statNumber}>{s.n}</span>
+            <span className={classes.statNumber}>{now[s.id]}</span>
             <Text span size="sm" c="dimmed">
-              {s.text}
+              {t(s.key, { count: now[s.id] })}
             </Text>
           </div>
         ))}
       </Group>
       <Progress.Root size={6} aria-hidden>
         {bar.map((s) => (
-          <Progress.Section key={s.id} value={(s.n / now.total) * 100} color={s.color!} />
+          <Progress.Section key={s.id} value={(now[s.id] / now.total) * 100} color={s.color!} />
         ))}
       </Progress.Root>
       {(prev.total > 0 || diff !== 0) && (
@@ -233,37 +255,43 @@ function PeriodSummary({
   );
 }
 
-/** A day's colour: what most needs you first (awaiting an outcome), then coming up, held, cancelled. */
-const TONES = ["orange", "blue", "teal", "red", "gray"];
-function tone(rounds: Interview[]): string {
-  const colors = rounds.map((r) => roundStatus(r).color);
-  return TONES.find((c) => colors.includes(c)) ?? "gray";
-}
-
-const dotColor = (color: string) => ({ "--dot": `var(--mantine-color-${color}-filled)` }) as CSSProperties;
-
 /**
  * The day the panel shows: the one you picked while it's on screen; else today if it has rounds, or the
  * next day that does; else the first day with rounds on screen, or today, or the first day on screen.
  */
-function useChosenDay(days: Map<string, Interview[]>, today: string, first: string, last: string) {
-  const [picked, setPicked] = useState<string | null>(null);
+function chosenDay(picked: string | null, days: Days, today: string, first: string, last: string) {
+  if (picked && picked >= first && picked <= last) return picked;
   const busy = [...days.keys()].filter((d) => d >= first && d <= last).sort();
-  const fallback =
-    busy.find((d) => d >= today) ?? (today >= first && today <= last ? today : (busy[0] ?? first));
-  const day = picked && picked >= first && picked <= last ? picked : fallback;
-  return [day, setPicked] as const;
+  return busy.find((d) => d >= today) ?? (today >= first && today <= last ? today : (busy[0] ?? first));
 }
 
-/** The chosen day's rounds, each as its card with its actions. */
-function DayPanel({ day, days, names }: { day: string; days: Map<string, Interview[]>; names: Names }) {
+/** The chosen day's rounds, each as its card with its actions. Its heading takes focus on a pick. */
+function DayPanel({
+  day,
+  days,
+  names,
+  headingRef,
+}: {
+  day: string;
+  days: Days;
+  names: Names;
+  headingRef: RefObject<HTMLHeadingElement | null>;
+}) {
   const { t, i18n } = useTranslation("interviews");
   const here = days.get(day) ?? [];
   return (
-    <section aria-label={t("calendar.dayPanel")} aria-live="polite">
-      <Text fw={650} mb="sm">
+    <section aria-label={t("calendar.dayPanel")}>
+      <Title
+        order={4}
+        fz="md"
+        mb="sm"
+        ref={headingRef}
+        tabIndex={-1}
+        aria-live="polite"
+        className={classes.panelHeading}
+      >
         {formatDay(day, "weekdayDayMonth", i18n.language)}
-      </Text>
+      </Title>
       <Stack gap="sm">
         {here.length ? (
           here.map((r) => (
@@ -280,8 +308,6 @@ function DayPanel({ day, days, names }: { day: string; days: Map<string, Intervi
     </section>
   );
 }
-
-type Names = (r: Interview) => string[];
 
 /** A small figure with an icon, its words in a tooltip and for screen readers: "✓ 3". */
 function IconStat({ icon, n, label }: { icon: ReactNode; n: number; label: string }) {
@@ -303,17 +329,17 @@ function MonthStats({ s }: { s: Summary }) {
       <IconStat
         icon={<IconCircleCheck size={15} stroke={1.8} />}
         n={s.held}
-        label={t("calendar.monthStats.held", { count: s.held })}
+        label={t("calendar.counts.held", { count: s.held })}
       />
       <IconStat
         icon={<IconClock size={15} stroke={1.8} />}
-        n={s.comingUp + s.awaiting}
-        label={t("calendar.monthStats.comingUp", { count: s.comingUp + s.awaiting })}
+        n={s.comingUp}
+        label={t("calendar.counts.comingUp", { count: s.comingUp })}
       />
       <IconStat
         icon={<IconBuilding size={15} stroke={1.8} />}
         n={s.companies}
-        label={t("calendar.monthStats.companies", { count: s.companies })}
+        label={t("calendar.counts.companies", { count: s.companies })}
       />
     </Group>
   );
@@ -328,14 +354,16 @@ function DotMonth({
   month,
   days,
   today,
+  now,
   chosen,
   onChoose,
   large,
   stats,
 }: {
   month: string;
-  days: Map<string, Interview[]>;
+  days: Days;
   today: string;
+  now: number;
   chosen: string;
   onChoose: (day: string) => void;
   large: boolean;
@@ -343,10 +371,13 @@ function DotMonth({
 }) {
   const { t, i18n } = useTranslation("interviews");
   const lang = i18n.language;
-  const cells = gridDays(month, MONTH);
-  const name = formatDay(month, "monthNameYear", lang);
+  const cells = gridDays(month);
   return (
-    <section className={classes.month} aria-label={name} data-large={large || undefined}>
+    <section
+      className={classes.month}
+      aria-label={formatDay(month, "monthNameYear", lang)}
+      data-large={large || undefined}
+    >
       {stats && (
         <Stack gap={4} mb="md">
           <Text fw={650} size="lg">
@@ -364,10 +395,6 @@ function DotMonth({
         {cells.map((d) => {
           if (d.slice(0, 7) !== month.slice(0, 7)) return <span key={d} className={classes.dotCell} />;
           const here = days.get(d) ?? [];
-          const label = t("calendar.dayLabel", {
-            count: here.length,
-            day: formatDay(d, "weekdayDayMonth", lang),
-          });
           return (
             <span
               key={d}
@@ -377,20 +404,13 @@ function DotMonth({
             >
               {large && <span className={classes.cellNumber}>{formatDay(d, "dayOfMonth", lang)}</span>}
               {here.length ? (
-                <Tooltip label={label} withArrow openDelay={300}>
-                  <UnstyledButton
-                    className={classes.bigDot}
-                    style={dotColor(tone(here))}
-                    data-size={String(Math.min(here.length, 3))}
-                    data-tone={tone(here)}
-                    data-day={d}
-                    aria-label={label}
-                    aria-pressed={d === chosen}
-                    onClick={() => onChoose(d)}
-                  >
-                    {here.length > 1 ? here.length : null}
-                  </UnstyledButton>
-                </Tooltip>
+                <DayDot
+                  day={d}
+                  rounds={here}
+                  label={dayLabel(t, lang, d, here, today, now)}
+                  chosen={d === chosen}
+                  onChoose={onChoose}
+                />
               ) : (
                 <span className={classes.smallDot} />
               )}
@@ -402,13 +422,36 @@ function DotMonth({
   );
 }
 
-/** The calendar beside the day panel; on a phone the panel goes under it, or (`panelFirst`) above. */
-function WithPanel({ main, panel, panelFirst }: { main: ReactNode; panel: ReactNode; panelFirst: boolean }) {
+/** A day with rounds: a dot to pick it, its words on hover and for screen readers. */
+function DayDot({
+  day,
+  rounds,
+  label,
+  chosen,
+  onChoose,
+}: {
+  day: string;
+  rounds: Interview[];
+  label: string;
+  chosen: boolean;
+  onChoose: (day: string) => void;
+}) {
+  const color = tone(rounds);
   return (
-    <div className={classes.withPanel} data-panel-first={panelFirst || undefined}>
-      <div className={classes.main}>{main}</div>
-      <div className={classes.panel}>{panel}</div>
-    </div>
+    <Tooltip label={label} withArrow openDelay={300}>
+      <UnstyledButton
+        className={classes.bigDot}
+        style={dotColor(color)}
+        data-size={String(Math.min(rounds.length, 3))}
+        data-tone={color}
+        data-day={day}
+        aria-label={label}
+        aria-pressed={chosen}
+        onClick={() => onChoose(day)}
+      >
+        {rounds.length > 1 ? rounds.length : null}
+      </UnstyledButton>
+    </Tooltip>
   );
 }
 
@@ -423,50 +466,80 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
   const today = useToday();
   const now = useNow();
   const phone = useMediaQuery("(max-width: 48em)");
-  const [anchor, setAnchor] = useState(today);
-  const [stored, setView] = useLocalStorage<CalendarView>({
+  // The day the period on screen is around; none follows today, also past midnight.
+  const [moved, setMoved] = useState<string | null>(null);
+  const anchor = moved ?? today;
+  const [picked, setPicked] = useState<string | null>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const [stored, setStored] = useLocalStorage<Period>({
     key: "jat.interviews.period",
     defaultValue: "month",
     getInitialValueInEffect: false,
   });
-  // An earlier version kept "week" here.
-  const view: CalendarView = stored === "year" ? "year" : "month";
+  const view: Period = stored === "year" ? "year" : "month";
   const { data: contacts } = useContacts();
   const contactNames = new Map((contacts ?? []).map((c) => [c.id, c.name]));
   const names = (r: Interview) => r.interviewer_ids.flatMap((id) => contactNames.get(id) ?? []);
 
-  const days = byDay(rounds);
-  const { first, last } = rangeOf(anchor, view);
-  const before = rangeOf(shift(anchor, view, -1), view);
-  const [day, setDay] = useChosenDay(days, today, first, last);
-  const heading = formatDay(anchor, view === "month" ? "monthNameYear" : "yearOnly", lang);
-  const months = Array.from(
-    { length: 12 },
-    (_, i) => `${first.slice(0, 4)}-${String(i + 1).padStart(2, "0")}-01`,
+  const days = useMemo(() => byDay(rounds), [rounds]);
+  const { first, last } = periodRange(anchor, view);
+  const before = periodRange(shiftPeriod(anchor, view, -1), view);
+  const day = chosenDay(picked, days, today, first, last);
+  const summary = useMemo(() => summarise(rounds, first, last, now), [rounds, first, last, now]);
+  const previous = useMemo(
+    () => summarise(rounds, before.first, before.last, now),
+    [rounds, before.first, before.last, now],
   );
+  const year = first.slice(0, 4);
+  const months = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, i) => {
+        const month = `${year}-${String(i + 1).padStart(2, "0")}-01`;
+        const range = periodRange(month, "month");
+        return { month, stats: summarise(rounds, range.first, range.last, now) };
+      }),
+    [rounds, year, now],
+  );
+  const title = formatDay(anchor, view === "month" ? "monthNameYear" : "yearOnly", lang);
+
+  const choose = (d: string) => {
+    setPicked(d);
+    // Then the chosen day's rounds, for a keyboard or a screen reader; on a phone, scrolled to.
+    requestAnimationFrame(() => heading.current?.focus({ preventScroll: !phone }));
+  };
+  const switchView = (v: Period) => {
+    setStored(v);
+    // From a year to a month: the chosen day's month.
+    if (v === "month") setMoved(day === today ? null : day);
+  };
 
   const calendar =
     view === "month" ? (
-      <DotMonth month={first} days={days} today={today} chosen={day} onChoose={setDay} large />
+      <DotMonth month={first} days={days} today={today} now={now} chosen={day} onChoose={choose} large />
     ) : (
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing={36} verticalSpacing={36}>
-        {months.map((m) => {
-          const range = periodRange(m, MONTH);
-          return (
-            <DotMonth
-              key={m}
-              month={m}
-              days={days}
-              today={today}
-              chosen={day}
-              onChoose={setDay}
-              large={false}
-              stats={summarise(rounds, range.first, range.last, now)}
-            />
-          );
-        })}
+        {months.map((m) => (
+          <DotMonth
+            key={m.month}
+            month={m.month}
+            days={days}
+            today={today}
+            now={now}
+            chosen={day}
+            onChoose={choose}
+            large={false}
+            stats={m.stats}
+          />
+        ))}
       </SimpleGrid>
     );
+  const panel = (
+    <div className={classes.panel}>
+      <DayPanel day={day} days={days} names={names} headingRef={heading} />
+    </div>
+  );
+  // On a phone the panel comes first in a year, under its twelve months otherwise; the DOM follows.
+  const panelFirst = !!phone && view === "year";
 
   return (
     <Card withBorder padding="lg" className={classes.root}>
@@ -476,29 +549,36 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
             <ActionIcon
               variant="default"
               aria-label={view === "month" ? t("calendar.previousMonth") : t("calendar.previousYear")}
-              onClick={() => setAnchor(shift(anchor, view, -1))}
+              onClick={() => setMoved(shiftPeriod(anchor, view, -1))}
             >
               <IconChevronLeft size={16} />
             </ActionIcon>
             <ActionIcon
               variant="default"
               aria-label={view === "month" ? t("calendar.nextMonth") : t("calendar.nextYear")}
-              onClick={() => setAnchor(shift(anchor, view, 1))}
+              onClick={() => setMoved(shiftPeriod(anchor, view, 1))}
             >
               <IconChevronRight size={16} />
             </ActionIcon>
             <Title order={3} ml={6} fz={phone ? "h4" : "h3"} aria-live="polite">
-              {heading}
+              {title}
             </Title>
           </Group>
           <Group gap="sm" wrap="nowrap">
-            <Button size="xs" variant="default" onClick={() => setAnchor(today)}>
+            <Button
+              size="xs"
+              variant="default"
+              onClick={() => {
+                setMoved(null);
+                setPicked(today);
+              }}
+            >
               {t("calendar.today")}
             </Button>
             <SegmentedControl
               size="xs"
               value={view}
-              onChange={(v) => setView(v as CalendarView)}
+              onChange={(v) => switchView(v as Period)}
               data={[
                 { value: "month", label: t("calendar.month") },
                 { value: "year", label: t("calendar.year") },
@@ -507,19 +587,14 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
             />
           </Group>
         </Group>
-        <section aria-label={t("calendar.summary.label", { period: heading })}>
-          <PeriodSummary
-            now={summarise(rounds, first, last, now)}
-            prev={summarise(rounds, before.first, before.last, now)}
-            view={view}
-            anchor={anchor}
-          />
+        <section aria-label={t("calendar.summary.label", { period: title })}>
+          <PeriodSummary now={summary} prev={previous} view={view} anchor={anchor} />
         </section>
-        <WithPanel
-          main={calendar}
-          panel={<DayPanel day={day} days={days} names={names} />}
-          panelFirst={view === "year"}
-        />
+        <div className={classes.withPanel}>
+          {panelFirst && panel}
+          <div className={classes.main}>{calendar}</div>
+          {!panelFirst && panel}
+        </div>
       </Stack>
     </Card>
   );

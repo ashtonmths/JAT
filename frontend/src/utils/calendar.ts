@@ -1,10 +1,10 @@
 // The Interviews calendar's sums (docs/rfc/interviews-calendar.md): which rounds go on which day, the
-// days a month or week shows, and what a period adds up to. Days are your local days as YYYY-MM-DD,
+// days a month shows, and what a month or a year adds up to. Days are your local days as YYYY-MM-DD,
 // like useToday(). Weeks start on Monday.
 
 import dayjs, { type Dayjs } from "dayjs";
 
-export type Period = "month" | "week";
+export type Period = "month" | "year";
 
 export interface CalendarRound {
   id: string;
@@ -63,24 +63,23 @@ export function byDay<T extends CalendarRound>(rounds: readonly T[]): Map<string
   return days;
 }
 
-/** The first and last day of the month or week that `anchor` is in. */
+/** The first and last day of the month or year that `anchor` is in. */
 export function periodRange(anchor: string, period: Period): { first: string; last: string } {
   const day = dayjs(anchor);
-  if (period === "week") {
-    const start = monday(day);
-    return { first: start.format(DAY), last: start.add(6, "day").format(DAY) };
-  }
-  return { first: day.startOf("month").format(DAY), last: day.endOf("month").format(DAY) };
+  return { first: day.startOf(period).format(DAY), last: day.endOf(period).format(DAY) };
 }
 
-/** The same day a period earlier (-1) or later (1); a month from 31 Jan lands on the last of February. */
+/**
+ * The same day a period earlier (-1) or later (1); a month from 31 Jan lands on the last of February,
+ * a year from 29 Feb on 28 Feb.
+ */
 export function shiftPeriod(anchor: string, period: Period, by: number): string {
   return dayjs(anchor).add(by, period).format(DAY);
 }
 
-/** The days the grid shows: whole weeks, Monday to Sunday, covering the period. */
-export function gridDays(anchor: string, period: Period): string[] {
-  const { first, last } = periodRange(anchor, period);
+/** The days a month's grid shows: whole weeks, Monday to Sunday, covering the month. */
+export function gridDays(anchor: string): string[] {
+  const { first, last } = periodRange(anchor, "month");
   const start = monday(dayjs(first));
   const end = monday(dayjs(last)).add(6, "day");
   const days: string[] = [];
