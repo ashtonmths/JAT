@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+import mimetypes
 import os
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
+from starlette.datastructures import Headers
+from starlette.staticfiles import NotModifiedResponse
+
+if TYPE_CHECKING:
+    from starlette.types import Scope
 
 from . import __version__
 from .api.deps import WorkflowCache, WriteNotifier
@@ -77,10 +84,53 @@ def _api_docs(app: FastAPI) -> None:
         )
 
 
+STATIC_TYPES: dict[str, str] = {
+    ".css": "text/css",
+    ".html": "text/html",
+    ".ico": "image/x-icon",
+    ".js": "text/javascript",
+    ".json": "application/json",
+    ".map": "application/json",
+    ".mjs": "text/javascript",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+    ".ttf": "font/ttf",
+    ".webmanifest": "application/manifest+json",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+}
+
+for ext, mime in STATIC_TYPES.items():
+    mimetypes.add_type(mime, ext)
+
+
+class AppStaticFiles(StaticFiles):
+    """Static asset server with fixed MIME content types for built files."""
+
+    def file_response(
+        self,
+        full_path: os.PathLike[str] | str,
+        stat_result: os.stat_result,
+        scope: Scope,
+        status_code: int = 200,
+    ) -> Response:
+        ext = Path(full_path).suffix.lower()
+        response = FileResponse(
+            full_path,
+            status_code=status_code,
+            stat_result=stat_result,
+            media_type=STATIC_TYPES.get(ext),
+        )
+        request_headers = Headers(scope=scope)
+        if self.is_not_modified(response.headers, request_headers):
+            return NotModifiedResponse(response.headers)
+        return response
+
+
 def _mount_frontend(app: FastAPI, dist: Path) -> None:
     index = dist / "index.html"
     if (dist / "assets").is_dir():
-        app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
+        app.mount("/assets", AppStaticFiles(directory=dist / "assets"), name="assets")
 
     @app.get("/{path:path}", include_in_schema=False)
     def spa(path: str):
@@ -91,8 +141,9 @@ def _mount_frontend(app: FastAPI, dist: Path) -> None:
         if path:
             candidate = (dist / path).resolve()
             if candidate.is_file() and dist.resolve() in candidate.parents:
-                return FileResponse(candidate)
-        return FileResponse(index)  # client-side routes
+                ext = candidate.suffix.lower()
+                return FileResponse(candidate, media_type=STATIC_TYPES.get(ext))
+        return FileResponse(index, media_type="text/html")
 
 
 def create_app(

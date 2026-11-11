@@ -38,8 +38,33 @@ def test_spa_routes_and_assets(data_dir, dist):
     for path in ("/", "/applications", "/recruiters/123"):
         r = client.get(path)
         assert r.status_code == 200 and "SPA" in r.text
-    assert client.get("/assets/app.js").text == "console.log('hi')"
-    assert client.get("/favicon.svg").text == "<svg/>"
+        assert "text/html" in r.headers["content-type"]
+    r_js = client.get("/assets/app.js")
+    assert r_js.text == "console.log('hi')"
+    assert "text/javascript" in r_js.headers["content-type"]
+    r_svg = client.get("/favicon.svg")
+    assert r_svg.text == "<svg/>"
+    assert "image/svg+xml" in r_svg.headers["content-type"]
+
+
+def test_static_file_types_override_system_registry(data_dir, dist, monkeypatch):
+    """Windows registry often maps .js to text/plain; verify fixed MIME types are served."""
+    monkeypatch.setattr("mimetypes.guess_type", lambda path: ("text/plain", None))
+
+    (dist / "assets" / "module.mjs").write_text("export const x = 1;")
+    (dist / "assets" / "style.css").write_text("body { color: red; }")
+    (dist / "site.webmanifest").write_text('{"name": "JAT"}')
+    (dist / "data.json").write_text('{"key": "value"}')
+
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
+
+    # JavaScript and CSS must never be served as text/plain
+    assert "text/javascript" in client.get("/assets/app.js").headers["content-type"]
+    assert "text/javascript" in client.get("/assets/module.mjs").headers["content-type"]
+    assert "text/css" in client.get("/assets/style.css").headers["content-type"]
+    assert "image/svg+xml" in client.get("/favicon.svg").headers["content-type"]
+    assert "application/manifest+json" in client.get("/site.webmanifest").headers["content-type"]
+    assert "application/json" in client.get("/data.json").headers["content-type"]
 
 
 def test_api_paths_never_fall_through_to_spa(data_dir, dist):
