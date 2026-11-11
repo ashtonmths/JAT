@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.9 (2026-11-11)
+
+- Reopening Edit right after saving shows what you just saved, so saving again can't put the old values back: people, agencies, companies, offers, interview rounds, calls, roles and notes. A note's check for changes made elsewhere now compares against the version you opened. (#315).
+
 ## 1.23.8 (2026-11-11)
 
 - The X on a link's rename box cancels again instead of saving what you typed, and the tick saves once, so it no longer shows That didn't work. (#311).

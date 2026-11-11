@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
-import { invalidateApplicationViews } from "./hooks";
+import { invalidateApplicationViews, settleSave } from "./hooks";
 import { notifyError } from "./notifyError";
 
 export type NoteSummary = Schemas["NoteSummary"];
@@ -39,6 +39,7 @@ function useRefreshNotes() {
 
 export function useSaveNote() {
   const refresh = useRefreshNotes();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: async (args: { id?: string; body: Schemas["NoteIn"]; baseUpdatedAt?: string }) =>
       args.id
@@ -49,7 +50,9 @@ export function useSaveNote() {
             }),
           )
         : unwrap(await api.POST("/api/v1/notes", { body: args.body })),
-    onSuccess: refresh,
+    // Edit opens from the note's own query, which holds just what the save returns: nothing to wait for.
+    onSuccess: (saved, args) =>
+      args.id ? settleSave(qc, refresh, saved, { store: [["note", saved.id]], wait: [] }) : refresh(),
     onError: notifyError,
   });
 }

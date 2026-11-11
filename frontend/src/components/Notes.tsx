@@ -95,10 +95,17 @@ function NoteItem({ note, onEdit }: { note: NoteSummary; onEdit: (id: string) =>
   );
 }
 
-/** Opens the editor for an existing note once its full text has loaded. */
+/**
+ * Opens the editor for an existing note once its full text has loaded. Text cached a while ago (or
+ * from before a save elsewhere) is refetched first, so the form never starts from old words; once
+ * open, it stays open whatever the query does next.
+ */
 function EditExisting({ id, onClose }: { id: string; onClose: () => void }) {
-  const { data } = useNote(id);
-  if (!data) return null;
+  const { data, isStale, isFetchedAfterMount } = useNote(id);
+  const [ready, setReady] = useState(false);
+  // A refetch that fails still opens it, from the cached text: the save's changed-since check covers that.
+  if (!ready && data && (!isStale || isFetchedAfterMount)) setReady(true);
+  if (!ready || !data) return null;
   return <NoteEditorModal key={id} opened onClose={onClose} note={data as Note} />;
 }
 
@@ -115,7 +122,8 @@ export function NotesList({ notes, empty }: { notes: NoteSummary[]; empty: strin
           {empty}
         </Text>
       )}
-      {editing && <EditExisting id={editing} onClose={() => setEditing(null)} />}
+      {/* Keyed by the note, so another note's Edit starts over and waits for its own fresh text. */}
+      {editing && <EditExisting key={editing} id={editing} onClose={() => setEditing(null)} />}
     </Stack>
   );
 }

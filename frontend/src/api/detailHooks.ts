@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
-import { invalidateApplicationViews, keys } from "./hooks";
+import { invalidateApplicationViews, keys, settleSave } from "./hooks";
 import { notifyError } from "./notifyError";
 
 export function useCompanySummary(id: string) {
@@ -46,10 +46,17 @@ export function useUpdateCompany() {
           body: args.body,
         }),
       ),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: keys.companies });
-      invalidateApplicationViews(qc); // everything that shows the company's name
-    },
+    // Its page's Edit opens from the company's summary.
+    onSuccess: (saved) =>
+      settleSave(
+        qc,
+        () => {
+          void qc.invalidateQueries({ queryKey: keys.companies });
+          invalidateApplicationViews(qc); // everything that shows the company's name
+        },
+        saved,
+        { store: [keys.companies, ["company-summary"]] },
+      ),
     onError: notifyError,
   });
 }

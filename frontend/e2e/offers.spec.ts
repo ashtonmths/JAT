@@ -649,6 +649,8 @@ test.describe("comparing", () => {
     await page.getByRole("button", { name: "Edit", exact: true }).click();
     await theDialog(page).getByLabel("Name").fill("Offer After Co");
     await theDialog(page).getByRole("button", { name: "Save", exact: true }).click();
+    // The dialog stays open until the fresh data is in, and its title shows the new name meanwhile.
+    await expect(theDialog(page)).toBeHidden();
     await expect(page.getByRole("heading", { name: "Offer After Co", level: 2 })).toBeVisible();
     await menu(page, "Offers").click();
     await expect(page.getByRole("link", { name: "Offer After Co" })).toBeVisible();
@@ -729,8 +731,8 @@ test.describe("more permutations", () => {
     },
   );
 
-  // KNOWN BUG (fix-stale-edit-after-save on the roadmap): expected to fail until it is fixed.
-  test.fail("reopening straight after saving shows the new figure", async ({ page, request }) => {
+  // fix-stale-edit-after-save: the save waits for the refetch, so Edit can't reopen from old data.
+  test("reopening straight after saving shows the new figure", async ({ page, request }) => {
     const app = await application(request, "Reopen Offer Co");
     await addOffer(request, app.id, { employment_type: "permanent", salary: 80000 });
     await openApplication(page, app.id);

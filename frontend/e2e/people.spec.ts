@@ -767,22 +767,22 @@ test.describe("editing a person", () => {
     expect(sent).toEqual([]);
   });
 
-  // KNOWN BUG (fix-stale-edit-after-save on the roadmap): expected to fail until it is fixed.
-  test.fail(
-    "reopening straight after saving shows the new values, not the old ones",
-    async ({ page, request }) => {
-      const made = await create(request, "contacts", { name: "Stale Edit", title: "Old Title" });
-      const dialog = await editFromPage(page, made.id, "Stale Edit");
-      await page.route("**/contacts/*/summary", async (route) => {
-        await new Promise((done) => setTimeout(done, 1000));
-        await route.continue();
-      });
-      await dialog.getByLabel("Job title").fill("New Title");
-      await save(dialog);
-      await page.getByRole("button", { name: "Edit", exact: true }).click();
-      await expect(dialog.getByLabel("Job title")).toHaveValue("New Title");
-    },
-  );
+  // fix-stale-edit-after-save: the save waits for the refetch, so Edit can't reopen from old data.
+  test("reopening straight after saving shows the new values, not the old ones", async ({
+    page,
+    request,
+  }) => {
+    const made = await create(request, "contacts", { name: "Stale Edit", title: "Old Title" });
+    const dialog = await editFromPage(page, made.id, "Stale Edit");
+    await page.route("**/contacts/*/summary", async (route) => {
+      await new Promise((done) => setTimeout(done, 1000));
+      await route.continue();
+    });
+    await dialog.getByLabel("Job title").fill("New Title");
+    await save(dialog);
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await expect(dialog.getByLabel("Job title")).toHaveValue("New Title");
+  });
 
   test("the pencil on an agency's page moves them away", async ({ page, request }) => {
     const from = await create(request, "agencies", { name: "Pencil From" });

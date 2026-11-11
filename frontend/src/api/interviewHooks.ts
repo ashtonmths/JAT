@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
-import { invalidateApplicationViews } from "./hooks";
+import { invalidateApplicationViews, settleSave } from "./hooks";
 import { notifyError } from "./notifyError";
 
 export type Interview = Schemas["InterviewOut"];
@@ -55,6 +55,7 @@ function useRefreshInterviews() {
 
 export function useSaveInterview() {
   const refresh = useRefreshInterviews();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: async (
       args:
@@ -74,7 +75,9 @@ export function useSaveInterview() {
               body: args.body,
             }),
           ),
-    onSuccess: refresh,
+    // Edit opens from a list of rounds (an application's, or the Interviews page's).
+    onSuccess: (saved, args) =>
+      "id" in args ? settleSave(qc, refresh, saved, { store: [["interviews"]] }) : refresh(),
     onError: notifyError,
   });
 }

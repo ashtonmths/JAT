@@ -1,5 +1,6 @@
 import { Button, Group, Modal, MultiSelect, Stack, Tabs, Text, Textarea, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAgencies, useApplications, useCompanies, useContacts } from "../api/hooks";
@@ -64,6 +65,9 @@ export function NoteEditorModal({
     initialValues: { title: note?.title ?? "", body: note?.body ?? "", links: note?.links ?? defaultLinks },
     validate: { title: (v) => (v.trim() ? null : t("editor.titleError")) },
   });
+  // The version the form was filled from: a refetch while it's open mustn't move it, or the check
+  // below would pass and the form's older words would overwrite the newer ones.
+  const [baseUpdatedAt] = useState(note?.updated_at);
   // Keep links the pickers don't know about (e.g. a role or interview), so saving never drops them.
   const known = new Set(options.flatMap((g) => g.items.map((i) => i.value)));
   const hidden = form.values.links.filter((l) => !known.has(l));
@@ -74,7 +78,7 @@ export function NoteEditorModal({
         id: note?.id,
         body: { title: v.title.trim(), body: v.body, links: v.links },
         // Refused (409) if the note changed since it was opened, e.g. in an outside editor.
-        baseUpdatedAt: note?.updated_at,
+        baseUpdatedAt,
       },
       { onSuccess: onClose },
     ),

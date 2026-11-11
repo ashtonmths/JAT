@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
-import { invalidateApplicationViews } from "./hooks";
+import { invalidateApplicationViews, settleSave } from "./hooks";
 import { notifyError } from "./notifyError";
 
 export type Meeting = Schemas["MeetingOut"];
@@ -77,6 +77,7 @@ export function useUndoCallNeedsNewTime() {
 
 export function useSaveMeeting() {
   const refresh = useRefreshMeetings();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: async (
       args: { id: string; body: Schemas["MeetingPatch"] } | { body: Schemas["MeetingIn"] },
@@ -89,7 +90,9 @@ export function useSaveMeeting() {
             }),
           )
         : unwrap(await api.POST("/api/v1/meetings", { body: args.body })),
-    onSuccess: refresh,
+    // Edit opens from a list of calls.
+    onSuccess: (saved, args) =>
+      "id" in args ? settleSave(qc, refresh, saved, { store: [["meetings"]] }) : refresh(),
     onError: notifyError,
   });
 }

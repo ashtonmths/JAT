@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { api, unwrap, type Schemas } from "./client";
-import { invalidateApplicationViews, keys } from "./hooks";
+import { invalidateApplicationViews, keys, settleSave } from "./hooks";
 import { notifyError } from "./notifyError";
 import { i18n } from "../i18n";
 import { stageName } from "../utils/stageName";
@@ -70,6 +70,7 @@ function useRefreshRoles() {
 
 export function useSaveRole() {
   const refresh = useRefreshRoles();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: async (args: { id: string; body: Schemas["RolePatch"] } | { body: Schemas["RoleIn"] }) =>
       "id" in args
@@ -80,7 +81,9 @@ export function useSaveRole() {
             }),
           )
         : unwrap(await api.POST("/api/v1/roles", { body: args.body })),
-    onSuccess: refresh,
+    // Edit opens from the role's page or a list of roles, both role summaries.
+    onSuccess: (saved, args) =>
+      "id" in args ? settleSave(qc, refresh, saved, { store: [["role-summaries"]] }) : refresh(),
     onError: notifyError,
   });
 }
