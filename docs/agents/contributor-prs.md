@@ -75,7 +75,8 @@ main. Never `Closes` their issue either (#230 tracks the whole Windows plan).
 
 Just before merging, our carrying PR's body gets a note at the top tagging the author (`@login`) to say their work is merged, in
 Kai's voice (his Slack voice notes, outside this repo: ask Kai where): what it does, what the VM showed, the one or two
-things we changed and why (useful to them), and thanks. Added just before merging so it's true when they're notified;
+things we changed and why (useful to them), and thanks. Added just before merging so it's true when they're notified, never in the body the PR is opened with (an
+@-mention notifies at once, and editing it out doesn't unsend it: #308);
 it doesn't promise anything Kai hasn't decided (no "I'll look at #N next").
 
 ## Asking the author
