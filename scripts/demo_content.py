@@ -34,6 +34,7 @@ EN = {
     },
     "recruiter_title": "Senior Consultant",
     "phone": "+44 7700 900{n:03d}",
+    "detail_labels": ("work", "mobile"),  # a recruiter's email and phone (free text, so the demo's words)
     # application key -> (role title, tags)
     "apps": {
         "contoso": ("Senior Backend Engineer", ["python", "fintech"]),
@@ -150,6 +151,7 @@ ZH_CN = {
     },
     "recruiter_title": "资深猎头顾问",
     "phone": "+86 000 0000 {n:04d}",
+    "detail_labels": ("工作", "手机"),
     "apps": {
         "contoso": ("高级后端工程师（Python）", ["python", "金融科技"]),
         "fabrikam": ("资深平台工程师", ["kubernetes"]),

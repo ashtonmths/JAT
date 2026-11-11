@@ -157,11 +157,15 @@ const SYMBOLS = new Map([
   ["EUR", "€"],
 ]);
 
+/** An amount already written out ("85,000", "80k") with its currency: "£85,000", "80k CHF". */
+export function withCurrency(amount: string, currency: string | null | undefined): string {
+  const symbol = SYMBOLS.get((currency ?? "").toUpperCase());
+  return symbol ? `${symbol}${amount}` : `${amount}${currency ? ` ${currency}` : ""}`;
+}
+
 /** "£85,000", "85,000 CHF", or "—" with no amount (api/offerHooks.ts money()). The currency is
  *  the offer's own; only the digits follow the language. */
 export function formatMoney(n: number | null | undefined, currency: string | null | undefined, lang: string) {
   if (n == null) return "—";
-  const symbol = SYMBOLS.get((currency ?? "").toUpperCase());
-  const digits = formatNumber(n, lang);
-  return symbol ? `${symbol}${digits}` : `${digits}${currency ? ` ${currency}` : ""}`;
+  return withCurrency(formatNumber(n, lang), currency);
 }
