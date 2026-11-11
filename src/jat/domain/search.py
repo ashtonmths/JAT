@@ -4,7 +4,8 @@ Every word of the query must appear somewhere in a record's searchable text (cas
 accent-insensitive). Local data is small, so this is a scan in Python rather than an index to
 keep in sync; notes are read from their Markdown files, which are the source of truth.
 
-Each hit says what it is, where to open it in the app, and a snippet around the first match.
+Each hit says what it is, where to open it in the app, and a snippet around the first match
+(as plain text: Markdown marks such as **bold** are left out).
 Hits whose title matches come first, then the most recently changed.
 """
 
@@ -89,9 +90,58 @@ class Hit:
     event_data: object = None
 
 
+# Markdown marks, for snippets that read as plain text. Matching still uses the text as typed.
+_ESCAPED = re.compile(r"\\([\\`*_{}\[\]()#+\-.!|~>])")
+_CODE_SPAN = re.compile(r"(`+)(.+?)\1", re.S)
+_HELD = re.compile("(\\d+)")
+_LINE_MARKS = [
+    (re.compile(r"^ {0,3}(```|~~~).*$", re.M), ""),  # code fences
+    (re.compile(r"^ {0,3}([-*_])( *\1){2,} *$", re.M), ""),  # horizontal rules
+    (re.compile(r"^ *\|?( *:?-+:? *\|)+( *:?-+:? *)?$", re.M), ""),  # a table's header line
+    (re.compile(r"^ {0,3}(> ?)+", re.M), ""),  # quotes
+    (re.compile(r"^ {0,3}#{1,6}(?: +|$)(.*?)(?: +#+)? *$", re.M), r"\1"),  # headings
+    (re.compile(r"^ *(?:[-*+]|\d{1,9}[.)]) +(?:\[[ xX]\] +)?", re.M), ""),  # list items and task boxes
+]
+_INLINE_MARKS = [
+    (re.compile(r"!\[([^\]]*)\]\([^)]*\)"), r"\1"),  # images: their alt text
+    (re.compile(r"\[([^\]]+)\]\([^)]*\)"), r"\1"),  # links: their text
+    (re.compile(r"\[([^\]]+)\]\[[^\]]*\]"), r"\1"),  # reference links
+    (re.compile(r"<((?:https?|mailto):[^>\s]+)>"), r"\1"),  # autolinks
+    (re.compile(r"\*\*(?=\S)(.+?)(?<=\S)\*\*"), r"\1"),  # bold
+    (re.compile(r"(?<![\w\\])__(?=\S)(.+?)(?<=\S)__(?!\w)"), r"\1"),  # bold; not inside a word
+    (re.compile(r"~~(?=\S)(.+?)(?<=\S)~~"), r"\1"),  # strikethrough
+    (re.compile(r"\*(?=[^\s*])(.+?)(?<=[^\s*])\*"), r"\1"),  # italics
+    (re.compile(r"(?<![\w\\])_(?=[^\s_])(.+?)(?<=[^\s_])_(?!\w)"), r"\1"),  # italics; not snake_case or emails
+]
+
+
+def plain(text: str) -> str:
+    """A note's Markdown without its marks: `**bold**` reads "bold", `[docs](https://…)` reads "docs"."""
+    held: list[str] = []
+
+    def hold(s: str) -> str:
+        held.append(s)
+        return f"{len(held) - 1}"
+
+    # Escaped characters and code are kept as written, so nothing inside them reads as a mark.
+    text = _ESCAPED.sub(lambda m: hold(m[1]), text)
+    for pattern, repl in _LINE_MARKS:
+        text = pattern.sub(repl, text)
+    text = _CODE_SPAN.sub(lambda m: hold(m[2].strip()), text)
+    for pattern, repl in _INLINE_MARKS:
+        text = pattern.sub(repl, text)
+    while _HELD.search(text):  # a code span can hold an escaped character
+        text = _HELD.sub(lambda m: held[int(m[1])], text)
+    return text
+
+
 def _snippet(text: str, words: list[str]) -> str | None:
-    flat = re.sub(r"\s+", " ", text).strip()
+    flat = re.sub(r"\s+", " ", plain(text)).strip()
     folded = fold(flat)
+    if not any(w in folded for w in words):
+        # The match was in a mark itself, such as a link's address: show the text as typed.
+        flat = re.sub(r"\s+", " ", text).strip()
+        folded = fold(flat)
     # fold() can change lengths (ß -> ss); fall back to the start if positions drift.
     positions = [folded.find(w) for w in words if w in folded]
     if not positions:

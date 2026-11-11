@@ -13,6 +13,48 @@ def test_matching_rules():
     assert terms("   ") == []
 
 
+def _note_snippet(body: str, query: str) -> str | None:
+    hit = match(Candidate("note", "n1", "Prep", "/notes", fields=[body]), terms(query))
+    assert hit is not None  # what matches doesn't change
+    return hit.snippet
+
+
+def test_snippets_leave_out_markdown_marks():
+    body = "# Prep\n\n- Read up on **Kafka** consumer groups\n- Ask about *on-call* and `cargo test`"
+    assert _note_snippet(body, "kafka") == "Prep Read up on Kafka consumer groups Ask about on-call and cargo test"
+    # A match inside bold, in Chinese.
+    assert _note_snippet("准备：复习**消息队列**和缓存", "消息队列") == "准备：复习消息队列和缓存"
+    assert _note_snippet("## 面试\n1. 问一下 _值班_ 安排", "值班") == "面试 问一下 值班 安排"
+    # A link reads as its text; an image as its alt text.
+    assert _note_snippet("See [the team page](https://contoso.example.com/team) first", "team") == (
+        "See the team page first"
+    )
+    assert _note_snippet("![Office plan](plan.png) > quoted\n> **Fabrikam** said yes", "fabrikam") == (
+        "Office plan > quoted Fabrikam said yes"
+    )
+    # A match in a link's address shows the text as typed, so the match is there to see.
+    assert _note_snippet("See [the team page](https://contoso.example.com/team)", "contoso") == (
+        "See [the team page](https://contoso.example.com/team)"
+    )
+
+
+def test_snippets_keep_what_only_looks_like_marks():
+    assert _note_snippet("Email first_last@example.com about my_var", "email") == (
+        "Email first_last@example.com about my_var"
+    )
+    assert _note_snippet(r"2 * 3 * 4 and \*not bold\* and `a*b*c`", "and") == "2 * 3 * 4 and *not bold* and a*b*c"
+    assert _note_snippet("Tasks:\n- [x] Send CV\n- [ ] Book call\n\n---\n| a | b |\n|---|---|", "tasks") == (
+        "Tasks: Send CV Book call | a | b |"
+    )
+
+
+def test_snippets_cut_around_the_match_in_the_text_you_see():
+    body = "**word** " * 30 + "**needle** " + "**word** " * 30
+    snippet = _note_snippet(body, "needle")
+    assert "*" not in snippet and "needle" in snippet
+    assert snippet.startswith("…") and snippet.endswith("…") and len(snippet) <= 2 * 70 + 2
+
+
 def _search(client, q, **params):
     r = client.get("/api/v1/search", params={"q": q, **params})
     assert r.status_code == 200, r.text
@@ -98,7 +140,7 @@ def test_search_across_everything(client, seeded):
     assert ("link", app_link) in kinds("take-home brief")
     notes = _search(client, "kafka consumer")
     assert [(h["kind"], h["link"]) for h in notes] == [("note", "/notes")]
-    assert "Kafka" in notes[0]["snippet"]
+    assert notes[0]["snippet"] == "Read up on Kafka consumer groups"  # without the note's Markdown marks
 
     # Title matches come first, and the application's interviews, offer and calls don't match
     # on its name alone (only on what they say).
