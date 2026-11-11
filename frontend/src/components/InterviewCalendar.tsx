@@ -459,7 +459,6 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
           from: formatDay(first, first.slice(0, 4) === last.slice(0, 4) ? "dayMonth" : "dayMonthYear", lang),
           to: formatDay(last, "dayMonthYear", lang),
         });
-  const isCurrent = today >= first && today <= last;
   const props = { anchor, period, days, today, names };
 
   return (
@@ -486,7 +485,7 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
             </Title>
           </Group>
           <Group gap="sm" wrap="nowrap">
-            <Button size="xs" variant={isCurrent ? "subtle" : "default"} onClick={() => setAnchor(today)}>
+            <Button size="xs" variant="default" onClick={() => setAnchor(today)}>
               {t("calendar.today")}
             </Button>
             <SegmentedControl

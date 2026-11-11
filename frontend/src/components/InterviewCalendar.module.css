@@ -159,6 +159,10 @@
   white-space: normal;
 }
 
+.week .chipLine {
+  align-items: baseline;
+}
+
 .chipSub {
   color: var(--mantine-color-text);
   opacity: 0.75;
