@@ -26,6 +26,7 @@ interface Role {
   salary_max: number | null;
   day_rate: number | null;
   ir35: string | null;
+  currency: string | null;
   description: string | null;
   decision: string | null;
   decision_reason: string | null;
@@ -552,6 +553,17 @@ test.describe("editing a role", () => {
     await save(dialog);
     await expect(lineOf(page, "Edit Pay")).toContainText("£90k");
     expect(await role(request, "Edit Pay")).toMatchObject({ day_rate: null, ir35: null, salary_min: 90000 });
+  });
+
+  test("a role in dollars shows dollars, and stays in dollars after an edit", async ({ page, request }) => {
+    await seedRole(request, "Edit Dollars", { salary_min: 120000, salary_max: 150000, currency: "USD" });
+    await openRoles(page);
+    await expect(lineOf(page, "Edit Dollars")).toContainText("$120k–$150k");
+    const dialog = await edit(page, "Edit Dollars");
+    await titleField(dialog).fill("Edit Dollars Renamed");
+    await save(dialog);
+    await expect(lineOf(page, "Edit Dollars Renamed")).toContainText("$120k–$150k");
+    expect((await role(request, "Edit Dollars Renamed")).currency).toBe("USD");
   });
 
   test("adding a person to a role that had none", async ({ page, request }) => {

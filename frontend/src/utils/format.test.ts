@@ -9,6 +9,7 @@ import {
   formatNumber,
   formatShortWeekday,
   type DatePattern,
+  withCurrency,
 } from "./format";
 import { formatDate, formatDateTime } from "./time";
 
@@ -126,5 +127,8 @@ describe("formatMoney", () => {
     expect(formatMoney(85000, "GBP", "en")).toBe("£85,000");
     expect(formatMoney(150000, "CHF", "en")).toBe("150,000 CHF");
     expect(formatMoney(null, "GBP", "en")).toBe("—");
+    expect(withCurrency("80k", "EUR")).toBe("€80k");
+    expect(withCurrency("80k", "CHF")).toBe("80k CHF");
+    expect(withCurrency("80k", null)).toBe("80k");
   });
 });
