@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.8 (2026-11-11)
+
+- The X on a link's rename box cancels again instead of saving what you typed, and the tick saves once, so it no longer shows That didn't work. (#311).
+
 ## 1.23.7 (2026-11-11)
 
 - In the person dialog, an agency or company typed but not chosen from the list is no longer dropped on save: the matching one is used, or it's added as + Add would. Saving a person while their new company or agency is still being made no longer loses the link either. (#314).
