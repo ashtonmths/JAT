@@ -5,6 +5,8 @@ export const REPO = "https://github.com/waddington/job-application-tracker";
 export const SITE_URL = "https://waddington.github.io/job-application-tracker/";
 // The user guide lives on GitHub; the site links to it.
 export const GUIDE = `${REPO}/blob/main/docs/guide/`;
+// The README in Simplified Chinese, for Chinese readers.
+export const README_ZH = `${REPO}/blob/main/README.zh-CN.md`;
 // The <title> and meta description: the words people search for first ("free", "private",
 // "job application tracker"), then what sets it apart. Keep the description near 160 characters.
 export const TITLE = "Free Job Application Tracker: private, no sign-up, open source";
@@ -43,6 +45,13 @@ export const STATS = [
   { value: 100, suffix: "%", label: "of your data on your computer" },
 ];
 
+// Chinese words in English text get lang="zh-CN", so screen readers say them in Chinese.
+export const markZh = (html: string) => html.replace(/[\u4e00-\u9fff]+/g, '<span lang="zh-CN">$&</span>');
+
+// FAQ answers may hold `code` and [links](https://…): Faq.astro shows them, and `plain`
+// strips them for the structured data.
+export const plain = (a: string) => a.replaceAll("`", "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+
 export const FAQ: { q: string; a: string }[] = [
   {
     q: "Is it free?",
@@ -75,6 +84,10 @@ export const FAQ: { q: string; a: string }[] = [
   {
     q: "Does it work on my phone?",
     a: "No. It runs on your computer and you use it in your computer's browser.",
+  },
+  {
+    q: "Is it available in my language?",
+    a: `It comes in English and 简体中文 (Simplified Chinese), the whole app from buttons to dates. It follows your browser's language, and you can switch in the header. More languages are welcome: ask in an issue, or add one in a pull request with [the guide to adding a language](${GUIDE}adding-a-language.md). The README is also [in 简体中文](${README_ZH}).`,
   },
   {
     q: "Can I import my spreadsheet?",

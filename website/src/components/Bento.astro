@@ -1,5 +1,6 @@
 ---
 import { Image } from "astro:assets";
+import { markZh } from "../data";
 import { shot } from "../shots";
 
 const big = [
@@ -84,6 +85,13 @@ const small = [
     title: "Your own stages",
     body: "Rename, add or remove the steps an application goes through, in a settings file, to match how you search.",
   },
+  {
+    icon: "🌐",
+    title: "English and 简体中文",
+    body: "The whole app, from buttons to dates, in English or Simplified Chinese. It follows your browser's language, and you can switch in the header.",
+    // The seventh small card: it takes a whole row rather than sit alone in one.
+    wide: true,
+  },
 ];
 ---
 
@@ -119,11 +127,14 @@ const small = [
         </article>
       ))}
       {small.map((f, i) => (
-        <article class="card spotlight mini reveal" style={`--d:${(i % 3) * 0.08}s`}>
+        <article
+          class:list={["card spotlight mini reveal", { wide: f.wide }]}
+          style={`--d:${(i % 3) * 0.08}s`}
+        >
           <span class="icon" aria-hidden="true">
             {f.icon}
           </span>
-          <h3>{f.title}</h3>
+          <h3 set:html={markZh(f.title)} />
           <p>{f.body}</p>
         </article>
       ))}
@@ -247,6 +258,18 @@ const small = [
   .mini h3 {
     font-size: 19px;
   }
+  /* A whole-row card: the icon beside the words. */
+  .mini.wide {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 22px;
+    align-items: center;
+  }
+  .wide .icon {
+    grid-row: span 2;
+    margin-bottom: 0;
+  }
   @media (max-width: 1000px) {
     .a,
     .c,
@@ -270,6 +293,12 @@ const small = [
     }
     .tile {
       min-height: 400px;
+    }
+    .mini.wide {
+      display: block;
+    }
+    .wide .icon {
+      margin-bottom: 18px;
     }
   }
 </style>
