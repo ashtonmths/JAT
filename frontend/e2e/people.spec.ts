@@ -300,6 +300,62 @@ test.describe("creating a person", () => {
     expect(await person(request, "Entered Person")).toMatchObject({ agency_id: agency?.id });
   });
 
+  /** Hold the agency being made until `release` is called; `seen` resolves once it's asked for. */
+  const holdAgencyPost = async (page: Page) => {
+    let release = () => {};
+    let asked = () => {};
+    const held = new Promise<void>((done) => (release = done));
+    const seen = new Promise<void>((done) => (asked = done));
+    await page.route("**/api/v1/agencies", async (route) => {
+      if (route.request().method() === "POST") {
+        asked();
+        await held;
+      }
+      await route.continue();
+    });
+    return { release, seen };
+  };
+
+  test("saving twice while a typed agency is being made makes one agency and one person", async ({
+    page,
+    request,
+  }) => {
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Twice Typed Person");
+    await dialog.getByLabel("Agency").first().fill("Twice Typed Agency");
+    const { release, seen } = await holdAgencyPost(page);
+    // Two submits in one go, before the page can redraw: as a quick double Enter can.
+    await dialog.locator("form").evaluate((form: HTMLFormElement) => {
+      form.requestSubmit();
+      form.requestSubmit();
+    });
+    await seen;
+    release();
+    await expect(dialog).toBeHidden();
+    await expect.poll(() => people(request, "Twice Typed Person").then((p) => p.length)).toBe(1);
+    expect(await agencies(request, "Twice Typed Agency")).toHaveLength(1);
+  });
+
+  test("Cancel while a typed agency is being made doesn't save the person", async ({ page, request }) => {
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Cancelled Typed Person");
+    await dialog.getByLabel("Agency").first().fill("Cancelled Typed Agency");
+    const { release, seen } = await holdAgencyPost(page);
+    const made = page.waitForResponse(
+      (r) => r.request().method() === "POST" && r.url().endsWith("/agencies"),
+    );
+    await dialog.getByRole("button", { name: "Add person", exact: true }).click();
+    await seen;
+    await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(dialog).toBeHidden();
+    release();
+    await made;
+    await page.waitForTimeout(1000); // time for a person to be sent, if one were going to be
+    expect(await people(request, "Cancelled Typed Person")).toHaveLength(0);
+  });
+
   test("an existing agency typed but not chosen is that one, not a new one", async ({ page, request }) => {
     const agency = await create(request, "agencies", { name: "Typed Existing Agency" });
     const made = await create(request, "contacts", { name: "Typed Existing Person" });

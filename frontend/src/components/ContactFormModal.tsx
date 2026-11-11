@@ -2,7 +2,7 @@ import { ActionIcon, Button, Group, Modal, Select, Stack, Text, TextInput } from
 import { useForm } from "@mantine/form";
 import { randomId } from "@mantine/hooks";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Contact, Schemas } from "../api/client";
@@ -111,32 +111,60 @@ export function ContactFormModal({
   // A name typed in the Agency or Company box but not chosen from its list: saving keeps it.
   const [typedAgency, setTypedAgency] = useState("");
   const [typedCompany, setTypedCompany] = useState("");
+  /** What saving has made from a typed name, so a retry after a failed save reuses it. */
+  const made = useRef<Record<"agency" | "company", { name: string; id: string } | null>>({
+    agency: null,
+    company: null,
+  });
+  /** A save is under way: a second Enter mustn't make the agency, or the person, twice. */
+  const busy = useRef(false);
+  /** Counts each opening and closing, so a save still making an agency stops if it's cancelled. */
+  const shown = useRef(0);
+  useEffect(() => {
+    shown.current += 1;
+    if (opened) made.current = { agency: null, company: null };
+  }, [opened]);
 
   /** The id to save for a box: its choice, or the one named by what was typed, made as + Add would. */
   async function chosenOrTyped(
+    kind: "agency" | "company",
     typed: string,
     chosen: string | null,
-    existing: { id: string; name: string }[] | undefined,
+    existing: { id: string; name: string }[],
     create: (name: string) => Promise<{ id: string }>,
   ): Promise<string | null> {
     if (!typed) return chosen;
-    return (existing ?? []).find((e) => sameName(e.name, typed))?.id ?? (await create(typed)).id;
+    const last = made.current[kind];
+    if (last && sameName(last.name, typed)) return last.id;
+    const found = existing.find((e) => sameName(e.name, typed));
+    if (found) return found.id;
+    const { id } = await create(typed);
+    made.current[kind] = { name: typed, id };
+    return id;
   }
 
   async function saveWith(values: Values) {
+    if (busy.current) return;
+    // Until the lists have loaded, a typed name can't be matched: don't make a second of one.
+    if ((typedAgency && !agencies) || (typedCompany && !companies)) return;
+    busy.current = true;
+    const opening = shown.current;
     let agencyId: string | null;
     let companyId: string | null;
     try {
-      agencyId = await chosenOrTyped(typedAgency, values.agencyId, agencies, (name) =>
+      agencyId = await chosenOrTyped("agency", typedAgency, values.agencyId, agencies ?? [], (name) =>
         createAgency.mutateAsync({ name }),
       );
-      form.setFieldValue("agencyId", agencyId); // so a retry after a failed save doesn't make another
-      companyId = await chosenOrTyped(typedCompany, values.companyId, companies, (name) =>
+      companyId = await chosenOrTyped("company", typedCompany, values.companyId, companies ?? [], (name) =>
         createCompany.mutateAsync({ name }),
       );
-      form.setFieldValue("companyId", companyId);
     } catch {
+      busy.current = false;
       return; // the hook has shown the error
+    }
+    if (shown.current !== opening) {
+      busy.current = false;
+      return; // cancelled while the agency or company was being made
     }
     save.mutate(
       {
@@ -156,11 +184,12 @@ export function ContactFormModal({
           onSaved?.(saved);
           onClose();
         },
+        onSettled: () => {
+          busy.current = false;
+        },
       },
     );
   }
-
-  const submit = form.onSubmit((values) => void saveWith(values));
 
   return (
     <Modal
@@ -169,7 +198,7 @@ export function ContactFormModal({
       title={contact ? t("form.editTitle", { name: contact.name }) : t("form.newTitle")}
       size="lg"
     >
-      <form onSubmit={submit}>
+      <form onSubmit={(event) => form.onSubmit((values) => void saveWith(values))(event)}>
         <Stack>
           <Group grow align="flex-start">
             <TextInput label={t("form.name")} data-autofocus {...form.getInputProps("name")} />
