@@ -539,8 +539,28 @@ the people there and notes); agencies have the same.
 
 ## Interviews
 
-Every interview round across all applications: what's coming up, then everything earlier
-or cancelled. On each row:
+Every interview round across all applications, as a **Calendar** (what the page opens on) or a
+**List**: the switch at the top right, and the page remembers your choice in this browser.
+`/interviews?view=list` or `?view=calendar` opens one directly.
+
+**Calendar.** A month, or a week with **Week** (remembered too), Monday first; the arrows go back or
+forward a month or week, and **Today** comes back to now. Each round with a time sits on its day as
+a small ticket with its time and company (a week also shows the round's name): blue coming up,
+orange awaiting its outcome, green done, grey and struck through if cancelled, with a small mark if
+it was rescheduled. A take-home with only a deadline shows as "Due 18:00". A month's day with more
+rounds than fit says "+2 more"; click it for the rest. Hover over a round, or tab to it, to see its
+details: name, time, company and role, the interviewers and the format, with **Open the
+application** and the same Done, Reschedule and edit buttons as the list. Click it to keep the
+details open while you use them; click elsewhere or press Escape to close them.
+
+Above the days, the period's figures: rounds held, awaiting outcome (if any), coming up, cancelled
+and rescheduled (if any), how many companies they're with (not counting cancelled rounds), and how
+the number of rounds that weren't cancelled compares with the month or week before. Under the
+calendar, **Still to book** lists the open rounds with no time yet and those that need a new time,
+with their buttons. On a phone the calendar is an agenda: only the days with rounds, one under
+another, each round in full.
+
+**List.** What's coming up, then everything earlier or cancelled. On each row:
 
 - **Done** (an open round, booked or not, before or after its time, so a take-home handed in early counts) asks
   for the debrief and the questions asked, then marks it done; **Didn't happen** (once its time has
