@@ -30,7 +30,10 @@ Each of these cost time once. Add a line when something new does.
   Kai wants a file there, write it in the job folder and give Kai a `!` command to copy it in.
 - **Reviewer agents' Bash is refused while the lead's session is inside a worktree** (2026-11-09): set up a PR's
   worktree with `git worktree add` and work in it by absolute path, without EnterWorktree, until the reviewers finish.
-- **The auto-mode check won't let an agent run an external contributor's code**: the lead runs the checks itself.
+- **The auto-mode check won't let an agent run an external contributor's code**: the lead runs the checks itself. It
+  isn't consistent for the lead either (2026-11-10/11: it refused `checks.sh`, `pnpm install` and pytest on contributor
+  branches some times, allowed them others). Run contributor code in the Windows VM when it refuses; once their branch
+  is carried with our commits on top, the checks have gone through.
 - **`!` commands run in the session's current folder**, maybe a worktree: tell Kai to run things like
   `playwright --ui` in their own terminal.
 - **The auto-mode permission check** can block `gh pr merge` or a release: ask Kai, never work around it. It also refused
@@ -60,6 +63,8 @@ Each of these cost time once. Add a line when something new does.
 
 ## Browser tests (`frontend/e2e/`)
 
+- **A `test.fail` can fail the run by passing:** "Expected to fail, but passed" means the known bug didn't happen that
+  time (`fix-link-rename-tick-error` is racy). Rerun the browser tests (`tools/dev/e2e_only.sh`) before blaming the PR.
 - `fixtures.ts` starts a server per test file on seeded demo data. Any console error, uncaught exception or failed request
   fails the test unless `problems.allow(/…/)` (keep it narrow). Tests in a file share data: unique names, make what you
   need through the API, don't rely on counts.
