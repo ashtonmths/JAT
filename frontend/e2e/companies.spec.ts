@@ -445,45 +445,43 @@ test.describe("making a company inside other dialogs", () => {
     await expect(page.getByRole("link", { name: "Started Here" })).toBeVisible();
   });
 
-  // KNOWN BUG (fix-person-saved-before-new-company on the roadmap): expected to fail until it is fixed.
-  test.fail(
-    "saving a person while their new company is still being made keeps them at it",
-    async ({ page, request }) => {
-      await slow(page, `**${API}/companies`, "POST", 1500);
-      await openRecruiters(page);
-      const dialog = await newPerson(page);
-      await dialog.getByLabel("Name").fill("Too Quick Person");
-      await dialog.getByLabel("Company").first().fill("Too Quick Co");
-      const made = answered(page, "POST", /\/companies$/);
-      await page.getByRole("option", { name: '+ Add "Too Quick Co"' }).click();
-      await dialog.getByRole("button", { name: "Add person", exact: true }).click();
-      await made;
-      await expect(dialog).toBeHidden();
-      const people = await list<Person>(request, "contacts");
-      const [co] = await companies(request, "Too Quick Co");
-      expect(people.find((p) => p.name === "Too Quick Person")?.company_id).toBe(co?.id);
-    },
-  );
+  test("saving a person while their new company is still being made keeps them at it", async ({
+    page,
+    request,
+  }) => {
+    await slow(page, `**${API}/companies`, "POST", 1500);
+    await openRecruiters(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Too Quick Person");
+    await dialog.getByLabel("Company").first().fill("Too Quick Co");
+    const made = answered(page, "POST", /\/companies$/);
+    await page.getByRole("option", { name: '+ Add "Too Quick Co"' }).click();
+    await dialog.getByRole("button", { name: "Add person", exact: true }).click();
+    await made;
+    await expect(dialog).toBeHidden();
+    const people = await list<Person>(request, "contacts");
+    const [co] = await companies(request, "Too Quick Co");
+    expect(people.find((p) => p.name === "Too Quick Person")?.company_id).toBe(co?.id);
+  });
 
-  // KNOWN BUG (fix-person-saved-before-new-company on the roadmap): expected to fail until it is fixed.
-  test.fail(
-    "saving a person while their new agency is still being made keeps them at it",
-    async ({ page, request }) => {
-      await slow(page, `**${API}/agencies`, "POST", 1500);
-      await openRecruiters(page);
-      const dialog = await newPerson(page);
-      await dialog.getByLabel("Name").fill("Too Quick Recruiter");
-      await dialog.getByLabel("Agency").first().fill("Too Quick Agency");
-      const made = answered(page, "POST", /\/agencies$/);
-      await page.getByRole("option", { name: '+ Add "Too Quick Agency"' }).click();
-      await dialog.getByRole("button", { name: "Add person", exact: true }).click();
-      await made;
-      await expect(dialog).toBeHidden();
-      const people = await list<Person>(request, "contacts");
-      const [made2] = await agencies(request, "Too Quick Agency");
-      expect(people.find((p) => p.name === "Too Quick Recruiter")?.agency_id).toBe(made2?.id);
-    },
-  );
+  test("saving a person while their new agency is still being made keeps them at it", async ({
+    page,
+    request,
+  }) => {
+    await slow(page, `**${API}/agencies`, "POST", 1500);
+    await openRecruiters(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Too Quick Recruiter");
+    await dialog.getByLabel("Agency").first().fill("Too Quick Agency");
+    const made = answered(page, "POST", /\/agencies$/);
+    await page.getByRole("option", { name: '+ Add "Too Quick Agency"' }).click();
+    await dialog.getByRole("button", { name: "Add person", exact: true }).click();
+    await made;
+    await expect(dialog).toBeHidden();
+    const people = await list<Person>(request, "contacts");
+    const [made2] = await agencies(request, "Too Quick Agency");
+    expect(people.find((p) => p.name === "Too Quick Recruiter")?.agency_id).toBe(made2?.id);
+  });
 });
 
 test.describe("renaming a company", () => {
@@ -628,8 +626,7 @@ test.describe("renaming a company", () => {
     expect(await companies(request, "Too Late Co")).toHaveLength(0);
   });
 
-  // KNOWN BUG (fix-rename-drops-unsaved-about on the roadmap): expected to fail until it is fixed.
-  test.fail("words being typed in About survive a rename", async ({ page, request }) => {
+  test("words being typed in About survive a rename", async ({ page, request }) => {
     const here = await company(request, "Typing Co");
     await openCompany(page, here.id, "Typing Co");
     await page.getByLabel("About", { exact: true }).fill("Half a thought");

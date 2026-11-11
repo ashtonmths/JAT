@@ -43,21 +43,24 @@ import { DeleteButton } from "../components/DeleteButton";
 import { OffersCard } from "../components/Offers";
 import { SentDocumentsCard } from "../components/SentDocuments";
 import { InterviewsCard } from "../components/Interviews";
+import { useDraft } from "../utils/useDraft";
 
 const toDate = (value: string | null) => (value ? dayjs(value).format("YYYY-MM-DD") : null);
 
 function DetailsCard({ app }: { app: ApplicationDetail }) {
   const { t } = useTranslation("applications");
   const update = useUpdateApplication();
-  const [appliedOn, setAppliedOn] = useState<string | null>(app.applied_on);
-  const [followUp, setFollowUp] = useState<string | null>(app.follow_up_on);
-  const [snoozed, setSnoozed] = useState<string | null>(app.snoozed_until);
-  const [tags, setTags] = useState<string[]>(app.tags);
-  const dirty =
-    appliedOn !== app.applied_on ||
-    followUp !== app.follow_up_on ||
-    snoozed !== app.snoozed_until ||
-    tags.join("\u0000") !== app.tags.join("\u0000");
+  // Fields follow the saved application (a move fills in the applied date) until edited here.
+  const draft = useDraft(
+    {
+      applied_on: app.applied_on,
+      follow_up_on: app.follow_up_on,
+      snoozed_until: app.snoozed_until,
+      tags: app.tags,
+    },
+    app.id,
+  );
+  const { values } = draft;
 
   return (
     <Card withBorder>
@@ -68,25 +71,25 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
           <DateInput
             label={t("details.appliedOn")}
             clearable
-            value={appliedOn}
-            onChange={(v) => setAppliedOn(toDate(v))}
+            value={values.applied_on}
+            onChange={(v) => draft.set("applied_on", toDate(v))}
           />
           <DateInput
             label={t("details.followUpOn")}
             description={t("details.followUpHint")}
             clearable
-            value={followUp}
-            onChange={(v) => setFollowUp(toDate(v))}
+            value={values.follow_up_on}
+            onChange={(v) => draft.set("follow_up_on", toDate(v))}
           />
           <DateInput
             label={t("details.snoozeUntil")}
             description={t("details.snoozeHint")}
             clearable
-            value={snoozed}
-            onChange={(v) => setSnoozed(toDate(v))}
+            value={values.snoozed_until}
+            onChange={(v) => draft.set("snoozed_until", toDate(v))}
           />
         </SimpleGrid>
-        <TagsInput label={t("details.tags")} value={tags} onChange={setTags} />
+        <TagsInput label={t("details.tags")} value={values.tags} onChange={(v) => draft.set("tags", v)} />
         <Group justify="space-between">
           <Switch
             label={t("details.archived")}
@@ -94,25 +97,17 @@ function DetailsCard({ app }: { app: ApplicationDetail }) {
             onChange={(e) => update.mutate({ id: app.id, body: { archived: e.currentTarget.checked } })}
           />
           <Button
-            disabled={!dirty}
+            disabled={!draft.dirty}
             loading={update.isPending}
-            onClick={() =>
+            onClick={() => {
+              // Only the fields edited here, so a value the server changed meanwhile isn't sent back.
+              const sent = draft.changes;
               update.mutate(
-                {
-                  id: app.id,
-                  body: { applied_on: appliedOn, follow_up_on: followUp, snoozed_until: snoozed, tags },
-                },
-                {
-                  // Take whatever the server stored (e.g. normalised values) as the new baseline.
-                  onSuccess: (saved) => {
-                    setAppliedOn(saved.applied_on);
-                    setFollowUp(saved.follow_up_on);
-                    setSnoozed(saved.snoozed_until);
-                    setTags(saved.tags);
-                  },
-                },
-              )
-            }
+                { id: app.id, body: sent },
+                // Take whatever the server stored (e.g. normalised values) as the new baseline.
+                { onSuccess: (saved) => draft.saved(sent, saved) },
+              );
+            }}
           >
             {t("details.save")}
           </Button>

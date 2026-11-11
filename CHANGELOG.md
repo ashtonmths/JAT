@@ -5,6 +5,22 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.7 (2026-11-11)
+
+- In the person dialog, an agency or company typed but not chosen from the list is no longer dropped on save: the matching one is used, or it's added as + Add would. Saving a person while their new company or agency is still being made no longer loses the link either. (#314).
+
+## 1.23.6 (2026-11-11)
+
+- Today keeps what you're typing when the date changes at midnight, and an open Reschedule dialog on Today stays open when the round's or call's start time passes; while Today loads the new day it dims what it shows. (#310).
+
+## 1.23.5 (2026-11-11)
+
+- Saving an application's Details after moving it to Applied no longer wipes the applied date, and renaming a company no longer throws away words typed but not yet saved in About: forms on a page now follow what's saved and keep only your own unsaved edits, and Save sends just the fields you changed. (#313).
+
+## 1.23.4 (2026-11-11)
+
+- Installing no longer needs a C compiler: the repo's `.python-version` asks uv for Python 3.12 to 3.14, so a computer with no Python gets one with ready-built packages, not 3.15 (on Windows, `uv sync` failed asking for Visual C++). (#312).
+
 ## 1.23.3 (2026-11-11)
 
 - The data folder gets a .gitattributes that stops git changing line endings: uploads are committed byte for byte and notes and the export keep Unix line endings, including with Git for Windows. Existing data folders get it when the app starts (#308, carrying #302).

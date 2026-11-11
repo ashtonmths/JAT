@@ -174,42 +174,55 @@ export const WHO = [
 
 /**
  * The Reschedule button and its dialog, for a booked round; Set new time for one waiting for a new
- * time, even if its old time has since been cleared; nothing for any other.
+ * time, even if its old time has since been cleared; nothing for any other. With onOpen, the button
+ * only asks for the dialog: a page whose rows move between sections (Today) hosts it by the round's id,
+ * so a refresh moving the row doesn't close it.
  */
-export function RescheduleButton({ interview }: { interview: Reschedulable & { status: string } }) {
+export function RescheduleButton({
+  interview,
+  onOpen,
+}: {
+  interview: Reschedulable & { status: string };
+  onOpen?: () => void;
+}) {
   const { t } = useTranslation("interviews");
   const [open, setOpen] = useState(false);
   if (interview.status !== "scheduled") return null;
   const label = roundLabel(interview);
-  if (interview.needs_new_time_since) {
-    return (
-      <>
-        <Button
-          size="compact-xs"
-          variant="light"
-          color="red"
-          aria-label={t("needsNewTime.setNamed", { label })}
-          onClick={() => setOpen(true)}
-        >
-          {t("needsNewTime.setAction")}
-        </Button>
-        {open && <SetNewTimeModal interview={interview} onClose={() => setOpen(false)} />}
-      </>
-    );
-  }
-  if (!interview.starts_at) return null;
+  const waiting = !!interview.needs_new_time_since;
+  if (!waiting && !interview.starts_at) return null;
   return (
     <>
       <Button
         size="compact-xs"
         variant="light"
-        aria-label={t("reschedule.named", { label })}
-        onClick={() => setOpen(true)}
+        color={waiting ? "red" : undefined}
+        aria-label={waiting ? t("needsNewTime.setNamed", { label }) : t("reschedule.named", { label })}
+        onClick={() => (onOpen ? onOpen() : setOpen(true))}
       >
-        {t("reschedule.action")}
+        {waiting ? t("needsNewTime.setAction") : t("reschedule.action")}
       </Button>
-      {open && <RescheduleModal interview={interview} onClose={() => setOpen(false)} />}
+      {open && (
+        <RoundRescheduleDialog interview={interview} waiting={waiting} onClose={() => setOpen(false)} />
+      )}
     </>
+  );
+}
+
+/** A round's dialog: Set new time for one waiting for a new time (as it was when opened), Reschedule otherwise. */
+export function RoundRescheduleDialog({
+  interview,
+  waiting,
+  onClose,
+}: {
+  interview: Reschedulable;
+  waiting: boolean;
+  onClose: () => void;
+}) {
+  return waiting ? (
+    <SetNewTimeModal interview={interview} onClose={onClose} />
+  ) : (
+    <RescheduleModal interview={interview} onClose={onClose} />
   );
 }
 

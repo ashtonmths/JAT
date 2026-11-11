@@ -21,9 +21,10 @@ const PICKER = "YYYY-MM-DD HH:mm:ss";
 
 /**
  * The Reschedule button and its dialog, for a booked call (its time may have passed); Set new time for one
- * waiting for a new time; nothing for any other.
+ * waiting for a new time; nothing for any other. With onOpen, the button only asks for the dialog, which
+ * the page hosts by the call's id (Today, where a refresh can move the row to another section).
  */
-export function CallRescheduleButton({ meeting }: { meeting: Meeting }) {
+export function CallRescheduleButton({ meeting, onOpen }: { meeting: Meeting; onOpen?: () => void }) {
   const { t } = useTranslation("interviews");
   const [open, setOpen] = useState(false);
   if (meeting.status !== "scheduled") return null;
@@ -36,17 +37,29 @@ export function CallRescheduleButton({ meeting }: { meeting: Meeting }) {
         variant="light"
         color={waiting ? "red" : undefined}
         aria-label={waiting ? t("needsNewTime.setNamed", { label }) : t("reschedule.named", { label })}
-        onClick={() => setOpen(true)}
+        onClick={() => (onOpen ? onOpen() : setOpen(true))}
       >
         {waiting ? t("needsNewTime.setAction") : t("reschedule.action")}
       </Button>
-      {open &&
-        (waiting ? (
-          <CallSetNewTimeModal meeting={meeting} onClose={() => setOpen(false)} />
-        ) : (
-          <CallRescheduleModal meeting={meeting} onClose={() => setOpen(false)} />
-        ))}
+      {open && <CallRescheduleDialog meeting={meeting} waiting={waiting} onClose={() => setOpen(false)} />}
     </>
+  );
+}
+
+/** A call's dialog: Set new time for one waiting for a new time (as it was when opened), Reschedule otherwise. */
+export function CallRescheduleDialog({
+  meeting,
+  waiting,
+  onClose,
+}: {
+  meeting: Meeting;
+  waiting: boolean;
+  onClose: () => void;
+}) {
+  return waiting ? (
+    <CallSetNewTimeModal meeting={meeting} onClose={onClose} />
+  ) : (
+    <CallRescheduleModal meeting={meeting} onClose={onClose} />
   );
 }
 

@@ -7,6 +7,17 @@ steps. The tracker now starts on Windows, with git snapshots turned off there (t
 connection tooltip says "snapshots off on Windows"), but other parts still need work, so don't
 use it for your real data on Windows yet.
 
+## `uv sync` asks for a C compiler, or "Microsoft Visual C++ 14.0 or greater is required"
+
+uv is building a package from source because it picked a Python too new to have ready-built
+packages for it. The repo's `.python-version` asks for Python 3.12 to 3.14, so `uv sync` in the
+repo folder picks one of those; if you've set `UV_PYTHON` or passed `--python`, choose 3.12, 3.13
+or 3.14 instead, for example `uv sync --python 3.13`.
+
+The range in `.python-version` is something uv understands; pyenv, asdf and mise expect a single
+version there and complain inside the repo folder. Use uv's commands (`uv sync`, `uv run`), or
+set your tool's version for the folder another way (for example `PYENV_VERSION=3.13`).
+
 ## "No data directory configured"
 
 `jat` doesn't know where your data is. Add `JAT_DATA_DIR=~/your-data-folder` to `.env` in

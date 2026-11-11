@@ -239,7 +239,7 @@ a language, see [adding a language](docs/guide/adding-a-language.md).
 > your data lives and how the app finds it, backups and restoring, using it on a second
 > computer, customising stages, every command, and troubleshooting.
 
-It runs on **Linux or macOS** (Windows isn't supported yet). You need Python 3.12+ with
+It runs on **Linux or macOS** (Windows isn't supported yet). You need Python 3.12 to 3.14 with
 [uv](https://docs.astral.sh/uv/), and Node.js 22.12+ with [pnpm](https://pnpm.io/) to build
 the web UI. With those installed, setup takes about ten minutes.
 
