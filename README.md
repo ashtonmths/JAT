@@ -2,6 +2,8 @@
 
 # 🎯 Job Application Tracker
 
+English · [简体中文](README.zh-CN.md)
+
 **A self-hosted job application tracker for software engineers.<br>
 No AI. No cloud. No account. No tracking.**
 

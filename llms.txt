@@ -84,6 +84,7 @@ The JSON API is documented at http://127.0.0.1:8770/api/docs; insights live unde
 ## Docs
 - [Website](https://waddington.github.io/job-application-tracker/): the project's landing page
 - [README](README.md): overview, screenshots, features, getting started, FAQ
+- [README in Simplified Chinese](README.zh-CN.md): the same README in 简体中文
 - [User guide](docs/guide/README.md): install, where data lives (`--data-dir` / `JAT_DATA_DIR`),
   backups, restore, second computer, every page, customising stages, commands, troubleshooting
 - [Product requirements](docs/prd/tracker.md): goals, user stories, functional requirements
