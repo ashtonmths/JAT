@@ -535,21 +535,19 @@ test.describe("deleting", () => {
 });
 
 test.describe("the applied date and Save", () => {
-  // KNOWN BUG, not fixed yet: the form keeps its old values when a move changes them on the server,
-  // so it shows no date and looks unsaved, and Save then wipes the date. These two are marked as
-  // expected to fail: fixing the bug turns them red, as a reminder to remove test.fail.
-  test.fail(
-    "moving to Applied fills in the date on the form too, with nothing to save",
-    async ({ page, request }) => {
-      const app = await openNew(page, request, { stage: "interested" });
-      await move(page, "Applied");
-      await expect.poll(async () => (await app.read()).applied_on).toBe(today());
-      await expect(page.getByLabel("Applied on", { exact: true })).not.toHaveValue("");
-      await expect(page.getByRole("button", { name: "Save details" })).toBeDisabled();
-    },
-  );
+  // A move changes the date on the server: the form follows it, and Save sends only what was edited.
+  test("moving to Applied fills in the date on the form too, with nothing to save", async ({
+    page,
+    request,
+  }) => {
+    const app = await openNew(page, request, { stage: "interested" });
+    await move(page, "Applied");
+    await expect.poll(async () => (await app.read()).applied_on).toBe(today());
+    await expect(page.getByLabel("Applied on", { exact: true })).not.toHaveValue("");
+    await expect(page.getByRole("button", { name: "Save details" })).toBeDisabled();
+  });
 
-  test.fail("saving a tag after that move keeps the date it filled in", async ({ page, request }) => {
+  test("saving a tag after that move keeps the date it filled in", async ({ page, request }) => {
     const app = await openNew(page, request, { stage: "interested" });
     await move(page, "Applied");
     await expect.poll(async () => (await app.read()).applied_on).toBe(today());

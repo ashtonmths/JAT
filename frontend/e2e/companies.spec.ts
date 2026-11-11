@@ -628,8 +628,7 @@ test.describe("renaming a company", () => {
     expect(await companies(request, "Too Late Co")).toHaveLength(0);
   });
 
-  // KNOWN BUG (fix-rename-drops-unsaved-about on the roadmap): expected to fail until it is fixed.
-  test.fail("words being typed in About survive a rename", async ({ page, request }) => {
+  test("words being typed in About survive a rename", async ({ page, request }) => {
     const here = await company(request, "Typing Co");
     await openCompany(page, here.id, "Typing Co");
     await page.getByLabel("About", { exact: true }).fill("Half a thought");
