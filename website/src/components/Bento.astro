@@ -89,7 +89,7 @@ const small = [
     icon: "🌐",
     title: "English and 简体中文",
     body: "The whole app, from buttons to dates, in English or Simplified Chinese. It follows your browser's language, and you can switch in the header.",
-    // The seventh small card: it takes a whole row rather than sit alone in one.
+    // The seventh small card: at three to a row it takes a whole row rather than sit alone.
     wide: true,
   },
 ];
@@ -283,8 +283,17 @@ const small = [
     .a {
       grid-column: span 6;
     }
-    .mini {
+    /* Two to a row here: the odd big tile (g) pairs with the first small card, so seven
+       small cards fill the rows with the language card at its usual size. */
+    .mini,
+    .mini.wide {
       grid-column: span 3;
+    }
+    .mini.wide {
+      display: block;
+    }
+    .wide .icon {
+      margin-bottom: 18px;
     }
   }
   @media (max-width: 640px) {
@@ -293,12 +302,6 @@ const small = [
     }
     .tile {
       min-height: 400px;
-    }
-    .mini.wide {
-      display: block;
-    }
-    .wide .icon {
-      margin-bottom: 18px;
     }
   }
 </style>

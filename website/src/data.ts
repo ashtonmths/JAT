@@ -45,12 +45,13 @@ export const STATS = [
   { value: 100, suffix: "%", label: "of your data on your computer" },
 ];
 
-// Chinese words in English text get lang="zh-CN", so screen readers say them in Chinese.
-export const markZh = (html: string) => html.replace(/[\u4e00-\u9fff]+/g, '<span lang="zh-CN">$&</span>');
+// Chinese words in English text get lang="zh-CN", so screen readers say them in Chinese. Give it
+// escaped text only, never markup: it would wrap Chinese inside an attribute too.
+export const markZh = (text: string) => text.replace(/[\u4e00-\u9fff]+/g, '<span lang="zh-CN">$&</span>');
 
 // FAQ answers may hold `code` and [links](https://…): Faq.astro shows them, and `plain`
 // strips them for the structured data.
-export const plain = (a: string) => a.replaceAll("`", "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+export const plain = (a: string) => a.replaceAll("`", "").replace(/\[([^\]]+)\]\(https:\/\/[^)\s]+\)/g, "$1");
 
 export const FAQ: { q: string; a: string }[] = [
   {
