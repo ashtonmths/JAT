@@ -6,11 +6,12 @@ import os
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from . import __version__
@@ -24,6 +25,9 @@ from .platform import is_windows
 from .security import LocalOnly
 from .snapshot.git import SnapshotService
 from .storage.files import MAX_BYTES
+
+if TYPE_CHECKING:
+    from starlette.types import Scope
 
 DEFAULT_DIST = CODE_ROOT / "frontend" / "dist"
 DEV_ORIGINS = ["http://127.0.0.1:5173", "http://localhost:5173"]
@@ -81,10 +85,63 @@ def _api_docs(app: FastAPI) -> None:
         )
 
 
+# The app's own files are served with these types, never the system's guess: Windows takes it from the registry,
+# which often says text/plain for .js, and the browser then won't run the page (docs/rfc/windows.md).
+STATIC_TYPES: dict[str, str] = {
+    ".avif": "image/avif",
+    ".css": "text/css",
+    ".gif": "image/gif",
+    ".html": "text/html",
+    ".ico": "image/x-icon",
+    ".jpeg": "image/jpeg",
+    ".jpg": "image/jpeg",
+    ".js": "text/javascript",
+    ".json": "application/json",
+    ".map": "application/json",
+    ".mjs": "text/javascript",
+    ".otf": "font/otf",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+    ".ttf": "font/ttf",
+    ".txt": "text/plain",
+    ".wasm": "application/wasm",
+    ".webmanifest": "application/manifest+json",
+    ".webp": "image/webp",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+    ".xml": "application/xml",
+}
+
+
+def static_type(path: os.PathLike[str] | str) -> str | None:
+    """The fixed type for one of the app's own files, or None to leave it to the system."""
+    return STATIC_TYPES.get(Path(path).suffix.lower())
+
+
+class AppStaticFiles(StaticFiles):
+    """StaticFiles, with the type from STATIC_TYPES instead of the system's guess."""
+
+    def file_response(
+        self,
+        full_path: os.PathLike[str] | str,
+        stat_result: os.stat_result,
+        scope: Scope,
+        status_code: int = 200,
+    ) -> Response:
+        response = super().file_response(full_path, stat_result, scope, status_code)
+        media_type = static_type(full_path)
+        # A 304 has no body and no type; a 206 keeps this type for its parts.
+        if media_type and "content-type" in response.headers:
+            response.headers["content-type"] = (
+                f"{media_type}; charset=utf-8" if media_type.startswith("text/") else media_type
+            )
+        return response
+
+
 def _mount_frontend(app: FastAPI, dist: Path) -> None:
     index = dist / "index.html"
     if (dist / "assets").is_dir():
-        app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
+        app.mount("/assets", AppStaticFiles(directory=dist / "assets"), name="assets")
 
     @app.get("/{path:path}", include_in_schema=False)
     def spa(path: str):
@@ -95,8 +152,8 @@ def _mount_frontend(app: FastAPI, dist: Path) -> None:
         if path:
             candidate = (dist / path).resolve()
             if candidate.is_file() and dist.resolve() in candidate.parents:
-                return FileResponse(candidate)
-        return FileResponse(index)  # client-side routes
+                return FileResponse(candidate, media_type=static_type(candidate))
+        return FileResponse(index, media_type=static_type(index))
 
 
 def create_app(
