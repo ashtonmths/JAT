@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -31,6 +33,8 @@ def test_health(data_dir, dist):
     assert body["status"] == "ok"
     assert body["schema"] == body["schema_head"] == head_revision()
     assert body["git_repo"] is False
+    assert body["snapshots_enabled"] is False
+    assert body["windows"] is (sys.platform == "win32")
 
 
 def test_spa_routes_and_assets(data_dir, dist):
@@ -38,8 +42,51 @@ def test_spa_routes_and_assets(data_dir, dist):
     for path in ("/", "/applications", "/recruiters/123"):
         r = client.get(path)
         assert r.status_code == 200 and "SPA" in r.text
-    assert client.get("/assets/app.js").text == "console.log('hi')"
-    assert client.get("/favicon.svg").text == "<svg/>"
+        assert "text/html" in r.headers["content-type"]
+    r_js = client.get("/assets/app.js")
+    assert r_js.text == "console.log('hi')"
+    assert "text/javascript" in r_js.headers["content-type"]
+    r_svg = client.get("/favicon.svg")
+    assert r_svg.text == "<svg/>"
+    assert "image/svg+xml" in r_svg.headers["content-type"]
+
+
+def test_static_file_types_override_system_registry(data_dir, dist, monkeypatch):
+    """Windows' registry often maps .js to text/plain, and the page then loads blank. Fake that system guess where
+    Starlette makes it, and check the app's own files still get their fixed types."""
+    monkeypatch.setattr("starlette.responses.guess_type", lambda *args, **kwargs: ("text/plain", None))
+    (dist / "assets" / "module.mjs").write_text("export const x = 1;")
+    (dist / "assets" / "style.css").write_text("body { color: red; }")
+    (dist / "assets" / "font.woff2").write_bytes(b"woff2")
+    (dist / "site.webmanifest").write_text('{"name": "JAT"}')
+    (dist / "data.json").write_text('{"key": "value"}')
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
+
+    def served(path: str, method: str = "GET") -> str:
+        return client.request(method, path).headers["content-type"]
+
+    assert served("/assets/app.js") == "text/javascript; charset=utf-8"
+    assert served("/assets/app.js", "HEAD") == "text/javascript; charset=utf-8"
+    assert served("/assets/module.mjs") == "text/javascript; charset=utf-8"
+    assert served("/assets/style.css") == "text/css; charset=utf-8"
+    assert served("/assets/font.woff2") == "font/woff2"
+    assert served("/favicon.svg") == "image/svg+xml"
+    assert served("/site.webmanifest") == "application/manifest+json"
+    assert served("/data.json") == "application/json"
+    assert served("/") == "text/html; charset=utf-8"
+
+
+def test_static_files_still_answer_not_modified(data_dir, dist):
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
+    etag = client.get("/assets/app.js").headers["etag"]
+    assert client.get("/assets/app.js", headers={"if-none-match": etag}).status_code == 304
+
+
+def test_part_of_a_static_file_keeps_its_type(data_dir, dist, monkeypatch):
+    monkeypatch.setattr("starlette.responses.guess_type", lambda *args, **kwargs: ("text/plain", None))
+    client = TestClient(base_url="http://127.0.0.1", app=create_app(data_dir, dist=dist))
+    r = client.get("/assets/app.js", headers={"range": "bytes=0-6"})
+    assert (r.status_code, r.text, r.headers["content-type"]) == (206, "console", "text/javascript; charset=utf-8")
 
 
 def test_api_paths_never_fall_through_to_spa(data_dir, dist):

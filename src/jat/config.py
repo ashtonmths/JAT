@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     data_dir: Path | None = None
     host: str = "127.0.0.1"
     port: int = 8770
+    windows_snapshots: bool = False
 
 
 class ConfigError(RuntimeError):

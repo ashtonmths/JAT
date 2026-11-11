@@ -5,6 +5,20 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.1 (2026-11-11)
+
+- The app's own files are served with fixed types instead of the system's guess, so the page no longer loads blank on a Windows computer that maps .js to text/plain (#305, carrying #301).
+
+## 1.23.0 (2026-11-10)
+
+- The tracker starts on Windows, as the first step to supporting it: what can't work there yet (Unix file locking, git snapshots, `jat init`'s commit) is off on Windows, and the sidebar's connection tooltip says snapshots are off. `JAT_WINDOWS_SNAPSHOTS=1` turns snapshots back on there, for testing on a test data folder. Windows isn't supported yet. (#300, carrying #283).
+- `/api/v1/health` says whether snapshots are on and whether it's running on Windows. (#300).
+
+## 1.22.1 (2026-11-10)
+
+- The IANA time-zone database (`tzdata`) now comes with the tracker on every platform, so Insights' weekly activity will work on Windows once the tracker runs there. (#298).
+- Insights: a time zone like `Europe`, a folder in the database rather than a zone, gives the unknown time zone error instead of a server error. (#298).
+
 ## 1.22.0 (2026-11-10)
 
 - Recruiters has an In progress filter: the people you have an open application with (as its recruiter, Interested included) or a pitched role still to decide, with how many on the tab; each person's card says how many applications are in progress and roles are to decide. (#296).
