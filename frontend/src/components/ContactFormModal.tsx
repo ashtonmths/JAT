@@ -2,14 +2,15 @@ import { ActionIcon, Button, Group, Modal, Select, Stack, Text, TextInput } from
 import { useForm } from "@mantine/form";
 import { randomId } from "@mantine/hooks";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Contact, Schemas } from "../api/client";
 import { useCreateCompany } from "../api/detailHooks";
 import { useCreateAgency, useSaveContact } from "../api/peopleHooks";
 import { useAgencies, useCompanies } from "../api/hooks";
-import { CreatableSelect } from "./CreatableSelect";
+import { notifyError } from "../api/notifyError";
+import { CreatableSelect, sameName } from "./CreatableSelect";
 
 type Kind = Schemas["ContactDetailIn"]["kind"];
 
@@ -77,8 +78,10 @@ export function ContactFormModal({
     { value: "url", label: t("form.kinds.url") },
     { value: "other", label: t("form.kinds.other") },
   ];
-  const { data: agencies } = useAgencies();
-  const { data: companies } = useCompanies();
+  const agencyList = useAgencies();
+  const companyList = useCompanies();
+  const agencies = agencyList.data;
+  const companies = companyList.data;
   const save = useSaveContact();
   const createAgency = useCreateAgency();
   const createCompany = useCreateCompany();
@@ -108,15 +111,87 @@ export function ContactFormModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened, contact?.id, defaultAgencyId, defaultCompanyId]);
 
-  const submit = form.onSubmit((values) =>
+  // A name typed in the Agency or Company box but not chosen from its list: saving keeps it.
+  const [typedAgency, setTypedAgency] = useState("");
+  const [typedCompany, setTypedCompany] = useState("");
+  /** What saving has made from a typed name, so a retry after a failed save reuses it. */
+  const made = useRef<Record<"agency" | "company", { name: string; id: string } | null>>({
+    agency: null,
+    company: null,
+  });
+  /** A save is under way: a second Enter mustn't make the agency, or the person, twice. */
+  const busy = useRef(false);
+  /** Counts each opening and closing, so a save still making an agency stops if it's cancelled. */
+  const shown = useRef(0);
+  /** A typed name is waiting for its list, to be matched against it. */
+  const listLoading =
+    (!!typedAgency && agencyList.isPending && !agencyList.error) ||
+    (!!typedCompany && companyList.isPending && !companyList.error);
+  useEffect(() => {
+    shown.current += 1;
+    if (opened) made.current = { agency: null, company: null };
+  }, [opened]);
+
+  /** The id to save for a box: its choice, or the one named by what was typed, made as + Add would. */
+  async function chosenOrTyped(
+    kind: "agency" | "company",
+    typed: string,
+    chosen: string | null,
+    existing: { id: string; name: string }[],
+    create: (name: string) => Promise<{ id: string }>,
+  ): Promise<string | null> {
+    if (!typed) return chosen;
+    const last = made.current[kind];
+    if (last && sameName(last.name, typed)) return last.id;
+    const found = existing.find((e) => sameName(e.name, typed));
+    if (found) return found.id;
+    const { id } = await create(typed);
+    made.current[kind] = { name: typed, id };
+    return id;
+  }
+
+  async function saveWith(values: Values) {
+    if (busy.current) return;
+    // Until the lists have loaded, a typed name can't be matched: don't make a second of one.
+    // Save shows as loading meanwhile; a list that failed to load says so, and is asked for again.
+    for (const [typed, list] of [
+      [typedAgency, agencyList],
+      [typedCompany, companyList],
+    ] as const) {
+      if (!typed || list.data) continue;
+      if (list.error) {
+        notifyError(list.error);
+        void list.refetch();
+      }
+      return;
+    }
+    busy.current = true;
+    const opening = shown.current;
+    let agencyId: string | null;
+    let companyId: string | null;
+    try {
+      agencyId = await chosenOrTyped("agency", typedAgency, values.agencyId, agencies ?? [], (name) =>
+        createAgency.mutateAsync({ name }),
+      );
+      companyId = await chosenOrTyped("company", typedCompany, values.companyId, companies ?? [], (name) =>
+        createCompany.mutateAsync({ name }),
+      );
+    } catch {
+      busy.current = false;
+      return; // the hook has shown the error
+    }
+    if (shown.current !== opening) {
+      busy.current = false;
+      return; // cancelled while the agency or company was being made
+    }
     save.mutate(
       {
         id: contact?.id,
         body: {
           name: values.name.trim(),
           title: values.title.trim() || null,
-          agency_id: values.agencyId,
-          company_id: values.companyId,
+          agency_id: agencyId,
+          company_id: companyId,
           details: values.details
             .filter((d) => d.value.trim())
             .map((d) => ({ kind: d.kind, value: d.value.trim(), label: d.label.trim() || null })),
@@ -127,9 +202,12 @@ export function ContactFormModal({
           onSaved?.(saved);
           onClose();
         },
+        onSettled: () => {
+          busy.current = false;
+        },
       },
-    ),
-  );
+    );
+  }
 
   return (
     <Modal
@@ -138,7 +216,7 @@ export function ContactFormModal({
       title={contact ? t("form.editTitle", { name: contact.name }) : t("form.newTitle")}
       size="lg"
     >
-      <form onSubmit={submit}>
+      <form onSubmit={(event) => form.onSubmit((values) => void saveWith(values))(event)}>
         <Stack>
           <Group grow align="flex-start">
             <TextInput label={t("form.name")} data-autofocus {...form.getInputProps("name")} />
@@ -158,6 +236,7 @@ export function ContactFormModal({
               value={form.values.agencyId}
               onChange={(v) => form.setFieldValue("agencyId", v)}
               onCreate={async (name) => (await createAgency.mutateAsync({ name })).id}
+              onTypedChange={setTypedAgency}
               creating={createAgency.isPending}
             />
             <CreatableSelect
@@ -169,6 +248,7 @@ export function ContactFormModal({
               value={form.values.companyId}
               onChange={(v) => form.setFieldValue("companyId", v)}
               onCreate={async (name) => (await createCompany.mutateAsync({ name })).id}
+              onTypedChange={setTypedCompany}
               creating={createCompany.isPending}
             />
           </Group>
@@ -221,7 +301,10 @@ export function ContactFormModal({
             <Button variant="default" onClick={onClose}>
               {t("common:actions.cancel")}
             </Button>
-            <Button type="submit" loading={save.isPending}>
+            <Button
+              type="submit"
+              loading={save.isPending || createAgency.isPending || createCompany.isPending || listLoading}
+            >
               {contact ? t("common:actions.save") : t("form.add")}
             </Button>
           </Group>

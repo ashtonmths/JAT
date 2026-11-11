@@ -275,34 +275,118 @@ test.describe("creating a person", () => {
     expect(await person(request, "Keyboard Person")).toMatchObject({ agency_id: agency?.id });
   });
 
-  // Saving with a name typed but no option chosen mustn't quietly drop the agency.
-  // KNOWN BUG (fix-typed-agency-lost on the roadmap): expected to fail until it is fixed.
-  test.fail("an agency typed but not chosen isn't lost without a word", async ({ page, request }) => {
+  // Saving with a name typed but no option chosen keeps it, as + Add would (fix-typed-agency-lost).
+  test("an agency typed but not chosen is added and kept", async ({ page, request }) => {
     await openPage(page);
     const dialog = await newPerson(page);
     await dialog.getByLabel("Name").fill("Typed Person");
     await dialog.getByLabel("Agency").first().fill("Typed Agency");
-    await dialog.getByRole("button", { name: "Add person", exact: true }).click();
-    await settled(page, dialog);
-    const saved = await people(request, "Typed Person");
-    if (saved.length) expect(saved[0]?.agency_id).not.toBeNull();
+    await addPerson(dialog);
+    const [agency] = await agencies(request, "Typed Agency");
+    expect(agency).toBeDefined();
+    expect(await person(request, "Typed Person")).toMatchObject({ agency_id: agency?.id });
   });
 
-  // KNOWN BUG (fix-typed-agency-lost on the roadmap): expected to fail until it is fixed.
-  test.fail("Enter in the Agency box doesn't lose the typed agency either", async ({ page, request }) => {
+  test("Enter in the Agency box keeps the typed agency too", async ({ page, request }) => {
     await openPage(page);
     const dialog = await newPerson(page);
     await dialog.getByLabel("Name").fill("Entered Person");
     await dialog.getByLabel("Agency").first().fill("Entered Agency");
     await page.getByRole("option", { name: '+ Add "Entered Agency"' }).waitFor();
     await page.keyboard.press("Enter");
-    // A fix may keep the dialog open, so no person appearing is fine: give one the time to.
-    await expect
-      .poll(() => people(request, "Entered Person").then((p) => p.length), { timeout: 3_000 })
-      .toBe(1)
-      .catch(() => undefined);
-    const saved = await people(request, "Entered Person");
-    if (saved.length) expect(saved[0]?.agency_id).not.toBeNull();
+    await expect(dialog).toBeHidden();
+    const [agency] = await agencies(request, "Entered Agency");
+    expect(agency).toBeDefined();
+    expect(await person(request, "Entered Person")).toMatchObject({ agency_id: agency?.id });
+  });
+
+  /** Hold the agency being made until `release` is called; `seen` resolves once it's asked for. */
+  const holdAgencyPost = async (page: Page) => {
+    let release = () => {};
+    let asked = () => {};
+    const held = new Promise<void>((done) => (release = done));
+    const seen = new Promise<void>((done) => (asked = done));
+    await page.route("**/api/v1/agencies", async (route) => {
+      if (route.request().method() === "POST") {
+        asked();
+        await held;
+      }
+      await route.continue();
+    });
+    return { release, seen };
+  };
+
+  test("saving twice while a typed agency is being made makes one agency and one person", async ({
+    page,
+    request,
+  }) => {
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Twice Typed Person");
+    await dialog.getByLabel("Agency").first().fill("Twice Typed Agency");
+    const { release, seen } = await holdAgencyPost(page);
+    // Two submits in one go, before the page can redraw: as a quick double Enter can.
+    await dialog.locator("form").evaluate((form: HTMLFormElement) => {
+      form.requestSubmit();
+      form.requestSubmit();
+    });
+    await seen;
+    release();
+    await expect(dialog).toBeHidden();
+    await expect.poll(() => people(request, "Twice Typed Person").then((p) => p.length)).toBe(1);
+    expect(await agencies(request, "Twice Typed Agency")).toHaveLength(1);
+  });
+
+  test("Cancel while a typed agency is being made doesn't save the person", async ({ page, request }) => {
+    await openPage(page);
+    const dialog = await newPerson(page);
+    await dialog.getByLabel("Name").fill("Cancelled Typed Person");
+    await dialog.getByLabel("Agency").first().fill("Cancelled Typed Agency");
+    const { release, seen } = await holdAgencyPost(page);
+    const made = page.waitForResponse(
+      (r) => r.request().method() === "POST" && r.url().endsWith("/agencies"),
+    );
+    await dialog.getByRole("button", { name: "Add person", exact: true }).click();
+    await seen;
+    await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(dialog).toBeHidden();
+    const sent: string[] = [];
+    page.on("request", (r) => {
+      if (r.method() === "POST" && r.url().endsWith("/contacts")) sent.push(r.postData() ?? "");
+    });
+    release();
+    await made;
+    // A person the cancelled save sent would go straight after the agency, before this next one.
+    const next = await newPerson(page);
+    await next.getByLabel("Name").fill("After Cancel Person");
+    await addPerson(next);
+    expect(sent).toHaveLength(1);
+    expect(sent[0]).toContain("After Cancel Person");
+    expect(await people(request, "Cancelled Typed Person")).toHaveLength(0);
+  });
+
+  test("an existing agency typed but not chosen is that one, not a new one", async ({ page, request }) => {
+    const agency = await create(request, "agencies", { name: "Typed Existing Agency" });
+    const made = await create(request, "contacts", { name: "Typed Existing Person" });
+    const dialog = await editFromPage(page, made.id, "Typed Existing Person");
+    await dialog.getByLabel("Agency").first().fill("  typed EXISTING agency ");
+    await dialog.getByLabel("Name").click(); // leaving the box keeps what was typed
+    await expect(dialog.getByLabel("Agency").first()).toHaveValue("  typed EXISTING agency ");
+    await save(dialog);
+    expect(await agencies(request, "Typed Existing Agency")).toHaveLength(1);
+    expect(await agencies(request, "typed EXISTING agency")).toHaveLength(0);
+    expect(await person(request, "Typed Existing Person")).toMatchObject({ agency_id: agency.id });
+  });
+
+  test("typing over a person's agency moves them to the one typed", async ({ page, request }) => {
+    const old = await create(request, "agencies", { name: "Typed Over Old" });
+    const made = await create(request, "contacts", { name: "Typed Over Person", agency_id: old.id });
+    const dialog = await editFromPage(page, made.id, "Typed Over Person");
+    await dialog.getByLabel("Agency").first().fill("Typed Over New");
+    await save(dialog);
+    const [fresh] = await agencies(request, "Typed Over New");
+    expect(fresh).toBeDefined();
+    expect(await person(request, "Typed Over Person")).toMatchObject({ agency_id: fresh?.id });
   });
 
   test("an existing agency in other capitals is the same one", async ({ page, request }) => {
@@ -1182,16 +1266,15 @@ test.describe("a person's page", () => {
 });
 
 test.describe("the Company box, as the Agency box", () => {
-  // KNOWN BUG (fix-typed-agency-lost on the roadmap): expected to fail until it is fixed.
-  test.fail("a company typed but not chosen isn't lost without a word", async ({ page, request }) => {
+  test("a company typed but not chosen is added and kept", async ({ page, request }) => {
     await openPage(page);
     const dialog = await newPerson(page);
     await dialog.getByLabel("Name").fill("Typed Company Person");
     await dialog.getByLabel("Company").first().fill("Typed Person Co");
-    await dialog.getByRole("button", { name: "Add person", exact: true }).click();
-    await settled(page, dialog);
-    const saved = await people(request, "Typed Company Person");
-    if (saved.length) expect(saved[0]?.company_id).not.toBeNull();
+    await addPerson(dialog);
+    const [company] = await companies(request, "Typed Person Co");
+    expect(company).toBeDefined();
+    expect(await person(request, "Typed Company Person")).toMatchObject({ company_id: company?.id });
   });
 
   // KNOWN BUG (fix-emptied-agency-kept on the roadmap): expected to fail until it is fixed.

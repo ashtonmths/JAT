@@ -545,15 +545,30 @@ test.describe("links", () => {
     expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Old");
   });
 
-  // KNOWN BUG (fix-link-rename-cancel-saves on the roadmap): expected to fail until it is fixed.
-
-  test.fail("the X in a rename changes nothing", async ({ page, request }) => {
+  test("the X in a rename changes nothing", async ({ page, request }) => {
     const { at, links } = await prepare(page, request, "Cancel Link Co");
     const writes = watchWrites(page);
     await links.getByRole("button", { name: "Rename Old" }).click();
     await links.getByRole("textbox", { name: "Link title", exact: true }).fill("Changed");
     await links.getByRole("button", { name: "Cancel" }).click();
     await expect(links.getByRole("textbox", { name: "Link title", exact: true })).toBeHidden();
+    await pause(300);
+    expect(writes).toEqual([]);
+    expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Old");
+  });
+
+  test("tabbing from a rename to the X and pressing it changes nothing", async ({ page, request }) => {
+    const { at, links } = await prepare(page, request, "Tab Cancel Link Co");
+    const writes = watchWrites(page);
+    await links.getByRole("button", { name: "Rename Old" }).click();
+    await links.getByRole("textbox", { name: "Link title", exact: true }).fill("Changed");
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Tab");
+    await expect(links.getByRole("button", { name: "Cancel" })).toBeFocused();
+    await pause(300);
+    expect(writes).toEqual([]);
+    await page.keyboard.press("Enter");
+    await expect(links.getByRole("link", { name: "Old" })).toBeVisible();
     await pause(300);
     expect(writes).toEqual([]);
     expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Old");
@@ -576,28 +591,128 @@ test.describe("links", () => {
     expect(writes).toHaveLength(2);
   });
 
-  // KNOWN BUG (fix-link-rename-tick-error on the roadmap): expected to fail until it is fixed.
-
-  test.fail("the tick saves a rename, with no error", async ({ page, request }) => {
-    const { at, links } = await prepare(page, request, "Tick Link Co");
+  test("clicking away while Enter's save is still going doesn't save again", async ({ page, request }) => {
+    const { at, links } = await prepare(page, request, "Slow Save Link Co");
     let release = () => {};
-    const together = new Promise<void>((done) => (release = done));
-    let held = 0;
+    const held = new Promise<void>((done) => (release = done));
+    const patches: string[] = [];
     await page.route(`**${API}/links/*`, async (route) => {
-      if (route.request().method() === "PATCH" && ++held === 1) setTimeout(release, 1_000); // a fix sends just one
-      if (held === 2) release();
-      if (route.request().method() === "PATCH") await together;
+      if (route.request().method() === "PATCH") {
+        patches.push(route.request().postData() ?? "");
+        await held;
+      }
       await route.continue();
     });
-
     await links.getByRole("button", { name: "Rename Old" }).click();
+    await links.getByRole("textbox", { name: "Link title", exact: true }).fill("Slow");
+    await page.keyboard.press("Enter");
+    await expect.poll(() => patches.length).toBe(1);
+    await page.getByRole("heading", { name: "Slow Save Link Co", level: 2 }).click();
+    await pause(300);
+    release();
+    await expect(links.getByRole("link", { name: "Slow" })).toBeVisible();
+    await pause(300);
+    expect(patches).toHaveLength(1);
+    expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Slow");
 
+    // Typing more while a save is going sends the newer title once that save is done, not alongside it.
+    patches.length = 0;
+    let releaseNext = () => {};
+    const heldNext = new Promise<void>((done) => (releaseNext = done));
+    await page.unroute(`**${API}/links/*`);
+    await page.route(`**${API}/links/*`, async (route) => {
+      if (route.request().method() === "PATCH") {
+        patches.push(route.request().postData() ?? "");
+        if (patches.length === 1) await heldNext;
+      }
+      await route.continue();
+    });
+    await links.getByRole("button", { name: "Rename Slow" }).click();
+    const box = links.getByRole("textbox", { name: "Link title", exact: true });
+    await box.fill("Slower");
+    await page.keyboard.press("Enter");
+    await expect.poll(() => patches.length).toBe(1);
+    await box.fill("Slowest");
+    await page.getByRole("heading", { name: "Slow Save Link Co", level: 2 }).click();
+    await pause(300);
+    expect(patches).toHaveLength(1);
+    releaseNext();
+    await expect(links.getByRole("link", { name: "Slowest" })).toBeVisible();
+    expect(patches.map((p) => JSON.parse(p).title)).toEqual(["Slower", "Slowest"]);
+    expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Slowest");
+  });
+
+  test("the X while a save is going drops a newer title, and a reopened rename stays open", async ({
+    page,
+    request,
+  }) => {
+    const { at, links } = await prepare(page, request, "Cancel Queue Link Co");
+    let release = () => {};
+    const held = new Promise<void>((done) => (release = done));
+    const patches: string[] = [];
+    await page.route(`**${API}/links/*`, async (route) => {
+      if (route.request().method() === "PATCH") {
+        patches.push(JSON.parse(route.request().postData() ?? "{}").title);
+        await held;
+      }
+      await route.continue();
+    });
+    const box = links.getByRole("textbox", { name: "Link title", exact: true });
+    await links.getByRole("button", { name: "Rename Old" }).click();
+    await box.fill("A");
+    await page.keyboard.press("Enter");
+    await expect.poll(() => patches.length).toBe(1);
+    await box.fill("B");
+    await page.keyboard.press("Enter"); // waits behind A
+    await links.getByRole("button", { name: "Cancel" }).click();
+    await expect(box).toBeHidden();
+    await links.getByRole("button", { name: "Rename Old" }).click();
+    await box.fill("Still typing");
+    release();
+    await expect.poll(async () => (await linksOn(request, "company", at.id))[0]?.title).toBe("A");
+    await pause(300);
+    expect(patches).toEqual(["A"]);
+    await expect(box).toHaveValue("Still typing");
+  });
+
+  test("reopening a rename while its save is going starts from the new title", async ({ page, request }) => {
+    const { at, links } = await prepare(page, request, "Reopen Link Co");
+    let release = () => {};
+    const held = new Promise<void>((done) => (release = done));
+    const patches: string[] = [];
+    await page.route(`**${API}/links/*`, async (route) => {
+      if (route.request().method() === "PATCH") {
+        patches.push(JSON.parse(route.request().postData() ?? "{}").title);
+        await held;
+      }
+      await route.continue();
+    });
+    const box = links.getByRole("textbox", { name: "Link title", exact: true });
+    await links.getByRole("button", { name: "Rename Old" }).click();
+    await box.fill("A");
+    await page.keyboard.press("Enter");
+    await expect.poll(() => patches.length).toBe(1);
+    await page.keyboard.press("Escape");
+    await links.getByRole("button", { name: "Rename Old" }).click();
+    await expect(box).toHaveValue("A");
+    await page.getByRole("heading", { name: "Reopen Link Co", level: 2 }).click();
+    release();
+    await expect(links.getByRole("link", { name: "A", exact: true })).toBeVisible();
+    await pause(300);
+    expect(patches).toEqual(["A"]);
+    expect((await linksOn(request, "company", at.id))[0]?.title).toBe("A");
+  });
+
+  test("the tick saves a rename once, with no error", async ({ page, request }) => {
+    const { at, links } = await prepare(page, request, "Tick Link Co");
+    const writes = watchWrites(page);
+    await links.getByRole("button", { name: "Rename Old" }).click();
     await links.getByRole("textbox", { name: "Link title", exact: true }).fill("By tick");
-
     await links.getByRole("button", { name: "Save title" }).click();
-
     await expect(links.getByRole("link", { name: "By tick" })).toBeVisible();
-
+    await pause(300);
+    expect(writes.filter((w) => w.startsWith("PATCH "))).toHaveLength(1);
+    await expect(page.getByText("That didn't work")).toBeHidden();
     expect((await linksOn(request, "company", at.id))[0]?.title).toBe("By tick");
   });
 
