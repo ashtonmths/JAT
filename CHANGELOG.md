@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.7 (2026-11-11)
+
+- In the person dialog, an agency or company typed but not chosen from the list is no longer dropped on save: the matching one is used, or it's added as + Add would. (#314).
+
 ## 1.23.6 (2026-11-11)
 
 - Today keeps what you're typing when the date changes at midnight, and an open Reschedule dialog on Today stays open when the round's or call's start time passes; while Today loads the new day it dims what it shows. (#310).
