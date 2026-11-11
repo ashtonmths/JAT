@@ -109,7 +109,8 @@ Each is its own small pull request:
 - **`locked-file-retry`:** when another program has a note, an uploaded file or an export
   file open, retry briefly, then show a clear error instead of a server error. `jat restore
   --force` says to stop `jat serve` first instead of printing a traceback.
-- **`windows-testing`:** the Windows check written down as a short checklist in the guide:
+- **`windows-testing`:** the Windows check (run in the Windows VM, see Decisions) written down as a
+  short checklist in the guide:
   install, `jat init`, `jat serve`, the pages load, add an application, a note and a file,
   Download a backup, Insights' weekly activity, and `uv run pytest`.
 
@@ -148,7 +149,8 @@ elsewhere, and the switch goes.
   350 KB, maintained by the Python core team.
 - **Tested by hand on Windows.** Kai: "i can test on windows". Each Windows change gets a
   Windows run before it merges. A GitHub Actions Windows job is added only if Kai asks later
-  (the project has no test CI).
+  (the project has no test CI). Since 2026-11-11 the run happens in a Windows 11 virtual
+  machine on the maintainer's computer, which the maintaining agent drives over SSH.
 - **Versions:** decided per pull request by the rules in `CLAUDE.md` when it's built. Making
   the tracker start on a new platform is likely a minor release; the small fixes are likely
   patches.

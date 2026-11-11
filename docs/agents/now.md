@@ -5,12 +5,12 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 
 ## State
 
-- Released up to **v1.22.1** (#298, which carried #285). Our own PRs: none open. Branches: `main`, plus `worktree-pr-screenshots` on GitHub
+- Released up to **v1.23.0** (#300, which carried #283; #298 carried #285 in v1.22.1). Our own PRs: none open. Branches: `main`, plus `worktree-pr-screenshots` on GitHub
   (shelved work, kept on purpose: see `pr-screenshots` on the roadmap).
 - **Simplified Chinese is switched on** (v1.21.0): in the language menu, and given to browsers asking for `zh`, `zh-CN`,
   `zh-Hans` or `zh-SG`. Chinese demo data: `scripts/seed_demo.py --lang zh-CN` (v1.21.1).
 - **Open PRs from a contributor** (issue #230's author, Windows work; Kai reviews them, see *Contributors' PRs* in
-  working-with-kai.md): #283 `windows-starts`, #284 `utf8-everywhere`. Not merged. #285 `windows-time-zones` was carried in #298 (v1.22.1).
+  working-with-kai.md): #284 `utf8-everywhere`, #301 `static-file-types`, #302 `data-gitattributes`. Not merged. #283 and #285 were carried (#300, #298).
 - **Merging and releasing:** Kai's standing yes after the review-fix cycle (working-with-kai.md). `.claude/settings.json`
   allows `tools/dev/merge.sh` and `ship.sh` (#295); run them relative (`tools/dev/merge.sh N`) and they go through.
 - Kai's tracker on 8770 needs a restart (Ctrl+C, `uv run jat serve`) if it hasn't had one since v1.20.0: #289 changed
@@ -95,7 +95,8 @@ little as possible; a fix that changes English needs Kai's yes.
   "hooks": { "SessionStart": [ { "matcher": "compact", "hooks": [ { "type": "command",
     "command": "/home/kai/Documents/Projects/job-application-tracker/tools/dev/after_compact.sh --user", "timeout": 30 } ] } ] },
   ```
-- **Contributor PRs #283–#284:** Kai posts the drafted comments and tests #283 on Windows.
+- **Contributor PRs:** #283 was carried in #300 (v1.23.0, tested in the Windows VM). #301 is next (Kai, 2026-11-11);
+  #284 and #302 wait for Kai.
 - **Repo gaps offered for contributors, no answer:** `CONTRIBUTING.md` and the PR template tell contributors to update
   `CHANGELOG.md`, but Kai asked them to leave it; and PRs get no automatic checks.
 - **The MCP server:** the `mcp-*` tasks wait on the 11 decisions in `docs/rfc/mcp.md` §14.
