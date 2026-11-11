@@ -127,8 +127,8 @@ pnpm --dir frontend gen:api
 
 ## Text in the UI (translations)
 
-The app is translatable, English only for now; the plan is in
-[`docs/rfc/i18n.md`](docs/rfc/i18n.md). The UI's own text goes through the translation layer. Events
+The app comes in English and Simplified Chinese; the plan is in [`docs/rfc/i18n.md`](docs/rfc/i18n.md)
+and [`docs/rfc/zh-cn.md`](docs/rfc/zh-cn.md). The UI's own text goes through the translation layer. Events
 saved before their message existed, and your own words, stay as saved. A server error shows the text
 for its code, and a 422's problems are worded from Pydantic's `type` and `ctx`
 (`api/validationText.ts`). A problem whose `type` has no text there shows Pydantic's English.
@@ -158,6 +158,11 @@ a test and the type check fail until it does.
   (`api/schemas.py`), its text in `locales/en/events.ts` and `eventText.ts`, and a case in
   `eventMessages.cases.json`. The frontend never sends a key: for English it wants saved, it names an allowed
   `app_text` or `app_note` in the query, and the server holds the words and the key.
+- **Every language the app ships gets the change too,** in the same pull request: a new or changed English
+  line needs its Chinese line in `locales/zh-CN/<namespace>.json`, translated for where it shows and following
+  the glossary (`docs/i18n/zh-CN.md`). Can't write Chinese? Leave it and say so in the pull request: the
+  catalog test lists the missing keys, and the maintainer adds them before merging. The Chinese is
+  AI-translated, so corrections by issue or pull request are welcome.
 - **Values** go in `{{placeholders}}`, never glued on with `+` or a template string, so a
   translation can put them anywhere in the sentence.
 - **Plurals** are `_one` / `_other` keys used with `count`, never `n === 1 ? … : …`. So no
@@ -269,6 +274,10 @@ Colours come from palettes in `website/src/styles/landing.css`; the site uses `p
   anything a user can see or configure, the README's feature table and `llms.txt` for new
   features, and `CHANGELOG.md`.
 - If the change is visible in a README screenshot, retake it with the demo data.
+- `README.zh-CN.md` mirrors `README.md`: change both the same way, with the same sections and images (the
+  Chinese screenshots are in `docs/screenshots/zh-CN/`; `uv run pytest tests/test_readme_parity.py` checks).
+  If you can't write Chinese, change the English only and say so; the maintainer updates the Chinese before
+  merging. The [user guide](docs/guide/README.md) is English only.
 
 By contributing, you agree that your contributions are licensed under the
 [Apache-2.0 licence](LICENSE).

@@ -20,7 +20,9 @@ Read first: `CLAUDE.md`, then your bug's line in `docs/ROADMAP.yaml` (`detail`, 
 ## Rules
 - **Fix only your bug**, with the smallest change that fixes its root cause. If it turns out bigger or riskier than the
   roadmap says (more than ~150 changed lines, a data change, an API change, or different English), stop and report.
-- **English stays the same** unless the brief says otherwise.
+- **English stays the same** unless the brief says otherwise. If it does change, or you add UI text, update
+  `frontend/src/locales/zh-CN/` to match in the same PR (glossary `docs/i18n/zh-CN.md`); a README change goes in
+  `README.zh-CN.md` too (CLAUDE.md *Languages*).
 - If a `test.fail` in `frontend/e2e` pins the bug (`pinned_by`), remove the `test.fail` so it must pass. Otherwise add a
   test that fails before the fix and passes after: prove it by running it without the fix.
 - Another real bug you find: don't fix it; report it with file:line and how you confirmed it.
