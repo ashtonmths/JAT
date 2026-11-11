@@ -30,7 +30,7 @@ from the web, contact anyone, or send telemetry. Pull requests that add these wo
 
 ## Set up for development
 
-You need Python 3.12+ with [uv](https://docs.astral.sh/uv/), Node.js 22.12+ with
+You need Python 3.12 to 3.14 with [uv](https://docs.astral.sh/uv/), Node.js 22.12+ with
 [pnpm](https://pnpm.io/), and git. Linux or macOS.
 
 ```bash

@@ -68,6 +68,9 @@ where things run. Quotes are Kai's words.
   himself ("this one dont automerge"): images on a throwaway `pr-shots/<task>` branch, demo data only.
 - **English text and layout are Kai's call in translation work:** a fix that changes English waits for Kai's yes, and
   language-specific CSS stays as small as possible (`docs/rfc/zh-cn.md`, *Layout*).
+- **The Windows VM runs one PR at a time** (2026-11-11: "proably only 1 PR can be checked on the VM at a time",
+  "multiple instances would bog the computer"): one VM, one branch in it at once, never a second VM or clone in
+  parallel; builders running alongside don't use it.
 - **Contributors' PRs** (issue #230's author sends the Windows work): the whole process, with Kai's instructions, is in
   [contributor-prs.md](contributor-prs.md). Never comment on their PR or issue; Kai posts.
 

@@ -35,11 +35,14 @@ import { RolesCard } from "../components/Roles";
 import { NotesCard } from "../components/Notes";
 import { StageBadge } from "../components/StageBadge";
 import { ago } from "../utils/time";
+import { useDraft } from "../utils/useDraft";
 
 function Description({ company }: { company: Schemas["CompanyOut"] }) {
   const { t } = useTranslation(["people", "common"]);
   const update = useUpdateCompany();
-  const [text, setText] = useState(company.description ?? "");
+  // Follows the saved About until edited here, so a rename doesn't drop words being typed.
+  const draft = useDraft({ description: company.description ?? "" }, company.id);
+  const text = draft.values.description;
   return (
     <Stack gap="xs">
       <Textarea
@@ -48,14 +51,22 @@ function Description({ company }: { company: Schemas["CompanyOut"] }) {
         autosize
         minRows={3}
         value={text}
-        onChange={(e) => setText(e.currentTarget.value)}
+        onChange={(e) => draft.set("description", e.currentTarget.value)}
       />
       <Group justify="flex-end">
         <Button
           size="xs"
-          disabled={text === (company.description ?? "")}
+          disabled={!draft.dirty}
           loading={update.isPending}
-          onClick={() => update.mutate({ id: company.id, body: { description: text || null } })}
+          onClick={() =>
+            update.mutate(
+              { id: company.id, body: { description: text || null } },
+              {
+                onSuccess: (saved) =>
+                  draft.saved({ description: text }, { description: saved.description ?? "" }),
+              },
+            )
+          }
         >
           {t("common:actions.save")}
         </Button>
@@ -203,7 +214,7 @@ export function CompanyPage() {
               )}
             </Card>
             <Card withBorder>
-              <Description key={company.updated_at} company={company} />
+              <Description key={company.id} company={company} />
             </Card>
             <NotesCard entity={`company:${company.id}`} />
             <LinksCard entityType="company" entityId={company.id} />
