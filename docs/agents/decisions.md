@@ -92,4 +92,5 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
 ## Windows
 
 - Basic support first (`docs/rfc/windows.md`): the Windows-unsafe parts behind one is-Windows check and off there;
-  `JAT_WINDOWS_SNAPSHOTS=1` for testing; `tzdata` on every platform; each Windows change is run on real Windows before merging, since 2026-11-11 in Kai's Windows VM driven by the agent (no CI job unless Kai asks).
+  `JAT_WINDOWS_SNAPSHOTS=1` for testing; `tzdata` on every platform; each Windows change is run on real
+  Windows before merging, since 2026-11-11 in Kai's Windows VM driven by the agent (no CI job unless Kai asks).

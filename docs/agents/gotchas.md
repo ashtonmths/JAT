@@ -161,12 +161,13 @@ Each of these cost time once. Add a line when something new does.
   - Reset it to its clean snapshot before running a contributor's code, check out the branch in its `jat` clone
     (`git fetch origin <branch>; git checkout -B <branch> FETCH_HEAD`), and shut it down when done.
   - `uv sync --python 3.13`: with no Python pinned, uv picks 3.15, where `httptools` has no Windows wheel and the
-    build needs Visual C++ (bug `fix-python-315-install`).
+    build needs Visual C++ (bug `fix-python-315-install`, recorded in #300).
   - The remote shell is PowerShell 5.1: `;` not `&&`, and native tools' stderr comes back as red `NativeCommandError`
     noise (filter it). `--lf` needs pytest's cache, so don't pass `-p no:cacheprovider` with it.
   - `jat serve` blocks: start it with `Start-Process -PassThru -RedirectStandardOutput …` (set
-    `PYTHONUNBUFFERED=1` to see its output), query it with `Invoke-RestMethod`, then stop the `python`/`uv` processes.
-  - A test data repo needs `git config user.name/user.email` before a snapshot can commit.
-  - On Windows the whole suite isn't green yet (`windows-tests-green`): compare failures with that list.
+    `PYTHONUNBUFFERED=1` to see its output), query `/api/v1/health` with `Invoke-RestMethod`, then stop the `python`/`uv` processes.
+  - The VM has no global git identity: set `git config user.name/user.email` in each test data repo before a
+    snapshot can commit.
+  - On Windows the whole suite isn't green yet: compare failures with the list in the `windows-tests-green` task (added in #300).
 - **Vite's hot reload can silently keep old code** on `TodayPage.tsx` ("Could not Fast Refresh (useNextActions export
   is incompatible)"): if a dev page doesn't show a change, restart Vite with `--force` before debugging the code.

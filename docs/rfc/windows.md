@@ -108,7 +108,8 @@ Each is its own small pull request:
 - **`locked-file-retry`:** when another program has a note, an uploaded file or an export
   file open, retry briefly, then show a clear error instead of a server error. `jat restore
   --force` says to stop `jat serve` first instead of printing a traceback.
-- **`windows-testing`:** the Windows check written down as a short checklist in the guide:
+- **`windows-testing`:** the Windows check (run in the Windows VM, see Decisions) written down as a
+  short checklist in the guide:
   install, `jat init`, `jat serve`, the pages load, add an application, a note and a file,
   Download a backup, Insights' weekly activity, and `uv run pytest`.
 

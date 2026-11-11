@@ -95,7 +95,7 @@ little as possible; a fix that changes English needs Kai's yes.
   "hooks": { "SessionStart": [ { "matcher": "compact", "hooks": [ { "type": "command",
     "command": "/home/kai/Documents/Projects/job-application-tracker/tools/dev/after_compact.sh --user", "timeout": 30 } ] } ] },
   ```
-- **Contributor PRs #283–#284:** Kai posts the drafted comments and tests #283 on Windows.
+- **Contributor PRs:** #283 is carried in #300 and tested in the Windows VM by the lead; #284, #301 and #302 wait.
 - **Repo gaps offered for contributors, no answer:** `CONTRIBUTING.md` and the PR template tell contributors to update
   `CHANGELOG.md`, but Kai asked them to leave it; and PRs get no automatic checks.
 - **The MCP server:** the `mcp-*` tasks wait on the 11 decisions in `docs/rfc/mcp.md` §14.
