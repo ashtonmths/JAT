@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { i18n } from "../i18n";
 import { formatMoney } from "../utils/format";
 import { api, unwrap, type Schemas } from "./client";
-import { invalidateApplicationViews } from "./hooks";
+import { invalidateApplicationViews, settleSave } from "./hooks";
 import { notifyError } from "./notifyError";
 
 export type Offer = Schemas["OfferOut"];
@@ -40,6 +40,7 @@ function useRefreshOffers() {
 
 export function useSaveOffer() {
   const refresh = useRefreshOffers();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: async (
       args: { id: string; body: Partial<OfferBody> } | { applicationId: string; body: OfferBody },
@@ -57,7 +58,8 @@ export function useSaveOffer() {
               body: args.body,
             }),
           ),
-    onSuccess: refresh,
+    // Edit opens from an application's list of offers.
+    onSuccess: (_saved, args) => ("id" in args ? settleSave(qc, refresh, { wait: [["offers"]] }) : refresh()),
     onError: notifyError,
   });
 }

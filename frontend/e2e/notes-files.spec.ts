@@ -362,33 +362,30 @@ test.describe("writing a note", () => {
     expect((await getJson<Note>(request, `notes/${made2.id}`)).body.trim()).toBe("From elsewhere");
   });
 
-  // KNOWN BUG (fix-note-reopen-stale on the roadmap): expected to fail until it is fixed.
-  test.fail(
-    "reopening straight after saving shows what was saved, and saves again",
-    async ({ page, request }) => {
-      const made2 = await makeNote(request, "Reopened note", { body: "First" });
-      await openNotes(page);
-      let holding = false;
-      let release = () => {};
-      const reopened = new Promise<void>((done) => (release = done));
-      await page.route(`**${API}/notes/${made2.id}`, async (route) => {
-        if (holding && route.request().method() === "GET") {
-          setTimeout(release, 3_000); // a fix may wait for it before opening
-          await reopened;
-        }
-        await route.continue();
-      });
-      let dialog = await editNote(page, "Reopened note");
-      await dialog.getByRole("textbox", { name: "Note", exact: true }).fill("Second");
-      holding = true;
-      await saveNote(dialog);
-      dialog = await editNote(page, "Reopened note");
-      await expect(dialog.getByRole("textbox", { name: "Note", exact: true })).toHaveValue(/^Second\n?$/);
-      await dialog.getByRole("textbox", { name: "Note", exact: true }).fill("Third");
-      await saveNote(dialog);
-      expect((await getJson<Note>(request, `notes/${made2.id}`)).body.trim()).toBe("Third");
-    },
-  );
+  // fix-note-reopen-stale: the save stores the note it returns, and the form keeps the version it opened.
+  test("reopening straight after saving shows what was saved, and saves again", async ({ page, request }) => {
+    const made2 = await makeNote(request, "Reopened note", { body: "First" });
+    await openNotes(page);
+    let holding = false;
+    let release = () => {};
+    const reopened = new Promise<void>((done) => (release = done));
+    await page.route(`**${API}/notes/${made2.id}`, async (route) => {
+      if (holding && route.request().method() === "GET") {
+        setTimeout(release, 3_000); // a fix may wait for it before opening
+        await reopened;
+      }
+      await route.continue();
+    });
+    let dialog = await editNote(page, "Reopened note");
+    await dialog.getByRole("textbox", { name: "Note", exact: true }).fill("Second");
+    holding = true;
+    await saveNote(dialog);
+    dialog = await editNote(page, "Reopened note");
+    await expect(dialog.getByRole("textbox", { name: "Note", exact: true })).toHaveValue(/^Second\n?$/);
+    await dialog.getByRole("textbox", { name: "Note", exact: true }).fill("Third");
+    await saveNote(dialog);
+    expect((await getJson<Note>(request, `notes/${made2.id}`)).body.trim()).toBe("Third");
+  });
 
   test("a double click on a slow save adds one", async ({ page, request }) => {
     await page.route(`**${API}/notes`, async (route) => {

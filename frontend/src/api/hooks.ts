@@ -1,4 +1,10 @@
-import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  type QueryClient,
+  type QueryKey,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import { api, unwrap, type ApplicationDetail, type ApplicationRow, type Schemas } from "./client";
 import { notifyError } from "./notifyError";
@@ -67,6 +73,28 @@ export function invalidateApplicationViews(qc: QueryClient) {
   ]) {
     void qc.invalidateQueries({ queryKey: key });
   }
+}
+
+/**
+ * The end of a save made in an Edit dialog (fix-stale-key-pattern). `refresh()` invalidates what shows
+ * the record; then the server's reply goes straight into the queries it fits (`store`), and the save
+ * waits for the other queries the dialog is opened from (`wait`, only those on screen) to refetch.
+ * Return it from the mutation's onSuccess: the save stays pending until then, so a dialog that closes
+ * on success can't be reopened from data older than the save. Never re-sync an open form from a
+ * refetch instead: it could wipe what someone is typing.
+ */
+export async function settleSave(
+  qc: QueryClient,
+  refresh: () => void,
+  { store = [], wait = [] }: { store?: [QueryKey, unknown][]; wait?: QueryKey[] },
+) {
+  refresh();
+  // After refresh(), so the stored data counts as fresh; the refetch it started brings the same.
+  for (const [queryKey, data] of store) qc.setQueryData(queryKey, data);
+  // Joins the refetches refresh() started; a failed one doesn't fail the save.
+  await Promise.all(
+    wait.map((queryKey) => qc.refetchQueries({ queryKey, type: "active" }, { cancelRefetch: false })),
+  );
 }
 
 export function useWorkflow() {

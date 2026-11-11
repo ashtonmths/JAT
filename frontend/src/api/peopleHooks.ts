@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
-import { keys } from "./hooks";
+import { keys, settleSave } from "./hooks";
 import { notifyError } from "./notifyError";
 
 /** After any contact or agency change, refresh everything that shows people. */
@@ -41,6 +41,7 @@ export function useCreateAgency() {
 
 export function useUpdateAgency() {
   const refresh = useRefreshPeople();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: async (args: { id: string; body: Schemas["AgencyPatch"] }) =>
       unwrap(
@@ -49,7 +50,8 @@ export function useUpdateAgency() {
           body: args.body,
         }),
       ),
-    onSuccess: refresh,
+    // Its page's Edit opens from the agency's summary.
+    onSuccess: () => settleSave(qc, refresh, { wait: [keys.agencies, ["agency-summary"]] }),
     onError: notifyError,
   });
 }
@@ -81,6 +83,7 @@ export function useSetPersonReply() {
 
 export function useSaveContact() {
   const refresh = useRefreshPeople();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: async (args: {
       id?: string;
@@ -94,7 +97,11 @@ export function useSaveContact() {
             }),
           )
         : unwrap(await api.POST("/api/v1/contacts", { body: { favourite: false, ...args.body } })),
-    onSuccess: refresh,
+    // Edit opens from the person's page, the recruiters list or an agency's page.
+    onSuccess: (_saved, args) =>
+      args.id
+        ? settleSave(qc, refresh, { wait: [keys.contacts, ["contact-summary"], ["agency-summary"]] })
+        : refresh(),
     onError: notifyError,
   });
 }

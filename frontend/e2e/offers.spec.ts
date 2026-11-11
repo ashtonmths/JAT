@@ -729,8 +729,8 @@ test.describe("more permutations", () => {
     },
   );
 
-  // KNOWN BUG (fix-stale-edit-after-save on the roadmap): expected to fail until it is fixed.
-  test.fail("reopening straight after saving shows the new figure", async ({ page, request }) => {
+  // fix-stale-edit-after-save: the save waits for the refetch, so Edit can't reopen from old data.
+  test("reopening straight after saving shows the new figure", async ({ page, request }) => {
     const app = await application(request, "Reopen Offer Co");
     await addOffer(request, app.id, { employment_type: "permanent", salary: 80000 });
     await openApplication(page, app.id);

@@ -406,6 +406,19 @@ test.describe("editing a round", () => {
     expect(writes).toEqual([]);
   });
 
+  // fix-stale-edit-other-dialogs: the save waits for the list Edit opens from, so it can't reopen old.
+  test("reopening straight after saving shows what was saved", async ({ page, request }) => {
+    const app = await application(request, "Reopen Round Co");
+    await addRound(request, app.id, { title: "Reopened", location: "Old place" });
+    await openApplication(page, app.id);
+    await slow(page, `**${API}/interviews?*`, "GET", 1000);
+    let dialog = await editRound(page, "Round 1 · Reopened");
+    await dialog.getByLabel("Location").fill("New place");
+    await save(dialog);
+    dialog = await editRound(page, "Round 1 · Reopened");
+    await expect(dialog.getByLabel("Location")).toHaveValue("New place");
+  });
+
   test("emptying fields clears them, and the type stands in for the title", async ({ page, request }) => {
     const app = await application(request, "Clear Round Co");
     await addRound(request, app.id, {
