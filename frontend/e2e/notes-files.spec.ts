@@ -595,6 +595,57 @@ test.describe("links", () => {
     expect(writes).toHaveLength(2);
   });
 
+  test("clicking away while Enter's save is still going doesn't save again", async ({ page, request }) => {
+    const { at, links } = await prepare(page, request, "Slow Save Link Co");
+    let release = () => {};
+    const held = new Promise<void>((done) => (release = done));
+    const patches: string[] = [];
+    await page.route(`**${API}/links/*`, async (route) => {
+      if (route.request().method() === "PATCH") {
+        patches.push(route.request().postData() ?? "");
+        await held;
+      }
+      await route.continue();
+    });
+    await links.getByRole("button", { name: "Rename Old" }).click();
+    await links.getByRole("textbox", { name: "Link title", exact: true }).fill("Slow");
+    await page.keyboard.press("Enter");
+    await expect.poll(() => patches.length).toBe(1);
+    await page.getByRole("heading", { name: "Slow Save Link Co", level: 2 }).click();
+    await pause(300);
+    release();
+    await expect(links.getByRole("link", { name: "Slow" })).toBeVisible();
+    await pause(300);
+    expect(patches).toHaveLength(1);
+    expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Slow");
+
+    // Typing more while a save is going sends the newer title once that save is done, not alongside it.
+    patches.length = 0;
+    let releaseNext = () => {};
+    const heldNext = new Promise<void>((done) => (releaseNext = done));
+    await page.unroute(`**${API}/links/*`);
+    await page.route(`**${API}/links/*`, async (route) => {
+      if (route.request().method() === "PATCH") {
+        patches.push(route.request().postData() ?? "");
+        if (patches.length === 1) await heldNext;
+      }
+      await route.continue();
+    });
+    await links.getByRole("button", { name: "Rename Slow" }).click();
+    const box = links.getByRole("textbox", { name: "Link title", exact: true });
+    await box.fill("Slower");
+    await page.keyboard.press("Enter");
+    await expect.poll(() => patches.length).toBe(1);
+    await box.fill("Slowest");
+    await page.getByRole("heading", { name: "Slow Save Link Co", level: 2 }).click();
+    await pause(300);
+    expect(patches).toHaveLength(1);
+    releaseNext();
+    await expect(links.getByRole("link", { name: "Slowest" })).toBeVisible();
+    expect(patches.map((p) => JSON.parse(p).title)).toEqual(["Slower", "Slowest"]);
+    expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Slowest");
+  });
+
   test("the tick saves a rename once, with no error", async ({ page, request }) => {
     const { at, links } = await prepare(page, request, "Tick Link Co");
     const writes = watchWrites(page);

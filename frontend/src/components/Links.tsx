@@ -24,7 +24,7 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { useState, type FocusEvent, type MouseEvent } from "react";
+import { useRef, useState, type FocusEvent, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -63,16 +63,50 @@ function LinkRow({ link }: { link: LinkItem }) {
   const remove = useDeleteLink();
   const Icon = ICONS[link.kind] ?? IconLink;
   const label = link.title || host(link.url);
+  // Whether the editor is open: false as soon as it starts closing, so a blur while it closes doesn't save.
+  const open = useRef(false);
+  // The title being saved, and a newer one asked for meanwhile: one save at a time, never the same one twice.
+  const sending = useRef<string | null>(null);
+  const queued = useRef<string | null>(null);
+  const startEditing = () => {
+    setTitle(link.title ?? "");
+    open.current = true;
+    setEditing(true);
+  };
+  const close = () => {
+    open.current = false;
+    setEditing(false);
+  };
+  const send = (value: string) => {
+    sending.current = value;
+    update.mutate(
+      { id: link.id, body: { title: value } },
+      {
+        onSuccess: () => {
+          const next = queued.current;
+          sending.current = queued.current = null;
+          if (next !== null && next !== value) send(next);
+          else close();
+        },
+        onError: () => {
+          sending.current = queued.current = null; // the box stays open to try again
+        },
+      },
+    );
+  };
   const save = () => {
-    if (title.trim() === (link.title ?? "")) return setEditing(false); // nothing changed
-    update.mutate({ id: link.id, body: { title } }, { onSuccess: () => setEditing(false) });
+    if (!open.current) return;
+    if (sending.current !== null) {
+      queued.current = title; // sent after the one in flight, unless it's the same
+      return;
+    }
+    if (title.trim() === (link.title ?? "")) return close(); // nothing changed
+    send(title);
   };
 
   // Leaving the editor saves, but moving between the box, the tick and the X doesn't: those buttons decide.
-  // A box or button that is closing (Escape, the X) can blur as it goes; that isn't leaving.
   const saveIfLeaving = (e: FocusEvent<HTMLDivElement>) => {
-    const leaving = !e.currentTarget.contains(e.relatedTarget as Node | null);
-    if (editing && leaving && (e.target as Node).isConnected) save();
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) save();
   };
   // A press on the tick or X keeps focus in the box, so it doesn't blur (and save) before the click runs.
   const keepFocus = (e: MouseEvent) => e.preventDefault();
@@ -88,7 +122,7 @@ function LinkRow({ link }: { link: LinkItem }) {
             onChange={(e) => setTitle(e.currentTarget.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") save();
-              if (e.key === "Escape") setEditing(false);
+              if (e.key === "Escape") close();
             }}
             aria-label={t("links.linkTitle")}
             placeholder={t("links.defaultPlaceholder")}
@@ -131,7 +165,7 @@ function LinkRow({ link }: { link: LinkItem }) {
               variant="subtle"
               color="gray"
               onMouseDown={keepFocus}
-              onClick={() => setEditing(false)}
+              onClick={close}
               aria-label={t("links.cancel")}
             >
               <IconX size={16} />
@@ -143,10 +177,7 @@ function LinkRow({ link }: { link: LinkItem }) {
               <ActionIcon
                 variant="subtle"
                 color="gray"
-                onClick={() => {
-                  setTitle(link.title ?? "");
-                  setEditing(true);
-                }}
+                onClick={startEditing}
                 aria-label={t("links.renameNamed", { label })}
               >
                 <IconPencil size={16} />
