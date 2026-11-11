@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -190,7 +191,10 @@ def create_app(
     app.state.sessions = session_factory(engine)
     git_repo = is_git_repo(data_dir)
     if git_repo:
-        ensure_gitattributes(data_dir)  # a data folder from before .gitattributes gets it; the next snapshot commits it
+        # A data folder from before .gitattributes gets it; the next snapshot commits it. A read-only folder or an
+        # unreadable .gitattributes mustn't stop the app: each snapshot tries again and reports what went wrong.
+        with contextlib.suppress(OSError, UnicodeError):
+            ensure_gitattributes(data_dir)
     app.state.jat = AppState(data_dir=data_dir, git_repo=git_repo)
     app.state.workflow = WorkflowCache(data_dir)
     app.state.writes = WriteNotifier()

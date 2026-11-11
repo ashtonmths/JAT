@@ -166,3 +166,33 @@ def test_cli_init_restores_fresh_clone(tmp_path, capsys):
 
 def test_cli_export_needs_db(tmp_path):
     assert main(["--data-dir", str(tmp_path / "none"), "export"]) == 2
+
+
+def test_the_app_adds_gitattributes_to_a_data_folder_from_before(git_repo):
+    from jat.app import create_app
+    from jat.db import db_path, migrate
+
+    init_data_dir(git_repo, windows_snapshots=True)
+    migrate(db_path(git_repo))
+    (git_repo / ".gitattributes").unlink()
+    create_app(git_repo, dist=git_repo / "none")
+    assert (git_repo / ".gitattributes").read_text(encoding="utf-8").splitlines()[1:] == list(GITATTRIBUTES_ENTRIES)
+
+
+def test_an_unreadable_gitattributes_doesnt_stop_the_app(git_repo):
+    from jat.app import create_app
+    from jat.db import db_path, migrate
+
+    init_data_dir(git_repo, windows_snapshots=True)
+    migrate(db_path(git_repo))
+    (git_repo / ".gitattributes").write_bytes(b"# caf\xe9\n")  # not UTF-8
+    create_app(git_repo, dist=git_repo / "none")  # no exception
+
+
+def test_gitattributes_ignores_trailing_spaces_and_keeps_one_header(tmp_path):
+    path = tmp_path / "data"
+    init_data_dir(path)
+    lines = (path / ".gitattributes").read_text(encoding="utf-8").splitlines()
+    (path / ".gitattributes").write_text("\n".join([lines[0], lines[1] + "  ", *lines[3:]]) + "\n", encoding="utf-8")
+    assert init_data_dir(path).gitattributes_added == [GITATTRIBUTES_ENTRIES[1]]
+    assert (path / ".gitattributes").read_text(encoding="utf-8").count("# Job Application Tracker") == 1

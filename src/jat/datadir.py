@@ -116,19 +116,14 @@ def ensure_gitattributes(path: Path) -> list[str]:
     when the app starts and before each snapshot, so data folders made before it existed get it too."""
     gitattributes = path / ".gitattributes"
     existing = gitattributes.read_text(encoding="utf-8-sig").splitlines() if gitattributes.exists() else []
-    missing = [e for e in GITATTRIBUTES_ENTRIES if e not in existing]
+    have = {line.strip() for line in existing}
+    missing = [e for e in GITATTRIBUTES_ENTRIES if e not in have]
     if missing:
-        block = [
-            "",
-            "# Job Application Tracker: line endings (Unix LF for export and notes, byte-for-byte for files)",
-            *missing,
-        ]
-        text = "\n".join(existing).rstrip("\n")
-        gitattributes.write_text(
-            (text + "\n" if text else "") + "\n".join(block).lstrip("\n") + "\n",
-            encoding="utf-8",
-            newline="\n",
-        )
+        header = "# Job Application Tracker: line endings (Unix LF for export and notes, byte-for-byte for files)"
+        theirs = "\n".join(existing).rstrip("\n")
+        block = "\n".join([header, *missing] if header not in have else missing)
+        text = f"{theirs}\n\n{block}\n" if theirs else f"{block}\n"
+        gitattributes.write_text(text, encoding="utf-8", newline="\n")
     return missing
 
 

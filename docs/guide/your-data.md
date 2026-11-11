@@ -61,7 +61,8 @@ nothing shows up in `git log` until you've been idle for a minute.
 
 The data folder's `.gitattributes` stops git changing line endings (Git for Windows does by default): your
 uploads are committed byte for byte, and notes and the export keep Unix line endings on every computer. A data
-folder made before it existed gets it when the app starts, and the next snapshot commits it.
+folder made before it existed gets it when the app starts, and the next snapshot commits it (on Windows, where
+snapshots are off for now, it's there for your own commits).
 
 - It only ever commits those paths; anything else you've staged in that repo is left alone.
 - It never commits on a detached HEAD or in the middle of a rebase or merge.
