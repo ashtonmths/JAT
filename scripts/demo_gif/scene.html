@@ -49,11 +49,20 @@
     overflow: hidden; background: #fff; box-shadow: 0 30px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.25);
     transform: perspective(1600px) rotateY(-9deg) rotateX(3deg); transform-origin: left center; }
   .intro .shot img { display: block; width: 1040px; margin-left: -8px; }
+  /* Chinese (?lang=zh-CN): CJK fonts after Inter, and no tight tracking on Chinese characters. */
+  :lang(zh-CN) body, :lang(zh-CN) .caption p, :lang(zh-CN) .brand, :lang(zh-CN) .intro .chip {
+    font-family: "Inter Display", Inter, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+  :lang(zh-CN) .caption h2, :lang(zh-CN) .intro h1 { letter-spacing: 0; }
+  :lang(zh-CN) .intro h1 { line-height: 1.15; }
+  :lang(zh-CN) .intro .tag { line-height: 1.5; }
 </style>
 </head>
 <body>
 <script>
-  const S = "../../docs/screenshots/";
+  // ?lang=zh-CN: the Chinese screenshots (docs/screenshots/zh-CN/) and captions (ZH, below).
+  const LANG = new URLSearchParams(location.search).get("lang") === "zh-CN" ? "zh-CN" : "en";
+  if (LANG !== "en") document.documentElement.lang = LANG;
+  const S = LANG === "en" ? "../../docs/screenshots/" : `../../docs/screenshots/${LANG}/`;
   // Each scene: a caption, and which part of which screenshot to show (x, y, width in the
   // screenshot's pixels; it's scaled to fill the frame's width). Keep each entry starting
   // "{ intro" or "{ title" on its own line: make_demo_gif.py counts them that way.
@@ -76,7 +85,34 @@
     { title: "Find anything", sub: "Applications, people, notes, debriefs, emails and links: press /",
       img: "search.png", x: 232, y: 56, w: 1168 },
   ];
-  const LOGO = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+  // The Chinese tour: captions by scene, in order (glossary: docs/i18n/zh-CN.md). Its Next actions
+  // scene shows Today's whole page, since zh-CN/next-actions.png is only the Waiting on them column.
+  const ZH = [
+    {},
+    { title: "下一步该催问谁，一目了然", sub: "待读回复、待办、跟进和久无进展的申请，都在一个列表里",
+      img: "overview.png", x: 236, y: 56, w: 1364 },
+    { title: "所有申请都在看板上", sub: "在任意阶段之间拖动；每次移动都有时间记录，一键就能撤销" },
+    { title: "招聘顾问、通话和他们推荐的职位", sub: "约通话或记录通话，再逐个决定投递还是放弃" },
+    { title: "每个职位都有自己的页面", sub: "薪资、条件、谁推荐的、你的待办和职位描述" },
+    { title: "Offer 并排对比", sub: "薪资、奖金、股权和养老金，或者日薪，以及每个 Offer 的年度总值" },
+    { title: "看清你的求职漏斗", sub: "从投递到 Offer 的桑基图，可按日期和渠道筛选" },
+    { title: "一条时间线，贯穿所有事", sub: "每条消息、通话、面试和 Offer，按天列出或按泳道展示" },
+    { title: "什么都找得到", sub: "申请、联系人、笔记、复盘、邮件和链接：按 / 即可搜索" },
+  ];
+  if (LANG === "zh-CN") ZH.forEach((o, i) => Object.assign(SCENES[i], o));
+  const TEXT = {
+    en: {
+      name: "Job Application Tracker", title: "Job Application<br/>Tracker", badge: "Open source · Self-hosted · Local-first",
+      tag: "Every application, recruiter, interview and offer in one place, with what to chase next.",
+      chips: ["Kanban board", "Recruiter CRM", "Today", "Offer comparison"],
+    },
+    "zh-CN": {
+      name: "求职申请追踪器", title: "求职申请<br/>追踪器", badge: "开源 · 自托管 · 本地优先",
+      tag: "申请、招聘顾问、面试和 Offer 集中在一处，下一步该催问谁也一目了然。",
+      chips: ["看板", "招聘顾问管理", "今日", "Offer 对比"],
+    },
+  }[LANG];
+  const LOGO =`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
     <circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>`;
 
   function intro() {
@@ -84,13 +120,13 @@
       <div class="left">
         <div style="display:flex;align-items:center;gap:16px">
           <div class="logo" style="width:64px;height:64px;border-radius:16px">${LOGO.replace(/20/g, "40")}</div>
-          <div style="font-family:Inter,sans-serif;font-size:20px;font-weight:600;color:#dbe4ff">Open source · Self-hosted · Local-first</div>
+          <div style="font-family:Inter,sans-serif;font-size:20px;font-weight:600;color:#dbe4ff">${TEXT.badge}</div>
         </div>
-        <h1>Job Application<br/>Tracker</h1>
-        <p class="tag">Every application, recruiter, interview and offer in one place, with what to chase next.</p>
+        <h1>${TEXT.title}</h1>
+        <p class="tag">${TEXT.tag}</p>
         <div class="chips">
-          <span class="chip">Kanban board</span><span class="chip">Recruiter CRM</span>
-          <span class="chip">Today</span><span class="chip">Offer comparison</span>
+          <span class="chip">${TEXT.chips[0]}</span><span class="chip">${TEXT.chips[1]}</span>
+          <span class="chip">${TEXT.chips[2]}</span><span class="chip">${TEXT.chips[3]}</span>
         </div>
       </div>
       <div class="shot"><div class="bar"><i style="background:#ff6b6b"></i><i style="background:#fcc419"></i><i style="background:#51cf66"></i></div>
@@ -113,7 +149,7 @@
   }
   function chrome(i) {
     const dots = SCENES.slice(1).map((_, k) => `<b class="${k + 1 === i ? "on" : ""}"></b>`).join("");
-    return `<div class="brand"><div class="logo">${LOGO}</div>Job Application Tracker</div><div class="dots">${dots}</div>`;
+    return `<div class="brand"><div class="logo">${LOGO}</div>${TEXT.name}</div><div class="dots">${dots}</div>`;
   }
 
   function add(html, transform = "", opacity = 1) {
