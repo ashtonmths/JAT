@@ -549,15 +549,30 @@ test.describe("links", () => {
     expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Old");
   });
 
-  // KNOWN BUG (fix-link-rename-cancel-saves on the roadmap): expected to fail until it is fixed.
-
-  test.fail("the X in a rename changes nothing", async ({ page, request }) => {
+  test("the X in a rename changes nothing", async ({ page, request }) => {
     const { at, links } = await prepare(page, request, "Cancel Link Co");
     const writes = watchWrites(page);
     await links.getByRole("button", { name: "Rename Old" }).click();
     await links.getByRole("textbox", { name: "Link title", exact: true }).fill("Changed");
     await links.getByRole("button", { name: "Cancel" }).click();
     await expect(links.getByRole("textbox", { name: "Link title", exact: true })).toBeHidden();
+    await pause(300);
+    expect(writes).toEqual([]);
+    expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Old");
+  });
+
+  test("tabbing from a rename to the X and pressing it changes nothing", async ({ page, request }) => {
+    const { at, links } = await prepare(page, request, "Tab Cancel Link Co");
+    const writes = watchWrites(page);
+    await links.getByRole("button", { name: "Rename Old" }).click();
+    await links.getByRole("textbox", { name: "Link title", exact: true }).fill("Changed");
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Tab");
+    await expect(links.getByRole("button", { name: "Cancel" })).toBeFocused();
+    await pause(300);
+    expect(writes).toEqual([]);
+    await page.keyboard.press("Enter");
+    await expect(links.getByRole("link", { name: "Old" })).toBeVisible();
     await pause(300);
     expect(writes).toEqual([]);
     expect((await linksOn(request, "company", at.id))[0]?.title).toBe("Old");
@@ -580,28 +595,16 @@ test.describe("links", () => {
     expect(writes).toHaveLength(2);
   });
 
-  // KNOWN BUG (fix-link-rename-tick-error on the roadmap): expected to fail until it is fixed.
-
-  test.fail("the tick saves a rename, with no error", async ({ page, request }) => {
+  test("the tick saves a rename once, with no error", async ({ page, request }) => {
     const { at, links } = await prepare(page, request, "Tick Link Co");
-    let release = () => {};
-    const together = new Promise<void>((done) => (release = done));
-    let held = 0;
-    await page.route(`**${API}/links/*`, async (route) => {
-      if (route.request().method() === "PATCH" && ++held === 1) setTimeout(release, 1_000); // a fix sends just one
-      if (held === 2) release();
-      if (route.request().method() === "PATCH") await together;
-      await route.continue();
-    });
-
+    const writes = watchWrites(page);
     await links.getByRole("button", { name: "Rename Old" }).click();
-
     await links.getByRole("textbox", { name: "Link title", exact: true }).fill("By tick");
-
     await links.getByRole("button", { name: "Save title" }).click();
-
     await expect(links.getByRole("link", { name: "By tick" })).toBeVisible();
-
+    await pause(300);
+    expect(writes.filter((w) => w.startsWith("PATCH "))).toHaveLength(1);
+    await expect(page.getByText("That didn't work")).toBeHidden();
     expect((await linksOn(request, "company", at.id))[0]?.title).toBe("By tick");
   });
 

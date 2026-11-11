@@ -24,7 +24,7 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, type FocusEvent, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -68,8 +68,17 @@ function LinkRow({ link }: { link: LinkItem }) {
     update.mutate({ id: link.id, body: { title } }, { onSuccess: () => setEditing(false) });
   };
 
+  // Leaving the editor saves, but moving between the box, the tick and the X doesn't: those buttons decide.
+  // A box or button that is closing (Escape, the X) can blur as it goes; that isn't leaving.
+  const saveIfLeaving = (e: FocusEvent<HTMLDivElement>) => {
+    const leaving = !e.currentTarget.contains(e.relatedTarget as Node | null);
+    if (editing && leaving && (e.target as Node).isConnected) save();
+  };
+  // A press on the tick or X keeps focus in the box, so it doesn't blur (and save) before the click runs.
+  const keepFocus = (e: MouseEvent) => e.preventDefault();
+
   return (
-    <Group justify="space-between" wrap="nowrap" gap="xs">
+    <Group justify="space-between" wrap="nowrap" gap="xs" onBlur={saveIfLeaving}>
       <Group gap="xs" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
         <Icon size={18} stroke={1.6} style={{ flexShrink: 0 }} />
         {editing ? (
@@ -84,7 +93,6 @@ function LinkRow({ link }: { link: LinkItem }) {
             aria-label={t("links.linkTitle")}
             placeholder={t("links.defaultPlaceholder")}
             style={{ flex: 1 }}
-            onBlur={save}
             autoFocus
           />
         ) : (
@@ -112,6 +120,7 @@ function LinkRow({ link }: { link: LinkItem }) {
             <ActionIcon
               variant="subtle"
               color="teal"
+              onMouseDown={keepFocus}
               onClick={save}
               loading={update.isPending}
               aria-label={t("links.saveTitle")}
@@ -121,6 +130,7 @@ function LinkRow({ link }: { link: LinkItem }) {
             <ActionIcon
               variant="subtle"
               color="gray"
+              onMouseDown={keepFocus}
               onClick={() => setEditing(false)}
               aria-label={t("links.cancel")}
             >

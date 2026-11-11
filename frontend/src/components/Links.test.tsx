@@ -65,4 +65,36 @@ describe("links", () => {
     fireEvent.keyDown(screen.getByLabelText("Link title"), { key: "Enter" });
     await waitFor(() => expect(calls.find((c) => c.method === "PATCH")?.body).toEqual({ title: "Brief v2" }));
   });
+
+  it("the X cancels a rename, by mouse or after tabbing to it, without saving", async () => {
+    const calls = mockApi({ "GET /api/v1/links": [link()] });
+    renderCard();
+    fireEvent.click(await screen.findByRole("button", { name: "Rename Take-home brief" }));
+    const box = screen.getByLabelText("Link title");
+    fireEvent.change(box, { target: { value: "Changed" } });
+    const cancel = screen.getByRole("button", { name: "Cancel" });
+    // A mouse press keeps focus in the box, so the box doesn't blur and save first.
+    expect(fireEvent.mouseDown(cancel)).toBe(false);
+    // Tabbing from the box to the X doesn't save either.
+    fireEvent.blur(box, { relatedTarget: cancel });
+    fireEvent.focus(cancel);
+    fireEvent.click(cancel);
+    expect(screen.queryByLabelText("Link title")).not.toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "Take-home brief" })).toBeInTheDocument();
+    await new Promise((done) => setTimeout(done, 50)); // a save would have been sent by now
+    expect(calls.filter((c) => c.method === "PATCH")).toEqual([]);
+  });
+
+  it("leaving the rename for somewhere else saves it", async () => {
+    const calls = mockApi({
+      "GET /api/v1/links": [link()],
+      "PATCH /api/v1/links/l1": link({ title: "Brief v2" }),
+    });
+    renderCard();
+    fireEvent.click(await screen.findByRole("button", { name: "Rename Take-home brief" }));
+    const box = screen.getByLabelText("Link title");
+    fireEvent.change(box, { target: { value: "Brief v2" } });
+    fireEvent.blur(box, { relatedTarget: null });
+    await waitFor(() => expect(calls.filter((c) => c.method === "PATCH")).toHaveLength(1));
+  });
 });
