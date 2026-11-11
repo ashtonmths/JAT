@@ -532,7 +532,7 @@ const shade = (color: string) => `${color}.6`;
  */
 export function TodayPage() {
   const { t } = useTranslation("today");
-  const { data, isLoading } = useNextActions();
+  const { data, isLoading, isPlaceholderData } = useNextActions();
   const [openId, setOpenId] = useState<string | null>(null);
   // The Reschedule dialog belongs to the round or call, not its row: when its time passes, a refresh
   // moves the row from Coming up to Waiting for an outcome, which would take a dialog inside it along.
@@ -769,8 +769,13 @@ export function TodayPage() {
             </Card>
           )}
 
-          {/* Wide screens: what to do now on the left, what's ahead and who you're waiting on beside it. */}
-          <Grid gap="xl">
+          {/* Wide screens: what to do now on the left, what's ahead and who you're waiting on beside it.
+              Dimmed, but still there and usable, while it shows yesterday's lists as a new day loads. */}
+          <Grid
+            gap="xl"
+            aria-busy={isPlaceholderData || undefined}
+            style={{ opacity: isPlaceholderData ? 0.6 : undefined, transition: "opacity 150ms" }}
+          >
             <Grid.Col span={{ base: 12, lg: 7 }}>
               <Bucket
                 id="your-move"
