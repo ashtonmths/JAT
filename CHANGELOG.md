@@ -5,6 +5,14 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.11 (2026-11-11)
+
+- A role's pay shows in its own currency (dollars, euros, yuan…) instead of always in pounds, and editing a role keeps its currency instead of turning it into pounds. (#321).
+
+## 1.23.10 (2026-11-11)
+
+- The Chinese demo data (seed_demo.py --lang zh-CN) labels contact details in Chinese (工作, 手机) instead of English. (#322).
+
 ## 1.23.9 (2026-11-11)
 
 - Reopening Edit right after saving shows what you just saved, so saving again can't put the old values back: people, agencies, companies, offers, interview rounds, calls, roles and notes. A note's check for changes made elsewhere now compares against the version you opened. (#315).

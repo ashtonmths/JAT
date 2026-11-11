@@ -139,6 +139,14 @@ def test_demo_phone_numbers_cant_ring_anyone(demos):
     assert names(zh, sql) and all(re.fullmatch(r"\+86 000 0000 \d{4}", p) for p in names(zh, sql))
 
 
+def test_demo_contact_detail_labels_are_in_the_demos_language(demos):
+    # Labels are free text, so the demo writes them; English keeps work and mobile (the browser tests use them).
+    en, zh = demos
+    sql = "select kind, label from contact_details order by rowid"
+    assert set(rows(en, sql)) == {("email", "work"), ("phone", "mobile")}
+    assert set(rows(zh, sql)) == {("email", "工作"), ("phone", "手机")}
+
+
 def test_every_language_has_the_same_demo_keys():
     # A key missing from one table would only fail when that language is seeded. The lookups by
     # id must match too; a record's own fields may differ (Chinese has no IR35 or pension).
