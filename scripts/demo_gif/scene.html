@@ -43,6 +43,7 @@
   .intro h1 { font-size: 64px; line-height: 1.02; font-weight: 800; letter-spacing: -1.6px; margin-top: 30px; }
   .intro .tag { font-size: 25px; line-height: 1.35; color: #dbe4ff; margin-top: 22px; font-weight: 450; }
   .intro .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+  .badge { font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; color: #dbe4ff; }
   .intro .chip { font-family: Inter, sans-serif; font-size: 17px; font-weight: 600; padding: 8px 14px;
     border-radius: 999px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22); }
   .intro .shot { position: absolute; left: 680px; top: 110px; width: 800px; height: 660px; border-radius: 14px;
@@ -50,7 +51,7 @@
     transform: perspective(1600px) rotateY(-9deg) rotateX(3deg); transform-origin: left center; }
   .intro .shot img { display: block; width: 1040px; margin-left: -8px; }
   /* Chinese (?lang=zh-CN): CJK fonts after Inter, and no tight tracking on Chinese characters. */
-  :lang(zh-CN) body, :lang(zh-CN) .caption p, :lang(zh-CN) .brand, :lang(zh-CN) .intro .chip {
+  :lang(zh-CN) body, :lang(zh-CN) .caption p, :lang(zh-CN) .brand, :lang(zh-CN) .intro .chip, :lang(zh-CN) .badge {
     font-family: "Inter Display", Inter, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
   :lang(zh-CN) .caption h2, :lang(zh-CN) .intro h1 { letter-spacing: 0; }
   :lang(zh-CN) .intro h1 { line-height: 1.15; }
@@ -112,7 +113,7 @@
       chips: ["看板", "招聘顾问管理", "今日", "Offer 对比"],
     },
   }[LANG];
-  const LOGO =`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+  const LOGO = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
     <circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>`;
 
   function intro() {
@@ -120,7 +121,7 @@
       <div class="left">
         <div style="display:flex;align-items:center;gap:16px">
           <div class="logo" style="width:64px;height:64px;border-radius:16px">${LOGO.replace(/20/g, "40")}</div>
-          <div style="font-family:Inter,sans-serif;font-size:20px;font-weight:600;color:#dbe4ff">${TEXT.badge}</div>
+          <div class="badge">${TEXT.badge}</div>
         </div>
         <h1>${TEXT.title}</h1>
         <p class="tag">${TEXT.tag}</p>

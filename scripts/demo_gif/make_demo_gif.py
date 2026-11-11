@@ -23,6 +23,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 OUT = ROOT / "docs" / "screenshots" / "demo.gif"
 LANGS = ("en", "zh-CN")  # en: docs/screenshots/; any other: docs/screenshots/<lang>/
+# A new language also needs its captions in scene.html (as ZH), or it gets English captions.
 
 HOLD = 150  # hundredths of a second each scene stays still
 SLIDE = [0.2, 0.45, 0.7, 0.9]  # progress of the in-between frames
