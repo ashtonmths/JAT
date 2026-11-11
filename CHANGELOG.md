@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.4 (2026-11-11)
+
+- Installing no longer needs a C compiler: the repo's `.python-version` asks uv for Python 3.12 to 3.14, so a computer with no Python gets one with ready-built packages, not 3.15 (on Windows, `uv sync` failed asking for Visual C++). (#312).
+
 ## 1.23.3 (2026-11-11)
 
 - The data folder gets a .gitattributes that stops git changing line endings: uploads are committed byte for byte and notes and the export keep Unix line endings, including with Git for Windows. Existing data folders get it when the app starts (#308, carrying #302).
