@@ -59,7 +59,8 @@ export function useSaveOffer() {
             }),
           ),
     // Edit opens from an application's list of offers.
-    onSuccess: (_saved, args) => ("id" in args ? settleSave(qc, refresh, { wait: [["offers"]] }) : refresh()),
+    onSuccess: (saved, args) =>
+      "id" in args ? settleSave(qc, refresh, saved, { store: [["offers"]] }) : refresh(),
     onError: notifyError,
   });
 }

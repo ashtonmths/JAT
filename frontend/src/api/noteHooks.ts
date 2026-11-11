@@ -50,9 +50,9 @@ export function useSaveNote() {
             }),
           )
         : unwrap(await api.POST("/api/v1/notes", { body: args.body })),
-    // Edit opens from the note's own query, which holds just what the save returns.
+    // Edit opens from the note's own query, which holds just what the save returns: nothing to wait for.
     onSuccess: (saved, args) =>
-      args.id ? settleSave(qc, refresh, { store: [[["note", saved.id], saved]] }) : refresh(),
+      args.id ? settleSave(qc, refresh, saved, { store: [["note", saved.id]], wait: [] }) : refresh(),
     onError: notifyError,
   });
 }

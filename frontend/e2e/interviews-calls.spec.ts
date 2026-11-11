@@ -953,6 +953,31 @@ test.describe("a call afterwards", () => {
     expect(saved).toMatchObject({ title: "After", agenda: "Kept agenda", starts_at: before?.starts_at });
   });
 
+  // fix-stale-edit-other-dialogs: the save puts what it returns in the list Edit opens from, so a
+  // refetch that hasn't come back yet can't reopen it old, and the save doesn't wait for it forever.
+  test("reopening straight after saving shows what was saved", async ({ page, request }) => {
+    const who = await person(request, "Reopen Call Person");
+    await addCall(request, who.id, { title: "Reopened", kind: "in_person", location: "Old office" });
+    const label = "Meeting with Reopen Call Person: Reopened";
+    await openPerson(page, who.id);
+    let holding = false;
+    let release = () => {};
+    const released = new Promise<void>((done) => (release = done));
+    await page.route(`**${API}/meetings?*`, async (route) => {
+      if (holding && route.request().method() === "GET") await released;
+      await route.continue();
+    });
+    await callMenu(page, label, "Edit");
+    let dialog = theDialog(page);
+    await dialog.getByLabel("Where").fill("New office");
+    holding = true;
+    await save(dialog);
+    await callMenu(page, label, "Edit");
+    dialog = theDialog(page);
+    await expect(dialog.getByLabel("Where")).toHaveValue("New office");
+    release();
+  });
+
   test("a past booked call asks what happened; Happened keeps the agenda", async ({ page, request }) => {
     const who = await person(request, "Past Call Person");
     await addCall(request, who.id, { title: "Was booked", starts_at: inDays(-1), agenda: "My agenda" });

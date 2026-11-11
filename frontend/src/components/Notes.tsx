@@ -122,7 +122,8 @@ export function NotesList({ notes, empty }: { notes: NoteSummary[]; empty: strin
           {empty}
         </Text>
       )}
-      {editing && <EditExisting id={editing} onClose={() => setEditing(null)} />}
+      {/* Keyed by the note, so another note's Edit starts over and waits for its own fresh text. */}
+      {editing && <EditExisting key={editing} id={editing} onClose={() => setEditing(null)} />}
     </Stack>
   );
 }

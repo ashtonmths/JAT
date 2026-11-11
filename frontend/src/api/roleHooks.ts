@@ -82,8 +82,8 @@ export function useSaveRole() {
           )
         : unwrap(await api.POST("/api/v1/roles", { body: args.body })),
     // Edit opens from the role's page or a list of roles, both role summaries.
-    onSuccess: (_saved, args) =>
-      "id" in args ? settleSave(qc, refresh, { wait: [["role-summaries"]] }) : refresh(),
+    onSuccess: (saved, args) =>
+      "id" in args ? settleSave(qc, refresh, saved, { store: [["role-summaries"]] }) : refresh(),
     onError: notifyError,
   });
 }

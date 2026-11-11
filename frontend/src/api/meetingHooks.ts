@@ -91,8 +91,8 @@ export function useSaveMeeting() {
           )
         : unwrap(await api.POST("/api/v1/meetings", { body: args.body })),
     // Edit opens from a list of calls.
-    onSuccess: (_saved, args) =>
-      "id" in args ? settleSave(qc, refresh, { wait: [["meetings"]] }) : refresh(),
+    onSuccess: (saved, args) =>
+      "id" in args ? settleSave(qc, refresh, saved, { store: [["meetings"]] }) : refresh(),
     onError: notifyError,
   });
 }

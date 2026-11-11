@@ -368,12 +368,10 @@ test.describe("writing a note", () => {
     await openNotes(page);
     let holding = false;
     let release = () => {};
-    const reopened = new Promise<void>((done) => (release = done));
+    const released = new Promise<void>((done) => (release = done));
+    // The refetch after the save is held until the reopened form has been checked.
     await page.route(`**${API}/notes/${made2.id}`, async (route) => {
-      if (holding && route.request().method() === "GET") {
-        setTimeout(release, 3_000); // a fix may wait for it before opening
-        await reopened;
-      }
+      if (holding && route.request().method() === "GET") await released;
       await route.continue();
     });
     let dialog = await editNote(page, "Reopened note");
@@ -382,6 +380,7 @@ test.describe("writing a note", () => {
     await saveNote(dialog);
     dialog = await editNote(page, "Reopened note");
     await expect(dialog.getByRole("textbox", { name: "Note", exact: true })).toHaveValue(/^Second\n?$/);
+    release(); // the refetch lands under the open form, which keeps what's typed and its version
     await dialog.getByRole("textbox", { name: "Note", exact: true }).fill("Third");
     await saveNote(dialog);
     expect((await getJson<Note>(request, `notes/${made2.id}`)).body.trim()).toBe("Third");

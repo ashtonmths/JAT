@@ -76,8 +76,8 @@ export function useSaveInterview() {
             }),
           ),
     // Edit opens from a list of rounds (an application's, or the Interviews page's).
-    onSuccess: (_saved, args) =>
-      "id" in args ? settleSave(qc, refresh, { wait: [["interviews"]] }) : refresh(),
+    onSuccess: (saved, args) =>
+      "id" in args ? settleSave(qc, refresh, saved, { store: [["interviews"]] }) : refresh(),
     onError: notifyError,
   });
 }

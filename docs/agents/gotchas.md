@@ -98,9 +98,10 @@ Each of these cost time once. Add a line when something new does.
   failed request 3 times (~7 s): mock every query a page waits on. `src/test/mockApi.ts` has the fixtures.
 - Prove a test catches a bug by breaking the code and watching it fail.
 - TanStack Router: routes built from `NAV` aren't typed for `navigate({ to })`; navigate to `"."`.
-- **An edit saved from a dialog ends with `settleSave`** (`src/api/hooks.ts`): it stores the reply in, or waits for, the
-  queries Edit opens from, so a dialog closed on success can't reopen from old data and save it back
-  (fix-stale-key-pattern). Don't re-sync an open form on a refetch instead: it wipes what someone is typing.
+- **An edit saved from a dialog ends with `settleSave`** (`src/api/hooks.ts`): it merges the reply by id into the
+  cached queries Edit opens from, then waits (at most 3 s) for their refetch, so a dialog closed on success can't
+  reopen from old data and save it back (fix-stale-key-pattern). A new Edit source goes in its `store` list. Don't
+  re-sync an open form on a refetch instead: it wipes what someone is typing.
 
 ## Backend
 

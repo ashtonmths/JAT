@@ -75,26 +75,66 @@ export function invalidateApplicationViews(qc: QueryClient) {
   }
 }
 
+/** The longest a save waits for its refetches: it has already succeeded, and its reply is stored. */
+export const SETTLE_WAIT_MS = 3000;
+
+/**
+ * `old` with the saved record merged in wherever it appears: the record itself, a row in a list, or
+ * one level down in a summary (a person's `contact`, an agency's `recruiters`). A row may carry more
+ * than the save returns (a role summary is a role plus where it stands); those fields stay until the
+ * refetch. Ids are UUIDs, so a record of another kind never matches. Returns `old` itself when the
+ * record isn't in it.
+ */
+export function mergeSaved<T>(old: T, saved: { id: string }, depth = 2): T {
+  if (Array.isArray(old)) {
+    const rows = old.map((row: unknown) => mergeSaved(row, saved, depth));
+    return (rows.some((row, i) => row !== old[i]) ? rows : old) as T;
+  }
+  if (!old || typeof old !== "object") return old;
+  const record = old as Record<string, unknown>;
+  if (record.id === saved.id) return { ...record, ...saved } as T;
+  if (!depth) return old;
+  let next: Record<string, unknown> | null = null;
+  for (const [field, value] of Object.entries(record)) {
+    const merged = mergeSaved(value, saved, depth - 1);
+    if (merged !== value) (next ??= { ...record })[field] = merged;
+  }
+  return (next ?? old) as T;
+}
+
 /**
  * The end of a save made in an Edit dialog (fix-stale-key-pattern). `refresh()` invalidates what shows
- * the record; then the server's reply goes straight into the queries it fits (`store`), and the save
- * waits for the other queries the dialog is opened from (`wait`, only those on screen) to refetch.
- * Return it from the mutation's onSuccess: the save stays pending until then, so a dialog that closes
- * on success can't be reopened from data older than the save. Never re-sync an open form from a
- * refetch instead: it could wipe what someone is typing.
+ * the record; the server's reply (`saved`) then goes straight into the cached queries under `store`
+ * that hold it (mergeSaved), so reopening Edit shows what was saved even if a refetch is slow or
+ * fails. The save then waits, for at most SETTLE_WAIT_MS, for the on-screen queries under `wait` to
+ * refetch, so the rest of the page has settled too. Return it from the mutation's onSuccess: the save
+ * stays pending until then, so the dialog closes after it. Never re-sync an open form from a refetch
+ * instead: it could wipe what someone is typing.
  */
 export async function settleSave(
   qc: QueryClient,
   refresh: () => void,
-  { store = [], wait = [] }: { store?: [QueryKey, unknown][]; wait?: QueryKey[] },
+  saved: { id: string },
+  { store, wait = store }: { store: QueryKey[]; wait?: QueryKey[] },
 ) {
   refresh();
-  // After refresh(), so the stored data counts as fresh; the refetch it started brings the same.
-  for (const [queryKey, data] of store) qc.setQueryData(queryKey, data);
-  // Joins the refetches refresh() started; a failed one doesn't fail the save.
-  await Promise.all(
-    wait.map((queryKey) => qc.refetchQueries({ queryKey, type: "active" }, { cancelRefetch: false })),
-  );
+  // After refresh(), so the reply isn't marked stale again; the refetch refresh() started still
+  // lands. Queries without the record are left alone (undefined skips them), still to refetch.
+  for (const queryKey of store) {
+    qc.setQueriesData({ queryKey }, (old: unknown) => {
+      const next = mergeSaved(old, saved);
+      return next === old ? undefined : next;
+    });
+  }
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  await Promise.race([
+    // Joins the refetches refresh() started; a failed one doesn't fail the save.
+    Promise.all(
+      wait.map((queryKey) => qc.refetchQueries({ queryKey, type: "active" }, { cancelRefetch: false })),
+    ),
+    new Promise((done) => (timer = setTimeout(done, SETTLE_WAIT_MS))),
+  ]);
+  clearTimeout(timer);
 }
 
 export function useWorkflow() {

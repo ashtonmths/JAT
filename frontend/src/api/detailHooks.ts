@@ -47,14 +47,15 @@ export function useUpdateCompany() {
         }),
       ),
     // Its page's Edit opens from the company's summary.
-    onSuccess: () =>
+    onSuccess: (saved) =>
       settleSave(
         qc,
         () => {
           void qc.invalidateQueries({ queryKey: keys.companies });
           invalidateApplicationViews(qc); // everything that shows the company's name
         },
-        { wait: [keys.companies, ["company-summary"]] },
+        saved,
+        { store: [keys.companies, ["company-summary"]] },
       ),
     onError: notifyError,
   });

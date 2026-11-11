@@ -51,7 +51,7 @@ export function useUpdateAgency() {
         }),
       ),
     // Its page's Edit opens from the agency's summary.
-    onSuccess: () => settleSave(qc, refresh, { wait: [keys.agencies, ["agency-summary"]] }),
+    onSuccess: (saved) => settleSave(qc, refresh, saved, { store: [keys.agencies, ["agency-summary"]] }),
     onError: notifyError,
   });
 }
@@ -98,9 +98,11 @@ export function useSaveContact() {
           )
         : unwrap(await api.POST("/api/v1/contacts", { body: { favourite: false, ...args.body } })),
     // Edit opens from the person's page, the recruiters list or an agency's page.
-    onSuccess: (_saved, args) =>
+    onSuccess: (saved, args) =>
       args.id
-        ? settleSave(qc, refresh, { wait: [keys.contacts, ["contact-summary"], ["agency-summary"]] })
+        ? settleSave(qc, refresh, saved, {
+            store: [keys.contacts, ["contact-summary"], ["agency-summary"], ["company-summary"]],
+          })
         : refresh(),
     onError: notifyError,
   });
