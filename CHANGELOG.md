@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.23.3 (2026-11-11)
 
-- The data folder gets a .gitattributes that stops git changing line endings: uploads are committed byte for byte and notes and the export keep Unix line endings, including with Git for Windows. Existing data folders get it when the app starts (#308).
+- The data folder gets a .gitattributes that stops git changing line endings: uploads are committed byte for byte and notes and the export keep Unix line endings, including with Git for Windows. Existing data folders get it when the app starts (#308, carrying #302).
 
 ## 1.23.2 (2026-11-11)
 
