@@ -182,7 +182,8 @@ export function RoleFormModal({
       salary_max: contract ? null : num(v.salaryMax),
       day_rate: contract ? num(v.dayRate) : null,
       ir35: contract ? v.ir35 : null,
-      currency: "GBP",
+      // No currency field yet (fix-role-form-forces-gbp): keep an edited role's own.
+      currency: role?.currency ?? "GBP",
       contact_id: v.contactId,
       meeting_id: v.contactId ? v.meetingId : null,
       description: blank(v.description),
