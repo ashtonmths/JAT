@@ -4,7 +4,7 @@ import pytest
 
 from jat.cli import main
 from jat.config import ConfigError, Settings, resolve_data_dir
-from jat.datadir import CODE_ROOT, DataDirError, init_data_dir
+from jat.datadir import CODE_ROOT, GITATTRIBUTES_ENTRIES, DataDirError, init_data_dir
 from jat.db import head_revision
 
 
@@ -18,8 +18,7 @@ def test_init_creates_layout_and_is_idempotent(tmp_path):
     assert {"export/", "notes/", "files/", "config.toml"} <= set(report.created)
     assert (path / "notes" / ".gitkeep").exists()
     assert "tracker.sqlite3" in (path / ".gitignore").read_text()
-    assert "* text=auto eol=lf" in (path / ".gitattributes").read_text()
-    assert "files/* -text" in (path / ".gitattributes").read_text()
+    assert (path / ".gitattributes").read_text(encoding="utf-8").splitlines()[1:] == list(GITATTRIBUTES_ENTRIES)
     assert not report.is_git_repo and not report.committed
 
     (path / "config.toml").write_text("# edited\n")
@@ -55,34 +54,54 @@ def test_gitignore_covers_the_snapshot_lock(tmp_path):
 def test_gitattributes_keeps_existing_lines(tmp_path):
     path = tmp_path / "data"
     path.mkdir()
-    (path / ".gitattributes").write_text("*.pdf binary\n")
+    (path / ".gitattributes").write_text("*.pdf binary\nexport/** text eol=lf\n", encoding="utf-8-sig")  # Notepad
     report = init_data_dir(path)
-    text = (path / ".gitattributes").read_text()
-    assert text.startswith("*.pdf binary\n")
-    assert "* text=auto eol=lf" in text
-    assert "files/* -text" in text
-    assert len(report.gitattributes_added) == 3
+    raw = (path / ".gitattributes").read_bytes()
+    assert raw.startswith(b"*.pdf binary\nexport/** text eol=lf\n")  # theirs first, BOM gone
+    assert b"\r" not in raw
+    assert report.gitattributes_added == [e for e in GITATTRIBUTES_ENTRIES if e != "export/** text eol=lf"]
 
 
-def test_gitattributes_sets_line_endings_and_preserves_files_byte_for_byte(git_repo):
+def test_gitattributes_keeps_text_lf_and_uploads_byte_for_byte_under_windows_git(git_repo):
+    """Git for Windows converts line endings (core.autocrlf=true); set that here and check what git stores."""
+    subprocess.run(["git", "-C", str(git_repo), "config", "core.autocrlf", "true"], check=True)
     init_data_dir(git_repo)
+    eml = b"From: a@example.com\r\nSubject: hi\r\n\r\nbody\r\n"
+    (git_repo / "files" / "2026").mkdir()
+    (git_repo / "files" / "2026" / "mail.eml").write_bytes(eml)
+    (git_repo / "files" / "top.eml").write_bytes(eml)
+    (git_repo / "notes" / "call.md").write_bytes(b"# Call\r\n\r\nnotes\r\n")  # say an editor saved it with CRLF
+    (git_repo / "own.txt").write_bytes(b"the user's own file\r\n")
+    subprocess.run(["git", "-C", str(git_repo), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(git_repo), "commit", "-q", "-m", "x"], check=True)
 
-    def check(p: str) -> str:
+    def stored(path: str) -> bytes:
         return subprocess.run(
-            ["git", "-C", str(git_repo), "check-attr", "-a", "--", p], capture_output=True, text=True, check=True
+            ["git", "-C", str(git_repo), "show", f"HEAD:{path}"], capture_output=True, check=True
         ).stdout
 
-    export_attrs = check("export/applications.jsonl")
-    assert "text: auto" in export_attrs and "eol: lf" in export_attrs
+    assert stored("files/2026/mail.eml") == eml  # byte for byte, nested
+    assert stored("files/top.eml") == eml  # and at the top of files/
+    assert stored("notes/call.md") == b"# Call\n\nnotes\n"  # LF
+    assert stored("own.txt") == b"the user's own file\n"  # the user's own: git's own setting, not ours
 
-    notes_attrs = check("notes/company.md")
-    assert "text: auto" in notes_attrs and "eol: lf" in notes_attrs
 
-    file_attrs = check("files/2026/11/resume.eml")
-    assert "text: unset" in file_attrs
+def test_a_data_folder_from_before_gets_gitattributes_with_its_next_snapshot(git_repo):
+    from jat.db import db_path, make_engine, migrate
+    from jat.snapshot.git import SnapshotService
 
-    direct_file_attrs = check("files/doc.pdf")
-    assert "text: unset" in direct_file_attrs
+    init_data_dir(git_repo, windows_snapshots=True)
+    migrate(db_path(git_repo))
+    (git_repo / ".gitattributes").unlink()  # as a folder made before .gitattributes existed
+    subprocess.run(["git", "-C", str(git_repo), "commit", "-qam", "no attributes"], check=True)
+    SnapshotService(git_repo, make_engine(db_path(git_repo)), debounce_seconds=0, windows_snapshots=True).snapshot_now()
+    tracked = subprocess.run(["git", "-C", str(git_repo), "ls-files"], capture_output=True, text=True).stdout
+    assert ".gitattributes" in tracked.splitlines()
+
+
+def test_init_says_it_added_gitattributes(tmp_path, capsys):
+    assert main(["--data-dir", str(tmp_path / "d"), "init"]) == 0
+    assert "  .gitattributes: added export/** text eol=lf" in capsys.readouterr().out
 
 
 def test_refuses_data_dir_inside_code_repo():

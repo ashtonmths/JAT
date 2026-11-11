@@ -6,6 +6,7 @@ Layout (see docs/rfc/stack.md §4):
     notes/            Markdown notes (committed)
     files/            attachments, CVs, cover letters, .eml (committed)
     config.toml       workflow stages, staleness thresholds, snapshot settings (committed)
+    .gitattributes    line endings: LF for export/, notes/ and config, uploads byte for byte (committed)
 """
 
 from __future__ import annotations
@@ -30,10 +31,15 @@ GITIGNORE_ENTRIES = (
     ".tmp-*",  # atomic writes in progress (notes)
     "jat-snapshot.lock",  # snapshot lock, kept here when the folder has no .git
 )
+# Git for Windows converts line endings by default (core.autocrlf=true). These keep the app's text LF on every
+# computer and store uploads byte for byte; files of the user's own in the data folder are left alone.
 GITATTRIBUTES_ENTRIES = (
-    "* text=auto eol=lf",
-    "files/* -text",
-    "files/** -text",
+    "export/** text eol=lf",
+    "notes/** text eol=lf",
+    "files/** -text -eol",
+    "config.toml text eol=lf",
+    ".gitignore text eol=lf",
+    ".gitattributes text eol=lf",
 )
 
 DEFAULT_CONFIG = """\
@@ -105,7 +111,9 @@ def _ensure_gitignore(path: Path) -> list[str]:
     return missing
 
 
-def _ensure_gitattributes(path: Path) -> list[str]:
+def ensure_gitattributes(path: Path) -> list[str]:
+    """Add our line-ending rules to the data folder's .gitattributes; the lines that were missing. Run by `jat init`,
+    when the app starts and before each snapshot, so data folders made before it existed get it too."""
     gitattributes = path / ".gitattributes"
     existing = gitattributes.read_text(encoding="utf-8-sig").splitlines() if gitattributes.exists() else []
     missing = [e for e in GITATTRIBUTES_ENTRIES if e not in existing]
@@ -151,7 +159,7 @@ def init_data_dir(
         config.write_text(DEFAULT_CONFIG, encoding="utf-8", newline="\n")
         report.created.append("config.toml")
     report.gitignore_added = _ensure_gitignore(path)
-    report.gitattributes_added = _ensure_gitattributes(path)
+    report.gitattributes_added = ensure_gitattributes(path)
     report.is_git_repo = is_git_repo(path)
     changed = report.created or report.gitignore_added or report.gitattributes_added
     if commit and snapshots_allowed(windows_snapshots) and report.is_git_repo and changed:

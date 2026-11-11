@@ -37,7 +37,8 @@ job-search-data/
 ├── notes/            your Markdown notes, one .md file each (committed)
 ├── files/            attachments: CVs, briefs, exported emails, as uploaded (committed)
 ├── config.toml       settings for this data folder: stages, snapshot timing (committed)
-└── .gitignore        keeps the database and temporary files out of git
+├── .gitignore        keeps the database and temporary files out of git
+└── .gitattributes    keeps line endings as they are: uploads byte for byte, notes and export with Unix line endings
 ```
 
 - **The database is a working copy.** `export/` is the readable, durable form: the app
@@ -55,8 +56,12 @@ job-search-data/
 
 If the data folder is a git repo, the app commits a **snapshot** whenever you stop making
 changes for a while (60 seconds by default): it writes `export/`, then commits `export/`,
-`notes/`, `files/`, `config.toml` and `.gitignore`. A burst of edits becomes one commit, so
+`notes/`, `files/`, `config.toml`, `.gitignore` and `.gitattributes`. A burst of edits becomes one commit, so
 nothing shows up in `git log` until you've been idle for a minute.
+
+The data folder's `.gitattributes` stops git changing line endings (Git for Windows does by default): your
+uploads are committed byte for byte, and notes and the export keep Unix line endings on every computer. A data
+folder made before it existed gets it when the app starts, and the next snapshot commits it.
 
 - It only ever commits those paths; anything else you've staged in that repo is left alone.
 - It never commits on a detached HEAD or in the middle of a rebase or merge.
@@ -112,7 +117,7 @@ For a copy to keep anywhere (a USB stick, cloud storage, an email to yourself):
   `-o PATH` to choose where; it never overwrites an existing file).
 
 The zip holds one folder, `jat-backup-YYYY-MM-DD/`, with a fresh `export/`, `notes/`,
-`files/`, `config.toml`, `.gitignore` and a `RESTORE.md`. It doesn't include the database (it's rebuilt
+`files/`, `config.toml`, `.gitignore`, `.gitattributes` and a `RESTORE.md`. It doesn't include the database (it's rebuilt
 from `export/`) or git history (that's what pushing is for).
 
 ## Restoring
