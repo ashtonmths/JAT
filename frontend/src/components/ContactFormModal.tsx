@@ -2,14 +2,14 @@ import { ActionIcon, Button, Group, Modal, Select, Stack, Text, TextInput } from
 import { useForm } from "@mantine/form";
 import { randomId } from "@mantine/hooks";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Contact, Schemas } from "../api/client";
 import { useCreateCompany } from "../api/detailHooks";
 import { useCreateAgency, useSaveContact } from "../api/peopleHooks";
 import { useAgencies, useCompanies } from "../api/hooks";
-import { CreatableSelect } from "./CreatableSelect";
+import { CreatableSelect, sameName } from "./CreatableSelect";
 
 type Kind = Schemas["ContactDetailIn"]["kind"];
 
@@ -108,15 +108,44 @@ export function ContactFormModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened, contact?.id, defaultAgencyId, defaultCompanyId]);
 
-  const submit = form.onSubmit((values) =>
+  // A name typed in the Agency or Company box but not chosen from its list: saving keeps it.
+  const [typedAgency, setTypedAgency] = useState("");
+  const [typedCompany, setTypedCompany] = useState("");
+
+  /** The id to save for a box: its choice, or the one named by what was typed, made as + Add would. */
+  async function chosenOrTyped(
+    typed: string,
+    chosen: string | null,
+    existing: { id: string; name: string }[] | undefined,
+    create: (name: string) => Promise<{ id: string }>,
+  ): Promise<string | null> {
+    if (!typed) return chosen;
+    return (existing ?? []).find((e) => sameName(e.name, typed))?.id ?? (await create(typed)).id;
+  }
+
+  async function saveWith(values: Values) {
+    let agencyId: string | null;
+    let companyId: string | null;
+    try {
+      agencyId = await chosenOrTyped(typedAgency, values.agencyId, agencies, (name) =>
+        createAgency.mutateAsync({ name }),
+      );
+      form.setFieldValue("agencyId", agencyId); // so a retry after a failed save doesn't make another
+      companyId = await chosenOrTyped(typedCompany, values.companyId, companies, (name) =>
+        createCompany.mutateAsync({ name }),
+      );
+      form.setFieldValue("companyId", companyId);
+    } catch {
+      return; // the hook has shown the error
+    }
     save.mutate(
       {
         id: contact?.id,
         body: {
           name: values.name.trim(),
           title: values.title.trim() || null,
-          agency_id: values.agencyId,
-          company_id: values.companyId,
+          agency_id: agencyId,
+          company_id: companyId,
           details: values.details
             .filter((d) => d.value.trim())
             .map((d) => ({ kind: d.kind, value: d.value.trim(), label: d.label.trim() || null })),
@@ -128,8 +157,10 @@ export function ContactFormModal({
           onClose();
         },
       },
-    ),
-  );
+    );
+  }
+
+  const submit = form.onSubmit((values) => void saveWith(values));
 
   return (
     <Modal
@@ -158,6 +189,7 @@ export function ContactFormModal({
               value={form.values.agencyId}
               onChange={(v) => form.setFieldValue("agencyId", v)}
               onCreate={async (name) => (await createAgency.mutateAsync({ name })).id}
+              onTypedChange={setTypedAgency}
               creating={createAgency.isPending}
             />
             <CreatableSelect
@@ -169,6 +201,7 @@ export function ContactFormModal({
               value={form.values.companyId}
               onChange={(v) => form.setFieldValue("companyId", v)}
               onCreate={async (name) => (await createCompany.mutateAsync({ name })).id}
+              onTypedChange={setTypedCompany}
               creating={createCompany.isPending}
             />
           </Group>
@@ -221,7 +254,10 @@ export function ContactFormModal({
             <Button variant="default" onClick={onClose}>
               {t("common:actions.cancel")}
             </Button>
-            <Button type="submit" loading={save.isPending}>
+            <Button
+              type="submit"
+              loading={save.isPending || createAgency.isPending || createCompany.isPending}
+            >
               {contact ? t("common:actions.save") : t("form.add")}
             </Button>
           </Group>
