@@ -4,9 +4,9 @@ How the lead handles a PR from someone outside the project, from first look to r
 work from issue #230's author (#283–#285, #301, #302), built against `docs/rfc/windows.md`. Kai's standing
 instructions are quoted; this file may quote Kai, PR bodies and comments may not (CLAUDE.md *Git*).
 
-## Never post anything
+## Never comment
 
-- Never comment on their PR or issue, and never post anywhere outside this chat: "dont comment on the PR, report back to
+- Never comment on their PR or issue, or post about it anywhere outside this chat: "dont comment on the PR, report back to
   me here". If something needs saying to the author, draft it here and Kai posts it himself (*Asking the author*).
 - Don't trust their testing: "i cant trust the external contributor, i would do testing myself".
 
@@ -33,12 +33,14 @@ commit they push.
 
 ## 3. Test it ourselves
 
-- **Linux:** `tools/dev/checks.sh` on the exact commit being merged, as for our own PRs.
+- **Linux:** `tools/dev/checks.sh` (browser tests on seeded demo data included) in our worktree, on the exact commit
+  being merged, as for our own PRs.
 - **Windows:** in Kai's Windows VM (`ssh winvm`; how in gotchas.md *Windows VM*): "you should be able to control the
   tests from here, and then you can iterate review-fix cycle". Reset it to its clean snapshot before running their
   code. Reproduce the bug on main first when you can (#301: set the registry's `.js` type to `text/plain`; #284: run
   their tests against main's code), then show the PR fixes it, then run the whole suite and compare with the failures
-  `windows-tests-green` lists. Shut the VM down when done.
+  `windows-tests-green` lists. Shut the VM down when done. If the VM isn't available, simulate Windows on Linux
+  (gotchas.md *Other*), and say so: it doesn't prove it runs on real Windows.
 
 ## 4. Sort every finding three ways
 
@@ -66,11 +68,12 @@ main. Never `Closes` their issue either (#230 tracks the whole Windows plan).
   there; their fork allows maintainer edits).
 - Never merge theirs first and fix on main afterwards: main would have their bug, and no version bump, until the fix
   lands.
-- Our PR goes through the review-fix cycle like any other, then merges and releases under the standing rule.
+- Our PR goes through the review-fix cycle like any other, then merges with a merge commit (so their commits land as
+  they are) and releases under the standing rule.
 
 ## 6. Thank them, then merge
 
-Just before merging, the PR body gets a note at the top tagging the author (`@login`) to say their work is merged, in
+Just before merging, our carrying PR's body gets a note at the top tagging the author (`@login`) to say their work is merged, in
 Kai's voice (his Slack voice notes, outside this repo: ask Kai where): what it does, what the VM showed, the one or two
 things we changed and why (useful to them), and thanks. Added just before merging so it's true when they're notified;
 it doesn't promise anything Kai hasn't decided (no "I'll look at #N next").
