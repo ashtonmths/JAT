@@ -31,9 +31,6 @@ module-name = "jat"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-filterwarnings = [
-    "error::EncodingWarning",
-]
 
 [tool.ruff]
 line-length = 120

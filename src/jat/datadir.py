@@ -76,6 +76,7 @@ def is_git_repo(path: Path) -> bool:
             capture_output=True,
             text=True,
             encoding="utf-8",
+            errors="replace",  # a path git prints in another encoding mustn't crash this
             check=True,
         ).stdout.strip()
     except (subprocess.CalledProcessError, OSError):

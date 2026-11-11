@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import ast
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -17,58 +20,107 @@ from jat.snapshot.export import _read_export
 from jat.snapshot.git import _git, debounce_from_config
 from jat.storage.notes import NoteStore
 
+SUBPROCESS_TEXT = {"run", "Popen", "check_output", "call", "check_call"}
+TEMPFILES = {"NamedTemporaryFile", "TemporaryFile", "SpooledTemporaryFile"}
+
+
+def _const(node: ast.expr | None) -> object:
+    return node.value if isinstance(node, ast.Constant) else None
+
+
+def _keyword(call: ast.Call, name: str) -> ast.expr | None:
+    return next((kw.value for kw in call.keywords if kw.arg == name), None)
+
+
+def text_io_without_encoding(source: str) -> list[int]:
+    """Lines that read or write text without naming an encoding, so on Windows they'd use the locale's (cp1252):
+    read_text/write_text, open/io.open/Path.open/os.fdopen, tempfiles in a text mode, and subprocess calls
+    that decode their output (text=True or universal_newlines=True)."""
+    lines = []
+    for call in ast.walk(ast.parse(source)):
+        if not isinstance(call, ast.Call):
+            continue
+        func = call.func
+        name = func.id if isinstance(func, ast.Name) else func.attr if isinstance(func, ast.Attribute) else None
+        has_encoding = _keyword(call, "encoding") is not None
+        if name == "read_text":
+            bad = not has_encoding and not call.args  # read_text(encoding, errors)
+        elif name == "write_text":
+            bad = not has_encoding and len(call.args) < 2  # write_text(data, encoding, ...)
+        elif name in ("open", "fdopen"):
+            # open(file, mode) and io.open/os.fdopen(fd, mode) take the mode second; Path.open(mode) first.
+            method = isinstance(func, ast.Attribute) and not (
+                isinstance(func.value, ast.Name) and func.value.id in ("io", "os")
+            )
+            mode_at, encoding_at = (0, 2) if method else (1, 3)
+            positional = call.args[mode_at] if len(call.args) > mode_at else None
+            mode = _const(_keyword(call, "mode") or positional)
+            binary = isinstance(mode, str) and "b" in mode
+            bad = not binary and not has_encoding and len(call.args) <= encoding_at
+        elif name in TEMPFILES:
+            mode = _const(_keyword(call, "mode") or (call.args[0] if call.args else None))
+            bad = isinstance(mode, str) and "b" not in mode and not has_encoding
+        elif name in SUBPROCESS_TEXT:
+            decodes = any(_const(_keyword(call, k)) is True for k in ("text", "universal_newlines"))
+            bad = decodes and not has_encoding
+        else:
+            bad = False
+        if bad:
+            lines.append(call.lineno)
+    return sorted(lines)
+
 
 def test_source_code_text_io_names_encoding():
     """Fail on any text read or write in src/jat that doesn't name an encoding.
 
-    Ensures that code written on Linux/macOS (where UTF-8 is the system default)
-    never accidentally relies on the default encoding, keeping Windows working.
+    On Linux and macOS the default is UTF-8, so a missing encoding works there and breaks only on Windows.
     """
     root = Path(__file__).resolve().parents[1] / "src" / "jat"
-    violations: list[str] = []
+    violations = [
+        f"{path.relative_to(root)}:{line}"
+        for path in sorted(root.rglob("*.py"))
+        for line in text_io_without_encoding(path.read_text(encoding="utf-8"))
+    ]
+    assert not violations, "Text read or written without an encoding:\n" + "\n".join(violations)
 
-    for path in sorted(root.rglob("*.py")):
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.Call):
-                continue
 
-            func_name = None
-            if isinstance(node.func, ast.Name):
-                func_name = node.func.id
-            elif isinstance(node.func, ast.Attribute):
-                func_name = node.func.attr
+@pytest.mark.parametrize(
+    "line",
+    [
+        "Path('a').read_text()",
+        "Path('a').write_text('x')",
+        "open('backup.txt')",
+        "open(path, 'w')",
+        "Path('a').open('r')",
+        "io.open(path)",
+        "os.fdopen(fd, 'w')",
+        "tempfile.NamedTemporaryFile(mode='w')",
+        "subprocess.run(['git', 'log'], text=True)",
+        "subprocess.check_output(['git'], universal_newlines=True)",
+    ],
+)
+def test_the_check_catches_text_io_without_an_encoding(line):
+    assert text_io_without_encoding(line) == [1]
 
-            if func_name in ("read_text", "write_text"):
-                has_encoding = any(kw.arg == "encoding" for kw in node.keywords) or (
-                    func_name == "read_text" and len(node.args) >= 1
-                )
-                if not has_encoding:
-                    violations.append(f"{path.relative_to(root)}:{node.lineno}: {func_name}() missing encoding")
 
-            elif func_name == "open":
-                # Check mode argument to see if it's binary mode.
-                # Builtin open(file, mode="r", ...) has mode at args[1].
-                # Path.open(mode="r", ...) has mode at args[0].
-                is_binary = False
-                for arg in node.args[:2]:
-                    if isinstance(arg, ast.Constant) and isinstance(arg.value, str) and "b" in arg.value:
-                        is_binary = True
-                for kw in node.keywords:
-                    if (
-                        kw.arg == "mode"
-                        and isinstance(kw.value, ast.Constant)
-                        and isinstance(kw.value.value, str)
-                        and "b" in kw.value.value
-                    ):
-                        is_binary = True
-
-                if not is_binary:
-                    has_encoding = any(kw.arg == "encoding" for kw in node.keywords)
-                    if not has_encoding:
-                        violations.append(f"{path.relative_to(root)}:{node.lineno}: open() missing encoding")
-
-    assert not violations, "Found text I/O calls without explicit encoding:\n" + "\n".join(violations)
+@pytest.mark.parametrize(
+    "line",
+    [
+        "Path('a').read_text(encoding='utf-8')",
+        "Path('a').read_text('utf-8')",
+        "Path('a').write_text('x', 'utf-8')",
+        "Path('a').read_bytes()",
+        "open('backup.bin', 'rb')",
+        "open(path, mode='wb')",
+        "Path('a').open('rb')",
+        "os.fdopen(fd, 'wb')",
+        "tempfile.NamedTemporaryFile()",
+        "subprocess.run(['git'], capture_output=True)",
+        "subprocess.run(['git'], text=True, encoding='utf-8')",
+    ],
+)
+def test_the_check_leaves_bytes_and_named_encodings_alone(line):
+    assert text_io_without_encoding(line) == []
 
 
 def test_config_toml_utf8_and_bom(tmp_path: Path):
@@ -125,9 +177,9 @@ def test_ensure_gitignore_utf8_and_bom(tmp_path: Path):
     content = gitignore.read_text(encoding="utf-8")
     assert "# Fichiers ignorés: temporaires" in content
     assert "tracker.sqlite3" in content
-    # Ensure line endings are LF
     raw = gitignore.read_bytes()
-    assert b"\r\n" not in raw
+    assert b"\r\n" not in raw  # LF line endings
+    assert not raw.startswith(b"\xef\xbb\xbf")  # git would read a BOM as part of the first pattern
 
 
 def test_init_data_dir_writes_utf8_and_lf(tmp_path: Path):
@@ -191,20 +243,46 @@ def test_openapi_main_writes_utf8_and_lf(tmp_path: Path):
     assert "Job Application Tracker" in text
 
 
-def test_git_output_decodes_utf8(tmp_path: Path):
+def test_git_output_decodes_utf8(git_repo: Path):
     """_git correctly decodes non-ASCII UTF-8 output from git commands."""
-    import subprocess
+    (git_repo / "test.txt").write_text("Données de test\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(git_repo), "add", "test.txt"], check=True)
+    message = git_repo.parent / "message.txt"  # a file, so the message never passes through the locale's encoding
+    message.write_text("feat: ajout des données de test — résumé & notes\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(git_repo), "commit", "-q", "-F", str(message)], check=True)
 
-    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test User"], check=True)
-    subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@example.com"], check=True)
-
-    test_file = tmp_path / "test.txt"
-    test_file.write_text("Données de test\n", encoding="utf-8")
-    subprocess.run(["git", "-C", str(tmp_path), "add", "test.txt"], check=True)
-    commit_msg = "feat: ajout des données de test — résumé & notes"
-    subprocess.run(["git", "-C", str(tmp_path), "commit", "-q", "-m", commit_msg], check=True)
-
-    result = _git(tmp_path, "log", "-1", "--pretty=%B")
+    result = _git(git_repo, "log", "-1", "--pretty=%B")
     assert result.returncode == 0
     assert "résumé & notes" in result.stdout
+
+
+def test_git_output_that_isnt_utf8_doesnt_crash(git_repo: Path):
+    (git_repo / "a.txt").write_bytes(b"caf\xe9 in Latin-1\n")  # git show prints a file's bytes as they are
+    subprocess.run(["git", "-C", str(git_repo), "add", "a.txt"], check=True)
+    subprocess.run(["git", "-C", str(git_repo), "commit", "-q", "-m", "a Latin-1 file"], check=True)
+    assert _git(git_repo, "show", "HEAD:a.txt").stdout == "caf� in Latin-1\n"
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="Windows' own default (cp1252) already does this")
+def test_these_pass_without_a_utf8_default():
+    """On Linux the default encoding is UTF-8, so a missing encoding= only fails on Windows. Run this file's other
+    tests again with an ASCII default (no UTF-8 mode, no locale coercion), so a missing encoding fails here too."""
+    env = {**os.environ, "LC_ALL": "C", "LANG": "C", "PYTHONUTF8": "0", "PYTHONCOERCECLOCALE": "0"}
+    probe = subprocess.run(
+        [sys.executable, "-c", "import locale; print(locale.getpreferredencoding(False))"],
+        env=env,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=True,
+    )
+    assert "utf" not in probe.stdout.lower(), probe.stdout  # the child really has a non-UTF-8 default
+    run = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", __file__, "-k", "not without_a_utf8"],
+        env=env,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    assert run.returncode == 0, run.stdout[-3000:]

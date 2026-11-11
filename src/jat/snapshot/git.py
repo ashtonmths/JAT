@@ -91,6 +91,7 @@ def _git(data_dir: Path, *args: str, timeout: float = 30) -> subprocess.Complete
             capture_output=True,
             text=True,
             encoding="utf-8",
+            errors="replace",  # git output that isn't UTF-8 (a hook, an old path) mustn't crash a snapshot
             timeout=timeout,
             check=False,
             stdin=subprocess.DEVNULL,

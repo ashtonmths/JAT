@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="JAT_",
         env_file=".env",
-        env_file_encoding="utf-8",
+        env_file_encoding="utf-8-sig",  # Notepad saves .env with a BOM
         extra="ignore",
     )
 
