@@ -168,7 +168,7 @@ PR.** PRs that only touch internal files (`CLAUDE.md`, `.claude/settings.json`, 
 - **A PR that changes `README.md` changes `README.zh-CN.md` to match:** the same sections, and a new or
   retaken screenshot gets its Chinese one under `docs/screenshots/zh-CN/` (`language-menu.png` stays
   shared). `tests/test_readme_parity.py` checks the sections and images.
-- The guide (`docs/guide/`), `llms.txt`, the CLI and the API docs stay English (`docs/rfc/i18n.md` §14).
+- The guide (`docs/guide/`), `llms.txt`, the CLI and the API docs stay English (`docs/rfc/i18n.md` §14, as `docs/rfc/zh-cn.md` amends it).
 
 ## Code
 - Stack (accepted RFC `docs/rfc/stack.md`): Python 3.12 + uv + FastAPI + SQLite in `src/jat`,

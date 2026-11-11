@@ -315,7 +315,9 @@ describe("the app's text", () => {
       const folder = namespaceProblems(englishNamespaces, [...files.keys()], isDraft(lang));
       expect(
         { lang, ...folder },
-        `locales/${lang}/ should have a file for each namespace in locales/en/ (but selftest), listed in its index.ts`,
+        isDraft(lang)
+          ? `locales/${lang}/ has a file with no match in locales/en/: rename or delete it, and its line in index.ts`
+          : `locales/${lang}/ needs a <namespace>.json for each file in locales/en/ (except selftest.ts) and no other, each listed in its index.ts`,
       ).toEqual({ lang, missing: [], extra: [] });
       for (const [ns, tree] of files) {
         expect(en[ns as keyof typeof en], `${lang}/${ns}.json: no English namespace "${ns}"`).toBeDefined();
