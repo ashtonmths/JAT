@@ -98,10 +98,9 @@ where things run. Quotes are Kai's words.
     and no version bump, until the fix lands). Kai asked for the PR body to open with a friendly note tagging the
     author (`@login`) to say their work is merged, in Kai's voice (his Slack voice notes, kept outside this repo:
     ask Kai where), added just before merging so it's true when they're notified. #298 carried #285.
-  - **No `Closes #N` for their PR on the carrying PR:** #298 had `Closes #285`, and #285 was closed, not merged,
-    even though all its commits are on main. Never `Closes` the contributor's issue either (#230 tracks the whole
-    Windows plan). Instead, write `Carries #N` in the body; their PR then stays open after the merge, and Kai
-    decides how it's closed (he posts on contributors' PRs).
+  - **No `Closes #N` for their PR on the carrying PR; write `Carries #N`:** #298 had `Closes #285`, and #285 was
+    closed, not merged. #300 had only `Carries #283`, and GitHub marked #283 merged by itself once its commits
+    were on main (2026-11-11). Never `Closes` the contributor's issue either (#230 tracks the whole Windows plan).
   - The draft is one top-level comment ("i will leave only top-level comments, not on specific lines of code"),
     leading with encouragement ("nice job etc"), asking only for what blocks merging ("that feels like a lot of
     feedback"); the rest becomes Kai's follow-ups. Precise enough for the contributor's AI to act on (their PRs look
