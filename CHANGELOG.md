@@ -5,6 +5,30 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.15 (2026-11-11)
+
+- The README in Simplified Chinese (README.zh-CN.md), with the Chinese screenshots; the English README links to it under its title. (#319).
+
+## 1.23.14 (2026-11-11)
+
+- Chinese versions of the README screenshots and the demo GIF, under docs/screenshots/zh-CN/, for the Chinese README; make_demo_gif.py --lang zh-CN builds the Chinese tour. (#318).
+
+## 1.23.13 (2026-11-11)
+
+- Groundwork for the Interviews calendar view: date and summary helpers, with tests (nothing changes on screen yet). (#325).
+
+## 1.23.12 (2026-11-11)
+
+- Search results show a note's text without its Markdown marks (**bold**, links, headings…) in the snippet; titles, names, file names and links stay as written. (#320).
+
+## 1.23.11 (2026-11-11)
+
+- A role's pay shows in its own currency (dollars, euros, yuan…) instead of always in pounds, and editing a role keeps its currency instead of turning it into pounds. (#321).
+
+## 1.23.10 (2026-11-11)
+
+- The Chinese demo data (seed_demo.py --lang zh-CN) labels contact details in Chinese (工作, 手机) instead of English. (#322).
+
 ## 1.23.9 (2026-11-11)
 
 - Reopening Edit right after saving shows what you just saved, so saving again can't put the old values back: people, agencies, companies, offers, interview rounds, calls, roles and notes. A note's check for changes made elsewhere now compares against the version you opened. (#315).

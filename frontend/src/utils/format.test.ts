@@ -9,6 +9,7 @@ import {
   formatNumber,
   formatShortWeekday,
   type DatePattern,
+  withCurrency,
 } from "./format";
 import { formatDate, formatDateTime } from "./time";
 
@@ -28,6 +29,10 @@ const TODAY_SHOWS: Record<DatePattern, [string, string]> = {
   monthYear: ["MMM YYYY", "Mar 2026"],
   dayMonthTime: ["D MMM, HH:mm", "5 Mar, 09:07"],
   time: ["HH:mm", "09:07"],
+  monthNameYear: ["MMMM YYYY", "March 2026"],
+  monthName: ["MMMM", "March"],
+  shortWeekday: ["ddd", "Thu"],
+  dayOfMonth: ["D", "5"],
   pickerDate: ["D MMM YYYY", "5 Mar 2026"],
   pickerDateTime: ["D MMM YYYY HH:mm", "5 Mar 2026 09:07"],
 };
@@ -113,6 +118,8 @@ describe("Simplified Chinese dates", () => {
     expect(formatDay(AT, "dayMonthYear", "zh-CN")).toBe("2026年3月5日");
     expect(formatDay(AT, "dayMonthYearTime", "zh-CN")).toBe("2026年3月5日 09:07");
     expect(formatDay(AT, "monthYear", "zh-CN")).toBe("2026年3月");
+    expect(formatDay(AT, "monthNameYear", "zh-CN")).toBe("2026年3月");
+    expect(formatDay(AT, "shortWeekday", "zh-CN")).toBe("周四");
   });
 
   it("use Chinese weekday names", () => {
@@ -126,5 +133,8 @@ describe("formatMoney", () => {
     expect(formatMoney(85000, "GBP", "en")).toBe("£85,000");
     expect(formatMoney(150000, "CHF", "en")).toBe("150,000 CHF");
     expect(formatMoney(null, "GBP", "en")).toBe("—");
+    expect(withCurrency("80k", "EUR")).toBe("€80k");
+    expect(withCurrency("80k", "CHF")).toBe("80k CHF");
+    expect(withCurrency("80k", null)).toBe("80k");
   });
 });
