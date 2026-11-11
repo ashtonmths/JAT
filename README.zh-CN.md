@@ -182,3 +182,79 @@
 | 每份申请的笔记、文件、邮件和简历版本 | 杂乱 | 部分 | ✅ |
 | “今天该催问谁？” | ❌ | 部分 | ✅ |
 | 免费且开源 | ✅ | ❌ | ✅ Apache-2.0 |
+
+## 🚀 快速上手
+
+> 📖 **[用户指南](docs/guide/README.md)**（英文）对下面的内容讲得更详细：数据存放在哪里、应用怎样找到它，备份和恢复，在第二台电脑上使用，自定义阶段，每一条命令，以及常见问题排查。
+
+它可以在 **Linux 或 macOS** 上运行（暂不支持 Windows）。你需要 Python 3.12 到 3.14 和 [uv](https://docs.astral.sh/uv/)，以及用来构建网页界面的 Node.js 22.12+ 和 [pnpm](https://pnpm.io/)。装好这些之后，大约十分钟就能完成设置。
+
+```bash
+git clone https://github.com/waddington/job-application-tracker.git
+cd job-application-tracker
+uv sync
+pnpm --dir frontend install && pnpm --dir frontend build
+```
+
+**用演示数据试一试**（虚构的公司和人物）：
+
+```bash
+uv run python scripts/seed_demo.py /tmp/jat-demo    # 需要一个新的或空的文件夹
+uv run jat --data-dir /tmp/jat-demo serve          # → http://127.0.0.1:8770
+```
+
+想要中文的演示数据，在 `seed_demo.py` 后面加上 `--lang zh-CN`。
+
+**正式使用。** 你的数据放在单独的文件夹里，与代码分开。把它设为私有 git 仓库，每次连续改动之后，应用都会提交一份可读的快照，你就能免费获得完整历史和备份。
+
+```bash
+mkdir -p ~/job-search-data && git -C ~/job-search-data init
+git -C ~/job-search-data remote add origin <your-private-repo-url>   # 可选，用于 jat push
+cp .env.example .env        # 然后设置 JAT_DATA_DIR=~/job-search-data（或者每次都传 --data-dir）
+uv run jat init
+uv run jat serve            # → http://127.0.0.1:8770（保持运行）
+```
+
+之后在另一个终端里运行 `uv run jat push`，就会把快照推送到你的私有远程仓库（从不强制推送）。请在仓库根目录运行 `jat`，它会在那里读取 `.env`。数据位置没有设置页面：只能用 `--data-dir` 或 `JAT_DATA_DIR` 指定（[详情](docs/guide/your-data.md#how-the-app-finds-your-data)）。
+
+服务器默认只监听 `127.0.0.1`。`uv run jat --help` 会列出其他命令（`archive`、`export`、`restore`、`snapshot`、`migrate`、`info`）。
+
+## ❓ 常见问题
+
+**免费吗？** 免费。它以 Apache-2.0 许可证开源。
+
+**我的数据存在哪里？** 存在你自己电脑上、由你选定的一个目录里，与代码分开。不会上传到任何地方。
+
+**它用 AI 吗？** 不用。它不会调用任何 AI 服务，也不会把你的数据发送到任何地方。
+
+**能在 Windows 上运行吗？** 暂时不能：它运行在 Linux 和 macOS 上。Windows 支持、一条命令安装和 Docker 都在[路线图](docs/ROADMAP.yaml)上。
+
+**它会抓取 LinkedIn 或招聘网站吗？** 不会。它的设计就是记录你投出的申请，不负责找工作。
+
+**非软件类的工作也能用吗？** 能。它是照着技术岗招聘设计的（招聘顾问、编程面试、离线作业），但阶段可以自定义（[自定义](docs/guide/customising.md)，英文）。
+
+**我的数据是什么格式？** 一个 SQLite 数据库（为了速度），外加一份纯文本导出（每张表一个 JSON Lines 文件），提交到你的数据仓库里。你可以阅读它、diff 它，也可以用 `jat restore` 从它重建数据库。
+
+**怎么备份？** 如果数据文件夹是 git 仓库，备份是自动的：每次改动都会生成快照，`jat push` 会把它推送到你的私有远程仓库。想要一个能随处保存的单个文件，就点侧边栏里的“下载备份”（或运行 `jat archive`）：得到一个包含你的数据、笔记和文件的 zip。解压后对这个文件夹运行 `jat init`，一切就都回来了。见[你的数据](docs/guide/your-data.md)（英文）。
+
+**能在两台电脑上用吗？** 能，但同一时间只用一台：在第二台电脑上克隆你的私有数据仓库，把 `JAT_DATA_DIR` 指向它，然后运行 `jat init`。换电脑时，先在一台上 push，再在另一台上 pull 并运行 `jat restore --force`。[分步说明](docs/guide/your-data.md#using-it-on-a-second-computer)（英文）。
+
+**必须先添加公司和招聘顾问，才能添加申请吗？** 不用。点**新建申请**（每个页面的右上角），输入公司、职位、猎头公司和招聘顾问：新出现的都会自动创建。**?** 按钮会带你走一遍日常的使用流程。
+
+**招聘顾问打电话来聊市场行情，没提具体职位，这该记在哪？** 记在对方的页面上：**约通话**（或者记录一次已经进行过的通话）。标为“已进行”后，用**从这次通话添加职位**把对方提到的每个职位加进来。每个职位都会留在“职位”页等你决定：投递、标为感兴趣或放弃。
+
+**能记录我进行到第几轮面试吗？** 能。每份申请都有编号的轮次，用你自己的话描述（“第 2 轮 · 和工程经理聊聊”“第 3 轮 · 系统设计测试”），看板会显示当前这一轮。
+
+**能离线使用吗？** 能。它是一个本地 Web 应用，不依赖任何外部服务；只有你运行 `jat push` 时，它才会连接你自己的 git 远程仓库。
+
+**支持多用户吗？** 不支持。它是给一位求职者用的个人工具，运行在 localhost 上。
+
+## 🤝 参与贡献
+
+欢迎提交 issue、想法和 PR：[CONTRIBUTING.md](CONTRIBUTING.md)（英文）介绍了如何搭建开发环境、要跑哪些检查，以及网站相关的内容。[报告 bug](https://github.com/waddington/job-application-tracker/issues/new?template=bug_report.yml) 或[提议新功能](https://github.com/waddington/job-application-tracker/issues/new?template=feature_request.yml)。[`docs/ROADMAP.yaml`](docs/ROADMAP.yaml) 里的路线图列出了接下来要做的事，[`docs/planning/README.md`](docs/planning/README.md) 说明了工作是怎么规划的。在 issue、测试和截图里请使用虚构的数据。
+
+如果你觉得它有用，请**⭐ 给仓库点个 Star**，这能帮更多求职者找到它。
+
+## 📜 许可证
+
+[Apache-2.0](LICENSE) © 2026 Kai Waddington。如果你再分发这个项目或在它的基础上开发，请保留注明原作者的 [NOTICE](NOTICE) 文件。
