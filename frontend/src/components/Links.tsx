@@ -24,7 +24,7 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useRef, useState, type FocusEvent, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -63,13 +63,63 @@ function LinkRow({ link }: { link: LinkItem }) {
   const remove = useDeleteLink();
   const Icon = ICONS[link.kind] ?? IconLink;
   const label = link.title || host(link.url);
+  // Whether the editor is open: false as soon as it starts closing, so a blur while it closes doesn't save.
+  const open = useRef(false);
+  // The title being saved, and a newer one asked for meanwhile: one save at a time, never the same one twice.
+  const sending = useRef<string | null>(null);
+  const queued = useRef<string | null>(null);
+  // Counts openings, so a save from an earlier opening doesn't close the editor reopened since.
+  const opening = useRef(0);
+  const startEditing = () => {
+    setTitle(sending.current ?? link.title ?? ""); // a title still being saved is the newest one
+    open.current = true;
+    opening.current += 1;
+    setEditing(true);
+  };
+  const close = () => {
+    open.current = false;
+    queued.current = null; // cancelling drops a title waiting to be saved
+    setEditing(false);
+  };
+  const send = (value: string) => {
+    const from = opening.current;
+    sending.current = value;
+    update.mutate(
+      { id: link.id, body: { title: value } },
+      {
+        onSuccess: () => {
+          const next = queued.current;
+          sending.current = queued.current = null;
+          if (!open.current) return; // cancelled meanwhile: nothing more to send or close
+          if (next !== null && next !== value) send(next);
+          else if (next !== null || from === opening.current) close();
+        },
+        onError: () => {
+          // The box keeps the text to try again; a title queued behind the failed save is dropped.
+          sending.current = queued.current = null;
+        },
+      },
+    );
+  };
   const save = () => {
-    if (title.trim() === (link.title ?? "")) return setEditing(false); // nothing changed
-    update.mutate({ id: link.id, body: { title } }, { onSuccess: () => setEditing(false) });
+    if (!open.current) return;
+    if (sending.current !== null) {
+      queued.current = title; // sent after the one in flight, unless it's the same
+      return;
+    }
+    if (title.trim() === (link.title ?? "")) return close(); // nothing changed
+    send(title);
   };
 
+  // Leaving the editor saves, but moving between the box, the tick and the X doesn't: those buttons decide.
+  const saveIfLeaving = (e: FocusEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) save();
+  };
+  // A press on the tick or X keeps focus in the box, so it doesn't blur (and save) before the click runs.
+  const keepFocus = (e: MouseEvent) => e.preventDefault();
+
   return (
-    <Group justify="space-between" wrap="nowrap" gap="xs">
+    <Group justify="space-between" wrap="nowrap" gap="xs" onBlur={saveIfLeaving}>
       <Group gap="xs" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
         <Icon size={18} stroke={1.6} style={{ flexShrink: 0 }} />
         {editing ? (
@@ -79,12 +129,11 @@ function LinkRow({ link }: { link: LinkItem }) {
             onChange={(e) => setTitle(e.currentTarget.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") save();
-              if (e.key === "Escape") setEditing(false);
+              if (e.key === "Escape") close();
             }}
             aria-label={t("links.linkTitle")}
             placeholder={t("links.defaultPlaceholder")}
             style={{ flex: 1 }}
-            onBlur={save}
             autoFocus
           />
         ) : (
@@ -112,6 +161,7 @@ function LinkRow({ link }: { link: LinkItem }) {
             <ActionIcon
               variant="subtle"
               color="teal"
+              onMouseDown={keepFocus}
               onClick={save}
               loading={update.isPending}
               aria-label={t("links.saveTitle")}
@@ -121,7 +171,8 @@ function LinkRow({ link }: { link: LinkItem }) {
             <ActionIcon
               variant="subtle"
               color="gray"
-              onClick={() => setEditing(false)}
+              onMouseDown={keepFocus}
+              onClick={close}
               aria-label={t("links.cancel")}
             >
               <IconX size={16} />
@@ -133,10 +184,7 @@ function LinkRow({ link }: { link: LinkItem }) {
               <ActionIcon
                 variant="subtle"
                 color="gray"
-                onClick={() => {
-                  setTitle(link.title ?? "");
-                  setEditing(true);
-                }}
+                onClick={startEditing}
                 aria-label={t("links.renameNamed", { label })}
               >
                 <IconPencil size={16} />
