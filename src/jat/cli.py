@@ -33,6 +33,8 @@ def cmd_init(args) -> int:
     print("  created: " + (", ".join(report.created) or "nothing (already initialised)"))
     if report.gitignore_added:
         print("  .gitignore: added " + ", ".join(report.gitignore_added))
+    if report.gitattributes_added:
+        print("  .gitattributes: added " + ", ".join(report.gitattributes_added))
     if report.is_git_repo:
         print("  git: " + ("committed the layout" if report.committed else "nothing to commit"))
     else:

@@ -36,7 +36,7 @@ from .export import export_db
 if TYPE_CHECKING:
     from ..api.errors import ErrorCode, ErrorParams
 
-TRACKED = ("export", "notes", "files", "config.toml", ".gitignore")
+TRACKED = ("export", "notes", "files", "config.toml", ".gitignore", ".gitattributes")
 DEFAULT_DEBOUNCE = 60.0
 LOCK_NAME = "jat-snapshot.lock"
 NO_PROMPT_ENV = {

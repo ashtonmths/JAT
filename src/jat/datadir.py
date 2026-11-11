@@ -28,6 +28,11 @@ GITIGNORE_ENTRIES = (
     ".tmp-*",  # atomic writes in progress (notes)
     "jat-snapshot.lock",  # snapshot lock, kept here when the folder has no .git
 )
+GITATTRIBUTES_ENTRIES = (
+    "* text=auto eol=lf",
+    "files/* -text",
+    "files/** -text",
+)
 
 DEFAULT_CONFIG = """\
 # Job Application Tracker settings for this data directory.
@@ -53,6 +58,7 @@ class InitReport:
     path: Path
     created: list[str] = field(default_factory=list)
     gitignore_added: list[str] = field(default_factory=list)
+    gitattributes_added: list[str] = field(default_factory=list)
     committed: bool = False
     is_git_repo: bool = False
 
@@ -88,6 +94,21 @@ def _ensure_gitignore(path: Path) -> list[str]:
     return missing
 
 
+def _ensure_gitattributes(path: Path) -> list[str]:
+    gitattributes = path / ".gitattributes"
+    existing = gitattributes.read_text(encoding="utf-8").splitlines() if gitattributes.exists() else []
+    missing = [e for e in GITATTRIBUTES_ENTRIES if e not in existing]
+    if missing:
+        block = [
+            "",
+            "# Job Application Tracker: line endings (Unix LF for export and notes, byte-for-byte for files)",
+            *missing,
+        ]
+        text = "\n".join(existing).rstrip("\n")
+        gitattributes.write_text((text + "\n" if text else "") + "\n".join(block).lstrip("\n") + "\n", encoding="utf-8")
+    return missing
+
+
 def init_data_dir(path: Path, commit: bool = True, code_root: Path = CODE_ROOT) -> InitReport:
     """Create the layout. Idempotent: existing files are never overwritten."""
     check_outside_code_repo(path, code_root)
@@ -108,14 +129,15 @@ def init_data_dir(path: Path, commit: bool = True, code_root: Path = CODE_ROOT) 
         config.write_text(DEFAULT_CONFIG)
         report.created.append("config.toml")
     report.gitignore_added = _ensure_gitignore(path)
+    report.gitattributes_added = _ensure_gitattributes(path)
     report.is_git_repo = is_git_repo(path)
-    if commit and report.is_git_repo and (report.created or report.gitignore_added):
+    if commit and report.is_git_repo and (report.created or report.gitignore_added or report.gitattributes_added):
         report.committed = _commit_scaffold(path)
     return report
 
 
 def _commit_scaffold(path: Path) -> bool:
-    paths = [".gitignore", "config.toml", *(f"{d}/.gitkeep" for d in LAYOUT_DIRS)]
+    paths = [".gitignore", ".gitattributes", "config.toml", *(f"{d}/.gitkeep" for d in LAYOUT_DIRS)]
     paths = [p for p in paths if (path / p).exists()]
     git = ["git", "-C", str(path)]
     subprocess.run([*git, "add", "--", *paths], check=True, capture_output=True)

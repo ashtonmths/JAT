@@ -18,11 +18,13 @@ def test_init_creates_layout_and_is_idempotent(tmp_path):
     assert {"export/", "notes/", "files/", "config.toml"} <= set(report.created)
     assert (path / "notes" / ".gitkeep").exists()
     assert "tracker.sqlite3" in (path / ".gitignore").read_text()
+    assert "* text=auto eol=lf" in (path / ".gitattributes").read_text()
+    assert "files/* -text" in (path / ".gitattributes").read_text()
     assert not report.is_git_repo and not report.committed
 
     (path / "config.toml").write_text("# edited\n")
     again = init_data_dir(path)
-    assert again.created == [] and again.gitignore_added == []
+    assert again.created == [] and again.gitignore_added == [] and again.gitattributes_added == []
     assert (path / "config.toml").read_text() == "# edited\n"
 
 
@@ -50,6 +52,39 @@ def test_gitignore_covers_the_snapshot_lock(tmp_path):
     assert LOCK_NAME in init_data_dir(path).gitignore_added
 
 
+def test_gitattributes_keeps_existing_lines(tmp_path):
+    path = tmp_path / "data"
+    path.mkdir()
+    (path / ".gitattributes").write_text("*.pdf binary\n")
+    report = init_data_dir(path)
+    text = (path / ".gitattributes").read_text()
+    assert text.startswith("*.pdf binary\n")
+    assert "* text=auto eol=lf" in text
+    assert "files/* -text" in text
+    assert len(report.gitattributes_added) == 3
+
+
+def test_gitattributes_sets_line_endings_and_preserves_files_byte_for_byte(git_repo):
+    init_data_dir(git_repo)
+
+    def check(p: str) -> str:
+        return subprocess.run(
+            ["git", "-C", str(git_repo), "check-attr", "-a", "--", p], capture_output=True, text=True, check=True
+        ).stdout
+
+    export_attrs = check("export/applications.jsonl")
+    assert "text: auto" in export_attrs and "eol: lf" in export_attrs
+
+    notes_attrs = check("notes/company.md")
+    assert "text: auto" in notes_attrs and "eol: lf" in notes_attrs
+
+    file_attrs = check("files/2026/11/resume.eml")
+    assert "text: unset" in file_attrs
+
+    direct_file_attrs = check("files/doc.pdf")
+    assert "text: unset" in direct_file_attrs
+
+
 def test_refuses_data_dir_inside_code_repo():
     with pytest.raises(DataDirError):
         init_data_dir(CODE_ROOT / "data")
@@ -64,7 +99,7 @@ def test_commits_scaffold_in_git_repo(git_repo):
     assert "initialise job-application-tracker data layout" in git_log(git_repo)
     tracked = subprocess.run(["git", "-C", str(git_repo), "ls-files"], capture_output=True, text=True).stdout
     assert "README.md" not in tracked
-    assert "config.toml" in tracked and "notes/.gitkeep" in tracked
+    assert "config.toml" in tracked and ".gitattributes" in tracked and "notes/.gitkeep" in tracked
     assert init_data_dir(git_repo).committed is False
 
 
