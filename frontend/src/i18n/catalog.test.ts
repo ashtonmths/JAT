@@ -308,18 +308,33 @@ describe("the app's text", () => {
 
   // A missing key, namespace or plural form in another language's JSON files fails the build,
   // rather than quietly showing English. A draft may leave whole namespaces out (they show in
-  // English), but what it has must be complete.
+  // English), but what it has must be complete. This keeps a shipped language in step with English:
+  // a PR that adds or changes UI text updates every one (CLAUDE.md "Languages").
   it("has every key, namespace and plural form in every language, and nothing English lacks", () => {
     for (const [lang, files] of byLanguage) {
-      expect({ lang, ...namespaceProblems(englishNamespaces, [...files.keys()], isDraft(lang)) }).toEqual({
-        lang,
-        missing: [],
-        extra: [],
-      });
+      const folder = namespaceProblems(englishNamespaces, [...files.keys()], isDraft(lang));
+      expect(
+        { lang, ...folder },
+        `locales/${lang}/ should have a file for each namespace in locales/en/ (but selftest), listed in its index.ts`,
+      ).toEqual({ lang, missing: [], extra: [] });
       for (const [ns, tree] of files) {
         expect(en[ns as keyof typeof en], `${lang}/${ns}.json: no English namespace "${ns}"`).toBeDefined();
         const result = compare(en[ns as keyof typeof en], tree, lang);
-        expect({ file: `${lang}/${ns}.json`, ...result }).toEqual({
+        const problems = [
+          result.missing.length && `missing: ${result.missing.join(", ")}`,
+          result.extra.length && `not in English: ${result.extra.join(", ")}`,
+          result.placeholders.length &&
+            `placeholders differ: ${result.placeholders.map((p) => p.key).join(", ")}`,
+          result.pluralForms.length &&
+            `plural forms missing: ${result.pluralForms.map((p) => p.key).join(", ")}`,
+        ].filter(Boolean);
+        expect(
+          { file: `${lang}/${ns}.json`, ...result },
+          `frontend/src/locales/${lang}/${ns}.json is out of step with locales/en/${ns}.ts (${problems.join("; ")}). ` +
+            `Add each missing key, translated for where it shows (glossary: docs/i18n/${lang}.md), and delete ` +
+            `keys English no longer has. If you can't write the language, say so in your pull request and the ` +
+            `maintainer will add it (CONTRIBUTING.md "Text in the UI").`,
+        ).toEqual({
           file: `${lang}/${ns}.json`,
           missing: [],
           extra: [],
