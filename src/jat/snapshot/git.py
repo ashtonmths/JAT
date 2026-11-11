@@ -74,8 +74,9 @@ class SnapshotStatus:
 def debounce_from_config(data_dir: Path) -> float:
     path = data_dir / "config.toml"
     try:
-        value = tomllib.loads(path.read_text()).get("snapshot", {}).get("debounce_seconds", DEFAULT_DEBOUNCE)
-    except (OSError, tomllib.TOMLDecodeError):
+        raw = tomllib.loads(path.read_text(encoding="utf-8-sig"))
+        value = raw.get("snapshot", {}).get("debounce_seconds", DEFAULT_DEBOUNCE)
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError):  # e.g. saved as cp1252, not UTF-8
         return DEFAULT_DEBOUNCE
     if isinstance(value, bool) or not isinstance(value, int | float) or value < 0:
         return DEFAULT_DEBOUNCE
@@ -89,6 +90,8 @@ def _git(data_dir: Path, *args: str, timeout: float = 30) -> subprocess.Complete
             ["git", "-C", str(data_dir), *args],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",  # git output that isn't UTF-8 (a hook, an old path) mustn't crash a snapshot
             timeout=timeout,
             check=False,
             stdin=subprocess.DEVNULL,

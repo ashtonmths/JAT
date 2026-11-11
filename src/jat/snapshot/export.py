@@ -104,7 +104,7 @@ def _read_export(export_dir: Path) -> tuple[str, dict[str, list[dict]]]:
     if not meta_path.exists():
         raise RestoreError(f"No export found: {meta_path} is missing.")
     try:
-        meta = json.loads(meta_path.read_text())
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise RestoreError(f"{meta_path} is not valid JSON: {exc}") from exc
     if meta.get("format") != FORMAT_VERSION:

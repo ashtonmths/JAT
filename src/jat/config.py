@@ -8,7 +8,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="JAT_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_prefix="JAT_",
+        env_file=".env",
+        env_file_encoding="utf-8-sig",  # Notepad saves .env with a BOM
+        extra="ignore",
+    )
 
     data_dir: Path | None = None
     host: str = "127.0.0.1"

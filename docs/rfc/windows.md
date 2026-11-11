@@ -1,7 +1,8 @@
 # RFC: running the tracker on Windows
 
-**Status:** in progress (2026-11-05). Built: `windows-time-zones`, `windows-starts`, `static-file-types`. The
-tracker starts on Windows, but is supported on Linux and macOS only until `windows-support`.
+**Status:** in progress (2026-11-05). Built: `windows-time-zones`, `windows-starts`, `static-file-types`,
+`utf8-everywhere`. The tracker starts on Windows, but is supported on Linux and macOS only until
+`windows-support`.
 **Roadmap:** `windows-starts`, `utf8-everywhere`, `windows-time-zones`, `static-file-types`,
 `data-gitattributes`, `locked-file-retry` and `windows-testing`, then `windows-support`; later,
 `windows-snapshots`. `windows-starts` is planned first, but the small fixes don't depend on it
@@ -87,7 +88,7 @@ It's for testing only, on a test data folder, not your real one:
 - Until step 2 adds a Windows lock, there's no lock between processes. While `jat serve` is
   running, don't run `jat snapshot`, `jat push` or `jat archive`: two processes writing
   `export/` at once can commit or zip a mix of two moments.
-- Until `utf8-everywhere` and `data-gitattributes` land, git can change line endings in
+- Until `data-gitattributes` lands, git can change line endings in
   committed notes and files.
 
 When the switch is set, the app says at startup that Windows snapshots are experimental.
