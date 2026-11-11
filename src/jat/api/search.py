@@ -25,7 +25,7 @@ class SearchHit(BaseModel):
     title: str
     subtitle: str | None
     link: str  # where to open it in the app (a path), or an external URL for a link
-    snippet: str | None  # text around the first match, when it isn't in the title, without Markdown marks
+    snippet: str | None  # text around the first match, when it isn't in the title (Markdown text without its marks)
     updated: datetime | None
     archived: bool  # an archived application (listed last)
     # What the frontend builds a title from, in your language; `title` stays in English.
