@@ -445,8 +445,7 @@ test.describe("making a company inside other dialogs", () => {
     await expect(page.getByRole("link", { name: "Started Here" })).toBeVisible();
   });
 
-  // KNOWN BUG (fix-person-saved-before-new-company on the roadmap): expected to fail until it is fixed.
-  test.fail(
+  test(
     "saving a person while their new company is still being made keeps them at it",
     async ({ page, request }) => {
       await slow(page, `**${API}/companies`, "POST", 1500);
@@ -465,8 +464,7 @@ test.describe("making a company inside other dialogs", () => {
     },
   );
 
-  // KNOWN BUG (fix-person-saved-before-new-company on the roadmap): expected to fail until it is fixed.
-  test.fail(
+  test(
     "saving a person while their new agency is still being made keeps them at it",
     async ({ page, request }) => {
       await slow(page, `**${API}/agencies`, "POST", 1500);

@@ -7,7 +7,7 @@ Numbers in brackets are pull requests.
 
 ## 1.23.7 (2026-11-11)
 
-- In the person dialog, an agency or company typed but not chosen from the list is no longer dropped on save: the matching one is used, or it's added as + Add would. (#314).
+- In the person dialog, an agency or company typed but not chosen from the list is no longer dropped on save: the matching one is used, or it's added as + Add would. Saving a person while their new company or agency is still being made no longer loses the link either. (#314).
 
 ## 1.23.6 (2026-11-11)
 
