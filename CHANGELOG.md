@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.1 (2026-11-11)
+
+- The app's own files are served with fixed types instead of the system's guess, so the page no longer loads blank on a Windows computer that maps .js to text/plain. (#305).
+
 ## 1.23.0 (2026-11-10)
 
 - The tracker starts on Windows, as the first step to supporting it: what can't work there yet (Unix file locking, git snapshots, `jat init`'s commit) is off on Windows, and the sidebar's connection tooltip says snapshots are off. `JAT_WINDOWS_SNAPSHOTS=1` turns snapshots back on there, for testing on a test data folder. Windows isn't supported yet. (#300, carrying #283).
