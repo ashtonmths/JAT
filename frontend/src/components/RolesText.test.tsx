@@ -38,6 +38,21 @@ describe("what a role pays", () => {
     expect(pay(role({ salary_max: 70000 }))).toBe("£70k");
     expect(pay(role())).toBeNull();
   });
+
+  it("writes pounds for a GBP role exactly as for one with no currency", () => {
+    const gbp = (o: Record<string, unknown>) => pay(role({ currency: "GBP", ...o }));
+    expect(gbp({ day_rate: 1200, ir35: "outside" })).toBe("£1200 a day, outside IR35");
+    expect(gbp({ salary_min: 80000, salary_max: 95000 })).toBe("£80k–£95k");
+    expect(gbp({ salary_min: 900 })).toBe("£900");
+  });
+
+  it("writes the role's own currency, not pounds", () => {
+    expect(pay(role({ currency: "USD", salary_min: 120000, salary_max: 150000 }))).toBe("$120k–$150k");
+    expect(pay(role({ currency: "EUR", day_rate: 700, ir35: "inside" }))).toBe("€700 a day, inside IR35");
+    expect(pay(role({ currency: "CNY", day_rate: 2800 }))).toBe("2800 CNY a day");
+    expect(pay(role({ currency: "CNY", salary_min: 400000, salary_max: 600000 }))).toBe("400k CNY–600k CNY");
+    expect(pay(role({ currency: "usd", salary_max: 70000 }))).toBe("$70k");
+  });
 });
 
 describe("a role's badge", () => {
