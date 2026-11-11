@@ -9,6 +9,7 @@ import type { Contact, Schemas } from "../api/client";
 import { useCreateCompany } from "../api/detailHooks";
 import { useCreateAgency, useSaveContact } from "../api/peopleHooks";
 import { useAgencies, useCompanies } from "../api/hooks";
+import { notifyError } from "../api/notifyError";
 import { CreatableSelect, sameName } from "./CreatableSelect";
 
 type Kind = Schemas["ContactDetailIn"]["kind"];
@@ -77,8 +78,10 @@ export function ContactFormModal({
     { value: "url", label: t("form.kinds.url") },
     { value: "other", label: t("form.kinds.other") },
   ];
-  const { data: agencies } = useAgencies();
-  const { data: companies } = useCompanies();
+  const agencyList = useAgencies();
+  const companyList = useCompanies();
+  const agencies = agencyList.data;
+  const companies = companyList.data;
   const save = useSaveContact();
   const createAgency = useCreateAgency();
   const createCompany = useCreateCompany();
@@ -120,6 +123,10 @@ export function ContactFormModal({
   const busy = useRef(false);
   /** Counts each opening and closing, so a save still making an agency stops if it's cancelled. */
   const shown = useRef(0);
+  /** A typed name is waiting for its list, to be matched against it. */
+  const listLoading =
+    (!!typedAgency && agencyList.isPending && !agencyList.error) ||
+    (!!typedCompany && companyList.isPending && !companyList.error);
   useEffect(() => {
     shown.current += 1;
     if (opened) made.current = { agency: null, company: null };
@@ -146,7 +153,18 @@ export function ContactFormModal({
   async function saveWith(values: Values) {
     if (busy.current) return;
     // Until the lists have loaded, a typed name can't be matched: don't make a second of one.
-    if ((typedAgency && !agencies) || (typedCompany && !companies)) return;
+    // Save shows as loading meanwhile; a list that failed to load says so, and is asked for again.
+    for (const [typed, list] of [
+      [typedAgency, agencyList],
+      [typedCompany, companyList],
+    ] as const) {
+      if (!typed || list.data) continue;
+      if (list.error) {
+        notifyError(list.error);
+        void list.refetch();
+      }
+      return;
+    }
     busy.current = true;
     const opening = shown.current;
     let agencyId: string | null;
@@ -285,7 +303,7 @@ export function ContactFormModal({
             </Button>
             <Button
               type="submit"
-              loading={save.isPending || createAgency.isPending || createCompany.isPending}
+              loading={save.isPending || createAgency.isPending || createCompany.isPending || listLoading}
             >
               {contact ? t("common:actions.save") : t("form.add")}
             </Button>

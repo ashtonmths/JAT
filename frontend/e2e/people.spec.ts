@@ -350,9 +350,18 @@ test.describe("creating a person", () => {
     await seen;
     await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
     await expect(dialog).toBeHidden();
+    const sent: string[] = [];
+    page.on("request", (r) => {
+      if (r.method() === "POST" && r.url().endsWith("/contacts")) sent.push(r.postData() ?? "");
+    });
     release();
     await made;
-    await page.waitForTimeout(1000); // time for a person to be sent, if one were going to be
+    // A person the cancelled save sent would go straight after the agency, before this next one.
+    const next = await newPerson(page);
+    await next.getByLabel("Name").fill("After Cancel Person");
+    await addPerson(next);
+    expect(sent).toHaveLength(1);
+    expect(sent[0]).toContain("After Cancel Person");
     expect(await people(request, "Cancelled Typed Person")).toHaveLength(0);
   });
 
