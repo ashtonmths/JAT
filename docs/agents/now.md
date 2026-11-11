@@ -7,8 +7,8 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 
 - Released up to **v1.23.3**. No open PRs, ours or the contributor's. Branches: `main`, plus `worktree-pr-screenshots`
   on GitHub (shelved work, kept on purpose: see `pr-screenshots` on the roadmap).
-- **Windows** (`docs/rfc/windows.md`): six of nine plan items done (`windows-rfc`, `windows-time-zones`,
-  `windows-starts`, `static-file-types`, `utf8-everywhere`, `data-gitattributes`). The tracker starts and runs on
+- **Windows** (`docs/rfc/windows.md`): five of the plan's nine items done (`windows-time-zones`, `windows-starts`,
+  `static-file-types`, `utf8-everywhere`, `data-gitattributes`), besides the RFC itself. The tracker starts and runs on
   Windows, snapshots off there; README, website and guide still say it isn't supported, as the plan says until
   `windows-support`. Left: see *Next*.
 - **The contributor's five Windows PRs are all carried and merged** (#285 → #298, #283 → #300, #301 → #305,
@@ -73,7 +73,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 
 Nothing Kai asked for is unfinished. Report and wait. Likely next, when Kai says:
 
-- **Windows, in the plan's order:** `fix-python-315-install` (a bug: needs Kai's go), `locked-file-retry`,
+- **Windows, suggested order:** `fix-python-315-install` (a bug: needs Kai's go), `locked-file-retry`,
   `windows-testing` (the checklist in the guide), `windows-tests-green` (the 18 failures), then `windows-support`; later
   `windows-snapshots`. Follow-ups: `scripts-utf8`, `encoding-check-edges`, `windows-tz-tests`, `health-typed-response`.
 - **Chinese:** `i18n-zh-cn-screenshots` (show Kai first), `-readme`, `-website`, `-listing` (Kai approves the text).
