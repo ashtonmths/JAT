@@ -8,6 +8,9 @@ interface Health {
   schema: string | null;
   schema_head: string;
   git_repo: boolean;
+  // Missing from a server older than 1.23.0 (one still running after an update).
+  snapshots_enabled?: boolean;
+  windows?: boolean;
 }
 
 async function fetchHealth(): Promise<Health> {
@@ -31,16 +34,21 @@ export function ApiStatus() {
   const { t } = useTranslation();
   const { data, isError, isPending } = useHealth();
 
+  const snapshotsOn = data ? (data.snapshots_enabled ?? data.git_repo) : false;
+  const versions = { version: String(data?.version), schema: data?.schema ?? "?" };
+
   const [color, label, detail] = isPending
     ? ["gray", t("api.connecting"), t("api.connectingHint")]
     : isError || !data
       ? ["red", t("api.offline"), t("api.offlineHint")]
       : [
-          data.git_repo ? "teal" : "yellow",
+          snapshotsOn ? "teal" : "yellow",
           t("api.connected"),
-          data.git_repo
-            ? t("api.detailsBackups", { version: String(data.version), schema: data.schema ?? "?" })
-            : t("api.detailsNoGit", { version: String(data.version), schema: data.schema ?? "?" }),
+          snapshotsOn
+            ? t("api.detailsBackups", versions)
+            : data.git_repo && data.windows
+              ? t("api.detailsWindowsNoSnapshots", versions)
+              : t("api.detailsNoGit", versions),
         ];
 
   return (
