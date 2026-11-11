@@ -121,6 +121,9 @@ Each of these cost time once. Add a line when something new does.
 
 ## Text and translations
 
+- **Every UI text change lands in zh-CN too, and every README change in `README.zh-CN.md`** (CLAUDE.md *Languages*).
+  `catalog.test.ts` ("has every key…") catches a missing or extra key but not changed English under an old key;
+  `tests/test_readme_parity.py` catches a README section or image the other lacks. Put both in builders' briefs.
 - `t()` from `useTranslation("x")` refuses namespace-prefixed keys; use bare keys or `useTranslation(["x", "common"])`.
   Keys in a map outside a component are whole `"ns:key"`. Pass `TFunction<"namespace">`.
 - `<Trans>` tags named after void elements (`<link>`, `<br>`) render empty. Your words go into `<Trans>` as components.
