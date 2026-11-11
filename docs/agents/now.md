@@ -9,8 +9,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
   (shelved work, kept on purpose: see `pr-screenshots` on the roadmap).
 - **Simplified Chinese is switched on** (v1.21.0): in the language menu, and given to browsers asking for `zh`, `zh-CN`,
   `zh-Hans` or `zh-SG`. Chinese demo data: `scripts/seed_demo.py --lang zh-CN` (v1.21.1).
-- **Open PRs from a contributor** (issue #230's author, Windows work; Kai reviews them, see *Contributors' PRs* in
-  working-with-kai.md): #284 `utf8-everywhere`, #302 `data-gitattributes`. Not merged. #283, #285 and #301 were carried (#300, #298, #305).
+- **Open PRs from a contributor** (issue #230's author, Windows work; see contributor-prs.md): #284 `utf8-everywhere`, #302 `data-gitattributes`. Not merged. #283, #285 and #301 were carried (#300, #298, #305).
 - **Merging and releasing:** Kai's standing yes after the review-fix cycle (working-with-kai.md). `.claude/settings.json`
   allows `tools/dev/merge.sh` and `ship.sh` (#295); run them relative (`tools/dev/merge.sh N`) and they go through.
 - Kai's tracker on 8770 needs a restart (Ctrl+C, `uv run jat serve`) if it hasn't had one since v1.20.0: #289 changed
