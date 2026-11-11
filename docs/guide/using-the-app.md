@@ -546,15 +546,19 @@ Every interview round across all applications, as a **Calendar** (what the page 
 **Calendar.** **Month** shows one month of dots, Monday first. **Year** shows the twelve months of
 the year, small, each with how many rounds were held, are coming up, and how many companies (hover
 over a figure for its words). Your choice is remembered. The arrows go back or forward a month or a
-year, and **Today** comes back to now.
+year, and **Today** comes back to now and today's rounds. Going from Year to Month opens the month
+of the day you chose.
 
-A quiet day is a small grey dot. A day with rounds has a bigger dot in its status's colour: orange
-if one is awaiting its outcome, else blue if one is coming up, else green if held, faded grey if they
-were all cancelled. With two or more rounds the dot is bigger and shows the number. Today has a ring.
-A round with only a deadline (a take-home) sits on its deadline's day.
+A quiet day is a small grey dot. A day with rounds has a bigger dot in its status's colour, the
+same as the status badges: orange if one is awaiting its outcome, else blue if one is coming up, else
+teal if held, light grey if they were all cancelled. With two or more rounds the dot is bigger and
+shows the number. Today has a ring. Hovering over a dot, or a screen reader, says the same in words:
+"Wednesday 12 June, today: 2 rounds, 1 coming up, 1 held". A round with only a deadline (a take-home)
+sits on its deadline's day.
 
-Beside the calendar, a panel lists one day's rounds. Click a dot to choose that day. Until you do,
-it shows today if today has rounds, else the next day that does. Each round has its name, time,
+Beside the calendar, a panel lists one day's rounds. Click a dot (or press Enter on it) to choose
+that day; the keyboard moves on to the panel. Until you choose, it shows today if today has rounds,
+else the next day that does. Each round has its name, time,
 company and role, the interviewers and the format, with **Open the application** and the same Done,
 Reschedule and edit buttons as the list.
 
