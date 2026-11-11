@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.23.5 (2026-11-11)
+
+- Saving an application's Details after moving it to Applied no longer wipes the applied date, and renaming a company no longer throws away words typed but not yet saved in About: forms on a page now follow what's saved and keep only your own unsaved edits, and Save sends just the fields you changed. (#313).
+
 ## 1.23.4 (2026-11-11)
 
 - Installing no longer needs a C compiler: the repo's `.python-version` asks uv for Python 3.12 to 3.14, so a computer with no Python gets one with ready-built packages, not 3.15 (on Windows, `uv sync` failed asking for Visual C++). (#312).
