@@ -544,7 +544,7 @@ Every interview round across all applications, as a **Calendar** (what the page 
 `/interviews?view=list` or `?view=calendar` opens one directly.
 
 **Calendar.** **Month** shows one month of dots, Monday first. **Year** shows the twelve months of
-the year, small, each with how many rounds were held, are coming up, and how many companies (hover
+the year, small, each with how many rounds were held, are awaiting their outcome, are coming up, and how many companies (hover
 over a figure for its words). Your choice is remembered. The arrows go back or forward a month or a
 year, and **Today** comes back to now and today's rounds. Going from Year to Month opens the month
 of the day you chose.

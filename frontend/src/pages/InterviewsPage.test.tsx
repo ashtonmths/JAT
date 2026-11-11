@@ -1,3 +1,4 @@
+import { focusManager } from "@tanstack/react-query";
 import { createMemoryHistory } from "@tanstack/react-router";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import dayjs from "dayjs";
@@ -359,6 +360,30 @@ describe("the interviews calendar", () => {
     ).toBeInTheDocument();
   });
 
+  it("gives focus back to the panel's heading when a round leaves the chosen day", async () => {
+    let all = [held, later, unbooked, elsewhere];
+    mockApi({
+      "/api/v1/workflow": WORKFLOW,
+      "/api/v1/interviews": (url: URL) => (url.searchParams.get("upcoming") ? [later] : all),
+      "/api/v1/interviews/titles": [],
+      "/api/v1/contacts": contacts,
+      "/api/v1/health": {},
+    });
+    renderAt("/interviews");
+    const edit = await screen.findByRole("button", { name: "Edit Round 2 · Engineering manager chat" });
+    edit.focus();
+    expect(edit).toHaveFocus();
+    // The round moves to the 20th (as Reschedule would), and the page fetches the rounds again.
+    all = [held, { ...later, starts_at: at("2030-06-20", "15:00") }, unbooked, elsewhere];
+    vi.setSystemTime(new Date(2030, 5, 12, 10, 1)); // past the app's 10 s staleTime
+    focusManager.setFocused(false);
+    focusManager.setFocused(true);
+    await waitFor(() => expect(within(panel()).queryByText("Round 2 · Engineering manager chat")).toBeNull());
+    await waitFor(() =>
+      expect(within(panel()).getByRole("heading", { name: "Wednesday 12 June" })).toHaveFocus(),
+    );
+  });
+
   it("shows the whole year as twelve months, with the year's figures against the year before", async () => {
     mock();
     renderAt("/interviews");
@@ -372,6 +397,7 @@ describe("the interviews calendar", () => {
     // June's small figures: held and coming up (not awaiting), and companies, in words on hover.
     const june = screen.getByRole("region", { name: "June 2030" });
     expect(within(june).getByRole("img", { name: "2 held" })).toBeInTheDocument();
+    expect(within(june).getByRole("img", { name: "0 awaiting outcome" })).toBeInTheDocument();
     expect(within(june).getByRole("img", { name: "1 coming up" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Previous year" }));

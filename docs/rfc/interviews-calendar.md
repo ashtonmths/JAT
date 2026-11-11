@@ -22,8 +22,8 @@ month.
   has a ring. The colour isn't the only signal: each dot's label and tooltip say it in words
   ("Wednesday 12 June, today: 2 rounds, 1 coming up, 1 held").
 - **Year:** the twelve months of the calendar year as small dot months, three across (two, then one,
-  on narrower screens). Each month has small figures with icons: held, coming up (not those
-  awaiting an outcome), companies. Previous and next move a year.
+  on narrower screens). Each month has small figures with icons: held, awaiting an outcome (orange, like its dots),
+  coming up, companies. Previous and next move a year.
 - **The day panel**, beside the calendar: the chosen day's rounds as cards. Each card has the status,
   rescheduled badge, round name, time (with its end), company (a link) and role, interviewers and
   format. It also has **Open the application** and the list's own `RoundActions` (Done or Didn't

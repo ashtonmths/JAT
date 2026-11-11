@@ -22,10 +22,19 @@ import {
   IconChevronRight,
   IconCircleCheck,
   IconClock,
+  IconHourglassHigh,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { TFunction } from "i18next";
-import { useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { useTranslation } from "react-i18next";
 
 import { useContacts } from "../api/hooks";
@@ -67,13 +76,12 @@ const whenOf = (r: Interview) => (r.starts_at ?? r.deadline_at)!;
 const dotColor = (color: string) => ({ "--dot": `var(--mantine-color-${color}-filled)` }) as CSSProperties;
 
 /**
- * A day's colour, from roundStatus: what most needs you first (orange, awaiting an outcome), then blue
- * (coming up), teal (held), red (needs a new time), grey (cancelled).
+ * A day's colour, the status badges' colours, from the same sums as its label (so both use one clock):
+ * what most needs you first (orange, awaiting an outcome), then blue (coming up), teal (held), grey
+ * (all cancelled).
  */
-const TONES = ["orange", "blue", "teal", "red", "gray"];
-function tone(rounds: Interview[]): string {
-  const colors = rounds.map((r) => roundStatus(r).color);
-  return TONES.find((c) => colors.includes(c)) ?? "gray";
+function toneOf(s: Summary): string {
+  return s.awaiting ? "orange" : s.comingUp ? "blue" : s.held ? "teal" : "gray";
 }
 
 /** The period's figures in the summary bar, in order, with each one's colour (none for companies). */
@@ -98,17 +106,9 @@ const DAY_STATUSES = [
  * What a day's dot says to a screen reader and on hover, as its colour can't: "Thursday 12 November,
  * today: 2 rounds, 1 awaiting outcome, 1 coming up".
  */
-function dayLabel(
-  t: TFunction<"interviews">,
-  lang: string,
-  day: string,
-  rounds: Interview[],
-  today: string,
-  now: number,
-) {
-  const s = summarise(rounds, day, day, now);
+function dayLabel(t: TFunction<"interviews">, lang: string, day: string, s: Summary, today: string) {
   const parts = [
-    t("calendar.counts.rounds", { count: rounds.length }),
+    t("calendar.counts.rounds", { count: s.total }),
     ...DAY_STATUSES.filter((d) => s[d.id] > 0).map((d) => t(d.key, { count: s[d.id] })),
   ];
   const name = formatDay(day, "weekdayDayMonth", lang);
@@ -265,7 +265,11 @@ function chosenDay(picked: string | null, days: Days, today: string, first: stri
   return busy.find((d) => d >= today) ?? (today >= first && today <= last ? today : (busy[0] ?? first));
 }
 
-/** The chosen day's rounds, each as its card with its actions. Its heading takes focus on a pick. */
+/**
+ * The chosen day's rounds, each as its card with its actions. Its heading takes focus on a pick, so a
+ * screen reader reads the day once (no live region). When an action takes a round off the day (moved
+ * to another time), its card goes, and the focus with it: the heading takes it back from the page.
+ */
 function DayPanel({
   day,
   days,
@@ -279,17 +283,22 @@ function DayPanel({
 }) {
   const { t, i18n } = useTranslation("interviews");
   const here = days.get(day) ?? [];
+  const shown = useRef({ day, count: here.length });
+  useEffect(() => {
+    const before = shown.current;
+    shown.current = { day, count: here.length };
+    if (before.day !== day || here.length >= before.count) return;
+    // The dialog that did it may still be closing and handing focus back to a button that's gone.
+    const timers = [0, 300, 800].map((ms) =>
+      window.setTimeout(() => {
+        if (document.activeElement === document.body) headingRef.current?.focus({ preventScroll: true });
+      }, ms),
+    );
+    return () => timers.forEach((id) => window.clearTimeout(id));
+  }, [day, here.length, headingRef]);
   return (
     <section aria-label={t("calendar.dayPanel")}>
-      <Title
-        order={4}
-        fz="md"
-        mb="sm"
-        ref={headingRef}
-        tabIndex={-1}
-        aria-live="polite"
-        className={classes.panelHeading}
-      >
+      <Title order={4} fz="md" mb="sm" ref={headingRef} tabIndex={-1} className={classes.panelHeading}>
         {formatDay(day, "weekdayDayMonth", i18n.language)}
       </Title>
       <Stack gap="sm">
@@ -321,7 +330,10 @@ function IconStat({ icon, n, label }: { icon: ReactNode; n: number; label: strin
   );
 }
 
-/** A month's held, coming up and companies, as small figures with icons (the year's months). */
+/**
+ * A month's held, awaiting an outcome (orange, like its dots), coming up and companies, as small
+ * figures with icons (the year's months).
+ */
 function MonthStats({ s }: { s: Summary }) {
   const { t } = useTranslation("interviews");
   return (
@@ -330,6 +342,11 @@ function MonthStats({ s }: { s: Summary }) {
         icon={<IconCircleCheck size={15} stroke={1.8} />}
         n={s.held}
         label={t("calendar.counts.held", { count: s.held })}
+      />
+      <IconStat
+        icon={<IconHourglassHigh size={15} stroke={1.8} color="var(--mantine-color-orange-filled)" />}
+        n={s.awaiting}
+        label={t("calendar.counts.awaiting", { count: s.awaiting })}
       />
       <IconStat
         icon={<IconClock size={15} stroke={1.8} />}
@@ -395,6 +412,8 @@ function DotMonth({
         {cells.map((d) => {
           if (d.slice(0, 7) !== month.slice(0, 7)) return <span key={d} className={classes.dotCell} />;
           const here = days.get(d) ?? [];
+          // One sum for the dot's colour and its words, so both see the same clock.
+          const s = summarise(here, d, d, now);
           return (
             <span
               key={d}
@@ -406,8 +425,9 @@ function DotMonth({
               {here.length ? (
                 <DayDot
                   day={d}
-                  rounds={here}
-                  label={dayLabel(t, lang, d, here, today, now)}
+                  count={here.length}
+                  color={toneOf(s)}
+                  label={dayLabel(t, lang, d, s, today)}
                   chosen={d === chosen}
                   onChoose={onChoose}
                 />
@@ -425,31 +445,32 @@ function DotMonth({
 /** A day with rounds: a dot to pick it, its words on hover and for screen readers. */
 function DayDot({
   day,
-  rounds,
+  count,
+  color,
   label,
   chosen,
   onChoose,
 }: {
   day: string;
-  rounds: Interview[];
+  count: number;
+  color: string;
   label: string;
   chosen: boolean;
   onChoose: (day: string) => void;
 }) {
-  const color = tone(rounds);
   return (
     <Tooltip label={label} withArrow openDelay={300}>
       <UnstyledButton
         className={classes.bigDot}
         style={dotColor(color)}
-        data-size={String(Math.min(rounds.length, 3))}
+        data-size={String(Math.min(count, 3))}
         data-tone={color}
         data-day={day}
         aria-label={label}
         aria-pressed={chosen}
         onClick={() => onChoose(day)}
       >
-        {rounds.length > 1 ? rounds.length : null}
+        {count > 1 ? count : null}
       </UnstyledButton>
     </Tooltip>
   );
@@ -471,6 +492,9 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
   const anchor = moved ?? today;
   const [picked, setPicked] = useState<string | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  // A focus move waiting for the next frame, dropped if the calendar goes first.
+  const focusing = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(focusing.current), []);
   const [stored, setStored] = useLocalStorage<Period>({
     key: "jat.interviews.period",
     defaultValue: "month",
@@ -505,7 +529,8 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
   const choose = (d: string) => {
     setPicked(d);
     // Then the chosen day's rounds, for a keyboard or a screen reader; on a phone, scrolled to.
-    requestAnimationFrame(() => heading.current?.focus({ preventScroll: !phone }));
+    cancelAnimationFrame(focusing.current);
+    focusing.current = requestAnimationFrame(() => heading.current?.focus({ preventScroll: !phone }));
   };
   const switchView = (v: Period) => {
     setStored(v);
@@ -570,7 +595,7 @@ export function InterviewCalendar({ rounds }: { rounds: Interview[] }) {
               variant="default"
               onClick={() => {
                 setMoved(null);
-                setPicked(today);
+                setPicked(null); // today if it has rounds, else the next day that does
               }}
             >
               {t("calendar.today")}
