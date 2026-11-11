@@ -1,6 +1,6 @@
 import { Button, Group, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { hashKey, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { i18n } from "../i18n";
 import { useToday } from "../utils/useToday";
@@ -22,10 +22,17 @@ export interface TodoFilters {
  */
 export function useTodos(filters: TodoFilters = {}, enabled = true) {
   const today = useToday(); // your local day decides what's "in the next two weeks"
+  const queryKey = ["todos", filters, today] as const;
   return useQuery({
-    queryKey: ["todos", filters, today],
+    queryKey,
     queryFn: async () => unwrap(await api.GET("/api/v1/todos", { params: { query: { ...filters, today } } })),
     enabled,
+    // At midnight only the date changes: keep the list up while the new day loads, so a to-do being
+    // edited isn't unmounted. Another list's to-dos (other filters) are never shown in the meantime.
+    placeholderData: (previous, previousQuery) =>
+      previousQuery && hashKey(previousQuery.queryKey.slice(0, 2)) === hashKey(queryKey.slice(0, 2))
+        ? previous
+        : undefined,
   });
 }
 
