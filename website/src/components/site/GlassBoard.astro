@@ -29,7 +29,7 @@ const stages: { label: string; tone: string; cards: Card[] }[] = [
     cards: [{ co: "Litware", ro: "Senior Software Engineer", chip: ["offer", "Offer · £95,000"] }],
   },
 ];
-const moverLines = ["Added today", "Applied · 3 days ago", "Round 2 · Thu 19 Nov", "Offer to answer"];
+const moverLines = ["Added today", "Applied · today", "Round 2 · Thu 19 Nov", "Offer to answer"];
 ---
 
 <div
@@ -37,8 +37,8 @@ const moverLines = ["Added today", "Applied · 3 days ago", "Round 2 · Thu 19 N
   role="img"
   aria-label="The board: Interested, Applied, Interviewing and Offer, with a card for each application, one moving on through the stages"
 >
-  <i class="pool one" aria-hidden="true"></i>
-  <i class="pool two" aria-hidden="true"></i>
+  <i class="pool p1" aria-hidden="true"></i>
+  <i class="pool p2" aria-hidden="true"></i>
   <div class="cols" aria-hidden="true">
     {stages.map((s) => (
       <div class="col">
@@ -87,7 +87,7 @@ const moverLines = ["Added today", "Applied · 3 days ago", "Round 2 · Thu 19 N
     position: absolute;
     border-radius: 50%;
   }
-  .one {
+  .p1 {
     left: 2%;
     top: 10%;
     width: 60%;
@@ -100,7 +100,7 @@ const moverLines = ["Added today", "Applied · 3 days ago", "Round 2 · Thu 19 N
     );
     animation: board-drift-one 12s ease-in-out infinite alternate;
   }
-  .two {
+  .p2 {
     right: -6%;
     top: -10%;
     width: 50%;
