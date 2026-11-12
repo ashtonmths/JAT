@@ -1,0 +1,81 @@
+---
+// Languages (docs/rfc/website-redesign.md §11, part 5): one line on English and 简体中文, and the rest of what's in
+// the box as glass chips.
+import { MARQUEE, README_ZH } from "../../data";
+---
+
+<section class="langs" id="languages" data-tint="apricot" aria-labelledby="lang-h">
+  <div class="two">
+    <p class="eyebrow">
+      English and <span lang="zh-CN">简体中文</span>
+    </p>
+    <div>
+      <h2 class="lead" id="lang-h">
+        The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows
+        your browser, and you can switch in the header. The README is{" "}
+        <a href={README_ZH}>
+          in <span lang="zh-CN">简体中文</span>
+        </a>{" "}
+        too.
+      </h2>
+      <ul class="chips" aria-label="Also in the box">
+        {MARQUEE.flat().map((c) => (
+          <li>{c}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .langs {
+    padding: 120px 0;
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 2.2fr;
+    align-items: start;
+    gap: 40px;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 max(5vw, 20px);
+  }
+  .two > .eyebrow {
+    margin-top: 0.9em;
+  }
+  .lead a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+  .chips {
+    list-style: none;
+    padding: 0;
+    margin: 56px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  /* The glass look without a backdrop blur: sixteen blurred chips cost more than they show. */
+  .chips li {
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.75), rgb(255 255 255 / 0.45));
+    border: 1px solid rgb(255 255 255 / 0.8);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.6),
+      0 8px 20px -12px rgb(var(--shadow-rgb) / 0.3);
+  }
+  @media (max-width: 760px) {
+    .langs {
+      padding: 72px 0 80px;
+    }
+    .two {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .chips {
+      margin-top: 40px;
+    }
+  }
+</style>
