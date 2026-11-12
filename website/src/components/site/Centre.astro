@@ -1,0 +1,91 @@
+---
+// One centred line between the big panels, under a soft pool of light and a slow beam.
+---
+
+<section class="centre" id="problem" data-tint="mint" data-motion>
+  <i class="pool" aria-hidden="true"></i>
+  <i class="beam" aria-hidden="true"></i>
+  <p class="display">
+    One folder on your computer.
+    <br />
+    <span class="soft">Nothing leaves it.</span>
+  </p>
+</section>
+
+<script>
+  import "../../scripts/site-motion";
+</script>
+
+<style>
+  .centre {
+    position: relative;
+    overflow: hidden;
+    padding: 34vh 20px;
+    text-align: center;
+  }
+  .display {
+    position: relative;
+  }
+  .pool,
+  .beam {
+    position: absolute;
+    pointer-events: none;
+  }
+  /* No blur filter on the pool: the page's dither keeps its gradient from banding. */
+  .pool {
+    left: 50%;
+    top: 50%;
+    width: 64vw;
+    height: 44vw;
+    margin: -22vw 0 0 -32vw;
+    border-radius: 50%;
+    background: radial-gradient(
+      closest-side,
+      rgb(255 255 255 / 0.5),
+      rgb(255 255 255 / 0.32) 30%,
+      rgb(var(--glow-hi-rgb) / 0.14) 62%,
+      rgb(var(--glow-hi-rgb) / 0.05) 82%,
+      transparent
+    );
+    animation: breathe 9s ease-in-out infinite alternate;
+  }
+  .beam {
+    left: 20%;
+    top: -40%;
+    width: 18vw;
+    height: 180%;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.5), transparent 80%);
+    filter: blur(28px);
+    transform: rotate(-24deg);
+    transform-origin: 50% 0;
+    animation: sweep 14s ease-in-out infinite alternate;
+  }
+  @keyframes breathe {
+    to {
+      transform: scale(1.1);
+      opacity: 0.75;
+    }
+  }
+  @keyframes sweep {
+    to {
+      transform: rotate(-12deg);
+    }
+  }
+  .centre:global(.paused) * {
+    animation-play-state: paused;
+  }
+  @media (max-width: 760px) {
+    .centre {
+      padding: 22vh 20px;
+    }
+    .display {
+      font-size: 32px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pool,
+    .beam {
+      animation: none;
+    }
+  }
+</style>

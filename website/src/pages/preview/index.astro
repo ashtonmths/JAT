@@ -1,13 +1,16 @@
 ---
 // The redesigned homepage (docs/rfc/website-redesign.md, concept 1i), built here at a hidden /preview/ (noindex,
 // out of the sitemap) until it replaces the homepage in part 6. Part 1 built the shell with each section as a plain
-// placeholder holding today's copy; parts 2 to 5 swap them for the real sections (part 2: the hero). The anchors
+// placeholder holding today's copy; parts 2 to 5 swap them for the real sections (part 2: the hero; part 4: the statement, cards, Insights and centre line). The anchors
 // match today's page.
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/site/Nav.astro";
 import Footer from "../../components/site/Footer.astro";
 import Hero from "../../components/site/Hero.astro";
-import { FAQ, GUIDE, MARQUEE, plain, README_ZH, REPO, STATS } from "../../data";
+import Statement from "../../components/site/Statement.astro";
+import Features from "../../components/site/Features.astro";
+import Centre from "../../components/site/Centre.astro";
+import { FAQ, GUIDE, MARQUEE, plain, README_ZH, REPO } from "../../data";
 
 const steps = [
   {
@@ -34,61 +37,9 @@ const steps = [
   <main id="main" tabindex="-1">
     <Hero />
 
-    <section class="block" id="privacy" data-tint="butter" aria-labelledby="privacy-h">
-      <div class="wrap two">
-        <p class="eyebrow">Private by design</p>
-        <div>
-          <h2 class="lead" id="privacy-h">
-            No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job
-            search lives in one folder on your own computer: a SQLite database, a readable export, your
-            Markdown notes and your files.
-          </h2>
-          <dl class="stats">
-            {STATS.map((s) => (
-              <div>
-                <dt>
-                  {s.value}
-                  {s.suffix}
-                </dt>
-                <dd>{s.label}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </div>
-    </section>
-
-    <section class="block" id="features" data-tint="butter" aria-label="The board, Today and Insights">
-      <div class="cards">
-        <article class="card plum">
-          <h3>The board</h3>
-          <p>
-            Every application, one drag away. See the interview round on each card, and who's gone quiet in
-            red.
-          </p>
-        </article>
-        <article class="card lavender">
-          <h3>Today</h3>
-          <p>
-            Know exactly who to chase. Your move, what's coming up, and who you're waiting on, red once it's
-            been too long.
-          </p>
-        </article>
-        <article class="card latte wide">
-          <p class="eyebrow">Insights</p>
-          <h3>See where it all leaks.</h3>
-          <p>Every role's path, from who brought it to an offer, or to ghosted, and what's still waiting.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="centre" id="problem" data-tint="mint">
-      <p class="display">
-        One folder on your computer.
-        <br />
-        <span class="soft">Nothing leaves it.</span>
-      </p>
-    </section>
+    <Statement />
+    <Features />
+    <Centre />
 
     <section class="block" id="how" data-tint="mint" aria-labelledby="how-h">
       <div class="wrap two">
@@ -218,70 +169,6 @@ const steps = [
   .block {
     padding: 140px 0;
   }
-  .stats {
-    margin: 64px 0 0;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-  }
-  .stats div {
-    border-top: 1px solid var(--ink-faint);
-    padding-top: 16px;
-  }
-  .stats dt {
-    font-weight: 300;
-    font-size: clamp(40px, 4vw, 60px);
-    letter-spacing: -0.04em;
-    line-height: 1;
-  }
-  .stats dd {
-    margin: 10px 0 0;
-    font-size: 14px;
-    color: var(--ink-soft);
-  }
-  .cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--gutter);
-    padding: 0 var(--gutter);
-  }
-  .card {
-    min-height: 360px;
-    border-radius: var(--r-panel);
-    padding: 36px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-  .card h3 {
-    margin: 0 0 6px;
-    font-weight: 400;
-    font-size: 24px;
-    letter-spacing: -0.02em;
-  }
-  .card p {
-    margin: 0;
-    max-width: 30em;
-    font-weight: 300;
-  }
-  .card.wide {
-    grid-column: 1 / -1;
-  }
-  .plum {
-    background: linear-gradient(160deg, #45375f, var(--plum));
-    color: var(--on-plum);
-  }
-  .lavender {
-    background: linear-gradient(160deg, #a99ad8, #5e4d8a);
-    color: var(--on-plum);
-  }
-  .latte {
-    background: linear-gradient(150deg, var(--pastel-butter), var(--pastel-apricot));
-  }
-  .centre {
-    padding: 30vh 20px;
-    text-align: center;
-  }
   .steps {
     list-style: none;
     margin: 0;
@@ -328,24 +215,12 @@ const steps = [
     color: var(--ink-soft);
   }
   @media (max-width: 760px) {
-    .two,
-    .cards {
+    .two {
       grid-template-columns: 1fr;
       gap: 0;
     }
-    .cards {
-      gap: var(--gutter);
-    }
-    .card {
-      min-height: 260px;
-      border-radius: 26px;
-      padding: 26px;
-    }
     .block {
       padding: 96px 0;
-    }
-    .stats {
-      grid-template-columns: 1fr 1fr;
     }
   }
 </style>
