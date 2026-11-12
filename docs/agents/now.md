@@ -76,7 +76,7 @@ Nothing Kai asked for is unfinished (once #327 and this refresh merge). Report a
   `fix-duplicate-role`, `fix-emptied-agency-kept`, `fix-double-save-locked`.
 - **Chinese, Kai to decide:** `i18n-zh-cn-offer-word` (Offer or 录用通知), `i18n-zh-cn-brand-name`.
 - **Windows:** `locked-file-retry`, `windows-testing`, `windows-tests-green` (17), `windows-support`; later `windows-snapshots`.
-- **Planned, waiting for Kai's go:** `generalise-agent-tooling`, `google-doc-content`, `docs-no-machine-paths`,
+- **Planned, waiting for Kai's go:** `calendar-page` (a calendar for everything, Kai's idea 2026-11-12), `generalise-agent-tooling`, `google-doc-content`, `docs-no-machine-paths`,
   `review-merge-script`, `pr-screenshots`, `interview-process-plan`, `fix-loading-state-pattern`, the review-process tasks.
 
 **How work ran this round** (keep doing it this way unless Kai says otherwise):
