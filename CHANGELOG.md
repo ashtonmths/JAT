@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.8 (2026-11-12)
+
+- The redesigned page's hero shows the app in use: Today, a card dragged on the board, a role's stage changed and the Sankey drawn in (#340).
+
 ## 1.24.7 (2026-11-12)
 
 - The redesigned page's hero at /preview/: pastel cards drifting behind a 3D browser that turns and opens onto the app in Chinese (#339).
