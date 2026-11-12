@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.2 (2026-11-12)
+
+- Deleting a call asks first (#330).
+
 ## 1.24.1 (2026-11-12)
 
 - Applications can be saved again after their recruiter moves agency, or their agency or recruiter is deleted (#329).
