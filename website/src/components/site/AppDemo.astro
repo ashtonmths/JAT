@@ -1,0 +1,792 @@
+---
+// The app in use, inside the hero's front window (docs/rfc/website-redesign.md §11, part 3). Light-mode screenshots
+// of the demo app (made-up data) sit on a 1440 x 900 stage at the app's own pixel positions; the moving parts are
+// rebuilt in HTML on top: a to-do ticked, a board card dragged to the next stage, a stage changed, the Sankey
+// drawing in. A cursor drives it on a loop, at twice the pace of the concept it comes from.
+// Decorative only: hidden from assistive tech, nothing focusable; the window's still screenshot keeps the honest
+// description. It stays hidden (and its images unloaded) until the script starts it: never without JavaScript or
+// under reduced motion, and it plays only while on screen in a visible tab.
+import { Image } from "astro:assets";
+import chrome from "../../assets/demo/chrome.png";
+import today from "../../assets/demo/today.png";
+import board from "../../assets/demo/board.png";
+import role from "../../assets/demo/role.png";
+import insights from "../../assets/demo/insights.png";
+
+type Card = {
+  co: string;
+  role: string;
+  when: string;
+  extra?: string;
+  late?: boolean;
+  tag?: string;
+  id?: string;
+};
+// The board's columns at their x in the screenshot, with the app's light stage badges.
+const columns: { x: number; label: string; badge: string; h: number; cards: Card[] }[] = [
+  {
+    x: 246,
+    label: "Interested",
+    badge: "background:#f1f3f5;color:#495057",
+    h: 134,
+    cards: [{ co: "Northwind Traders", role: "Lead Engineer", when: "2 days ago" }],
+  },
+  {
+    x: 508,
+    label: "Applied",
+    badge: "background:#e7f5ff;color:#1971c2",
+    h: 430,
+    cards: [
+      { co: "Adventure Works", role: "Backend Engineer (Go)", when: "3 days ago", id: "drag" },
+      { co: "Coho Winery", role: "Full-stack Engineer", when: "9 days ago", extra: "★ Jordan Lee" },
+      { co: "Fabrikam", role: "Staff Platform Engineer", when: "12 days ago", tag: "Reply to read" },
+      { co: "Coho Winery", role: "Senior Full-stack Engineer", when: "2 weeks ago", late: true },
+    ],
+  },
+  { x: 770, label: "Screen", badge: "background:#e3fafc;color:#0c8599", h: 134, cards: [] },
+  {
+    x: 1032,
+    label: "Interviewing",
+    badge: "background:#edf2ff;color:#4263eb",
+    h: 173,
+    cards: [
+      {
+        co: "Contoso",
+        role: "Senior Backend Engineer",
+        when: "9 days ago",
+        extra: "Alex Morgan",
+        tag: "Round 3 · System design test · Sat 14 Nov",
+        id: "open",
+      },
+    ],
+  },
+  { x: 1294, label: "Final", badge: "background:#f3f0ff;color:#7048e8", h: 112, cards: [] },
+];
+const img = {
+  widths: [720, 1020, 1440],
+  sizes: "(max-width: 760px) 92vw, 1020px",
+  format: "webp" as const,
+  loading: "lazy" as const,
+  decoding: "async" as const,
+  alt: "",
+};
+---
+
+<div class="demo" data-demo aria-hidden="true">
+  <div class="stage" data-stage>
+    <Image src={chrome} {...img} data-first />
+    <span class="hl" data-hl></span>
+    <div class="vp">
+      <div class="pg on" data-page="today">
+        <div class="pin" data-scroll>
+          <Image src={today} {...img} data-first />
+          <span class="dim" data-todo></span>
+          <span class="check" data-todo>
+            <svg viewBox="0 0 12 12">
+              <path d="M2.5 6.2l2.4 2.4 4.6-5"></path>
+            </svg>
+          </span>
+          <span class="strike" data-todo></span>
+        </div>
+      </div>
+      <div class="pg" data-page="board">
+        <div class="pin">
+          <Image src={board} {...img} />
+          <div class="board">
+            {columns.map((c) => (
+              <div class="col" style={`left:${c.x}px;height:${c.h}px`}>
+                <span class="badge" style={c.badge}>
+                  {c.label}
+                </span>
+                <span class="count" data-count={c.label}>
+                  {c.cards.length}
+                </span>
+              </div>
+            ))}
+            {columns.flatMap((c) => {
+              let y = 276;
+              return c.cards.map((card) => {
+                const h = card.tag ? (card.id === "open" ? 120 : 103) : 80;
+                const top = y;
+                y += h + 11;
+                return (
+                  <div
+                    class:list={["card", { late: card.late }]}
+                    style={`left:${c.x + 12}px;top:${top}px;height:${h}px`}
+                    data-card={card.id}
+                    data-col={c.label}
+                  >
+                    <b>{card.co}</b>
+                    <span>{card.role}</span>
+                    {card.tag && <span class:list={["tag", { round: card.id === "open" }]}>{card.tag}</span>}
+                    <span class="when">
+                      <span class:list={{ red: card.late }}>{card.when}</span>
+                      {card.extra && <span>{card.extra}</span>}
+                    </span>
+                  </div>
+                );
+              });
+            })}
+          </div>
+        </div>
+      </div>
+      <div class="pg" data-page="role">
+        <div class="pin" data-scroll>
+          <Image src={role} {...img} />
+          <span class="stage-badge old" data-badge-old>
+            Interviewing
+          </span>
+          <span class="stage-badge new" data-badge-new>
+            Final
+          </span>
+          <div class="menu" data-menu>
+            <span>Screen</span>
+            <span class="current">Interviewing</span>
+            <span class="pick">Final</span>
+            <span>Offer</span>
+            <span>Rejected</span>
+          </div>
+        </div>
+      </div>
+      <div class="pg" data-page="insights">
+        <div class="pin">
+          <Image src={insights} {...img} />
+          <span class="cover" data-cover></span>
+        </div>
+      </div>
+    </div>
+    <div class="toast" data-toast>
+      <i></i>
+      <span data-toast-text></span>
+    </div>
+    <div class="cursor" data-cursor>
+      <i class="ripple" data-ripple></i>
+      <svg viewBox="0 0 24 24">
+        <path d="M4 2.5l15.5 9.2-6.9 1.3 3.9 7.6-3 1.5-3.9-7.6L4.4 19z"></path>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<script>
+  type Pos = [number, number];
+  // The sidebar highlight's y for each page, and what the address bar shows.
+  const SIDEBAR: Record<string, number> = { today: 66, board: 181, role: 181, insights: 568 };
+  const URLS: Record<string, string> = {
+    today: "/",
+    board: "/applications?view=board",
+    role: "/applications/contoso-senior-backend",
+    insights: "/insights",
+  };
+  // Twice the concept's pace: holds on a screen halve, movement speeds up by the square root, so it stays smooth.
+  const SPEED = 2;
+  const hold = (ms: number) => ms / SPEED;
+  const move = (ms: number) => ms / Math.SQRT2;
+  class Stopped extends Error {}
+
+  const demo = document.querySelector<HTMLElement>("[data-demo]");
+  if (demo) setup(demo);
+
+  function setup(demo: HTMLElement) {
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => demo.querySelector<T>(s)!;
+    const $$ = (s: string) => [...demo.querySelectorAll<HTMLElement>(s)];
+    const stage = $("[data-stage]");
+    const url = demo.closest(".window")?.querySelector<HTMLElement>("[data-url]");
+    const cursor = $("[data-cursor]");
+    const ripple = $("[data-ripple]");
+    const toastEl = $("[data-toast]");
+    const card = $("[data-card='drag']");
+    const below = $$("[data-col='Applied']").filter((c) => c !== card);
+    const pages = new Map($$("[data-page]").map((p) => [p.dataset.page!, p]));
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+
+    // Fit the 1440 x 900 stage to the window (the observer hands over the size; nothing is read here).
+    new ResizeObserver(([e]) => stage.style.setProperty("--k", String(e.contentRect.width / 1440))).observe(
+      demo,
+    );
+
+    let inView = false;
+    let run = 0;
+    let wake: (() => void) | null = null;
+    const playing = () => inView && !document.hidden;
+    const resume = () => {
+      if (playing() && wake) {
+        wake();
+        wake = null;
+      }
+    };
+
+    // Waits, pausing while off screen or in a hidden tab; throws if this run has been stopped.
+    async function wait(ms: number, id: number) {
+      let left = ms;
+      while (left > 0) {
+        if (id !== run) throw new Stopped();
+        if (!playing()) await new Promise<void>((r) => (wake = r));
+        const t0 = performance.now();
+        await new Promise((r) => setTimeout(r, Math.min(left, 100)));
+        left -= performance.now() - t0;
+      }
+      if (id !== run) throw new Stopped();
+    }
+    function place(el: HTMLElement, transform: string, ms: number, ease = "cubic-bezier(.45,.05,.25,1)") {
+      el.style.transition = ms ? `transform ${ms}ms ${ease}` : "none";
+      el.style.transform = transform;
+    }
+    let toastTimer = 0;
+    function toast(text: string) {
+      $("[data-toast-text]").textContent = text;
+      toastEl.classList.add("on");
+      clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => toastEl.classList.remove("on"), hold(2600));
+    }
+    let current = "today";
+    function go(name: string, fade = false) {
+      const prev = pages.get(current)!;
+      const next = pages.get(name)!;
+      prev.classList.remove("on");
+      prev.classList.add("out");
+      setTimeout(() => prev.classList.remove("out"), 700);
+      next.classList.toggle("fade", fade);
+      next.classList.add("on");
+      current = name;
+      place($("[data-hl]"), `translateY(${SIDEBAR[name]}px)`, 420, "cubic-bezier(.3,.7,.2,1)");
+      if (url) url.textContent = URLS[name];
+    }
+    function reset() {
+      for (const el of [card, ...below, ...$$("[data-todo]"), $("[data-scroll]")]) {
+        place(el, "", 0);
+        el.classList.remove("on", "lift");
+      }
+      place(pages.get("role")!.querySelector<HTMLElement>("[data-scroll]")!, "", 0);
+      $("[data-count='Applied']").textContent = "4";
+      $("[data-count='Screen']").textContent = "0";
+      for (const s of ["[data-badge-old]", "[data-badge-new]", "[data-menu]", "[data-cover]"])
+        $(s).classList.remove("on", "gone");
+      for (const [name, p] of pages) p.classList.toggle("on", name === "today");
+      current = "today";
+      place($("[data-hl]"), `translateY(${SIDEBAR.today}px)`, 0);
+      if (url) url.textContent = URLS.today;
+      toastEl.classList.remove("on");
+    }
+
+    async function loop(id: number) {
+      let at: Pos = [1100, 520];
+      const pause = (ms: number) => wait(hold(ms), id);
+      const to = async (p: Pos, ms = 900) => {
+        at = p;
+        place(cursor, `translate(${p[0]}px, ${p[1]}px)`, move(ms));
+        await wait(move(ms + 60), id);
+      };
+      const click = async () => {
+        cursor.classList.add("down");
+        ripple.animate(
+          [
+            { opacity: 1, transform: "scale(0.3)" },
+            { opacity: 0, transform: "scale(1.8)" },
+          ],
+          { duration: 600, easing: "ease-out" },
+        );
+        await wait(move(160), id);
+        cursor.classList.remove("down");
+        await wait(move(140), id);
+      };
+      const scroll = async (page: string, y: number, ms: number) => {
+        place(pages.get(page)!.querySelector<HTMLElement>("[data-scroll]")!, `translateY(${-y}px)`, move(ms));
+        await wait(move(ms), id);
+      };
+      place(cursor, `translate(${at[0]}px, ${at[1]}px)`, 0);
+      for (;;) {
+        // Today: down to the to-dos, tick one.
+        await pause(900);
+        await to([700, 560]);
+        await scroll("today", 520, 1500);
+        await to([285, 366]);
+        await click();
+        $$("[data-todo]").forEach((el) => el.classList.add("on"));
+        toast("To-do done · Undo");
+        await pause(1100);
+        await scroll("today", 0, 1100);
+        // The board: drag Adventure Works from Applied to Screen.
+        await to([92, 201], 1000);
+        await click();
+        go("board");
+        await pause(1000);
+        await to([640, 312]);
+        cursor.classList.add("down");
+        card.classList.add("lift");
+        await pause(250);
+        place(card, "translate(262px, -4px) rotate(2deg)", move(1100));
+        await to([902, 308], 1100);
+        place(card, "translate(262px, 0)", move(260));
+        card.classList.remove("lift");
+        cursor.classList.remove("down");
+        below.forEach((c) => place(c, "translateY(-91px)", move(520), "cubic-bezier(.3,.7,.2,1)"));
+        $("[data-count='Applied']").textContent = "3";
+        $("[data-count='Screen']").textContent = "1";
+        toast("Adventure Works moved to Screen · Undo");
+        await pause(1400);
+        // Contoso: open it, move it on to Final, read down the page.
+        await to([1150, 300]);
+        await click();
+        go("role");
+        await pause(1100);
+        await to([300, 243]);
+        await click();
+        $("[data-menu]").classList.add("on");
+        await pause(500);
+        await to([300, 358], 600);
+        await click();
+        $("[data-menu]").classList.remove("on");
+        $("[data-badge-old]").classList.add("gone");
+        $("[data-badge-new]").classList.add("on");
+        toast("Contoso moved to Final");
+        await pause(1100);
+        await to([1000, 600], 800);
+        await scroll("role", 1150, 2600);
+        await pause(700);
+        await scroll("role", 1900, 1400);
+        await pause(600);
+        // Insights: the Sankey draws in.
+        await to([78, 589], 1000);
+        await click();
+        go("insights", true);
+        await pause(350);
+        $("[data-cover]").classList.add("on");
+        await to([980, 470], 1500);
+        await pause(2600);
+        // Home, and round again.
+        await to([72, 86], 1000);
+        await click();
+        go("today", true);
+        await pause(700);
+        reset();
+      }
+    }
+
+    // Start (show once the first screens are decoded) or stop (hide and reset) with the motion preference.
+    async function mode() {
+      const id = ++run;
+      resume();
+      if (reduce.matches) {
+        demo.classList.remove("on", "shown");
+        reset();
+        return;
+      }
+      demo.classList.add("on");
+      await Promise.all($$("img[data-first]").map((i) => (i as HTMLImageElement).decode().catch(() => {})));
+      if (id !== run) return;
+      demo.classList.add("shown");
+      loop(id).catch((e) => {
+        if (!(e instanceof Stopped)) throw e;
+      });
+    }
+
+    new IntersectionObserver(([e]) => {
+      inView = e.isIntersecting;
+      resume();
+    }).observe(demo);
+    document.addEventListener("visibilitychange", resume);
+    reduce.addEventListener("change", mode);
+    mode();
+  }
+</script>
+
+<style>
+  /* Over the window's still screenshot, the same size, so showing it shifts nothing. */
+  .demo {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    aspect-ratio: 1440 / 900;
+    overflow: hidden;
+    background: #fff;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+  }
+  .demo:global(.on) {
+    display: block;
+  }
+  .demo:global(.shown) {
+    opacity: 1;
+  }
+  .stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1440px;
+    height: 900px;
+    transform: scale(var(--k, 0.5));
+    transform-origin: 0 0;
+    font-family: "Inter Variable", system-ui, sans-serif;
+    color: #495057;
+    -webkit-font-smoothing: antialiased;
+  }
+  .stage :global(img) {
+    display: block;
+    width: 1440px;
+    max-width: none;
+    height: auto;
+  }
+  /* The sidebar's highlight, moved to the page shown. */
+  .hl {
+    position: absolute;
+    left: 10px;
+    top: 0;
+    width: 209px;
+    height: 40px;
+    border-radius: 4px;
+    background: #dbe4ff;
+    mix-blend-mode: multiply;
+    transform: translateY(66px);
+  }
+  /* The content area right of the sidebar and under the header; each page is a full screenshot shifted into it. */
+  .vp {
+    position: absolute;
+    left: 231px;
+    top: 57px;
+    width: 1209px;
+    height: 843px;
+    overflow: hidden;
+  }
+  .pg {
+    position: absolute;
+    left: -231px;
+    top: -57px;
+    width: 1440px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(60px);
+    transition:
+      opacity 0.5s ease,
+      transform 0.6s cubic-bezier(0.3, 0.7, 0.2, 1),
+      visibility 0s 0.6s;
+  }
+  .pg:global(.fade) {
+    transform: none;
+  }
+  .pg:global(.on),
+  .pg:global(.out) {
+    visibility: visible;
+    transition:
+      opacity 0.5s ease,
+      transform 0.6s cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+  .pg:global(.on) {
+    opacity: 1;
+    transform: none;
+    z-index: 2;
+  }
+  .pg:global(.out) {
+    opacity: 0;
+    transform: translateX(-40px);
+    z-index: 1;
+  }
+  .pin {
+    position: relative;
+    background: #fff;
+  }
+
+  /* Today: the to-do being ticked. */
+  .check,
+  .strike,
+  .dim {
+    position: absolute;
+    opacity: 0;
+  }
+  .check {
+    left: 276px;
+    top: 877px;
+    width: 19px;
+    height: 19px;
+    border-radius: 4px;
+    background: #4c6ef5;
+    display: grid;
+    place-items: center;
+    transform: scale(0.6);
+    transition:
+      opacity 0.2s,
+      transform 0.35s cubic-bezier(0.3, 1.4, 0.4, 1);
+  }
+  .check svg {
+    width: 13px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .strike {
+    left: 305px;
+    top: 886px;
+    width: 410px;
+    height: 1.5px;
+    background: #868e96;
+    opacity: 1;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    transition: transform 0.5s 0.1s cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+  .dim {
+    left: 300px;
+    top: 862px;
+    width: 420px;
+    height: 46px;
+    background: #f1f3f5;
+    transition: opacity 0.6s 0.4s;
+  }
+  .check:global(.on) {
+    opacity: 1;
+    transform: none;
+  }
+  .strike:global(.on) {
+    transform: none;
+  }
+  .dim:global(.on) {
+    opacity: 0.5;
+  }
+
+  /* The board, rebuilt so a card can really move. */
+  .board::before {
+    content: "";
+    position: absolute;
+    left: 240px;
+    top: 226px;
+    right: 0;
+    height: 674px;
+    background: #fff;
+  }
+  .col {
+    position: absolute;
+    top: 234px;
+    width: 250px;
+    border-radius: 6px;
+    background: #f8f9fa;
+    box-shadow: inset 0 0 0 1px #e9ecef;
+  }
+  .badge {
+    position: absolute;
+    left: 11px;
+    top: 11px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .count {
+    position: absolute;
+    right: 12px;
+    top: 10px;
+    font-size: 13px;
+    color: #868e96;
+  }
+  .card {
+    position: absolute;
+    width: 226px;
+    padding: 10px 11px;
+    border-radius: 6px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+    color: #868e96;
+    transition:
+      box-shadow 0.25s,
+      scale 0.25s;
+  }
+  .card.late {
+    border-left: 3px solid #fa5252;
+  }
+  .card b {
+    font-size: 15px;
+    font-weight: 600;
+    color: #000;
+  }
+  .when {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+  }
+  .red {
+    color: #fa5252;
+    font-weight: 600;
+  }
+  .tag {
+    align-self: flex-start;
+    margin: 4px 0 2px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #fff4e6;
+    color: #e8590c;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .tag.round {
+    background: #f3f0ff;
+    color: #7048e8;
+    text-transform: none;
+    border-radius: 12px;
+    padding: 4px 9px;
+  }
+  .card:global(.lift) {
+    z-index: 3;
+    scale: 1.04;
+    box-shadow: 0 24px 40px -14px rgb(42 30 63 / 0.35);
+  }
+
+  /* A role: its stage changes. */
+  .stage-badge {
+    position: absolute;
+    left: 246px;
+    top: 191px;
+    width: 108px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 3px;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition:
+      opacity 0.35s,
+      transform 0.45s cubic-bezier(0.3, 1.3, 0.4, 1);
+  }
+  .stage-badge.old {
+    background: #dbe4ff;
+    color: #4263eb;
+  }
+  .stage-badge.new {
+    background: #e5dbff;
+    color: #7048e8;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .stage-badge:global(.gone) {
+    opacity: 0;
+  }
+  .stage-badge.new:global(.on) {
+    opacity: 1;
+    transform: none;
+  }
+  .menu {
+    position: absolute;
+    left: 246px;
+    top: 264px;
+    width: 190px;
+    padding: 5px;
+    border-radius: 6px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 16px 40px rgb(42 30 63 / 0.18);
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    color: #212529;
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+    transform-origin: top left;
+    transition:
+      opacity 0.2s,
+      transform 0.25s;
+  }
+  .menu span {
+    padding: 7px 10px;
+    border-radius: 4px;
+  }
+  .menu .current {
+    color: #adb5bd;
+  }
+  .menu .pick {
+    background: #f1f3f5;
+  }
+  .menu:global(.on) {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Insights: a white curtain slides off the Sankey, left to right. */
+  .cover {
+    position: absolute;
+    left: 262px;
+    top: 270px;
+    width: 1150px;
+    height: 445px;
+    background: #fff;
+    transform-origin: 100% 50%;
+  }
+  .cover:global(.on) {
+    transform: scaleX(0);
+    transition: transform 1.4s cubic-bezier(0.5, 0, 0.2, 1);
+  }
+
+  /* The cursor and its press. */
+  .cursor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 10;
+    width: 30px;
+    height: 30px;
+  }
+  .cursor svg {
+    width: 30px;
+    height: 30px;
+    fill: #fff;
+    stroke: #111;
+    stroke-width: 1.4;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.35));
+    transform-origin: 4px 3px;
+    transition: transform 0.15s;
+  }
+  .cursor:global(.down) svg {
+    transform: scale(0.84);
+  }
+  .ripple {
+    position: absolute;
+    left: -16px;
+    top: -17px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #7a64c8;
+    background: rgb(122 100 200 / 0.2);
+    opacity: 0;
+  }
+  .toast {
+    position: absolute;
+    left: 50%;
+    bottom: 40px;
+    z-index: 9;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 26px 16px 18px;
+    border-radius: 999px;
+    font-size: 22px;
+    color: #fff;
+    background: rgb(42 30 63 / 0.9);
+    box-shadow: 0 20px 50px -10px rgb(42 30 63 / 0.45);
+    opacity: 0;
+    transform: translate(-50%, 20px);
+    transition:
+      opacity 0.35s,
+      transform 0.5s cubic-bezier(0.3, 0.7, 0.2, 1);
+  }
+  .toast i {
+    width: 12px;
+    height: 12px;
+    background: #c9b8f0;
+  }
+  .toast:global(.on) {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+</style>

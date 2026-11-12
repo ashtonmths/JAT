@@ -4,8 +4,9 @@
 // onto a second window behind it: the same app in 简体中文. It drifts gently all the time. The pin is short and a
 // progress line shows how far through it you are. The pin and the turn only happen once the script adds `.live`:
 // without JavaScript, under reduced motion, or on a short phone it's one still pose beside (or below) the words.
-// Part 3 puts the app in use inside the front window; for now it shows Today.
+// The front window shows Today, and once the script runs (with motion allowed) the app in use over it (AppDemo).
 import { Picture } from "astro:assets";
+import AppDemo from "./AppDemo.astro";
 import HeroCards from "./HeroCards.astro";
 import today from "../../assets/hero/today-light.png";
 import todayZh from "../../assets/hero/today-zh-light.png";
@@ -78,7 +79,9 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
           <i></i>
           <i></i>
           <i></i>
-          <span class="url">127.0.0.1/</span>
+          <span class="url">
+            127.0.0.1<span data-url>/</span>
+          </span>
         </div>
         <Picture
           src={today}
@@ -87,6 +90,7 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
           loading="eager"
           fetchpriority="high"
         />
+        <AppDemo />
       </div>
     </div>
 
