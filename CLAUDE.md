@@ -80,10 +80,11 @@ roadmap is `docs/ROADMAP.yaml`, shown by the PM dashboard (see "Project manageme
   itself, and switching a draft on. The PR says it skipped and why.
 - **A website-only PR skips the app's checks** (Kai, 2026-11-12: "if we're changing only website files and
   theres no way it can affect the actual app then we can skip app tests"). When every changed file is under
-  `website/`, docs, the roadmap or maintainer tooling (`tools/dev`, `tools/pm` and their tests), plus the
-  version bump's own lines, run `tools/dev/checks.sh --website`: the website's format check, `astro check` and
-  build, and the PM and tooling tests, in place of pytest, the frontend checks, unit and browser tests. The
-  script refuses if any other file changed, or a version file changed more than its version. The PR says so.
+  `website/` or `docs/`, is `CHANGELOG.md` or `CLAUDE.md`, or is maintainer tooling (`tools/dev`, `tools/pm` and
+  their tests), plus the version bump's own change (the old version swapped for the new), run
+  `tools/dev/checks.sh --website`: the website's format check, `astro check` and build, and the PM and tooling
+  tests, in place of pytest, the frontend checks, unit and browser tests. The script refuses if any other file
+  changed, or a version file changed more than its version. The PR says so.
 - **Don't max out Kai's PC** (Kai, 2026-11-02). `pnpm test` and `pnpm e2e` limit their workers,
   run at low priority and wait for each other across worktrees (CONTRIBUTING, *Checks*): run them
   through `pnpm` (a single spec: `pnpm e2e e2e/<file>`), not `vitest` or `playwright` directly,

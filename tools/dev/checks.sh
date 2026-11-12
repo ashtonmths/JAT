@@ -9,29 +9,40 @@ case "$*" in
   *) echo "usage: checks.sh [--no-e2e | --website]" >&2; exit 2 ;;
 esac
 need_root
+clean_env
 if [ "$1" = "--website" ]; then
   # Only for a PR that changes the website and nothing the app is built from (Kai, 2026-11-12). Refuse
-  # otherwise: every changed file must be website, docs or maintainer tooling, and the version-bump files may
-  # change only their version lines.
-  git fetch -q origin main
-  base=$(git merge-base HEAD origin/main)
+  # otherwise (fail closed): every changed file, committed or not, must be under website/, docs/, the
+  # changelog, CLAUDE.md or maintainer tooling; a version-bump file must equal main's copy with only the old
+  # version swapped for the new one.
+  git fetch -q origin main || echo "--website: couldn't fetch origin/main; checking against the last fetched one"
+  base=$(git merge-base HEAD origin/main) && [ -n "$base" ] || { echo "--website: no merge base with origin/main" >&2; exit 2; }
+  ver() { sed -n 's/^__version__ = "\(.*\)"$/\1/p'; }
+  old=$(git show "$base:src/jat/__init__.py" | ver)
+  new=$(ver < src/jat/__init__.py)
+  [ -n "$old" ] && [ -n "$new" ] || { echo "--website: can't read the version" >&2; exit 2; }
   bump='^(pyproject\.toml|uv\.lock|src/jat/__init__\.py|frontend/package\.json|frontend/openapi\.json|frontend/src/api/schema\.d\.ts)$'
   ok='^(website/|docs/|CHANGELOG\.md$|CLAUDE\.md$|tools/dev/|tests/dev/|tools/pm/|tests/pm/)'
+  names=$(mktemp)
+  trap 'rm -f "$names"' EXIT
+  { git diff --name-only -z --no-renames "$base" && git ls-files -z --others --exclude-standard; } > "$names" ||
+    { echo "--website: couldn't list the changed files" >&2; exit 2; }
   bad=0
-  while read -r f; do
+  while IFS= read -r -d '' f; do
     if [[ "$f" =~ $ok ]]; then continue; fi
     if [[ "$f" =~ $bump ]]; then
-      other=$(git diff "$base" -- "$f" | grep -E '^[-+][^-+]' | grep -viE 'version|[0-9]+\.[0-9]+\.[0-9]+')
-      [ -z "$other" ] && continue
-      echo "--website: $f changes more than its version"
+      git show "$base:$f" 2>/dev/null |
+        python3 -c 'import sys; o, n = sys.argv[1:]; sys.stdout.write(sys.stdin.read().replace(o, n))' "$old" "$new" 2>/dev/null |
+        cmp -s - "$f" && continue
+      echo "--website: $f changes more than its version ($old → $new)"
     else
       echo "--website: $f isn't a website-only file"
     fi
     bad=1
-  done < <(git diff --name-only "$base"; git ls-files --others --exclude-standard)
+  done < "$names"
+  rm -f "$names"
   [ $bad = 0 ] || { echo "Run the full checks instead." >&2; exit 2; }
 fi
-clean_env
 # One heavy run at a time across worktrees, at the lowest CPU and disk priority.
 # Without flock or ionice (macOS), it runs anyway: pnpm test and pnpm e2e still take their own lock.
 if [ -z "$HEAVY_TESTS_LOCKED" ]; then
@@ -61,7 +72,7 @@ if [ "$1" = "--website" ]; then
   check website-format pnpm --dir website format:check
   check website-check pnpm --dir website check
   check website-build pnpm --dir website build
-  echo "SKIP pytest, frontend checks, unit and e2e (--website: no app file changed)"
+  echo "SKIP pytest, frontend checks, unit and e2e (--website: only website, docs, tooling and version lines changed)"
   echo "ALL DONE fail=$fail"
   exit $fail
 fi
