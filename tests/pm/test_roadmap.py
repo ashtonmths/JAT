@@ -76,8 +76,7 @@ class LiveTests(unittest.TestCase):
         # Shelved work keeps its branch on purpose (pr-screenshots): it's in the Backlog, not Building.
         live = Live(branches_ahead={"worktree-b": 3}, prs=[PullRequest(7, "b", "CLOSED", "worktree-b", "u")])
         task = apply_live(sample(), live).task("b")
-        self.assertEqual(task.status, task.planned_status)
-        self.assertIn("closed", task.status_source)
+        self.assertEqual((task.status, task.status_source), (task.planned_status, "roadmap"))
 
     def test_open_pr_beats_older_merged(self):
         live = Live(

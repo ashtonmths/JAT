@@ -310,6 +310,10 @@ class WhyTests(unittest.TestCase):
         task = road(type="bug", severity="low").task("a")
         self.assertIn("No fix has started", task_page.stage_why(task))
 
+    def test_shelved_work_says_its_pr_was_closed(self):
+        task = road([pr("CLOSED", merge_commit="")], status="planned").task("a")
+        self.assertIn("closed without merging, so its branch's commits are shelved", task_page.stage_why(task))
+
     def test_a_bug_being_fixed_shows_its_pr(self):
         task = road([pr("OPEN", merge_commit="")], type="bug", severity="low").task("a")
         self.assertEqual(task_page.stage_why(task), "PR #7 open.")
