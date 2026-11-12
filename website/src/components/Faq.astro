@@ -1,22 +1,8 @@
 ---
-import { FAQ, markZh } from "../data";
+import { FAQ, faqHtml } from "../data";
 
-// `code` in answers becomes <code>, and [text](https://…) a link. The same answers feed the
-// FAQPage JSON-LD (SiteHead.astro). Chinese words get lang="zh-CN" in the text and link text
-// only, never inside code or an address.
-const escape = (s: string) =>
-  s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
-const html = (a: string) =>
-  a
-    .split(/(`[^`]+`|\[[^\]]+\]\(https:\/\/[^)\s]+\))/)
-    .map((part) => {
-      const code = part.match(/^`([^`]+)`$/);
-      if (code) return `<code>${escape(code[1])}</code>`;
-      const link = part.match(/^\[([^\]]+)\]\((https:\/\/[^)\s]+)\)$/);
-      if (link) return `<a href="${escape(link[2])}">${markZh(escape(link[1]))}</a>`;
-      return markZh(escape(part));
-    })
-    .join("");
+// The answers' `code` and [links](https://…) render through faqHtml (data.ts); the same answers feed the
+// FAQPage JSON-LD (SiteHead.astro).
 ---
 
 <section class="section" id="faq" aria-labelledby="faq-h">
@@ -37,7 +23,7 @@ const html = (a: string) =>
             <span>{f.q}</span>
             <span class="plus" aria-hidden="true" />
           </summary>
-          <p set:html={html(f.a)} />
+          <p set:html={faqHtml(f.a)} />
         </details>
       ))}
     </div>

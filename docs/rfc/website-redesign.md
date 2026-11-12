@@ -1,6 +1,6 @@
 # Website redesign: design language, concepts and the pick
 
-Status: Kai picked 1i (§10, §11); it's being built in seven PRs (§11). The concept pages stay on their branch (a
+Status: Kai picked 1i (§10, §11); it's being built in eight PRs (§11). The concept pages stay on their branch (a
 draft PR, not merged).
 
 Kai, 2026-11-12: "redesign the static page website … liquid glass things, clean, big graphics, movement, 3d, rounded edges … give me a new website
@@ -164,7 +164,7 @@ see different screens sooner". 1g, 1h and 1i are 1f with the hero's app sequence
 ## 11. Building it (Kai, 2026-11-12: "1i, ship it")
 
 1i becomes the real site: 1f's pastels and plum, the app in light mode, the hero's demo at twice the speed. It's built
-at a hidden `/preview/` (`noindex`, left out of the sitemap) in seven PRs, each working on its own, so the live page
+at a hidden `/preview/` (`noindex`, left out of the sitemap) in eight PRs, each working on its own, so the live page
 is never half-converted:
 
 | # | Task | What lands |
@@ -174,5 +174,6 @@ is never half-converted:
 | 2 | website-redesign-hero | The hero: copy, the drifting cards, the 3D browser that turns and opens onto the 简体中文 window, optimised light-mode screenshots. |
 | 3 | website-redesign-demo | The app in use inside the window at 1i's speed, paused off screen, a still pose for reduced motion. |
 | 4 | website-redesign-sections | The statement, the glass board and Today cards, the Insights panel, the centre line. |
-| 5 | website-redesign-story | The sticky story with its progress line, languages, quick start, FAQ. |
+| 5 | website-redesign-story | The sticky story with its progress line. |
+| 5b | website-redesign-closing | Languages, quick start, FAQ (split from part 5 to keep each PR under 1,000 lines). |
 | 6 | website-redesign-switch | `/preview/` becomes the homepage; the old components and `landing.css` go; URLs, anchors and structured data stay; before and after screenshots for Kai. |

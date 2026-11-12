@@ -1,49 +1,8 @@
 ---
-import { GUIDE } from "../data";
+import { GUIDE, QUICKSTART, quickCommands } from "../data";
 
-// The install and demo commands match the README and the install guide (which gives the two pnpm
-// steps a line each). "Use it for real" follows the README; the guide splits it between
-// install.md and your-data.md. Keep them in step.
-
-type Line = { cmd?: string; out?: string; note?: string };
-const tabs: { id: string; label: string; lines: Line[] }[] = [
-  {
-    id: "install",
-    label: "1 · Install",
-    lines: [
-      { cmd: "git clone https://github.com/waddington/job-application-tracker.git" },
-      { cmd: "cd job-application-tracker" },
-      { cmd: "uv sync" },
-      { cmd: "pnpm --dir frontend install && pnpm --dir frontend build" },
-      { out: "✓ built the web UI into frontend/dist" },
-    ],
-  },
-  {
-    id: "demo",
-    label: "2 · Try it with demo data",
-    lines: [
-      { note: "# made-up companies and people; needs a new or empty folder" },
-      { cmd: "uv run python scripts/seed_demo.py /tmp/jat-demo" },
-      { cmd: "uv run jat --data-dir /tmp/jat-demo serve" },
-      { out: "→ http://127.0.0.1:8770" },
-    ],
-  },
-  {
-    id: "real",
-    label: "3 · Use it for real",
-    lines: [
-      { cmd: "mkdir -p ~/job-search-data && git -C ~/job-search-data init" },
-      { cmd: "git -C ~/job-search-data remote add origin <your-private-repo-url>" },
-      { cmd: "cp .env.example .env" },
-      { note: "# then set JAT_DATA_DIR=~/job-search-data in .env" },
-      { cmd: "uv run jat init" },
-      { cmd: "uv run jat serve" },
-      { out: "→ http://127.0.0.1:8770 (keeps running)" },
-      { cmd: "uv run jat push" },
-      { out: "✓ snapshots sent to your private repo" },
-    ],
-  },
-];
+// The steps come from data.ts (QUICKSTART), shared with the redesigned page.
+const tabs = QUICKSTART;
 
 const needs = [
   { name: "Python 3.12 to 3.14", why: "the app", href: "https://www.python.org/downloads/" },
@@ -120,10 +79,7 @@ const needs = [
             <button
               type="button"
               class="copy-all"
-              data-copy={t.lines
-                .filter((l) => l.cmd)
-                .map((l) => l.cmd)
-                .join("\n")}
+              data-copy={quickCommands(t.lines)}
               aria-label={`Copy the ${t.label.replace(/^\d · /, "").toLowerCase()} commands`}
             >
               Copy
