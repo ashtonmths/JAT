@@ -1,58 +1,5 @@
 ---
-import { GUIDE } from "../data";
-
-// The install and demo commands match the README and the install guide (which gives the two pnpm
-// steps a line each). "Use it for real" follows the README; the guide splits it between
-// install.md and your-data.md. Keep them in step.
-
-type Line = { cmd?: string; out?: string; note?: string };
-const tabs: { id: string; label: string; lines: Line[] }[] = [
-  {
-    id: "install",
-    label: "1 · Install",
-    lines: [
-      { cmd: "git clone https://github.com/waddington/job-application-tracker.git" },
-      { cmd: "cd job-application-tracker" },
-      { cmd: "uv sync" },
-      { cmd: "pnpm --dir frontend install && pnpm --dir frontend build" },
-      { out: "✓ built the web UI into frontend/dist" },
-    ],
-  },
-  {
-    id: "demo",
-    label: "2 · Try it with demo data",
-    lines: [
-      { note: "# made-up companies and people; needs a new or empty folder" },
-      { cmd: "uv run python scripts/seed_demo.py /tmp/jat-demo" },
-      { cmd: "uv run jat --data-dir /tmp/jat-demo serve" },
-      { out: "→ http://127.0.0.1:8770" },
-    ],
-  },
-  {
-    id: "real",
-    label: "3 · Use it for real",
-    lines: [
-      { cmd: "mkdir -p ~/job-search-data && git -C ~/job-search-data init" },
-      { cmd: "git -C ~/job-search-data remote add origin <your-private-repo-url>" },
-      { cmd: "cp .env.example .env" },
-      { note: "# then set JAT_DATA_DIR=~/job-search-data in .env" },
-      { cmd: "uv run jat init" },
-      { cmd: "uv run jat serve" },
-      { out: "→ http://127.0.0.1:8770 (keeps running)" },
-      { cmd: "uv run jat push" },
-      { out: "✓ snapshots sent to your private repo" },
-    ],
-  },
-];
-
-const needs = [
-  { name: "Python 3.12 to 3.14", why: "the app", href: "https://www.python.org/downloads/" },
-  { name: "uv", why: "installs and runs it", href: "https://docs.astral.sh/uv/" },
-  { name: "Node.js 22.12+", why: "to build the UI", href: "https://nodejs.org/" },
-  { name: "pnpm", why: "to build the UI", href: "https://pnpm.io/" },
-  { name: "git", why: "snapshots of your data", href: "https://git-scm.com/" },
-  { name: "A private repo", why: "optional, for off-machine backups", href: "https://github.com/new" },
-];
+import { GUIDE, NEEDS as needs, QUICKSTART as tabs } from "../data";
 ---
 
 <section class="section" id="quickstart" aria-labelledby="qs-h">
@@ -63,9 +10,9 @@ const needs = [
         Set up in about <span class="serif grad">ten minutes</span>.
       </h2>
       <p class="lede reveal">
-        For now there's no installer. With uv and Node.js on your computer, you copy and paste a few
-        commands into the Terminal app, once; the <a href={`${GUIDE}install.md`}>install guide</a> lists what
-        you need and where to get it. After that it's a web page in your browser. A one-command install and a
+        For now there's no installer. With uv and Node.js on your computer, you copy and paste a few commands
+        into the Terminal app, once; the <a href={`${GUIDE}install.md`}>install guide</a> lists what you need
+        and where to get it. After that it's a web page in your browser. A one-command install and a
         double-click app are on the way.
       </p>
     </div>
