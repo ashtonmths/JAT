@@ -1,0 +1,496 @@
+---
+// The hero (docs/rfc/website-redesign.md §11, part 2): the words over drifting pastel cards, and a browser window
+// with the app in it. The window floats at an angle, turns to face you as you scroll, then swings open like a door
+// onto a second window behind it: the same app in 简体中文. It drifts gently all the time. The pin is short and a
+// progress line shows how far through it you are. The pin and the turn only happen once the script adds `.live`:
+// without JavaScript, under reduced motion, or on a short phone it's one still pose beside (or below) the words.
+// Part 3 puts the app in use inside the front window; for now it shows Today.
+import { Picture } from "astro:assets";
+import HeroCards from "./HeroCards.astro";
+import today from "../../assets/hero/today-light.png";
+import todayZh from "../../assets/hero/today-zh-light.png";
+
+const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: number[]; sizes: string } = {
+  formats: ["avif", "webp"],
+  fallbackFormat: "webp",
+  widths: [480, 720, 1020, 1440],
+  sizes: "(max-width: 760px) 92vw, 1020px",
+};
+---
+
+<section class="hero" data-tint="lilac" data-hero aria-labelledby="hero-h">
+  <div class="pin">
+    <HeroCards />
+
+    <div class="copy" data-copy>
+      <p class="eyebrow">Job application tracker · local-first</p>
+      <h1 class="display" id="hero-h">
+        Your job search,
+        <br />
+        kept on your machine.
+      </h1>
+      <p class="sub soft">
+        Every application, recruiter, interview and offer in one place, and a clear list of who to chase
+        today. No account, no cloud, no AI, nobody watching.
+      </p>
+      <div class="ctas">
+        <a class="pill pill-plum" href="#quickstart">
+          Get started, it's free{" "}
+          <span class="arrow" aria-hidden="true">
+            →
+          </span>
+        </a>
+        <a class="pill glass" href="#how">
+          See it in action{" "}
+          <span class="arrow" aria-hidden="true">
+            ↓
+          </span>
+        </a>
+      </div>
+      <p class="fine soft">Free · open source (Apache-2.0) · Mac and Linux</p>
+    </div>
+
+    <p class="caption" data-caption="1" aria-hidden="true">
+      <span class="eyebrow">The real app</span>
+      Your whole search on one page, here with made-up data.
+    </p>
+    <p class="caption" data-caption="2" aria-hidden="true">
+      <span class="eyebrow">
+        English or <span lang="zh-CN">简体中文</span>
+      </span>
+      The whole app in both, from buttons to dates.
+    </p>
+
+    <div class="scene" data-scene>
+      <div class="window back" data-back aria-hidden="true">
+        <div class="bar">
+          <i></i>
+          <i></i>
+          <i></i>
+          <span class="url">
+            127.0.0.1 · <span lang="zh-CN">今日</span>
+          </span>
+        </div>
+        <Picture src={todayZh} {...picture} alt="" loading="lazy" decoding="async" fetchpriority="low" />
+      </div>
+      <div class="window front" data-front>
+        <div class="bar" aria-hidden="true">
+          <i></i>
+          <i></i>
+          <i></i>
+          <span class="url">127.0.0.1/</span>
+        </div>
+        <Picture
+          src={today}
+          {...picture}
+          alt="The app's Today page with made-up data: replies to read, offers to answer, what's coming up and who you're waiting on"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+
+    <div class="progress" aria-hidden="true">
+      <i data-progress></i>
+    </div>
+  </div>
+</section>
+
+<script>
+  // A pose: x and y in vw and vh (from the middle of the stage), z in px, rotations in degrees, scale, opacity.
+  type Pose = [x: number, y: number, z: number, rx: number, ry: number, rz: number, s: number, o: number];
+  type Keys = [at: number, pose: Pose][];
+
+  // The front window turns to face you by 0.38 of the pin, holds, then swings open about its left edge by 0.92,
+  // as the back window comes forward into its place. Each pose at 0 is the CSS still pose, so nothing jumps when
+  // `.live` is added.
+  const poses: Record<"wide" | "narrow", { front: Keys; back: Keys }> = {
+    wide: {
+      front: [
+        [0, [21, 6, 0, 8, -20, -1, 0.62, 1]],
+        [0.38, [0, 6, 0, 2, 0, 0, 0.9, 1]],
+        [0.56, [0, 6, 0, 2, 0, 0, 0.9, 1]],
+        [0.92, [-30, 6, 140, 2, -78, 0, 0.9, 0]],
+      ],
+      back: [
+        [0, [27, -2, -300, 8, -20, -1, 0.6, 0.6]],
+        [0.56, [10, -5, -420, 4, -10, 0, 0.92, 0.55]],
+        [0.92, [0, 6, 0, 2, 0, 0, 0.9, 1]],
+      ],
+    },
+    narrow: {
+      front: [
+        [0, [0, 1, 0, 8, -10, 0, 0.94, 1]],
+        [0.38, [0, 0, 0, 4, 0, 0, 1, 1]],
+        [0.56, [0, 0, 0, 4, 0, 0, 1, 1]],
+        [0.92, [-40, 0, 120, 4, -80, 0, 1, 0]],
+      ],
+      back: [
+        [0, [6, -3, -260, 8, -10, 0, 0.9, 0.5]],
+        [0.56, [6, -6, -360, 6, -8, 0, 0.92, 0.5]],
+        [0.92, [0, 0, 0, 4, 0, 0, 1, 1]],
+      ],
+    },
+  };
+
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
+  const ease = (t: number) => t * t * (3 - 2 * t);
+  function at(keys: Keys, p: number): Pose {
+    if (p <= keys[0][0]) return keys[0][1];
+    for (let i = 1; i < keys.length; i++) {
+      const [p1, b] = keys[i];
+      const [p0, a] = keys[i - 1];
+      if (p <= p1) {
+        const t = ease((p - p0) / (p1 - p0));
+        return a.map((v, k) => v + (b[k] - v) * t) as Pose;
+      }
+    }
+    return keys[keys.length - 1][1];
+  }
+  function place(el: HTMLElement, [x, y, z, rx, ry, rz, s, o]: Pose) {
+    el.style.transform =
+      `translate(-50%, -50%) translate3d(${x}vw, ${y}vh, ${z}px) ` +
+      `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${s})`;
+    el.style.opacity = String(o);
+  }
+
+  const hero = document.querySelector<HTMLElement>("[data-hero]");
+  if (hero) {
+    const front = hero.querySelector<HTMLElement>("[data-front]")!;
+    const back = hero.querySelector<HTMLElement>("[data-back]")!;
+    const copy = hero.querySelector<HTMLElement>("[data-copy]")!;
+    const bar = hero.querySelector<HTMLElement>("[data-progress]")!;
+    const captions = [...hero.querySelectorAll<HTMLElement>("[data-caption]")];
+    const moving = [front, back, copy, bar, ...captions];
+    // Pinned and turning only with motion allowed, and on a phone only if it's tall enough for the window.
+    const pinnable = matchMedia(
+      "(prefers-reduced-motion: no-preference) and (min-width: 761px), " +
+        "(prefers-reduced-motion: no-preference) and (min-height: 720px)",
+    );
+    const narrow = matchMedia("(max-width: 760px)");
+    let progress = 0;
+    let leaving = 1;
+    let queued = false;
+
+    // Reads layout (on scroll and resize only); frame() then only writes.
+    function measure() {
+      const r = hero!.getBoundingClientRect();
+      const span = r.height - innerHeight;
+      progress = span > 0 ? clamp(-r.top / span) : 0;
+      // The second caption fades again as the hero scrolls away, so it doesn't slide under the nav.
+      leaving = clamp((r.bottom - innerHeight * 0.94) / (innerHeight * 0.06));
+    }
+    function frame() {
+      queued = false;
+      if (!hero!.classList.contains("live")) return;
+      const set = poses[narrow.matches ? "narrow" : "wide"];
+      const p = progress;
+      const f = at(set.front, p);
+      place(front, f);
+      place(back, at(set.back, p));
+      front.style.transformOrigin = p > 0.56 ? "0% 50%" : "50% 50%";
+      // Once the front window has swung away, it's out of the way for assistive tech too.
+      front.inert = f[7] < 0.05;
+      copy.style.opacity = String(1 - clamp(p / 0.2));
+      copy.style.visibility = p > 0.22 ? "hidden" : "visible";
+      const show = [
+        clamp((p - 0.36) / 0.06) * (1 - clamp((p - 0.6) / 0.06)),
+        clamp((p - 0.86) / 0.06) * leaving,
+      ];
+      captions.forEach((c, i) => {
+        c.style.opacity = String(show[i]);
+        c.style.transform = `translateY(${(1 - show[i]) * 16}px)`;
+      });
+      bar.style.transform = `scaleX(${p})`;
+    }
+    function update() {
+      measure();
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(frame);
+      }
+    }
+    // Live or still: still drops the pin and every inline style, so the CSS pose shows.
+    function mode() {
+      const live = pinnable.matches;
+      hero!.classList.toggle("live", live);
+      if (!live) {
+        for (const el of moving) el.removeAttribute("style");
+        front.inert = false;
+      }
+      update();
+    }
+
+    addEventListener("scroll", update, { passive: true });
+    addEventListener("resize", update);
+    pinnable.addEventListener("change", mode);
+    narrow.addEventListener("change", update);
+    // Off screen, the drifting cards and the window's drift pause.
+    new IntersectionObserver(([e]) => hero.classList.toggle("paused", !e.isIntersecting)).observe(hero);
+    mode();
+  }
+</script>
+
+<style>
+  /* Still by default: the words and the window side by side (stacked on a phone), nothing pinned. The script adds
+     .live to pin the stage for the length of the section while the windows turn. */
+  .hero {
+    position: relative;
+  }
+  .pin {
+    position: relative;
+    height: 100vh;
+    height: 100svh;
+    min-height: 640px;
+    overflow: hidden;
+    perspective: 1800px;
+    perspective-origin: 50% 40%;
+  }
+  .hero.live {
+    height: 220vh;
+  }
+  .live .pin {
+    position: sticky;
+    top: 0;
+    min-height: 0;
+  }
+  .paused :global(.column),
+  .paused .scene {
+    animation-play-state: paused;
+  }
+  .copy {
+    position: absolute;
+    z-index: 5;
+    left: max(6vw, 24px);
+    top: 50%;
+    transform: translateY(-50%);
+    width: min(580px, 42vw);
+  }
+  .copy .display {
+    font-size: clamp(40px, 4.4vw, 64px);
+  }
+  .sub {
+    margin: 22px 0 30px;
+    font-size: 18px;
+    font-weight: 300;
+  }
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .fine {
+    margin: 22px 0 0;
+    font-size: 13.5px;
+  }
+  .caption {
+    position: absolute;
+    z-index: 5;
+    left: max(6vw, 24px);
+    top: 96px;
+    max-width: 420px;
+    margin: 0;
+    opacity: 0;
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.45;
+  }
+  .caption .eyebrow {
+    display: flex;
+    margin-bottom: 10px;
+  }
+  /* The stage: clear of the nav above and the progress line below, so the window never crosses either. */
+  .scene {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 80px;
+    bottom: 44px;
+    container-type: size;
+    transform-style: preserve-3d;
+  }
+  .live .scene {
+    animation: drift 9s ease-in-out infinite alternate;
+  }
+  /* Starts from rest, so adding .live doesn't move anything. */
+  @keyframes drift {
+    to {
+      transform: translateY(8px) rotateX(1.5deg) rotateY(2deg);
+    }
+  }
+  .window {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(1020px, 82cqw, (100cqh - 58px) * 1.6);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow:
+      0 0 0 1px rgb(var(--shadow-rgb) / 0.08),
+      0 50px 110px -34px rgb(var(--shadow-rgb) / 0.38),
+      0 24px 50px -30px rgb(var(--glow-rgb) / 0.45);
+    backface-visibility: hidden;
+  }
+  .live .window {
+    will-change: transform, opacity;
+  }
+  /* The still pose, to the right of the words. */
+  .front {
+    transform: translate(-50%, -50%) translate3d(21vw, 6vh, 0) rotateX(8deg) rotateY(-20deg) rotateZ(-1deg)
+      scale(0.62);
+  }
+  .back {
+    transform: translate(-50%, -50%) translate3d(27vw, -2vh, -300px) rotateX(8deg) rotateY(-20deg)
+      rotateZ(-1deg) scale(0.6);
+    opacity: 0.6;
+  }
+  .window :global(img) {
+    width: 100%;
+    height: auto;
+  }
+  .bar {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 14px;
+    background: linear-gradient(#f6f4fb, #ece8f6);
+    border-bottom: 1px solid rgb(var(--shadow-rgb) / 0.08);
+  }
+  .bar i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: rgb(var(--shadow-rgb) / 0.14);
+  }
+  .bar i:first-child {
+    background: #b9a8ec;
+  }
+  .url {
+    margin: 0 auto;
+    padding: 4px 16px;
+    min-width: 40%;
+    border-radius: 999px;
+    text-align: center;
+    font: 12px/1.3 var(--mono);
+    color: var(--ink-soft);
+    background: rgb(var(--shadow-rgb) / 0.06);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .progress {
+    display: none;
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    bottom: 18px;
+    width: 120px;
+    height: 3px;
+    margin-left: -60px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--ink-faint);
+  }
+  .live .progress {
+    display: block;
+  }
+  .progress i {
+    position: absolute;
+    inset: 0;
+    background: var(--plum-2);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  /* A phone: the words, a gap, then the stage under them, so the window never sits under the buttons. */
+  @media (max-width: 760px) {
+    .hero.live {
+      height: 200vh;
+    }
+    .pin {
+      height: auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding-top: 92px;
+    }
+    .live .pin {
+      height: 100vh;
+      height: 100svh;
+    }
+    .copy {
+      position: relative;
+      left: auto;
+      top: auto;
+      transform: none;
+      width: auto;
+      margin: 0 20px;
+    }
+    /* Two lines: sized to the width so each line fits, in Inter or in the metric-matched fallback while
+       Inter loads (a wrap that comes and goes would push everything below it). Wrapping stays allowed, so a
+       browser's large minimum font size wraps the text rather than cutting it off. */
+    .copy .display {
+      font-size: min(36px, 8.6vw);
+    }
+    .sub {
+      margin: 14px 0 18px;
+      font-size: 15.5px;
+    }
+    .fine {
+      display: none;
+    }
+    .copy .pill {
+      padding: 11px 18px;
+      font-size: 14px;
+    }
+    .scene {
+      position: relative;
+      top: auto;
+      bottom: auto;
+      flex: none;
+      height: calc(92vw / 1.6 + 26px + 64px);
+      margin: 24px 0 36px;
+    }
+    .live .scene {
+      flex: 1;
+      height: auto;
+      min-height: 0;
+      margin-bottom: 36px;
+    }
+    .window {
+      width: min(92cqw, (100cqh - 46px) * 1.6);
+      border-radius: 12px;
+    }
+    .front {
+      transform: translate(-50%, -50%) translate3d(0, 1vh, 0) rotateX(8deg) rotateY(-10deg) scale(0.94);
+    }
+    .back {
+      transform: translate(-50%, -50%) translate3d(6vw, -3vh, -260px) rotateX(8deg) rotateY(-10deg) scale(0.9);
+      opacity: 0.5;
+    }
+    .bar {
+      height: 26px;
+      padding: 0 10px;
+      gap: 5px;
+    }
+    .bar i {
+      width: 7px;
+      height: 7px;
+    }
+    .url {
+      font-size: 9.5px;
+      padding: 2px 10px;
+    }
+    .caption {
+      left: 20px;
+      right: 20px;
+      top: 96px;
+      font-size: 15px;
+    }
+    .progress {
+      bottom: 14px;
+    }
+  }
+</style>
