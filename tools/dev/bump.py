@@ -77,11 +77,11 @@ def main() -> None:
         if s.count(pattern.format(old)) != 1:
             sys.exit(f"{name}: expected one {pattern.format(old)}")
         changes[ROOT / name] = s.replace(pattern.format(old), pattern.format(new))
-    p = ROOT / "website/src/layouts/Landing.astro"
+    p = ROOT / "website/src/components/SiteHead.astro"
     s = p.read_text()
     changes[p] = re.sub(r'(softwareVersion["\']?\s*:\s*["\'])' + re.escape(old), r"\g<1>" + new, s)
     if changes[p] == s:
-        sys.exit("Landing.astro: softwareVersion not found")
+        sys.exit("SiteHead.astro: softwareVersion not found")
     p = ROOT / "CHANGELOG.md"
     changes[p] = changelog_with(p.read_text(), old, new, entry, pr, str(date.today()))
     p = ROOT / "docs/ROADMAP.yaml"
