@@ -535,9 +535,24 @@ const widths = (img: ImageMetadata) => [480, 720, 960, 1440].filter((w) => w <= 
       inset: -12px -16px -28px;
       background: linear-gradient(var(--tint-mint) calc(100% - 28px), rgb(242 249 245 / 0));
       z-index: -1;
+      pointer-events: none;
     }
-    .stuck .media::before {
-      top: -70px; /* to the top of the screen, once the panel is stuck; earlier it would cover the heading */
+    /* Above it, up to the top of the screen: shown only once the panel is stuck (earlier it would cover the
+       heading). Its box never changes; only its opacity does. */
+    .live .media::after {
+      content: "";
+      position: absolute;
+      top: -70px;
+      left: -16px;
+      right: -16px;
+      height: 58px;
+      background: var(--tint-mint);
+      z-index: -1;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .stuck .media::after {
+      opacity: 1;
     }
     .panel,
     .live .panel {
