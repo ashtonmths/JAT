@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.1 (2026-11-12)
+
+- Applications can be saved again after their recruiter moves agency, or their agency or recruiter is deleted (#329).
+
 ## 1.24.0 (2026-11-12)
 
 - Interviews has a calendar, now the default view: a Month of dots and a Year of twelve dot months, each round's day coloured by how it went, a summary of the month or year against the one before, and a side panel with the chosen day's rounds and their Done, Reschedule and Edit buttons. List keeps the tables. (#317).
