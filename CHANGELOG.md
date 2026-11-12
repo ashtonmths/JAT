@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.5 (2026-11-12)
+
+- The website's page head is one shared component; the page looks the same (#338).
+
 ## 1.24.4 (2026-11-12)
 
 - Cards show grey placeholder lines while they load and Couldn't load this. with Retry if they fail, never their empty text: Roles, Calls, Done recently and Recent activity (#333).

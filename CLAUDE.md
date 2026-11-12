@@ -119,7 +119,7 @@ PR.** PRs that only touch internal files (`CLAUDE.md`, `.claude/settings.json`, 
   - If it's unclear whether a change is major, treat it as major and ask.
 - **How to bump.** Set the same version in `pyproject.toml`, `src/jat/__init__.py`,
   `frontend/package.json`, `website/package.json` and `softwareVersion` in
-  `website/src/layouts/Landing.astro`. Run `uv lock`, then `uv run python -m jat.openapi` and
+  `website/src/components/SiteHead.astro`. Run `uv lock`, then `uv run python -m jat.openapi` and
   `pnpm --dir frontend gen:api`. In `CHANGELOG.md`, add a `## X.Y.Z (YYYY-MM-DD)` section at
   the top with this PR's entries. Say the bump and why in the PR body ("Patch: a fix to …").
 - **Bump against main at merge time.** If main moved since the branch was cut, merge main in
