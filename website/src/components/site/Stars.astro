@@ -1,8 +1,8 @@
 ---
-// The GitHub star count inside a GitHub link: "★ 14", read as "14 stars". The number comes from the build
-// (src/stars.ts) and the browser refreshes it (scripts/stars.ts, loaded
-// by layouts/Base.astro: a script here would land inside the link). With no number from the build it stays hidden
-// until the browser has one.
+// The GitHub star count inside a GitHub link: "★ 14", read as "14 stars" (one text node for screen readers,
+// so it never reads "14stars"). The number comes from the build (src/stars.ts) and the browser refreshes it
+// (scripts/stars.ts, loaded by layouts/Base.astro: a script here would land inside the link). With no number
+// from the build it stays hidden until the browser has one.
 import { buildStars, formatStars } from "../../stars";
 
 const n = await buildStars();
@@ -12,7 +12,12 @@ const n = await buildStars();
   <span class="star" aria-hidden="true">
     ★
   </span>
-  <span data-stars-n>{n === null ? "" : formatStars(n)}</span> <span class="sr">stars</span>
+  <span aria-hidden="true" data-stars-n>
+    {n === null ? "" : formatStars(n)}
+  </span>
+  <span class="sr">
+    <span data-stars-n>{n === null ? "" : formatStars(n)}</span> stars
+  </span>
 </span>
 
 <style>

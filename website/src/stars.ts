@@ -5,7 +5,7 @@
 
 export const STARS_API = "https://api.github.com/repos/waddington/job-application-tracker";
 
-// "14", "1.2k": the same words at build time and in the browser.
+// "14", "1.2K": the same words at build time and in the browser.
 export const formatStars = (n: number) =>
   new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
 
