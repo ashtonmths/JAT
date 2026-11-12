@@ -19,7 +19,8 @@ function show(n: number) {
 function fromCache(): number | null | undefined {
   try {
     const c = JSON.parse(sessionStorage.getItem(KEY) ?? "null") as { n: unknown; at: unknown } | null;
-    if (!c || typeof c.at !== "number" || !(Date.now() - c.at < FRESH_MS)) return undefined;
+    const age = typeof c?.at === "number" ? Date.now() - c.at : NaN; // NaN or negative (clock moved back): stale
+    if (!c || !(age >= 0 && age < FRESH_MS)) return undefined;
     return c.n === null ? null : (readStars({ stargazers_count: c.n }) ?? undefined);
   } catch {
     return undefined; // storage blocked or a bad value: just ask GitHub
