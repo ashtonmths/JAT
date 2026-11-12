@@ -37,7 +37,9 @@ Each of these cost time once. Add a line when something new does.
 - **`!` commands run in the session's current folder**, maybe a worktree: tell Kai to run things like
   `playwright --ui` in their own terminal.
 - **The auto-mode permission check** can block `gh pr merge` or a release: ask Kai, never work around it. It also refused
-  editing `~/.claude/settings.json` ("self-modification"): give Kai the JSON to add instead.
+  editing `~/.claude/settings.json` ("self-modification"): give Kai the JSON to add instead. "Gave no verdict … reviewed
+  this call without its leading cd" (2026-11-11, `cd <main> && tools/dev/ship.sh …` sent right after a call in another
+  folder) isn't a refusal: send the exact same command again, alone, and it goes through.
 - **Builder agents have no Workflow tool** (2026-11-08): brief them to stop at each workflow step with an args file; the
   lead runs the workflow and copies `.result` from the task output file into the builder's `var/`. Agents were also
   refused `source tools/dev/env.sh`; they put Node on PATH with `export PATH=…` instead.
@@ -64,7 +66,9 @@ Each of these cost time once. Add a line when something new does.
 ## Browser tests (`frontend/e2e/`)
 
 - **A `test.fail` can fail the run by passing:** "Expected to fail, but passed" means the known bug didn't happen that
-  time (`fix-link-rename-tick-error` is racy). Rerun the browser tests (`tools/dev/e2e_only.sh`) before blaming the PR.
+  time (`fix-double-save-locked`'s double click at `companies.spec.ts` ~:596 is racy; 2026-11-12). Rerun the browser
+  tests (`tools/dev/e2e_only.sh`) before blaming the PR. A fix can also turn another bug's `test.fail` green for good
+  (#314 fixed `fix-person-saved-before-new-company`): rerun that spec a few times (`--repeat-each=3`) to tell which.
 - `fixtures.ts` starts a server per test file on seeded demo data. Any console error, uncaught exception or failed request
   fails the test unless `problems.allow(/…/)` (keep it narrow). Tests in a file share data: unique names, make what you
   need through the API, don't rely on counts.
@@ -150,8 +154,9 @@ Each of these cost time once. Add a line when something new does.
 - **`screenshots.py` only opens pages**: Insights tabs (local state; the rounds switch is localStorage
   `jat.insights.rounds`) and error toasts need a click or a failed save. Builders wrote throwaway helpers in `var/`;
   fake every non-GET request so the shared demo data never changes.
-- **`merge_main.sh` reverted a done task** again (`i18n-zh-cn-people` came back as `next`): check the roadmap diff after
-  every merge of main. Its dedupe can also drop a task's `status:` field (`fix-offer-loading-says-none`), and then
+- **`merge_main.sh` reverted a done task** again (`i18n-zh-cn-people` came back as `next`; on 2026-11-11/12 it put
+  three or four just-merged tasks back to `next` on #319, #323 and #324): check the roadmap diff after every merge of
+  main, statuses included (`git diff origin/main -- docs/ROADMAP.yaml | grep -o "id: [a-z0-9-]*\|status: [a-z]*"`). Its dedupe can also drop a task's `status:` field (`fix-offer-loading-says-none`), and then
   `bump.py` fails: put the status back by hand. `bump.py` also needs `pnpm install` in the worktree first
   ("openapi-typescript: not found").
 - **Screenshot pixel diffs prove English didn't change**: `screenshots.py <url> <lang> layout en` before and after,
