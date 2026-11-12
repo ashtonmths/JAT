@@ -72,6 +72,13 @@ class LiveTests(unittest.TestCase):
         self.assertEqual(status, {"a": "done", "b": "building", "c": "blocked", "d": "planned"})
         self.assertEqual(roadmap.task("b").commits_ahead, 3)
 
+    def test_a_branch_whose_pr_was_closed_unmerged_stays_where_the_roadmap_puts_it(self):
+        # Shelved work keeps its branch on purpose (pr-screenshots): it's in the Backlog, not Building.
+        live = Live(branches_ahead={"worktree-b": 3}, prs=[PullRequest(7, "b", "CLOSED", "worktree-b", "u")])
+        task = apply_live(sample(), live).task("b")
+        self.assertEqual(task.status, task.planned_status)
+        self.assertIn("closed", task.status_source)
+
     def test_open_pr_beats_older_merged(self):
         live = Live(
             prs=[PullRequest(1, "a", "MERGED", "worktree-a", "u"), PullRequest(5, "a2", "OPEN", "worktree-a", "u")]

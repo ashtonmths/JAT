@@ -428,6 +428,9 @@ def apply_live(roadmap: Roadmap, live: Live) -> Roadmap:
             continue
         elif task.pr and task.pr.state == "MERGED":
             task.status, task.status_source = "done", f"PR #{task.pr.number} merged"
+        elif task.pr and task.pr.state == "CLOSED":
+            # Shelved: the branch keeps its commits on purpose, so the roadmap's status stands.
+            task.status_source = f"roadmap; PR #{task.pr.number} closed without merging"
         elif task.commits_ahead > 0:
             commits = f"{task.commits_ahead} commit{'' if task.commits_ahead == 1 else 's'} on {task.branch_name}"
             if live.prs_known:
