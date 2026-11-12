@@ -47,7 +47,7 @@
       rgb(var(--glow-hi-rgb) / 0.05) 82%,
       transparent
     );
-    animation: breathe 9s ease-in-out infinite alternate;
+    animation: centre-breathe 9s ease-in-out infinite alternate;
   }
   .beam {
     left: 20%;
@@ -58,15 +58,15 @@
     filter: blur(28px);
     transform: rotate(-24deg);
     transform-origin: 50% 0;
-    animation: sweep 14s ease-in-out infinite alternate;
+    animation: centre-sweep 14s ease-in-out infinite alternate;
   }
-  @keyframes breathe {
+  @keyframes centre-breathe {
     to {
       transform: scale(1.1);
       opacity: 0.75;
     }
   }
-  @keyframes sweep {
+  @keyframes centre-sweep {
     to {
       transform: rotate(-12deg);
     }

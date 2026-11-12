@@ -1,8 +1,8 @@
 ---
 // The redesigned homepage (docs/rfc/website-redesign.md, concept 1i), built here at a hidden /preview/ (noindex,
 // out of the sitemap) until it replaces the homepage in part 6. Part 1 built the shell with each section as a plain
-// placeholder holding today's copy; parts 2 to 5 swap them for the real sections (part 2: the hero; part 4: the statement, cards, Insights and centre line). The anchors
-// match today's page.
+// placeholder holding today's copy; parts 2 to 5 swap them for the real sections (part 2: the hero; part 4: the
+// statement, cards, Insights and centre line). The anchors match today's page.
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/site/Nav.astro";
 import Footer from "../../components/site/Footer.astro";
@@ -141,20 +141,6 @@ const steps = [
 
 <style>
   /* Placeholders: plain, readable layouts that parts 2 to 5 replace with the designed sections. */
-  .wrap {
-    max-width: 1240px;
-    margin: 0 auto;
-    padding: 0 max(5vw, 20px);
-  }
-  .two {
-    display: grid;
-    grid-template-columns: 1fr 2.2fr;
-    align-items: start;
-    gap: 40px;
-  }
-  .two > .eyebrow {
-    margin-top: 0.9em;
-  }
   .sub {
     max-width: 36em;
     margin: 22px 0 30px;
@@ -215,10 +201,6 @@ const steps = [
     color: var(--ink-soft);
   }
   @media (max-width: 760px) {
-    .two {
-      grid-template-columns: 1fr;
-      gap: 0;
-    }
     .block {
       padding: 96px 0;
     }

@@ -4,7 +4,7 @@ import { STATS } from "../../data";
 ---
 
 <section class="statement" id="privacy" data-tint="butter" aria-labelledby="privacy-h">
-  <div class="inner">
+  <div class="wrap two">
     <p class="eyebrow">Private by design</p>
     <div>
       <h2 class="lead" id="privacy-h">
@@ -31,18 +31,6 @@ import { STATS } from "../../data";
   .statement {
     padding: 200px 0 140px;
   }
-  .inner {
-    max-width: 1240px;
-    margin: 0 auto;
-    padding: 0 max(5vw, 20px);
-    display: grid;
-    grid-template-columns: 1fr 2.2fr;
-    align-items: start;
-    gap: 40px;
-  }
-  .inner > .eyebrow {
-    margin-top: 0.9em;
-  }
   .stats {
     margin: 72px 0 0;
     display: grid;
@@ -67,13 +55,6 @@ import { STATS } from "../../data";
   @media (max-width: 760px) {
     .statement {
       padding: 120px 0 80px;
-    }
-    .inner {
-      grid-template-columns: 1fr;
-      gap: 0;
-    }
-    .inner > .eyebrow {
-      margin-top: 0;
     }
     .stats {
       grid-template-columns: 1fr 1fr;

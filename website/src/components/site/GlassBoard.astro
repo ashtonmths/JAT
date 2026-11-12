@@ -6,17 +6,17 @@
 type Card = { co: string; ro: string; chip?: [string, string]; when?: string; late?: boolean };
 const stages: { label: string; tone: string; cards: Card[] }[] = [
   {
+    label: "Interested",
+    tone: "interested",
+    cards: [{ co: "Northwind Traders", ro: "Lead Engineer", when: "2 days ago" }],
+  },
+  {
     label: "Applied",
     tone: "applied",
     cards: [
       { co: "Fabrikam", ro: "Staff Platform Engineer", chip: ["reply", "Reply to read"] },
       { co: "Coho Winery", ro: "Senior Full-stack Engineer", when: "2 weeks ago", late: true },
     ],
-  },
-  {
-    label: "Screen",
-    tone: "screen",
-    cards: [{ co: "Northwind Traders", ro: "Lead Engineer", when: "2 days ago" }],
   },
   {
     label: "Interviewing",
@@ -29,13 +29,13 @@ const stages: { label: string; tone: string; cards: Card[] }[] = [
     cards: [{ co: "Litware", ro: "Senior Software Engineer", chip: ["offer", "Offer · £95,000"] }],
   },
 ];
-const moverLines = ["3 days ago", "Screen call · today", "Round 2 · Thu 19 Nov", "Offer to answer"];
+const moverLines = ["Added today", "Applied · 3 days ago", "Round 2 · Thu 19 Nov", "Offer to answer"];
 ---
 
 <div
   class="board"
   role="img"
-  aria-label="The board: Applied, Screen, Interviewing and Offer, with a card for each application, one moving on through the stages"
+  aria-label="The board: Interested, Applied, Interviewing and Offer, with a card for each application, one moving on through the stages"
 >
   <i class="pool one" aria-hidden="true"></i>
   <i class="pool two" aria-hidden="true"></i>
@@ -98,7 +98,7 @@ const moverLines = ["3 days ago", "Screen call · today", "Round 2 · Thu 19 Nov
       rgb(var(--glow-rgb) / 0.25) 60%,
       transparent
     );
-    animation: drift-one 12s ease-in-out infinite alternate;
+    animation: board-drift-one 12s ease-in-out infinite alternate;
   }
   .two {
     right: -6%;
@@ -106,14 +106,14 @@ const moverLines = ["3 days ago", "Screen call · today", "Round 2 · Thu 19 Nov
     width: 50%;
     height: 80%;
     background: radial-gradient(closest-side, rgb(247 245 252 / 0.35), transparent);
-    animation: drift-two 15s ease-in-out infinite alternate;
+    animation: board-drift-two 15s ease-in-out infinite alternate;
   }
-  @keyframes drift-one {
+  @keyframes board-drift-one {
     to {
       transform: translate(45%, -8%) scale(0.9);
     }
   }
-  @keyframes drift-two {
+  @keyframes board-drift-two {
     to {
       transform: translate(10%, 12%) scale(0.9);
     }
@@ -151,8 +151,8 @@ const moverLines = ["3 days ago", "Screen call · today", "Round 2 · Thu 19 Nov
   .applied {
     background: rgb(70 120 190 / 0.6);
   }
-  .screen {
-    background: rgb(40 140 150 / 0.6);
+  .interested {
+    background: rgb(120 120 140 / 0.6);
   }
   .interviewing {
     background: rgb(90 100 200 / 0.65);
@@ -229,15 +229,15 @@ const moverLines = ["3 days ago", "Screen call · today", "Round 2 · Thu 19 Nov
     background: rgb(40 130 80 / 0.7);
     color: #d3f7e2;
   }
-  /* The lit card: Applied's third place, then on through the stages. */
+  /* The lit card: Interested's second place, then on through Applied (third), Interviewing and Offer (second). */
   .mover {
     position: absolute;
     left: var(--pad);
-    top: calc(var(--top) + 2 * var(--step));
+    top: calc(var(--top) + var(--step));
     width: calc(var(--col) - 2 * var(--pad));
     background: linear-gradient(180deg, rgb(var(--glow-hi-rgb) / 0.6), rgb(var(--glow-rgb) / 0.3));
     border-color: rgb(255 255 255 / 0.5);
-    animation: move 14s cubic-bezier(0.6, 0, 0.25, 1) infinite;
+    animation: board-move 14s cubic-bezier(0.6, 0, 0.25, 1) infinite;
   }
   .lines .l {
     position: absolute;
@@ -248,18 +248,18 @@ const moverLines = ["3 days ago", "Screen call · today", "Round 2 · Thu 19 Nov
   }
   .lines .l0 {
     position: relative;
-    animation-name: l0;
+    animation-name: board-l0;
   }
   .lines .l1 {
-    animation-name: l1;
+    animation-name: board-l1;
   }
   .lines .l2 {
-    animation-name: l2;
+    animation-name: board-l2;
   }
   .lines .l3 {
-    animation-name: l3;
+    animation-name: board-l3;
   }
-  @keyframes move {
+  @keyframes board-move {
     0%,
     14% {
       transform: translate(0, 0);
@@ -267,19 +267,19 @@ const moverLines = ["3 days ago", "Screen call · today", "Round 2 · Thu 19 Nov
     }
     24%,
     38% {
-      transform: translate(calc(var(--col) + var(--cgap)), calc(-1 * var(--step)));
+      transform: translate(calc(var(--col) + var(--cgap)), var(--step));
     }
     48%,
     62% {
-      transform: translate(calc(2 * (var(--col) + var(--cgap))), calc(-1 * var(--step)));
+      transform: translate(calc(2 * (var(--col) + var(--cgap))), 0);
     }
     72%,
     88% {
-      transform: translate(calc(3 * (var(--col) + var(--cgap))), calc(-1 * var(--step)));
+      transform: translate(calc(3 * (var(--col) + var(--cgap))), 0);
       opacity: 1;
     }
     94% {
-      transform: translate(calc(3 * (var(--col) + var(--cgap))), calc(-1 * var(--step)));
+      transform: translate(calc(3 * (var(--col) + var(--cgap))), 0);
       opacity: 0;
     }
     96% {
@@ -290,7 +290,7 @@ const moverLines = ["3 days ago", "Screen call · today", "Round 2 · Thu 19 Nov
       opacity: 1;
     }
   }
-  @keyframes l0 {
+  @keyframes board-l0 {
     0%,
     18%,
     98%,
@@ -302,7 +302,7 @@ const moverLines = ["3 days ago", "Screen call · today", "Round 2 · Thu 19 Nov
       opacity: 0;
     }
   }
-  @keyframes l1 {
+  @keyframes board-l1 {
     0%,
     20%,
     44%,
@@ -314,7 +314,7 @@ const moverLines = ["3 days ago", "Screen call · today", "Round 2 · Thu 19 Nov
       opacity: 1;
     }
   }
-  @keyframes l2 {
+  @keyframes board-l2 {
     0%,
     44%,
     68%,
@@ -326,7 +326,7 @@ const moverLines = ["3 days ago", "Screen call · today", "Round 2 · Thu 19 Nov
       opacity: 1;
     }
   }
-  @keyframes l3 {
+  @keyframes board-l3 {
     0%,
     68%,
     94%,
