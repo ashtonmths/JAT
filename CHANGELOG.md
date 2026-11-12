@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.7 (2026-11-12)
+
+- The redesigned page's hero at /preview/: pastel cards drifting behind a 3D browser that turns and opens onto the app in Chinese (#339).
+
 ## 1.24.6 (2026-11-12)
 
 - The redesigned website's page takes shape at a hidden /preview/ address; the homepage is unchanged (#336).
