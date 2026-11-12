@@ -99,6 +99,16 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
     </div>
   </div>
 </section>
+<script is:inline>
+  // Before the first paint: go live straight away where the script below will, so the layout never switches from
+  // the still pose to the pinned one in view (keep the query in step with `pinnable` below).
+  if (
+    matchMedia(
+      "(prefers-reduced-motion: no-preference) and (min-width: 761px), (prefers-reduced-motion: no-preference) and (min-height: 720px)",
+    ).matches
+  )
+    document.querySelector("[data-hero]").classList.add("live");
+</script>
 
 <script>
   // A pose: x and y in vw and vh (from the middle of the stage), z in px, rotations in degrees, scale, opacity.

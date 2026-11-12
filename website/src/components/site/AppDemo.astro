@@ -6,7 +6,7 @@
 // Decorative only: hidden from assistive tech, nothing focusable; the window's still screenshot keeps the honest
 // description. It stays hidden (and its images unloaded) until the script starts it: never without JavaScript or
 // under reduced motion, and it plays only while on screen in a visible tab.
-import { Image } from "astro:assets";
+import { getImage, Image } from "astro:assets";
 import chrome from "../../assets/demo/chrome.png";
 import today from "../../assets/demo/today.png";
 import board from "../../assets/demo/board.png";
@@ -70,6 +70,17 @@ const img = {
   decoding: "async" as const,
   alt: "",
 };
+// The later screens carry their sources as data-src / data-srcset; the script sets them one step ahead of use.
+const later = async (src: ImageMetadata) => {
+  const r = await getImage({ src, widths: img.widths, format: img.format });
+  return {
+    "data-src": r.src,
+    "data-srcset": r.srcSet.attribute,
+    width: r.attributes.width,
+    height: r.attributes.height,
+  };
+};
+const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insights].map(later));
 ---
 
 <div class="demo" data-demo aria-hidden="true">
@@ -91,7 +102,7 @@ const img = {
       </div>
       <div class="pg" data-page="board">
         <div class="pin">
-          <Image src={board} {...img} />
+          <img {...boardImg} sizes={img.sizes} alt="" decoding="async" data-later="board" />
           <div class="board">
             {columns.map((c) => (
               <div class="col" style={`left:${c.x}px;height:${c.h}px`}>
@@ -132,7 +143,7 @@ const img = {
       </div>
       <div class="pg" data-page="role">
         <div class="pin" data-scroll>
-          <Image src={role} {...img} />
+          <img {...roleImg} sizes={img.sizes} alt="" decoding="async" data-later="role" />
           <span class="stage-badge old" data-badge-old>
             Interviewing
           </span>
@@ -150,7 +161,7 @@ const img = {
       </div>
       <div class="pg" data-page="insights">
         <div class="pin">
-          <Image src={insights} {...img} />
+          <img {...insightsImg} sizes={img.sizes} alt="" decoding="async" data-later="insights" />
           <span class="cover" data-cover></span>
         </div>
       </div>
@@ -175,7 +186,7 @@ const img = {
   const URLS: Record<string, string> = {
     today: "/",
     board: "/applications?view=board",
-    role: "/applications/contoso-senior-backend",
+    role: "/applications/01a1d032-7337-7ae3-947b-f5f3dc69ad1c",
     insights: "/insights",
   };
   // Twice the concept's pace: holds on a screen halve, movement speeds up by the square root, so it stays smooth.
@@ -191,7 +202,8 @@ const img = {
     const $ = <T extends HTMLElement = HTMLElement>(s: string) => demo.querySelector<T>(s)!;
     const $$ = (s: string) => [...demo.querySelectorAll<HTMLElement>(s)];
     const stage = $("[data-stage]");
-    const url = demo.closest(".window")?.querySelector<HTMLElement>("[data-url]");
+    const win = demo.closest<HTMLElement>(".window");
+    const url = win?.querySelector<HTMLElement>("[data-url]");
     const cursor = $("[data-cursor]");
     const ripple = $("[data-ripple]");
     const toastEl = $("[data-toast]");
@@ -208,7 +220,8 @@ const img = {
     let inView = false;
     let run = 0;
     let wake: (() => void) | null = null;
-    const playing = () => inView && !document.hidden;
+    // Also paused while the window has swung away (the hero marks it inert).
+    const playing = () => inView && !document.hidden && !win?.inert;
     const resume = () => {
       if (playing() && wake) {
         wake();
@@ -252,7 +265,16 @@ const img = {
       place($("[data-hl]"), `translateY(${SIDEBAR[name]}px)`, 420, "cubic-bezier(.3,.7,.2,1)");
       if (url) url.textContent = URLS[name];
     }
-    function reset() {
+    // Loads a later screen's image (once).
+    function load(name: string) {
+      const i = demo.querySelector<HTMLImageElement>(`img[data-later='${name}']`);
+      if (i && !i.srcset) {
+        i.srcset = i.dataset.srcset!;
+        i.src = i.dataset.src!;
+      }
+    }
+    // Puts the moved pieces back; run while their pages are hidden, so nothing snaps in view.
+    function resetPieces() {
       for (const el of [card, ...below, ...$$("[data-todo]"), $("[data-scroll]")]) {
         place(el, "", 0);
         el.classList.remove("on", "lift");
@@ -260,8 +282,12 @@ const img = {
       place(pages.get("role")!.querySelector<HTMLElement>("[data-scroll]")!, "", 0);
       $("[data-count='Applied']").textContent = "4";
       $("[data-count='Screen']").textContent = "0";
-      for (const s of ["[data-badge-old]", "[data-badge-new]", "[data-menu]", "[data-cover]"])
+      for (const s of ["[data-badge-old]", "[data-badge-new]", "[data-menu]"])
         $(s).classList.remove("on", "gone");
+    }
+    function reset() {
+      resetPieces();
+      $("[data-cover]").classList.remove("on");
       for (const [name, p] of pages) p.classList.toggle("on", name === "today");
       current = "today";
       place($("[data-hl]"), `translateY(${SIDEBAR.today}px)`, 0);
@@ -296,7 +322,8 @@ const img = {
       };
       place(cursor, `translate(${at[0]}px, ${at[1]}px)`, 0);
       for (;;) {
-        // Today: down to the to-dos, tick one.
+        // Today: down to the to-dos, tick one. (Each next screen loads a step ahead.)
+        load("board");
         await pause(900);
         await to([700, 560]);
         await scroll("today", 520, 1500);
@@ -310,6 +337,7 @@ const img = {
         await to([92, 201], 1000);
         await click();
         go("board");
+        load("role");
         await pause(1000);
         await to([640, 312]);
         cursor.classList.add("down");
@@ -329,6 +357,7 @@ const img = {
         await to([1150, 300]);
         await click();
         go("role");
+        load("insights");
         await pause(1100);
         await to([300, 243]);
         await click();
@@ -357,9 +386,10 @@ const img = {
         // Home, and round again.
         await to([72, 86], 1000);
         await click();
+        resetPieces();
         go("today", true);
         await pause(700);
-        reset();
+        $("[data-cover]").classList.remove("on");
       }
     }
 
@@ -386,6 +416,7 @@ const img = {
       resume();
     }).observe(demo);
     document.addEventListener("visibilitychange", resume);
+    if (win) new MutationObserver(resume).observe(win, { attributes: true, attributeFilter: ["inert"] });
     reduce.addEventListener("change", mode);
     mode();
   }
@@ -450,6 +481,7 @@ const img = {
     width: 1209px;
     height: 843px;
     overflow: hidden;
+    background: #fff;
   }
   .pg {
     position: absolute;
