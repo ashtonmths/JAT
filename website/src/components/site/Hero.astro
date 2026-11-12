@@ -448,8 +448,8 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
     .copy .display {
       font-size: min(36px, 8.6vw);
     }
-    /* Four lines held open, whatever the font: if the fallback (before Inter loads) wraps to fewer lines than
-       Inter, the buttons and the window below would otherwise jump when Inter swaps in. */
+    /* As many lines held open as the intro takes at this width, in Inter or in the fallback before Inter loads
+       (measured: 4 lines below about 400 px, 3 below about 580, then 2), so nothing below it moves on the swap. */
     .sub {
       margin: 14px 0 18px;
       font-size: 15.5px;
@@ -515,6 +515,24 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
     }
     .progress {
       bottom: 14px;
+    }
+  }
+  @media (min-width: 412px) and (max-width: 760px) {
+    .sub {
+      min-height: calc(3 * 1.55em);
+    }
+  }
+  @media (min-width: 600px) and (max-width: 760px) {
+    .sub {
+      min-height: calc(2 * 1.55em);
+    }
+  }
+  /* The laptop layout centres the words on the window, so a line more or less would move them too: four lines
+     held open where the intro takes four (or three in Inter but four in the fallback). */
+  @media (min-width: 761px) and (max-width: 995px) {
+    .sub {
+      line-height: 1.55;
+      min-height: calc(4 * 1.55em);
     }
   }
 </style>
