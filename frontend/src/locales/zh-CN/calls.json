@@ -31,6 +31,7 @@
   },
   "moreFor": "更多操作：{{label}}",
   "edit": "编辑",
+  "deleteConfirm": "删除这次通话及其笔记？从这次通话添加的职位会保留。",
   "card": {
     "title": "通话与会面",
     "book": "约通话",

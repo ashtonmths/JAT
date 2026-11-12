@@ -386,7 +386,12 @@ function MeetingMenu({ meeting, onEdit }: { meeting: Meeting; onEdit: () => void
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Item onClick={onEdit}>{t("edit")}</Menu.Item>
-        <Menu.Item color="red" onClick={() => del.mutate(meeting.id)}>
+        <Menu.Item
+          color="red"
+          onClick={() => {
+            if (window.confirm(t("deleteConfirm"))) del.mutate(meeting.id);
+          }}
+        >
           {t("common:actions.delete")}
         </Menu.Item>
       </Menu.Dropdown>

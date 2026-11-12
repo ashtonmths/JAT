@@ -1032,7 +1032,7 @@ test.describe("a call afterwards", () => {
     await dialog.getByRole("button", { name: "Add role", exact: true }).click();
     await expect(dialog).toBeHidden();
     await expect(page.getByRole("link", { name: "Pitched Role" }).first()).toBeVisible();
-    page.once("dialog", (d) => void d.accept()); // if a fix asks first
+    page.once("dialog", (d) => void d.accept()); // Delete asks first
     await callMenu(page, label, "Delete");
     await expect(page.getByRole("button", { name: `More for ${label}` })).toBeHidden();
     await page.reload();
@@ -1041,21 +1041,29 @@ test.describe("a call afterwards", () => {
     expect(roles.filter((r) => r.title === "Pitched Role")).toMatchObject([{ company_id: company.id }]);
   });
 
-  // KNOWN BUG (fix-call-delete-no-confirm on the roadmap): expected to fail until it is fixed.
-  test.fail("deleting asks first", async ({ page, request }) => {
+  // fix-call-delete-no-confirm: Delete asks first; saying no keeps the call, yes deletes it.
+  test("deleting asks first", async ({ page, request }) => {
     const who = await person(request, "Careful Call Person");
     await addCall(request, who.id, { title: "Precious", status: "done", notes: "Long notes" });
+    const label = "Call with Careful Call Person: Precious";
     await openPerson(page, who.id);
-    let asked = false;
+    let asked = "";
     page.once("dialog", (d) => {
-      asked = true;
+      asked = d.message();
       void d.dismiss();
     });
     const writes = watchWrites(page);
-    await callMenu(page, "Call with Careful Call Person: Precious", "Delete");
+    await callMenu(page, label, "Delete");
     await pause(800);
+    expect(asked).toBe("Delete this call and its notes? Roles added from it stay.");
     expect(writes).toEqual([]);
-    expect(asked || (await theDialog(page).isVisible())).toBe(true);
+    expect(await callsOf(request, who.id)).toHaveLength(1);
+    await expect(page.getByRole("button", { name: `More for ${label}` })).toBeVisible();
+
+    page.once("dialog", (d) => void d.accept());
+    await callMenu(page, label, "Delete");
+    await expect(page.getByRole("button", { name: `More for ${label}` })).toBeHidden();
+    expect(await callsOf(request, who.id)).toHaveLength(0);
   });
 
   test("a person's deleted calls go with them", async ({ page, request }) => {
