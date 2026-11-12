@@ -305,7 +305,7 @@ test.describe("what the dialog asks", () => {
 test.describe("the button is wherever a booked round shows", () => {
   test("Interviews: a round moved from here is saved", async ({ page, request }) => {
     const { appId, label } = await bookedRound(request, "From Interviews Co", "On interviews");
-    await page.goto("/interviews");
+    await page.goto("/interviews?view=list");
     const dialog = await openDialog(page, label);
     await moveDay(page, dialog);
     await pickWho(page, dialog, "Me");
@@ -320,7 +320,7 @@ test.describe("the button is wherever a booked round shows", () => {
   }) => {
     const { label } = await bookedRound(request, "Phone Width Co", "On a phone");
     await page.setViewportSize({ width: 375, height: 760 });
-    await page.goto("/interviews");
+    await page.goto("/interviews?view=list");
     const button = page.getByRole("button", { name: `Reschedule ${label}` });
     await expect(button).toBeVisible();
     const scroller = page.locator(".mantine-ScrollArea-viewport").filter({ has: button });

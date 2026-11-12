@@ -1,0 +1,270 @@
+/*
+ * The Interviews calendar: a month of dots or a year of small months, and the chosen day's rounds
+ * beside. Colours come from Mantine's own variables, so it follows the theme; the few that differ in
+ * dark mode are custom properties set again below (the build drops light-dark()).
+ */
+.root {
+  --cal-empty: var(--mantine-color-gray-3);
+  --cal-ring: var(--mantine-primary-color-filled);
+}
+
+:where([data-mantine-color-scheme="dark"]) .root {
+  --cal-empty: var(--mantine-color-dark-4);
+  --cal-ring: var(--mantine-color-indigo-4);
+}
+
+/* The figures for the period. */
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.statNumber {
+  font-size: 1.5rem;
+  font-weight: 650;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.statDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot);
+  align-self: center;
+}
+
+.iconStat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--mantine-color-dimmed);
+}
+
+.iconStat > span {
+  color: var(--mantine-color-text);
+}
+
+/* The calendar beside the day panel, which stays in view while a year scrolls. */
+.withPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 32px;
+  align-items: start;
+}
+
+.main {
+  min-width: 0;
+}
+
+.panel {
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+}
+
+/* A month of dots. */
+.month {
+  position: relative;
+  isolation: isolate;
+}
+
+.dotGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  row-gap: 4px;
+}
+
+.month[data-large] .dotGrid {
+  row-gap: 8px;
+}
+
+.dotHead {
+  text-align: center;
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  padding-bottom: 6px;
+}
+
+.dotCell {
+  position: relative;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.month[data-large] .dotCell {
+  height: 76px;
+}
+
+/* Today: a ring in the primary colour, as in every date picker. The chosen day: a soft disc. */
+.dotCell[data-today]::before,
+.dotCell[data-chosen]::after {
+  content: "";
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.month[data-large] .dotCell[data-today]::before,
+.month[data-large] .dotCell[data-chosen]::after {
+  width: 52px;
+  height: 52px;
+}
+
+.dotCell[data-today]::before {
+  border: 2px solid var(--cal-ring);
+}
+
+.dotCell[data-chosen]::after {
+  background: var(--mantine-primary-color-light);
+  z-index: -1;
+}
+
+.cellNumber {
+  position: absolute;
+  top: 2px;
+  left: 8px;
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  font-variant-numeric: tabular-nums;
+}
+
+.smallDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cal-empty);
+}
+
+.month[data-large] .smallDot {
+  width: 9px;
+  height: 9px;
+}
+
+.bigDot {
+  --size: 16px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: var(--dot);
+  color: var(--mantine-color-white);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms ease;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.35);
+}
+
+.bigDot[data-size="2"] {
+  --size: 22px;
+}
+
+.bigDot[data-size="3"] {
+  --size: 27px;
+}
+
+.month[data-large] .bigDot {
+  --size: 24px;
+  font-size: 12px;
+}
+
+.month[data-large] .bigDot[data-size="2"] {
+  --size: 32px;
+}
+
+.month[data-large] .bigDot[data-size="3"] {
+  --size: 38px;
+}
+
+/* Only cancelled rounds that day: a soft grey, with a dark number on it so the count still reads. */
+.bigDot[data-tone="gray"] {
+  background: var(--mantine-color-gray-3);
+  color: var(--mantine-color-gray-8);
+  text-shadow: none;
+}
+
+:where([data-mantine-color-scheme="dark"]) .bigDot[data-tone="gray"] {
+  background: var(--mantine-color-dark-3);
+  color: var(--mantine-color-dark-9);
+}
+
+/* The panel's heading takes focus when a day is picked: a ring only for the keyboard. */
+.panelHeading:focus {
+  outline: none;
+}
+
+.panelHeading:focus-visible {
+  outline: 2px solid var(--cal-ring);
+  outline-offset: 2px;
+  border-radius: var(--mantine-radius-sm);
+}
+
+.bigDot:hover {
+  transform: scale(1.12);
+}
+
+.bigDot:focus-visible {
+  outline: 2px solid var(--cal-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bigDot {
+    transition: none;
+  }
+}
+
+@media (max-width: 48em) {
+  .withPanel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .panel {
+    position: static;
+    max-height: none;
+  }
+
+  .month[data-large] .dotCell {
+    height: 58px;
+    padding-top: 12px;
+  }
+
+  .cellNumber {
+    top: 0;
+    left: 4px;
+    font-size: 10px;
+  }
+
+  /* Smaller dots in a phone's narrow days, so the day's number stays clear. */
+  .month[data-large] .bigDot {
+    --size: 18px;
+    font-size: 10px;
+  }
+
+  .month[data-large] .bigDot[data-size="2"] {
+    --size: 24px;
+  }
+
+  .month[data-large] .bigDot[data-size="3"] {
+    --size: 28px;
+  }
+
+  .month[data-large] .dotCell[data-today]::before,
+  .month[data-large] .dotCell[data-chosen]::after {
+    width: 40px;
+    height: 40px;
+  }
+}

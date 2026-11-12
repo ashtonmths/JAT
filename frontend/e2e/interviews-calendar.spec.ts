@@ -1,0 +1,138 @@
+import type { APIRequestContext, Page } from "@playwright/test";
+
+import { expect, test } from "./fixtures";
+
+// The Interviews calendar: a month of dots (the first view) or a year of small months, the chosen
+// day's rounds in a panel beside with their actions, and a phone's layout. The browser's clock is
+// frozen on Wednesday 12 June 2030, and each test books its own rounds that week, so nothing depends
+// on when it runs.
+
+const API = "/api/v1";
+const NOW = new Date(2030, 5, 12, 10, 0);
+const TODAY = "2030-06-12";
+const LATER = "2030-06-20";
+/** A local time on a day, as the API takes it. */
+const at = (day: string, hours: number) => {
+  const [y, m, d] = day.split("-").map(Number) as [number, number, number];
+  return new Date(y, m - 1, d, hours, 0).toISOString();
+};
+
+/** An application with a round today at 15:00 and another on the 20th at 11:00. */
+const twoRounds = async (request: APIRequestContext, company: string) => {
+  const app = await request.post(`${API}/applications/quick`, {
+    data: { company_name: company, role_title: "Calendar Role", route: "direct", tags: [] },
+  });
+  expect(app.ok()).toBe(true);
+  const { id } = (await app.json()) as { id: string };
+  for (const [round, title, starts_at] of [
+    [1, "First chat", at(TODAY, 15)],
+    [2, "Second chat", at(LATER, 11)],
+  ] as const) {
+    const made = await request.post(`${API}/applications/${id}/interviews`, {
+      data: { round, title, starts_at, format: "video" },
+    });
+    expect(made.ok()).toBe(true);
+  }
+  return { appId: id, first: "Round 1 · First chat", second: "Round 2 · Second chat" };
+};
+
+const openCalendar = async (page: Page) => {
+  await page.clock.setFixedTime(NOW);
+  await page.goto("/interviews");
+  await expect(page.getByRole("button", { name: /^(Previous month|Previous year)$/ })).toBeVisible();
+};
+const panelOf = (page: Page) => page.getByRole("region", { name: "Rounds on the chosen day" });
+const dot = (page: Page, day: string) => page.locator(`button[data-day="${day}"]`);
+
+test("the month is the first view; choosing a day lists its rounds, with their actions", async ({
+  page,
+  request,
+}) => {
+  const { appId, first, second } = await twoRounds(request, "Calendar Panel Co");
+  await openCalendar(page);
+  await expect(page.getByRole("heading", { level: 3 })).toHaveText("June 2030");
+
+  // Today has a round, so the panel starts there; its dot says so in words.
+  const panel = panelOf(page);
+  await expect(panel.getByRole("heading", { name: "Wednesday 12 June" })).toBeVisible();
+  await expect(dot(page, TODAY)).toHaveAttribute("aria-label", /^Wednesday 12 June, today: /);
+  const ours = panel.locator("[data-round]").filter({ hasText: "Calendar Panel Co" });
+  await expect(ours.getByText(first)).toBeVisible();
+
+  // Choosing the 20th switches the panel to it.
+  await dot(page, LATER).click();
+  await expect(panel.getByRole("heading", { name: "Thursday 20 June" })).toBeFocused();
+  await expect(ours.getByText(second)).toBeVisible();
+  await expect(ours.getByText(first)).toBeHidden();
+  await expect(ours.getByRole("link", { name: "Open the application" })).toHaveAttribute(
+    "href",
+    `/applications/${appId}`,
+  );
+
+  // The round's own actions, as on the list.
+  await ours.getByRole("button", { name: `Reschedule ${second}` }).click();
+  const dialog = page.locator(".mantine-Modal-content");
+  await expect(dialog.getByText(`Reschedule ${second}`)).toBeVisible();
+  await dialog.getByRole("button", { name: "Cancel" }).click();
+  await expect(dialog).toBeHidden();
+
+  // The list is a click away, and stays chosen.
+  await page.getByText("List", { exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Coming up" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Coming up" })).toBeVisible();
+});
+
+test("Year shows twelve months and the year's figures; choosing a day fills the panel; Today comes back", async ({
+  page,
+  request,
+}) => {
+  const { second } = await twoRounds(request, "Calendar Year Co");
+  await openCalendar(page);
+  await page.getByText("Year", { exact: true }).click();
+  const heading = page.getByRole("heading", { level: 3 });
+  await expect(heading).toHaveText("2030");
+  await expect(page.locator("section[aria-label$=' 2030']:not([aria-label^='Summary'])")).toHaveCount(12);
+  await expect(
+    page.getByRole("region", { name: "Summary for 2030" }).locator('[data-stat="comingUp"]'),
+  ).toBeVisible();
+
+  const panel = panelOf(page);
+  await dot(page, LATER).click();
+  await expect(panel.getByRole("heading", { name: "Thursday 20 June" })).toBeVisible();
+  await expect(
+    panel.locator("[data-round]").filter({ hasText: "Calendar Year Co" }).getByText(second),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Next year" }).click();
+  await expect(heading).toHaveText("2031");
+  await expect(dot(page, TODAY)).toHaveCount(0);
+  await page.getByRole("button", { name: "Today", exact: true }).click();
+  await expect(heading).toHaveText("2030");
+  await expect(panel.getByRole("heading", { name: "Wednesday 12 June" })).toBeVisible();
+
+  // Remembered.
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Previous year" })).toBeVisible();
+});
+
+test("on a phone nothing scrolls sideways; the panel is under the month and above the year", async ({
+  page,
+  request,
+}) => {
+  const { second } = await twoRounds(request, "Calendar Phone Co");
+  await page.setViewportSize({ width: 375, height: 760 });
+  for (const view of ["Month", "Year"]) {
+    await openCalendar(page);
+    await page.getByText(view, { exact: true }).click();
+    await dot(page, LATER).click();
+    await expect(
+      panelOf(page).locator("[data-round]").filter({ hasText: "Calendar Phone Co" }).getByText(second),
+    ).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    const panelTop = (await panelOf(page).boundingBox())!.y;
+    const juneTop = (await page.locator("section[aria-label='June 2030']").boundingBox())!.y;
+    if (view === "Month") expect(panelTop).toBeGreaterThan(juneTop);
+    else expect(panelTop).toBeLessThan(juneTop);
+  }
+});
