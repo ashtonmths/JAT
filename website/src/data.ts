@@ -77,8 +77,16 @@ export const FOOTER_NOTE =
 // the two pnpm steps a line each). "Use it for real" follows the README; the guide splits it between
 // install.md and your-data.md. Keep them in step.
 // `copy: false` leaves a command out of the new page's Copy, which copies only what runs as pasted, in order;
-// `before` is a comment the new page shows above it.
-export type QuickLine = { cmd?: string; out?: string; note?: string; copy?: false; before?: string };
+// `before` is a comment the new page shows above it, and `newNote` the new page's wording of a note (today's
+// page keeps `note` until part 6 replaces it).
+export type QuickLine = {
+  cmd?: string;
+  out?: string;
+  note?: string;
+  newNote?: string;
+  copy?: false;
+  before?: string;
+};
 export const QUICKSTART: { id: string; label: string; lines: QuickLine[] }[] = [
   {
     id: "install",
@@ -112,7 +120,10 @@ export const QUICKSTART: { id: string; label: string; lines: QuickLine[] }[] = [
         before: "# optional, for jat push: put your own private repo's URL in",
       },
       { cmd: "cp .env.example .env" },
-      { note: "# then set JAT_DATA_DIR=~/job-search-data in .env" },
+      {
+        note: "# then set JAT_DATA_DIR=~/job-search-data in .env",
+        newNote: "# .env.example already sets JAT_DATA_DIR=~/job-search-data",
+      },
       { cmd: "uv run jat init" },
       { cmd: "uv run jat serve" },
       { out: "→ http://127.0.0.1:8770 (keeps running)" },

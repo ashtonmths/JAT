@@ -1,0 +1,276 @@
+---
+// The board and Today as two tall cards side by side, then Insights as a wide latte panel. Light-mode screenshots of
+// the demo app (made-up data), loaded lazily since they're below the fold. The light drifts only while on screen.
+import { Picture } from "astro:assets";
+import GlassBoard from "./GlassBoard.astro";
+import today from "../../assets/hero/today-light.png";
+import insights from "../../assets/demo/insights.png";
+
+const formats: ("avif" | "webp")[] = ["avif", "webp"];
+---
+
+<section class="features" id="features" data-tint="butter" data-motion aria-labelledby="features-h">
+  <h2 class="sr-only" id="features-h">
+    The board, Today and Insights
+  </h2>
+  <div class="cards">
+    <article class="card board">
+      <div class="art">
+        <GlassBoard />
+      </div>
+      <div class="text">
+        <h3>The board</h3>
+        <p>
+          Every application, one drag away. See the interview round on each card, and who's gone quiet in red.
+        </p>
+      </div>
+    </article>
+    <article class="card today">
+      <div class="art">
+        <div class="mini">
+          <Picture
+            src={today}
+            formats={formats}
+            fallbackFormat="webp"
+            widths={[480, 720, 1020]}
+            sizes="(max-width: 760px) 140vw, 75vw"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      </div>
+      <div class="text">
+        <h3>Today</h3>
+        <p>
+          Know exactly who to chase. Your move, what's coming up, and who you're waiting on, red once it's
+          been too long.
+        </p>
+      </div>
+    </article>
+  </div>
+
+  <div class="panel">
+    <i class="beam" aria-hidden="true"></i>
+    <i class="pool" aria-hidden="true"></i>
+    <div class="panel-text">
+      <p class="eyebrow">Insights</p>
+      <h3 class="h2">See where it all leaks.</h3>
+      <p class="soft">
+        Every role's path, from who brought it to an offer, or to ghosted, and what's still waiting.
+      </p>
+    </div>
+    <div class="sankey">
+      <Picture
+        src={insights}
+        formats={formats}
+        fallbackFormat="webp"
+        widths={[720, 1020, 1440]}
+        sizes="(max-width: 760px) 110vw, 80vw"
+        alt="A Sankey diagram of a whole job search, from where roles came from to where they are now (made-up data)"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  </div>
+</section>
+
+<script>
+  import "../../scripts/site-motion";
+</script>
+
+<style>
+  .features {
+    padding: 0 var(--gutter);
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gutter);
+  }
+  .card {
+    position: relative;
+    min-height: min(78vh, 720px);
+    border-radius: var(--r-panel);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    color: var(--on-plum);
+  }
+  .board {
+    background: radial-gradient(90% 70% at 30% 20%, #45375f, var(--plum));
+  }
+  /* Lavender above, deepening under the words so they read at 4.5:1 or more. */
+  .today {
+    background:
+      radial-gradient(70% 60% at 70% 30%, rgb(var(--glow-hi-rgb) / 0.55), transparent 70%),
+      linear-gradient(180deg, transparent 45%, rgb(42 30 63 / 0.45)),
+      linear-gradient(160deg, #a99ad8, #5e4d8a);
+  }
+  .art {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    padding: 56px 40px 0;
+  }
+  .today .art {
+    perspective: 1400px;
+  }
+  /* A window onto Today, tilted, floating gently. */
+  .mini {
+    width: 92%;
+    aspect-ratio: 4 / 3;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow:
+      0 0 0 1px rgb(var(--shadow-rgb) / 0.06),
+      0 50px 90px -30px rgb(var(--shadow-rgb) / 0.45);
+    transform: rotateY(-16deg) rotateX(10deg) rotateZ(2deg);
+    animation: features-float 9s ease-in-out infinite alternate;
+  }
+  .mini :global(img) {
+    width: 170%;
+    max-width: none;
+    height: auto;
+    transform: translate(-16%, -13%);
+  }
+  @keyframes features-float {
+    to {
+      transform: rotateY(-8deg) rotateX(6deg) rotateZ(1deg) translateY(-14px);
+    }
+  }
+  .text {
+    padding: 28px 36px 34px;
+  }
+  .text h3 {
+    margin: 0 0 6px;
+    font-weight: 400;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+  }
+  .text p {
+    margin: 0;
+    max-width: 30em;
+    font-weight: 300;
+    color: rgb(247 245 252 / 0.92);
+  }
+
+  /* Insights: latte, with the Sankey running off the right edge. */
+  .panel {
+    position: relative;
+    margin-top: var(--gutter);
+    min-height: min(86vh, 800px);
+    border-radius: var(--r-panel);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    background: linear-gradient(150deg, var(--pastel-butter), var(--pastel-apricot));
+  }
+  .panel-text {
+    position: relative;
+    padding: 56px 0 56px 56px;
+    max-width: 380px;
+  }
+  .panel-text .h2 {
+    margin-bottom: 18px;
+  }
+  /* The screenshot's sidebar and header are cropped off: content starts 231 px in and 57 px down of 1440 x 900. */
+  /* Cropped to the Sankey itself: 1209 x 658 of the screenshot, from 231 px in and 57 px down. */
+  .sankey {
+    position: relative;
+    align-self: center;
+    aspect-ratio: 1209 / 658;
+    margin: 56px 0;
+    border-radius: 18px 0 0 18px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 40px 80px -30px rgb(var(--shadow-rgb) / 0.45);
+  }
+  .sankey :global(img) {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 119.2%;
+    max-width: none;
+    height: auto;
+    transform: translateY(-6.4%);
+  }
+  .beam,
+  .pool {
+    position: absolute;
+    pointer-events: none;
+  }
+  .beam {
+    left: -10%;
+    top: -60%;
+    width: 30%;
+    height: 220%;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.55), transparent 70%);
+    transform: rotate(-38deg);
+    transform-origin: 50% 0;
+    animation: features-sweep 16s ease-in-out infinite alternate;
+  }
+  .pool {
+    left: -10%;
+    bottom: -30%;
+    width: 50%;
+    height: 80%;
+    border-radius: 50%;
+    background: radial-gradient(
+      closest-side,
+      rgb(var(--glow-rgb) / 0.3),
+      rgb(var(--glow-rgb) / 0.1) 60%,
+      transparent
+    );
+    animation: features-drift 18s ease-in-out infinite alternate;
+  }
+  @keyframes features-sweep {
+    to {
+      transform: rotate(-28deg);
+      opacity: 0.6;
+    }
+  }
+  @keyframes features-drift {
+    to {
+      transform: translate(10%, 12%) scale(0.9);
+    }
+  }
+  .features:global(.paused) * {
+    animation-play-state: paused;
+  }
+
+  @media (max-width: 760px) {
+    .cards {
+      grid-template-columns: 1fr;
+    }
+    .card {
+      min-height: 0;
+      border-radius: 26px;
+    }
+    .art {
+      padding: 32px 18px 0;
+    }
+    .text {
+      padding: 22px 22px 26px;
+    }
+    .panel {
+      grid-template-columns: 1fr;
+      min-height: 0;
+      border-radius: 26px;
+    }
+    .panel-text {
+      padding: 36px 24px 0;
+    }
+    .sankey {
+      margin: 28px 0 28px 24px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mini,
+    .beam,
+    .pool {
+      animation: none;
+    }
+  }
+</style>

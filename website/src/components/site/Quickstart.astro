@@ -77,7 +77,7 @@ const steps = QUICKSTART.map((s) => {
                   </div>
                 </>
               ) : (
-                <div class={`line ${l.note ? "note" : "out"}`}>{l.note ?? l.out}</div>
+                <div class={`line ${l.note ? "note" : "out"}`}>{l.newNote ?? l.note ?? l.out}</div>
               ),
             )}
           </div>

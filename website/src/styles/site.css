@@ -113,6 +113,31 @@ html.site *::after {
   top: 12px;
 }
 
+/* Layout shared by the sections: a centred column, and a label beside the words (stacked on a phone). */
+.site .wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 max(5vw, 20px);
+}
+.site .two {
+  display: grid;
+  grid-template-columns: 1fr 2.2fr;
+  align-items: start;
+  gap: 40px;
+}
+.site .two > .eyebrow {
+  margin-top: 0.9em;
+}
+@media (max-width: 760px) {
+  .site .two {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .site .two > .eyebrow {
+    margin-top: 0;
+  }
+}
+
 /* The eyebrow: a small square, then mono capitals. */
 .site .eyebrow {
   display: inline-flex;

@@ -388,7 +388,8 @@ const [boardImg, roleImg, insightsImg] = await Promise.all([board, role, insight
         await click();
         resetPieces();
         go("today", true);
-        await pause(700);
+        // Wait out Insights' fade (real time, not halved) before its curtain comes back.
+        await wait(750, id);
         $("[data-cover]").classList.remove("on");
       }
     }

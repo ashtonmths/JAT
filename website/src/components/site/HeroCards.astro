@@ -40,7 +40,7 @@ const columns = Array.from({ length: 8 }, (_, c) =>
   }
   /* Each column is two identical stacks, so moving it up by half loops without a seam. */
   .column {
-    animation: rise var(--duration) linear infinite;
+    animation: cards-rise var(--duration) linear infinite;
     animation-delay: var(--delay);
   }
   .stack {
@@ -71,7 +71,7 @@ const columns = Array.from({ length: 8 }, (_, c) =>
     border-radius: 3px;
     background: rgb(var(--shadow-rgb) / 0.18);
   }
-  @keyframes rise {
+  @keyframes cards-rise {
     to {
       transform: translateY(-50%);
     }
