@@ -45,6 +45,10 @@ interface Patterns {
   shortWeekday: string;
   /** 5 (a calendar's day) */
   dayOfMonth: string;
+  /** Th (a small calendar's column) */
+  minWeekday: string;
+  /** 2026 (a year's calendar) */
+  yearOnly: string;
   /** 5 Mar 2026, in a date picker's box (also how a typed date is read) */
   pickerDate: string;
   /** 5 Mar 2026 09:07, in a date-and-time picker's box */
@@ -70,6 +74,8 @@ const PATTERNS = new Map<string, Patterns>([
       monthName: "MMMM",
       shortWeekday: "ddd",
       dayOfMonth: "D",
+      minWeekday: "dd",
+      yearOnly: "YYYY",
       pickerDate: "D MMM YYYY",
       pickerDateTime: "D MMM YYYY HH:mm",
     },
@@ -92,6 +98,8 @@ const PATTERNS = new Map<string, Patterns>([
       monthName: "M[月]",
       shortWeekday: "ddd",
       dayOfMonth: "D",
+      minWeekday: "dd",
+      yearOnly: "YYYY[年]",
       pickerDate: "YYYY[年]M[月]D[日]",
       pickerDateTime: "YYYY[年]M[月]D[日] HH:mm",
     },

@@ -60,6 +60,81 @@ export default {
     round: "Round",
     application: "Application",
     status: "Status",
+    // The switch at the top of the page: the tables, or the calendar (the first choice).
+    view: {
+      label: "View",
+      list: "List",
+      calendar: "Calendar",
+    },
+  },
+  // The calendar view (docs/rfc/interviews-calendar.md).
+  calendar: {
+    period: "Show a month or a year",
+    month: "Month",
+    year: "Year",
+    today: "Today",
+    previousMonth: "Previous month",
+    nextMonth: "Next month",
+    previousYear: "Previous year",
+    nextYear: "Next year",
+    // A round's time with its end: "Thu 12 Nov, 14:00–15:00".
+    timeRange: "{{from}}–{{to}}",
+    // A day's dot, read out by screen readers and shown on hover, saying what its colour shows:
+    // "Thursday 12 November: 2 rounds, 1 awaiting outcome, 1 coming up". {{counts}} is a list of counts.
+    dayLabel: "{{day}}: {{counts}}",
+    dayLabelToday: "{{day}}, today: {{counts}}",
+    // The panel beside the calendar with the chosen day's rounds, read out by screen readers.
+    dayPanel: "Rounds on the chosen day",
+    with: "With {{people}}",
+    openApplication: "Open the application",
+    noRoundsMonth: "No rounds this month.",
+    noRoundsYear: "No rounds this year.",
+    noRoundsDay: "No rounds on this day.",
+    // Open rounds without a time, or whose time has to move, under the calendar.
+    toBook: "Still to book",
+    // Counts in a day's label, and the words for a month's small figures in the year view (on hover).
+    counts: {
+      rounds_one: "{{count}} round",
+      rounds_other: "{{count}} rounds",
+      held_one: "{{count}} held",
+      held_other: "{{count}} held",
+      awaiting_one: "{{count}} awaiting outcome",
+      awaiting_other: "{{count}} awaiting outcome",
+      comingUp_one: "{{count}} coming up",
+      comingUp_other: "{{count}} coming up",
+      cancelled_one: "{{count}} cancelled",
+      cancelled_other: "{{count}} cancelled",
+      companies_one: "{{count}} company",
+      companies_other: "{{count}} companies",
+    },
+    // The figures for the month or year on screen, each a number then these words.
+    summary: {
+      label: "Summary for {{period}}",
+      held_one: "held",
+      held_other: "held",
+      comingUp_one: "coming up",
+      comingUp_other: "coming up",
+      awaiting_one: "awaiting outcome",
+      awaiting_other: "awaiting outcome",
+      cancelled_one: "cancelled",
+      cancelled_other: "cancelled",
+      rescheduled_one: "rescheduled",
+      rescheduled_other: "rescheduled",
+      companies_one: "company",
+      companies_other: "companies",
+      // Rounds held or booked (not cancelled) against the period before: {{month}} is its name, "October".
+      moreThanMonth_one: "{{count}} more round than {{month}}",
+      moreThanMonth_other: "{{count}} more rounds than {{month}}",
+      fewerThanMonth_one: "{{count}} fewer round than {{month}}",
+      fewerThanMonth_other: "{{count}} fewer rounds than {{month}}",
+      sameAsMonth: "As many rounds as {{month}}",
+      // The same against the year before: {{year}} is "2025".
+      moreThanYear_one: "{{count}} more round than {{year}}",
+      moreThanYear_other: "{{count}} more rounds than {{year}}",
+      fewerThanYear_one: "{{count}} fewer round than {{year}}",
+      fewerThanYear_other: "{{count}} fewer rounds than {{year}}",
+      sameAsYear: "As many rounds as {{year}}",
+    },
   },
   // The Interviews card on an application.
   card: {

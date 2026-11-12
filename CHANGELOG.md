@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.0 (2026-11-12)
+
+- Interviews has a calendar, now the default view: a Month of dots and a Year of twelve dot months, each round's day coloured by how it went, a summary of the month or year against the one before, and a side panel with the chosen day's rounds and their Done, Reschedule and Edit buttons. List keeps the tables. (#317).
+
 ## 1.23.16 (2026-11-11)
 
 - The website says the app comes in English and 简体中文: a feature card and a FAQ entry, linking the Chinese README. (#323).

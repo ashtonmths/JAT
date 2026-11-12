@@ -103,7 +103,7 @@ const openApplication = async (page: Page, id: string) => {
   await expect(page.getByRole("button", { name: /^Add round \d+$/ })).toBeVisible();
 };
 const openInterviews = async (page: Page) => {
-  await page.goto("/interviews");
+  await page.goto("/interviews?view=list");
   await expect(page.getByRole("heading", { name: "Earlier and cancelled" })).toBeVisible();
 };
 const openPerson = async (page: Page, id: string) => {
@@ -293,6 +293,7 @@ test.describe("adding a round", () => {
     await submitRound(dialog);
     expect((await roundsOf(request, app.id)).map((r) => r.status)).toEqual(["done", "cancelled"]);
     await menu(page, "Interviews").click();
+    await page.getByText("List", { exact: true }).click();
     const earlier = section(page, "Earlier and cancelled");
     await expect(earlier.getByText("Round 1 · Earlier chat")).toBeVisible();
     await expect(earlier.getByText("Round 2 · Dropped chat")).toBeVisible();

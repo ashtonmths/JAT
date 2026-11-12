@@ -47,7 +47,55 @@
     "when": "时间",
     "round": "轮次",
     "application": "申请",
-    "status": "状态"
+    "status": "状态",
+    "view": {
+      "label": "视图",
+      "list": "列表",
+      "calendar": "日历"
+    }
+  },
+  "calendar": {
+    "period": "按月或按年显示",
+    "month": "月",
+    "year": "年",
+    "today": "今天",
+    "previousMonth": "上个月",
+    "nextMonth": "下个月",
+    "previousYear": "上一年",
+    "nextYear": "下一年",
+    "timeRange": "{{from}}–{{to}}",
+    "dayLabel": "{{day}}：{{counts}}",
+    "dayLabelToday": "{{day}}（今天）：{{counts}}",
+    "dayPanel": "所选日期的面试",
+    "with": "面试官：{{people}}",
+    "openApplication": "打开申请",
+    "noRoundsMonth": "本月没有面试。",
+    "noRoundsYear": "今年没有面试。",
+    "noRoundsDay": "这一天没有面试。",
+    "toBook": "尚待预约",
+    "counts": {
+      "rounds_other": "{{count}} 轮面试",
+      "held_other": "已完成 {{count}} 轮",
+      "awaiting_other": "等待结果 {{count}} 轮",
+      "comingUp_other": "即将进行 {{count}} 轮",
+      "cancelled_other": "已取消 {{count}} 轮",
+      "companies_other": "{{count}} 家公司"
+    },
+    "summary": {
+      "label": "{{period}}概览",
+      "held_other": "已完成",
+      "comingUp_other": "即将进行",
+      "awaiting_other": "等待结果",
+      "cancelled_other": "已取消",
+      "rescheduled_other": "已改期",
+      "companies_other": "家公司",
+      "moreThanMonth_other": "比 {{month}}多 {{count}} 轮",
+      "fewerThanMonth_other": "比 {{month}}少 {{count}} 轮",
+      "sameAsMonth": "与 {{month}}轮数相同",
+      "moreThanYear_other": "比 {{year}}多 {{count}} 轮",
+      "fewerThanYear_other": "比 {{year}}少 {{count}} 轮",
+      "sameAsYear": "与 {{year}}轮数相同"
+    }
   },
   "card": {
     "title": "面试",

@@ -539,8 +539,37 @@ the people there and notes); agencies have the same.
 
 ## Interviews
 
-Every interview round across all applications: what's coming up, then everything earlier
-or cancelled. On each row:
+Every interview round across all applications, as a **Calendar** (what the page opens on) or a
+**List**: the switch at the top right, and the page remembers your choice in this browser.
+`/interviews?view=list` or `?view=calendar` opens one directly.
+
+**Calendar.** **Month** shows one month of dots, Monday first. **Year** shows the twelve months of
+the year, small, each with how many rounds were held, are awaiting their outcome, are coming up, and how many companies (hover
+over a figure for its words). Your choice is remembered. The arrows go back or forward a month or a
+year, and **Today** comes back to now and today's rounds. Going from Year to Month opens the month
+of the day you chose.
+
+A quiet day is a small grey dot. A day with rounds has a bigger dot in its status's colour, the
+same as the status badges: orange if one is awaiting its outcome, else blue if one is coming up, else
+teal if held, light grey if they were all cancelled. With two or more rounds the dot is bigger and
+shows the number. Today has a ring. Hovering over a dot, or a screen reader, says the same in words:
+"Wednesday 12 June, today: 2 rounds, 1 coming up, 1 held". A round with only a deadline (a take-home)
+sits on its deadline's day.
+
+Beside the calendar, a panel lists one day's rounds. Click a dot (or press Enter on it) to choose
+that day; the keyboard moves on to the panel. Until you choose, it shows today if today has rounds,
+else the next day that does. Each round has its name, time,
+company and role, the interviewers and the format, with **Open the application** and the same Done,
+Reschedule and edit buttons as the list.
+
+Above the calendar, the month's or year's figures: rounds held, awaiting outcome (if any), coming
+up, cancelled and rescheduled (if any), and how many companies they're with (not counting cancelled
+rounds). Under them, how the number of rounds that weren't cancelled compares with the month or year
+before. Under the calendar, **Still to book** lists the open rounds with no time yet and those that
+need a new time, with their buttons. On a phone the panel goes under the month, or above the year's
+twelve months.
+
+**List.** What's coming up, then everything earlier or cancelled. On each row:
 
 - **Done** (an open round, booked or not, before or after its time, so a take-home handed in early counts) asks
   for the debrief and the questions asked, then marks it done; **Didn't happen** (once its time has
