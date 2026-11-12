@@ -159,6 +159,17 @@ PR.** PRs that only touch internal files (`CLAUDE.md`, `.claude/settings.json`, 
   that adds or alters a feature, command, setting or data-folder behaviour updates the guide
   in the same PR, checked against the code (no guessed steps).
 
+## Languages: keep them in step
+- **A PR that adds or changes UI text adds or updates every switched-on language's text in the same
+  PR** (`LANGUAGES` in `frontend/src/i18n/language.ts`: zh-CN today, in `frontend/src/locales/zh-CN/`),
+  translated in context (read where the key shows) and following its glossary, `docs/i18n/zh-CN.md`. The
+  catalog test fails on a missing or extra key, but not on changed English under the same key: retranslate
+  that line too.
+- **A PR that changes `README.md` changes `README.zh-CN.md` to match:** the same sections, and a new or
+  retaken screenshot gets its Chinese one under `docs/screenshots/zh-CN/` (`language-menu.png` stays
+  shared). `tests/test_readme_parity.py` checks the sections and images.
+- The guide (`docs/guide/`), `llms.txt`, the CLI and the API docs stay English (`docs/rfc/i18n.md` §14, as `docs/rfc/zh-cn.md` amends it).
+
 ## Code
 - Stack (accepted RFC `docs/rfc/stack.md`): Python 3.12 + uv + FastAPI + SQLite in `src/jat`,
   and Vite + React + TypeScript + Mantine in `frontend/`.
