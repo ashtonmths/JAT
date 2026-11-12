@@ -76,7 +76,9 @@ export const FOOTER_NOTE =
 // The quick start's steps. The install and demo commands match the README and the install guide (which gives
 // the two pnpm steps a line each). "Use it for real" follows the README; the guide splits it between
 // install.md and your-data.md. Keep them in step.
-export type QuickLine = { cmd?: string; out?: string; note?: string };
+// `copy: false` leaves a command out of the new page's Copy, which copies only what runs as pasted, in order;
+// `before` is a comment the new page shows above it.
+export type QuickLine = { cmd?: string; out?: string; note?: string; copy?: false; before?: string };
 export const QUICKSTART: { id: string; label: string; lines: QuickLine[] }[] = [
   {
     id: "install",
@@ -104,18 +106,28 @@ export const QUICKSTART: { id: string; label: string; lines: QuickLine[] }[] = [
     label: "3 · Use it for real",
     lines: [
       { cmd: "mkdir -p ~/job-search-data && git -C ~/job-search-data init" },
-      { cmd: "git -C ~/job-search-data remote add origin <your-private-repo-url>" },
+      {
+        cmd: "git -C ~/job-search-data remote add origin <your-private-repo-url>",
+        copy: false,
+        before: "# optional, for jat push: put your own private repo's URL in",
+      },
       { cmd: "cp .env.example .env" },
       { note: "# then set JAT_DATA_DIR=~/job-search-data in .env" },
       { cmd: "uv run jat init" },
       { cmd: "uv run jat serve" },
       { out: "→ http://127.0.0.1:8770 (keeps running)" },
-      { cmd: "uv run jat push" },
+      { cmd: "uv run jat push", copy: false, before: "# later, from another terminal" },
       { out: "✓ snapshots sent to your private repo" },
     ],
   },
 ];
-// A step's commands, one per line, for its Copy button.
+// A step's commands, one per line, for its Copy button: every command (today's page), or only those that run
+// as pasted (`pasteable`, the new page).
+export const pasteable = (lines: QuickLine[]) =>
+  lines
+    .filter((l) => l.cmd && l.copy !== false)
+    .map((l) => l.cmd)
+    .join("\n");
 export const quickCommands = (lines: QuickLine[]) =>
   lines
     .filter((l) => l.cmd)

@@ -2,7 +2,7 @@
 // The quick start (docs/rfc/website-redesign.md §11, part 5): the words and the two buttons, then a tilted
 // terminal with a glass segmented control over it for the three steps in data.ts. Without JavaScript the three
 // steps show one under another, each with its name; the script turns them into tabs and adds the Copy buttons.
-import { GUIDE, QUICKSTART, quickCommands, REPO } from "../../data";
+import { GUIDE, pasteable, QUICKSTART, REPO } from "../../data";
 
 const steps = QUICKSTART.map((s) => {
   const [n, name] = s.label.split(" · ");
@@ -16,8 +16,9 @@ const steps = QUICKSTART.map((s) => {
     Set up in about ten minutes.
   </h2>
   <p class="sub soft">
-    With uv and Node.js on your Mac or Linux computer, paste a few commands into the Terminal, once. After
-    that it's a web page in your browser. Windows is next on the roadmap.
+    On a Mac or Linux computer with git, uv (it fetches Python for you) and Node.js 22.12+ with pnpm, paste a
+    few commands into the Terminal, once. After that it's a web page in your browser. Windows is next on the
+    roadmap.
   </p>
   <div class="ctas">
     <a class="pill pill-plum" href={`${GUIDE}install.md`}>
@@ -60,18 +61,21 @@ const steps = QUICKSTART.map((s) => {
       {steps.map((s) => (
         <div class="pane" id={`qs-${s.id}`} role="tabpanel" aria-labelledby={`qs-tab-${s.id}`} data-pane>
           <h3 class="name">{s.label}</h3>
-          <button type="button" class="copy" data-copy={quickCommands(s.lines)} hidden>
+          <button type="button" class="copy" data-copy={pasteable(s.lines)} hidden>
             Copy<span class="sr-only"> the {s.name.toLowerCase()} commands</span>
           </button>
           <div class="pre">
             {s.lines.map((l) =>
               l.cmd ? (
-                <div class="line">
-                  <span class="ps" aria-hidden="true">
-                    ${" "}
-                  </span>
-                  {l.cmd}
-                </div>
+                <>
+                  {l.before && <div class="line note">{l.before}</div>}
+                  <div class="line">
+                    <span class="ps" aria-hidden="true">
+                      ${" "}
+                    </span>
+                    {l.cmd}
+                  </div>
+                </>
               ) : (
                 <div class={`line ${l.note ? "note" : "out"}`}>{l.note ?? l.out}</div>
               ),
@@ -81,6 +85,7 @@ const steps = QUICKSTART.map((s) => {
       ))}
     </div>
   </div>
+  <p class="sr-only" aria-live="polite" data-status></p>
   <p class="more soft">
     The <a href={`${GUIDE}README.md`}>user guide</a> covers the rest: where your data lives, backups and
     restoring, a second computer, your own stages and every command.
@@ -110,13 +115,24 @@ const steps = QUICKSTART.map((s) => {
         select((to + tabs.length) % tabs.length, true);
       });
     });
+    // The result is said in a polite live region as well as on the button.
+    const status = qs.querySelector<HTMLElement>("[data-status]")!;
     for (const b of qs.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
       if (!navigator.clipboard) break;
       b.hidden = false;
       b.addEventListener("click", async () => {
-        await navigator.clipboard.writeText(b.dataset.copy!);
-        b.firstChild!.textContent = "Copied";
-        setTimeout(() => (b.firstChild!.textContent = "Copy"), 1600);
+        let ok = true;
+        try {
+          await navigator.clipboard.writeText(b.dataset.copy!);
+        } catch {
+          ok = false;
+        }
+        b.firstChild!.textContent = ok ? "Copied" : "Couldn't copy";
+        status.textContent = ok ? "Copied the commands." : "Couldn't copy the commands.";
+        setTimeout(() => {
+          b.firstChild!.textContent = "Copy";
+          status.textContent = "";
+        }, 1600);
       });
     }
     seg.hidden = false;
