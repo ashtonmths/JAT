@@ -1,5 +1,6 @@
 // Copies what the site serves from the rest of the repo, so there's one copy of each: the structured data's
-// screenshot, the social card, the favicon and llms.txt. (The page's own pictures are in src/assets.) Everything it writes is git-ignored.
+// screenshot, the social card, the favicon and llms.txt. (The page's own pictures are in src/assets.)
+// Everything it writes is git-ignored.
 // `pnpm dev` and `pnpm build` run it first; `pnpm dev` also re-runs it when a source changes.
 import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:fs";
 import { spawn } from "node:child_process";

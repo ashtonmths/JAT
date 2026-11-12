@@ -45,7 +45,7 @@ export const STATS = [
 
 // Chinese words in English text get lang="zh-CN", so screen readers say them in Chinese. Give it
 // escaped text only, never markup: it would wrap Chinese inside an attribute too.
-export const markZh = (text: string) => text.replace(/[\u4e00-\u9fff]+/g, '<span lang="zh-CN">$&</span>');
+const markZh = (text: string) => text.replace(/[\u4e00-\u9fff]+/g, '<span lang="zh-CN">$&</span>');
 
 // FAQ answers may hold `code` and [links](https://…): `faqHtml` shows them (both pages' FAQ), and `plain`
 // strips them for the structured data.

@@ -257,8 +257,21 @@ reach (a dialog the demo data doesn't have) in a test.
 ## The website
 
 The site at <https://waddington.github.io/job-application-tracker/> lives in `website/`: one
-landing page that links to the guide here on GitHub. Its pictures of the app are light-mode captures
-of the demo data in `website/src/assets/`; retake them from a demo server when the app's look changes.
+landing page that links to the guide here on GitHub. Its pictures of the app are light-mode captures of
+the demo data in `website/src/assets/` (`hero/`, `demo/` and `story/`); retake them when the app's look
+changes. Only ever capture the made-up demo data, never a real tracker:
+
+```bash
+uv run python scripts/seed_demo.py /tmp/jat-shots      # a new or empty folder
+uv run jat --data-dir /tmp/jat-shots serve --port 8894 # any free port but 8770
+uv run --with playwright python tools/dev/shot.py http://127.0.0.1:8894 /tmp/shots/ \
+  /@light "/applications?view=board@light" /insights@light /recruiters@light /interviews@light \
+  /offers@light /notes@light
+```
+
+`shot.py` captures at 1440 × 900 (add `@full` for a whole page, as Today and a role's page need for the
+hero's scrolling demo). Copy each capture over the file of the same page in `website/src/assets/`, keeping
+its name; the 简体中文 Today in `hero/` is the same with the browser set to Chinese.
 
 ```bash
 pnpm --dir website install

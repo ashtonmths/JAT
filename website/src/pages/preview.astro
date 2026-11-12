@@ -12,6 +12,10 @@ const home = import.meta.env.BASE_URL;
     <meta name="robots" content="noindex" />
     <meta http-equiv="refresh" content={`0; url=${home}`} />
     <link rel="canonical" href={SITE_URL} />
+    <script is:inline define:vars={{ home }}>
+      // Keep the #section a link may carry; the meta refresh above is the fallback without JavaScript.
+      location.replace(home + location.hash);
+    </script>
     <title>Job Application Tracker</title>
   </head>
   <body>
