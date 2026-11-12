@@ -50,3 +50,33 @@ def test_check_links_finds_missing_files_and_anchors(tmp_path: Path):
     a.write_text("[ok](b.md#getting-started-quickly) [gone](c.md) [bad](b.md#nope) [web](https://example.com)\n")
     assert check_links.slug("Getting started, quickly") == "getting-started-quickly"
     assert check_links.broken(a) == [f"{a}: missing file c.md", f"{a}: missing anchor b.md#nope"]
+
+
+UV_LOCK = (
+    '[[package]]\nname = "anyio"\nversion = "1.24.7"\n\n'
+    '[[package]]\nname = "job-application-tracker"\nversion = "1.24.7"\nsource = { editable = "." }\n'
+)
+
+
+def test_version_only_accepts_just_the_bump_line():
+    from tools.dev import version_only
+
+    want = version_only.expected("uv.lock", UV_LOCK, "1.24.7", "1.24.8")
+    assert want is not None
+    assert 'name = "anyio"\nversion = "1.24.7"' in want  # a dependency sharing the number stays as it was
+    assert 'name = "job-application-tracker"\nversion = "1.24.8"' in want
+    init = '"""jat."""\n\n__version__ = "1.24.7"\n'
+    assert version_only.expected("src/jat/__init__.py", init, "1.24.7", "1.24.8") == init.replace("1.24.7", "1.24.8")
+    pkg = '{\n  "name": "jat",\n  "version": "1.24.7",\n  "dependencies": { "x": "1.24.7" }\n}\n'
+    out = version_only.expected("frontend/package.json", pkg, "1.24.7", "1.24.8")
+    assert out == pkg.replace('"version": "1.24.7"', '"version": "1.24.8"')
+
+
+def test_version_only_refuses_unknown_files_and_a_missing_or_doubled_line():
+    from tools.dev import version_only
+
+    assert version_only.expected("frontend/src/App.tsx", "x", "1.0.0", "1.0.1") is None
+    assert version_only.expected("pyproject.toml", 'name = "x"\n', "1.0.0", "1.0.1") is None
+    doubled = 'version = "1.0.0"\nversion = "1.0.0"\n'
+    assert version_only.expected("pyproject.toml", doubled, "1.0.0", "1.0.1") is None
+    assert version_only.expected("frontend/src/api/schema.d.ts", "types", "1.0.0", "1.0.1") == "types"

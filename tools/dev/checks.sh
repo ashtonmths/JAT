@@ -13,8 +13,9 @@ clean_env
 if [ "$1" = "--website" ]; then
   # Only for a PR that changes the website and nothing the app is built from (Kai, 2026-11-12). Refuse
   # otherwise (fail closed): every changed file, committed or not, must be under website/, docs/, the
-  # changelog, CLAUDE.md or maintainer tooling; a version-bump file must equal main's copy with only the old
-  # version swapped for the new one.
+  # changelog, CLAUDE.md or maintainer tooling; a version-bump file must equal main's copy with only its own
+  # version line changed (tools/dev/version_only.py), be a regular file and keep its mode.
+  command -v python3 >/dev/null || { echo "--website: needs python3" >&2; exit 2; }
   git fetch -q origin main || echo "--website: couldn't fetch origin/main; checking against the last fetched one"
   base=$(git merge-base HEAD origin/main) && [ -n "$base" ] || { echo "--website: no merge base with origin/main" >&2; exit 2; }
   ver() { sed -n 's/^__version__ = "\(.*\)"$/\1/p'; }
@@ -31,10 +32,11 @@ if [ "$1" = "--website" ]; then
   while IFS= read -r -d '' f; do
     if [[ "$f" =~ $ok ]]; then continue; fi
     if [[ "$f" =~ $bump ]]; then
-      git show "$base:$f" 2>/dev/null |
-        python3 -c 'import sys; o, n = sys.argv[1:]; sys.stdout.write(sys.stdin.read().replace(o, n))' "$old" "$new" 2>/dev/null |
-        cmp -s - "$f" && continue
-      echo "--website: $f changes more than its version ($old → $new)"
+      if [ -f "$f" ] && [ ! -L "$f" ] && ! git diff --summary "$base" -- "$f" | grep -q "mode change" &&
+        git show "$base:$f" 2>/dev/null | python3 "$DEV/version_only.py" "$f" "$old" "$new"; then
+        continue
+      fi
+      echo "--website: $f changes more than its version line ($old → $new)"
     else
       echo "--website: $f isn't a website-only file"
     fi
