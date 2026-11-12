@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.3 (2026-11-12)
+
+- Emptying a person's Agency or Company box and saving now takes them off it (#331).
+
 ## 1.24.2 (2026-11-12)
 
 - Deleting a call asks first (#330).
