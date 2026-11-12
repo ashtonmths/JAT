@@ -36,7 +36,7 @@ test("emptying the box takes the choice off, as the X does, and leaving it keeps
   const onChange = vi.fn();
   render(<Box onChange={onChange} />);
   expect(box()).toHaveValue("Northwind Talent");
-  fireEvent.focus(box());
+  box().focus();
   fireEvent.input(box(), { target: { value: "" } });
   expect(onChange).toHaveBeenCalledWith(null);
   fireEvent.blur(box());
@@ -46,6 +46,7 @@ test("emptying the box takes the choice off, as the X does, and leaving it keeps
 test("a box holding only spaces counts as emptied", () => {
   const onChange = vi.fn();
   render(<Box onChange={onChange} />);
+  box().focus();
   fireEvent.input(box(), { target: { value: "  " } });
   expect(onChange).toHaveBeenCalledWith(null);
 });
@@ -53,6 +54,7 @@ test("a box holding only spaces counts as emptied", () => {
 test("changing the text without emptying it leaves the choice alone", () => {
   const onChange = vi.fn();
   render(<Box onChange={onChange} />);
+  box().focus();
   fireEvent.input(box(), { target: { value: "Northwind" } });
   expect(onChange).not.toHaveBeenCalled();
 });
@@ -60,7 +62,16 @@ test("changing the text without emptying it leaves the choice alone", () => {
 test("an empty box with nothing chosen reports nothing", () => {
   const onChange = vi.fn();
   render(<Box onChange={onChange} start={null} />);
+  box().focus();
   fireEvent.input(box(), { target: { value: "N" } });
+  fireEvent.input(box(), { target: { value: "" } });
+  expect(onChange).not.toHaveBeenCalled();
+});
+
+test("text written to the box while it hasn't focus (autofill, an extension) keeps the choice", () => {
+  const onChange = vi.fn();
+  render(<Box onChange={onChange} />);
+  expect(document.activeElement).not.toBe(box());
   fireEvent.input(box(), { target: { value: "" } });
   expect(onChange).not.toHaveBeenCalled();
 });

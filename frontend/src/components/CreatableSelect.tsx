@@ -57,6 +57,8 @@ export function CreatableSelect({
       onInput={(event) => {
         // Emptying the box by hand takes the choice off, as the X does; otherwise leaving the box
         // would put the old name back and save it. (Mantine's own resets of the text don't come here.)
+        // Only while it has focus: autofill or an extension writing to the box mustn't unlink it.
+        if (document.activeElement !== event.currentTarget) return props.onInput?.(event);
         if (value !== null && !event.currentTarget.value.trim()) onChange(null);
         props.onInput?.(event);
       }}
