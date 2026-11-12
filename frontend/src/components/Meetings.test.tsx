@@ -140,6 +140,32 @@ describe("calls and meetings", () => {
     );
   });
 
+  // fix-call-delete-no-confirm: Delete in a call's menu asks first, and No sends nothing.
+  it("asks before deleting a call", async () => {
+    const calls = mockApi({
+      ...PERSON,
+      "GET /api/v1/meetings": [meeting({ id: "m1" })],
+      "DELETE /api/v1/meetings/m1": {},
+    });
+    const confirm = vi.fn(() => false);
+    vi.stubGlobal("confirm", confirm);
+    renderAt("/people/c1");
+    const more = await screen.findByRole("button", {
+      name: "More for Call with Alex Morgan: Market catch-up",
+    });
+    fireEvent.click(more);
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Delete", hidden: true }));
+    expect(confirm).toHaveBeenCalledWith("Delete this call and its notes? Roles added from it stay.");
+    expect(calls.some((c) => c.method === "DELETE")).toBe(false);
+
+    confirm.mockReturnValue(true);
+    fireEvent.click(more);
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Delete", hidden: true }));
+    await waitFor(() =>
+      expect(calls.some((c) => c.method === "DELETE" && c.path === "/api/v1/meetings/m1")).toBe(true),
+    );
+  });
+
   it("shows calls on Today", async () => {
     mockApi({
       "/api/v1/workflow": WORKFLOW,

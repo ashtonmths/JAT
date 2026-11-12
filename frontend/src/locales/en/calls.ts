@@ -40,6 +40,8 @@ export default {
   },
   moreFor: "More for {{label}}",
   edit: "Edit",
+  // Asked before a call is deleted from its menu.
+  deleteConfirm: "Delete this call and its notes? Roles added from it stay.",
   card: {
     title: "Calls and meetings",
     book: "Book a call",

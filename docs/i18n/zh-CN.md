@@ -114,6 +114,7 @@ open an issue or a pull request.*
 | format: Video call / Phone / In person / Take-home | 视频通话 / 电话 / 当面 / 离线作业 | |
 | call | 通话 | “Calls and meetings”译为“通话与会面”，“Book a call”译为“约通话”，“Log call”译为“记录通话” |
 | meeting | 会面 | |
+| a call's notes (its "How did it go?" text) | 备注 | 不是“笔记”（那是 Markdown 笔记功能）。“Delete this call and its notes?”译为“删除这次通话及其备注？” |
 | Join link / Meeting link | 入会链接 / 会议链接 | |
 | booked / not booked yet | 已预约 / 尚未预约 | |
 | Happened / Didn't happen | 已进行 / 未进行 | |
