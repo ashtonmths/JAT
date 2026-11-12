@@ -24,11 +24,14 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
     <HeroCards />
 
     <div class="copy" data-copy>
-      <p class="eyebrow">Job application tracker · local-first</p>
-      <h1 class="display" id="hero-h">
-        Your job search,
-        <br />
-        kept on your machine.
+      <!-- The eyebrow sits inside the h1 so the main heading carries what people search for. -->
+      <h1 class="hero-h" id="hero-h">
+        <span class="eyebrow">Job application tracker · local-first</span>{" "}
+        <span class="display">
+          Your job search,
+          <br />
+          kept on your machine.
+        </span>
       </h1>
       <p class="sub soft">
         Every application, recruiter, interview and offer in one place, and a clear list of who to chase
@@ -280,7 +283,13 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
     transform: translateY(-50%);
     width: min(580px, 42vw);
   }
+  /* The h1 holds the eyebrow and the headline; it adds no look of its own. */
+  .hero-h {
+    margin: 0;
+    font: inherit;
+  }
   .copy .display {
+    display: block;
     font-size: clamp(40px, 4.4vw, 64px);
   }
   .sub {
