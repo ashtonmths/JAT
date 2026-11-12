@@ -1,13 +1,36 @@
 #!/bin/bash
 # Every check CLAUDE.md (Git) lists, on the current commit, printing PASS or FAIL for each.
-# usage: tools/dev/checks.sh [--no-e2e]   (from the checkout's root; --no-e2e when every changed
-# file is on CLAUDE.md's browser-test skip list). Takes about 10 minutes with e2e: run it in the background.
+# usage: tools/dev/checks.sh [--no-e2e | --website]   (from the checkout's root; --no-e2e when every changed
+# file is on CLAUDE.md's browser-test skip list; --website for a website-only PR, see CLAUDE.md). Takes about
+# 10 minutes with e2e: run it in the background.
 source "$(dirname "$0")/env.sh"
 case "$*" in
-  "" | --no-e2e) ;;
-  *) echo "usage: checks.sh [--no-e2e]" >&2; exit 2 ;;
+  "" | --no-e2e | --website) ;;
+  *) echo "usage: checks.sh [--no-e2e | --website]" >&2; exit 2 ;;
 esac
 need_root
+if [ "$1" = "--website" ]; then
+  # Only for a PR that changes the website and nothing the app is built from (Kai, 2026-11-12). Refuse
+  # otherwise: every changed file must be website, docs or maintainer tooling, and the version-bump files may
+  # change only their version lines.
+  git fetch -q origin main
+  base=$(git merge-base HEAD origin/main)
+  bump='^(pyproject\.toml|uv\.lock|src/jat/__init__\.py|frontend/package\.json|frontend/openapi\.json|frontend/src/api/schema\.d\.ts)$'
+  ok='^(website/|docs/|CHANGELOG\.md$|CLAUDE\.md$|tools/dev/|tests/dev/|tools/pm/|tests/pm/)'
+  bad=0
+  while read -r f; do
+    if [[ "$f" =~ $ok ]]; then continue; fi
+    if [[ "$f" =~ $bump ]]; then
+      other=$(git diff "$base" -- "$f" | grep -E '^[-+][^-+]' | grep -viE 'version|[0-9]+\.[0-9]+\.[0-9]+')
+      [ -z "$other" ] && continue
+      echo "--website: $f changes more than its version"
+    else
+      echo "--website: $f isn't a website-only file"
+    fi
+    bad=1
+  done < <(git diff --name-only "$base"; git ls-files --others --exclude-standard)
+  [ $bad = 0 ] || { echo "Run the full checks instead." >&2; exit 2; }
+fi
 clean_env
 # One heavy run at a time across worktrees, at the lowest CPU and disk priority.
 # Without flock or ionice (macOS), it runs anyway: pnpm test and pnpm e2e still take their own lock.
@@ -19,7 +42,6 @@ if [ -z "$HEAVY_TESTS_LOCKED" ]; then
   exec "${wrap[@]}" bash "$0" "$@"
 fi
 echo "commit $(git rev-parse --short HEAD), dirty files: $(git status --short | wc -l)"
-pnpm --dir frontend install --frozen-lockfile --silent
 fail=0
 check() {
   local name=$1 out
@@ -32,6 +54,18 @@ check() {
     fail=1
   fi
 }
+if [ "$1" = "--website" ]; then
+  pnpm --dir website install --frozen-lockfile --silent
+  check pm-and-dev-tests uv run pytest -q tests/pm tests/dev
+  check ruff uv run ruff check tools tests/dev tests/pm
+  check website-format pnpm --dir website format:check
+  check website-check pnpm --dir website check
+  check website-build pnpm --dir website build
+  echo "SKIP pytest, frontend checks, unit and e2e (--website: no app file changed)"
+  echo "ALL DONE fail=$fail"
+  exit $fail
+fi
+pnpm --dir frontend install --frozen-lockfile --silent
 check pytest uv run pytest -q
 check ruff uv run ruff check src tests scripts tools
 check format pnpm --dir frontend format:check
