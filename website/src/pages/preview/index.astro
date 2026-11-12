@@ -8,10 +8,7 @@ import Nav from "../../components/site/Nav.astro";
 import Footer from "../../components/site/Footer.astro";
 import Hero from "../../components/site/Hero.astro";
 import Story from "../../components/site/Story.astro";
-import Languages from "../../components/site/Languages.astro";
-import Quickstart from "../../components/site/Quickstart.astro";
-import Faq from "../../components/site/Faq.astro";
-import { STATS } from "../../data";
+import { FAQ, GUIDE, MARQUEE, plain, README_ZH, REPO, STATS } from "../../data";
 ---
 
 <Base noindex>
@@ -76,9 +73,80 @@ import { STATS } from "../../data";
     </section>
 
     <Story />
-    <Languages />
-    <Quickstart />
-    <Faq />
+
+    <section class="block" id="languages" data-tint="apricot" aria-labelledby="lang-h">
+      <div class="wrap two">
+        <p class="eyebrow">
+          English and <span lang="zh-CN">简体中文</span>
+        </p>
+        <div>
+          <h2 class="lead" id="lang-h">
+            The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows
+            your browser, and you can switch in the header. The README is{" "}
+            <a href={README_ZH}>
+              in <span lang="zh-CN">简体中文</span>
+            </a>{" "}
+            too.
+          </h2>
+          <ul class="chips" aria-label="Also in the box">
+            {MARQUEE.flat().map((c) => (
+              <li class="glass">{c}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="block get" id="quickstart" data-tint="apricot" aria-labelledby="qs-h">
+      <div class="wrap">
+        <p class="eyebrow">Quick start · open source, Apache-2.0</p>
+        <h2 class="display" id="qs-h">
+          Set up in about ten minutes.
+        </h2>
+        <p class="sub soft">
+          For now there's no installer. With uv and Node.js on your computer, you copy and paste a few
+          commands into the Terminal app, once; the <a href={`${GUIDE}install.md`}>install guide</a> lists
+          what you need and where to get it. After that it's a web page in your browser. A one-command install
+          and a double-click app are on the way.
+        </p>
+        <p class="soft">
+          <b>Mac or Linux.</b> Windows isn't supported yet; it's next on the roadmap.
+        </p>
+        <div class="ctas">
+          <a class="pill pill-plum" href={`${GUIDE}install.md`}>
+            Read the install guide{" "}
+            <span class="arrow" aria-hidden="true">
+              →
+            </span>
+          </a>
+          <a class="pill glass" href={REPO}>
+            View on GitHub{" "}
+            <span class="arrow" aria-hidden="true">
+              ↗
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="faq" data-tint="apricot" aria-labelledby="faq-h">
+      <div class="wrap two">
+        <div>
+          <p class="eyebrow">FAQ</p>
+          <h2 class="h2" id="faq-h">
+            Questions, answered.
+          </h2>
+        </div>
+        <div class="faq">
+          {FAQ.map((f) => (
+            <details name="faq">
+              <summary>{f.q}</summary>
+              <p>{plain(f.a)}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
   </main>
   <Footer />
 </Base>
@@ -98,6 +166,17 @@ import { STATS } from "../../data";
   }
   .two > .eyebrow {
     margin-top: 0.9em;
+  }
+  .sub {
+    max-width: 36em;
+    margin: 22px 0 30px;
+    font-size: 18px;
+    font-weight: 300;
+  }
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
   }
   .block {
     padding: 140px 0;
@@ -165,6 +244,32 @@ import { STATS } from "../../data";
   .centre {
     padding: 30vh 20px;
     text-align: center;
+  }
+  .chips {
+    list-style: none;
+    padding: 0;
+    margin: 48px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chips li {
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+  }
+  .faq details {
+    border-top: 1px solid var(--ink-faint);
+    padding: 18px 0;
+  }
+  .faq summary {
+    cursor: pointer;
+    font-size: 19px;
+  }
+  .faq p {
+    margin: 12px 0 0;
+    font-weight: 300;
+    color: var(--ink-soft);
   }
   @media (max-width: 760px) {
     .two,

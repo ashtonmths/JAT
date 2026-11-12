@@ -2,7 +2,7 @@
 // The closing panel: a rounded plum panel inset from the page edges, with the links and small print of
 // today's footer.
 import Logo from "../Logo.astro";
-import { FOOTER_NOTE, GUIDE, REPO } from "../../data";
+import { GUIDE, REPO } from "../../data";
 
 const year = new Date().getFullYear();
 const columns = [
@@ -64,7 +64,10 @@ const columns = [
       <span>
         © {year} Kai Waddington · <a href={`${REPO}/blob/main/LICENSE`}>Apache-2.0</a>
       </span>
-      <span>{FOOTER_NOTE}</span>
+      <span>
+        Screenshots show made-up demo data. Hosted on GitHub Pages; this site adds no cookies, analytics or
+        trackers.
+      </span>
     </p>
   </div>
 </footer>
