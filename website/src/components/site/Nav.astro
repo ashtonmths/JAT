@@ -2,6 +2,7 @@
 // The fixed chrome: the logo in a glass bubble, the section links as a glass pill group, GitHub and the main
 // call to action on the right, and a small glass back-to-top button. Over the page, so it takes its tint.
 import Logo from "../Logo.astro";
+import Stars from "./Stars.astro";
 import { REPO } from "../../data";
 
 const links = [
@@ -23,7 +24,7 @@ const links = [
   </nav>
   <div class="right">
     <a class="pill glass github" href={REPO}>
-      GitHub{" "}
+      GitHub <Stars />{" "}
       <span class="arrow" aria-hidden="true">
         ↗
       </span>

@@ -95,6 +95,8 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
   3D browser whose app demo plays at twice the concept's speed. No dot or halftone textures (too close to the
   reference site, Kai: "too close to a straight rip off"); no long scroll-jacked stretches; the old site's anchors
   stay. The website is English only.
+- The GitHub links show the star count, live (Kai, 2026-11-12): baked in at build, refreshed by the visitor's browser
+  from `api.github.com` (GitHub again, which already hosts the site); no cookies, credentials or analytics.
 
 ## Loading states
 

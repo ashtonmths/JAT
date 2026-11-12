@@ -1,0 +1,43 @@
+---
+// The GitHub star count inside a GitHub link: "★ 14", read as "14 stars". The number comes from the build
+// (src/stars.ts) and the browser refreshes it (scripts/stars.ts, loaded
+// by layouts/Base.astro: a script here would land inside the link). With no number from the build it stays hidden
+// until the browser has one.
+import { buildStars, formatStars } from "../../stars";
+
+const n = await buildStars();
+---
+
+<span class="stars" data-stars hidden={n === null}>
+  <span class="star" aria-hidden="true">
+    ★
+  </span>
+  <span data-stars-n>{n === null ? "" : formatStars(n)}</span> <span class="sr">stars</span>
+</span>
+
+<style>
+  .stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgb(42 30 63 / 0.07);
+    font-size: 0.86em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stars[hidden] {
+    display: none;
+  }
+  .star {
+    color: #c98a1b;
+  }
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>
