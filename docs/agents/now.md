@@ -5,7 +5,7 @@ trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and
 
 ## State
 
-- Released up to **v1.24.0**. Open PRs: #327 (the PM dashboard fix below, if not merged yet) and this refresh.
+- Released up to **v1.24.0**. Open PRs: #327 (the PM dashboard fix below) and #328 (this refresh), until they merge.
   Branches: `main`, plus `worktree-pr-screenshots` on GitHub (shelved work, kept on purpose: see `pr-screenshots`).
 - **Interviews calendar** (#325 helpers, #317 view, 1.24.0): Calendar · List, Month · Year dot views, a summary, a side
   panel of the chosen day's rounds. Plan in `docs/rfc/interviews-calendar.md`. Kai picked the design from concepts on a
@@ -68,7 +68,7 @@ in the Backlog), this refresh.
 
 ## Next
 
-Nothing Kai asked for is unfinished (once #327 and this refresh merge). Report and wait. Likely next, when Kai says:
+Nothing Kai asked for is unfinished (once #327 and #328 merge). Report and wait. Likely next, when Kai says:
 
 - **Bugs:** 60 open (none high, 12 medium, 48 low). New this round, all in the backlog: `fix-reschedule-closed-drops-who`
   (low), `fix-role-form-forces-gbp` (low now: the currency field and labels, needs Kai's wording),
