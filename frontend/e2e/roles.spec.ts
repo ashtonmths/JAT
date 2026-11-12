@@ -519,6 +519,18 @@ test.describe("editing a role", () => {
       .toEqual([null, null, null]);
   });
 
+  test("emptying the Company box asks for a company, and saves nothing", async ({ page, request }) => {
+    const made = await seedRole(request, "Edit No Company");
+    await openRoles(page);
+    const dialog = await edit(page, "Edit No Company");
+    await dialog.getByLabel("Company").first().fill("");
+    await dialog.getByText("A role you might go for.").click(); // its list covers Save
+    await dialog.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(dialog.getByText("Which company? Type a new name to add it.")).toBeVisible();
+    await expect(dialog.getByLabel("Company").first()).toHaveValue("");
+    expect((await role(request, "Edit No Company")).company_id).toBe(made.company_id);
+  });
+
   test("renaming keeps its identity", async ({ page, request }) => {
     const made = await seedRole(request, "Edit Rename");
     await openRoles(page);

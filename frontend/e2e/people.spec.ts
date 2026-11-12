@@ -729,14 +729,35 @@ test.describe("editing a person", () => {
     expect((await person(request, "Cross Person")).agency_id).toBeNull();
   });
 
-  // KNOWN BUG (fix-emptied-agency-kept on the roadmap): expected to fail until it is fixed.
-  test.fail("emptying the Agency box takes the agency off", async ({ page, request }) => {
+  test("emptying the Agency box takes the agency off", async ({ page, request }) => {
     const agency = await create(request, "agencies", { name: "Emptied Agency" });
     const made = await create(request, "contacts", { name: "Emptied Person", agency_id: agency.id });
     const dialog = await editFromPage(page, made.id, "Emptied Person");
     await dialog.getByLabel("Agency").first().fill("");
     await save(dialog);
     expect((await person(request, "Emptied Person")).agency_id).toBeNull();
+  });
+
+  test("Enter in the emptied Agency box takes the agency off too", async ({ page, request }) => {
+    const agency = await create(request, "agencies", { name: "Emptied Enter Agency" });
+    const made = await create(request, "contacts", { name: "Emptied Enter Person", agency_id: agency.id });
+    const dialog = await editFromPage(page, made.id, "Emptied Enter Person");
+    await dialog.getByLabel("Agency").first().fill("");
+    await page.keyboard.press("Enter");
+    await expect(dialog).toBeHidden();
+    expect((await person(request, "Emptied Enter Person")).agency_id).toBeNull();
+  });
+
+  test("emptying the Agency box and typing a new one keeps the new one", async ({ page, request }) => {
+    const agency = await create(request, "agencies", { name: "Emptied Old Agency" });
+    const made = await create(request, "contacts", { name: "Emptied Retyped", agency_id: agency.id });
+    const dialog = await editFromPage(page, made.id, "Emptied Retyped");
+    await dialog.getByLabel("Agency").first().fill("");
+    await dialog.getByLabel("Agency").first().fill("Emptied New Agency");
+    await save(dialog);
+    const [added] = await agencies(request, "Emptied New Agency");
+    expect(added).toBeDefined();
+    expect(await person(request, "Emptied Retyped")).toMatchObject({ agency_id: added?.id });
   });
 
   test("an agency made inside the dialog stays after Cancel, but they aren't at it", async ({
@@ -1277,8 +1298,7 @@ test.describe("the Company box, as the Agency box", () => {
     expect(await person(request, "Typed Company Person")).toMatchObject({ company_id: company?.id });
   });
 
-  // KNOWN BUG (fix-emptied-agency-kept on the roadmap): expected to fail until it is fixed.
-  test.fail("emptying the Company box takes the company off", async ({ page, request }) => {
+  test("emptying the Company box takes the company off", async ({ page, request }) => {
     const company = await create(request, "companies", { name: "Emptied Co" });
     const made = await create(request, "contacts", { name: "Emptied Co Person", company_id: company.id });
     const dialog = await editFromPage(page, made.id, "Emptied Co Person");
