@@ -1,6 +1,6 @@
 ---
 import Logo from "./Logo.astro";
-import { GUIDE, REPO } from "../data";
+import { FOOTER_NOTE, GUIDE, REPO } from "../data";
 
 const year = new Date().getFullYear();
 ---
@@ -63,8 +63,7 @@ const year = new Date().getFullYear();
       © {year} Kai Waddington · <a href={`${REPO}/blob/main/LICENSE`}>Apache-2.0</a>
     </span>
     <span>
-      Screenshots show made-up demo data. Hosted on GitHub Pages; this site adds no cookies, analytics or
-      trackers.
+      {FOOTER_NOTE}
     </span>
   </div>
 </footer>
