@@ -1,0 +1,326 @@
+---
+// The quick start (docs/rfc/website-redesign.md §11, part 5): the words and the two buttons, then a tilted
+// terminal with a glass segmented control over it for the three steps in data.ts. Without JavaScript the three
+// steps show one under another, each with its name; the script turns them into tabs and adds the Copy buttons.
+import { GUIDE, QUICKSTART, quickCommands, REPO } from "../../data";
+
+const steps = QUICKSTART.map((s) => {
+  const [n, name] = s.label.split(" · ");
+  return { ...s, n, name };
+});
+---
+
+<section class="get" id="quickstart" data-tint="apricot" data-quickstart aria-labelledby="qs-h">
+  <p class="eyebrow">Quick start · open source, Apache-2.0</p>
+  <h2 class="display" id="qs-h">
+    Set up in about ten minutes.
+  </h2>
+  <p class="sub soft">
+    With uv and Node.js on your Mac or Linux computer, paste a few commands into the Terminal, once. After
+    that it's a web page in your browser. Windows is next on the roadmap.
+  </p>
+  <div class="ctas">
+    <a class="pill pill-plum" href={`${GUIDE}install.md`}>
+      Read the install guide{" "}
+      <span class="arrow" aria-hidden="true">
+        →
+      </span>
+    </a>
+    <a class="pill glass" href={REPO}>
+      View on GitHub{" "}
+      <span class="arrow" aria-hidden="true">
+        ↗
+      </span>
+    </a>
+  </div>
+
+  <div class="stage">
+    <div class="seg glass" role="tablist" aria-label="Quick start steps" data-seg hidden>
+      {steps.map((s, i) => (
+        <button
+          type="button"
+          role="tab"
+          id={`qs-tab-${s.id}`}
+          aria-controls={`qs-${s.id}`}
+          aria-selected={i === 0 ? "true" : "false"}
+          tabindex={i === 0 ? 0 : -1}
+        >
+          <span class="num">{s.n} · </span>
+          {s.name}
+        </button>
+      ))}
+    </div>
+    <div class="term">
+      <div class="bar" aria-hidden="true">
+        <i></i>
+        <i></i>
+        <i></i>
+        <span>Terminal</span>
+      </div>
+      {steps.map((s) => (
+        <div class="pane" id={`qs-${s.id}`} role="tabpanel" aria-labelledby={`qs-tab-${s.id}`} data-pane>
+          <h3 class="name">{s.label}</h3>
+          <button type="button" class="copy" data-copy={quickCommands(s.lines)} hidden>
+            Copy<span class="sr-only"> the {s.name.toLowerCase()} commands</span>
+          </button>
+          <div class="pre">
+            {s.lines.map((l) =>
+              l.cmd ? (
+                <div class="line">
+                  <span class="ps" aria-hidden="true">
+                    ${" "}
+                  </span>
+                  {l.cmd}
+                </div>
+              ) : (
+                <div class={`line ${l.note ? "note" : "out"}`}>{l.note ?? l.out}</div>
+              ),
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+  <p class="more soft">
+    The <a href={`${GUIDE}README.md`}>user guide</a> covers the rest: where your data lives, backups and
+    restoring, a second computer, your own stages and every command.
+  </p>
+</section>
+
+<script>
+  const qs = document.querySelector<HTMLElement>("[data-quickstart]");
+  if (qs) {
+    const seg = qs.querySelector<HTMLElement>("[data-seg]")!;
+    const tabs = [...seg.querySelectorAll<HTMLButtonElement>("[role=tab]")];
+    const panes = [...qs.querySelectorAll<HTMLElement>("[data-pane]")];
+    function select(i: number, focus = false) {
+      tabs.forEach((t, k) => {
+        t.setAttribute("aria-selected", String(k === i));
+        t.tabIndex = k === i ? 0 : -1;
+      });
+      panes.forEach((p, k) => (p.hidden = k !== i));
+      if (focus) tabs[i].focus();
+    }
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => select(i));
+      t.addEventListener("keydown", (e) => {
+        const to = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+        if (to === undefined) return;
+        e.preventDefault();
+        select((to + tabs.length) % tabs.length, true);
+      });
+    });
+    for (const b of qs.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+      if (!navigator.clipboard) break;
+      b.hidden = false;
+      b.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(b.dataset.copy!);
+        b.firstChild!.textContent = "Copied";
+        setTimeout(() => (b.firstChild!.textContent = "Copy"), 1600);
+      });
+    }
+    seg.hidden = false;
+    qs.classList.add("tabbed");
+    select(0);
+  }
+</script>
+
+<style>
+  .get {
+    padding: 120px 20px 160px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .sub {
+    max-width: 34em;
+    margin: 24px 0 34px;
+    font-weight: 300;
+    font-size: 18px;
+  }
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .stage {
+    position: relative;
+    margin-top: 90px;
+    width: min(760px, 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  /* The segmented control sits over the terminal's top edge; it stays level while the terminal tilts. */
+  .seg {
+    position: relative;
+    z-index: 2;
+    margin-bottom: -24px;
+    display: flex;
+    padding: 5px;
+    border-radius: 999px;
+  }
+  /* Over the dark terminal the glass needs more white, so the labels keep their contrast. */
+  .seg.glass {
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.5), rgb(255 255 255 / 0) 55%), rgb(255 255 255 / 0.84);
+  }
+  .seg[hidden] {
+    display: none;
+  }
+  .seg button {
+    appearance: none;
+    border: 0;
+    background: none;
+    color: var(--ink-soft);
+    font: 500 14px/1 var(--sans);
+    padding: 11px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .seg button:hover {
+    color: var(--ink);
+  }
+  .seg button[aria-selected="true"] {
+    color: #fff;
+    background: linear-gradient(180deg, var(--plum-2), var(--plum));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28);
+  }
+  .term {
+    --focus: var(--focus-on-dark);
+    width: 100%;
+    text-align: left;
+    border-radius: 28px;
+    background: var(--plum);
+    color: var(--on-plum);
+    box-shadow:
+      0 60px 100px -40px rgb(var(--shadow-rgb) / 0.55),
+      0 20px 40px -20px rgb(var(--shadow-rgb) / 0.35);
+    transform: rotate(-2.5deg);
+    overflow: hidden;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 16px 22px;
+    font: 12px/1 var(--mono);
+    color: var(--on-plum-soft);
+    border-bottom: 1px solid rgb(255 255 255 / 0.07);
+  }
+  .tabbed .bar {
+    padding-top: 34px;
+  }
+  .bar i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.15);
+  }
+  .bar i:first-child {
+    background: var(--lavender);
+  }
+  .bar span {
+    margin-left: 10px;
+  }
+  .pane {
+    position: relative;
+  }
+  .pane + .pane {
+    border-top: 1px solid rgb(255 255 255 / 0.07);
+  }
+  .tabbed .pane + .pane {
+    border-top: 0;
+  }
+  .name {
+    margin: 0;
+    padding: 18px 26px 0;
+    font: 500 12px/1 var(--mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lavender);
+  }
+  .tabbed .name {
+    display: none;
+  }
+  .copy {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    font: 500 12.5px/1 var(--sans);
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    background: rgb(255 255 255 / 0.08);
+    color: var(--on-plum);
+    cursor: pointer;
+  }
+  .copy:hover {
+    background: rgb(255 255 255 / 0.16);
+  }
+  .pre {
+    margin: 0;
+    padding: 22px 26px 26px;
+    overflow-x: auto;
+    font: 13.5px/1.9 var(--mono);
+  }
+  .tabbed .pre {
+    padding-right: 90px;
+  }
+  .line {
+    white-space: pre;
+  }
+  .ps {
+    color: var(--lavender);
+    user-select: none;
+  }
+  .note {
+    color: var(--on-plum-soft);
+  }
+  .out {
+    color: #b5e3c9;
+  }
+  .more {
+    max-width: 36em;
+    margin: 64px 0 0;
+    font-size: 15px;
+  }
+  @media (max-width: 760px) {
+    .get {
+      padding: 80px 16px 120px;
+    }
+    .stage {
+      margin-top: 56px;
+    }
+    .seg button {
+      font-size: 12.5px;
+      padding: 9px 11px;
+    }
+    .seg .num {
+      display: none;
+    }
+    .term {
+      border-radius: 20px;
+      transform: rotate(-1.5deg);
+    }
+    .pre,
+    .tabbed .pre {
+      font-size: 11.5px;
+      padding: 16px 18px 20px;
+    }
+    .name {
+      padding: 16px 18px 0;
+    }
+    .tabbed .pre {
+      padding-bottom: 54px;
+    }
+    .copy {
+      top: auto;
+      bottom: 12px;
+      right: 14px;
+    }
+  }
+</style>
