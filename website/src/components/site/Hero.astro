@@ -448,9 +448,13 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
     .copy .display {
       font-size: min(36px, 8.6vw);
     }
+    /* Four lines held open, whatever the font: if the fallback (before Inter loads) wraps to fewer lines than
+       Inter, the buttons and the window below would otherwise jump when Inter swaps in. */
     .sub {
       margin: 14px 0 18px;
       font-size: 15.5px;
+      line-height: 1.55;
+      min-height: calc(4 * 1.55em);
     }
     .fine {
       display: none;
@@ -458,6 +462,12 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
     .copy .pill {
       padding: 11px 18px;
       font-size: 14px;
+    }
+    /* The two buttons always stacked on a phone: side by side, whether they fit on one row depended on the font,
+       so the row could break in two when Inter swapped in and push the window down. */
+    .ctas {
+      flex-direction: column;
+      align-items: flex-start;
     }
     .scene {
       position: relative;
