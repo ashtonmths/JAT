@@ -1,0 +1,94 @@
+---
+// The page's background: one fixed layer per section tint (only the current one shows; they cross-fade), a
+// fine noise over them so the soft gradients don't band, and a quiet film grain over the whole page.
+// Opacity and transform only.
+const noise = (frequency: number, size: number) =>
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='${frequency}' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='1 0 0 0 0  1 0 0 0 0  1 0 0 0 0  0 0 0 0 1'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>`,
+  );
+---
+
+<div class="backdrop" aria-hidden="true">
+  <i data-layer="lilac"></i>
+  <i data-layer="butter"></i>
+  <i data-layer="mint"></i>
+  <i data-layer="apricot"></i>
+  <span class="dither" style={`background-image:url("${noise(1.2, 160)}")`}></span>
+</div>
+<div class="grain" aria-hidden="true" style={`background-image:url("${noise(0.9, 200)}")`}></div>
+
+<style>
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+  }
+  .backdrop i {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.9s var(--ease);
+  }
+  [data-layer="lilac"] {
+    background:
+      radial-gradient(50% 55% at 75% 45%, rgb(221 232 247 / 0.9), transparent 70%),
+      radial-gradient(45% 50% at 20% 80%, rgb(246 224 229 / 0.7), transparent 70%), var(--tint-lilac);
+  }
+  [data-layer="butter"] {
+    background:
+      radial-gradient(60% 60% at 80% 20%, rgb(248 239 205 / 0.8), transparent 70%), var(--tint-butter);
+  }
+  [data-layer="mint"] {
+    background:
+      radial-gradient(60% 60% at 15% 30%, rgb(217 239 227 / 0.9), transparent 70%), var(--tint-mint);
+  }
+  [data-layer="apricot"] {
+    background:
+      radial-gradient(60% 60% at 85% 80%, rgb(247 229 211 / 0.9), transparent 70%), var(--tint-apricot);
+  }
+  :global(html[data-tint="lilac"]) [data-layer="lilac"],
+  :global(html[data-tint="butter"]) [data-layer="butter"],
+  :global(html[data-tint="mint"]) [data-layer="mint"],
+  :global(html[data-tint="apricot"]) [data-layer="apricot"] {
+    opacity: 1;
+  }
+  .dither {
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    background-size: 160px 160px;
+  }
+  .grain {
+    position: fixed;
+    inset: -60px;
+    z-index: 45;
+    pointer-events: none;
+    background-size: 200px 200px;
+    opacity: 0.075;
+    mix-blend-mode: overlay;
+    animation: grain 0.9s steps(5) infinite;
+  }
+  @keyframes grain {
+    20% {
+      transform: translate(-23px, 14px);
+    }
+    40% {
+      transform: translate(17px, -31px);
+    }
+    60% {
+      transform: translate(-9px, 27px);
+    }
+    80% {
+      transform: translate(29px, 8px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .backdrop i {
+      transition: none;
+    }
+    .grain {
+      animation: none;
+    }
+  }
+</style>

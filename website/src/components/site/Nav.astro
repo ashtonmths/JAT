@@ -1,0 +1,118 @@
+---
+// The fixed chrome: the logo in a glass bubble, the section links as a glass pill group, GitHub and the main
+// call to action on the right, and a small glass back-to-top button. Over the page, so it takes its tint.
+import Logo from "../Logo.astro";
+import { REPO } from "../../data";
+
+const links = [
+  { href: "#privacy", label: "Private" },
+  { href: "#features", label: "Features" },
+  { href: "#how", label: "How it works" },
+  { href: "#quickstart", label: "Quick start" },
+];
+---
+
+<header class="chrome">
+  <a class="logo glass" href="#top" aria-label="Job Application Tracker, back to the top">
+    <Logo size={24} />
+  </a>
+  <nav class="links glass" aria-label="Main">
+    {links.map((l) => (
+      <a href={l.href}>{l.label}</a>
+    ))}
+  </nav>
+  <div class="right">
+    <a class="pill glass github" href={REPO}>
+      GitHub{" "}
+      <span class="arrow" aria-hidden="true">
+        ↗
+      </span>
+    </a>
+    <a class="pill pill-plum" href="#quickstart">
+      Get started
+    </a>
+  </div>
+</header>
+<a class="to-top glass" href="#top" aria-label="Back to the top">
+  <span aria-hidden="true">↑</span>
+</a>
+
+<style>
+  .chrome {
+    position: fixed;
+    z-index: 50;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+  .chrome > * {
+    pointer-events: auto;
+  }
+  .logo {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+  }
+  .links {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 2px;
+    padding: 5px;
+    border-radius: 999px;
+  }
+  .links a {
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  .links a:hover {
+    background: rgb(255 255 255 / 0.6);
+  }
+  .right {
+    display: flex;
+    gap: 8px;
+  }
+  .right .pill {
+    padding: 11px 18px;
+    font-size: 14px;
+  }
+  .to-top {
+    position: fixed;
+    z-index: 50;
+    right: 16px;
+    bottom: 16px;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    text-decoration: none;
+  }
+  @media (max-width: 960px) {
+    .links {
+      display: none;
+    }
+  }
+  @media (max-width: 760px) {
+    .chrome {
+      top: 12px;
+      left: 12px;
+      right: 12px;
+    }
+    .github,
+    .to-top {
+      display: none;
+    }
+  }
+</style>
