@@ -257,8 +257,8 @@ reach (a dialog the demo data doesn't have) in a test.
 ## The website
 
 The site at <https://waddington.github.io/job-application-tracker/> lives in `website/`: one
-landing page that links to the guide here on GitHub. It copies the screenshots from
-`docs/screenshots/`, so retaken screenshots show up there too.
+landing page that links to the guide here on GitHub. Its pictures of the app are light-mode captures
+of the demo data in `website/src/assets/`; retake them from a demo server when the app's look changes.
 
 ```bash
 pnpm --dir website install
@@ -267,9 +267,8 @@ pnpm --dir website build     # the static site in website/dist
 pnpm --dir website preview   # serve that build locally
 ```
 
-Colours come from palettes in `website/src/styles/landing.css`; the site uses `paper`. In
-`pnpm dev` only, a switcher in the bottom-left corner (or `?palette=forest`, `ember`,
-`indigo`) previews the others. The built site leaves both out.
+Colours, type and the glass come from the tokens in `website/src/styles/site.css`; the page's design
+is in [docs/rfc/website-redesign.md](docs/rfc/website-redesign.md).
 
 ## Pull requests
 

@@ -1,43 +1,33 @@
 ---
-import Landing from "../layouts/Landing.astro";
-import Nav from "../components/Nav.astro";
-import Hero from "../components/Hero.astro";
-import Marquee from "../components/Marquee.astro";
-import Manifesto from "../components/Manifesto.astro";
-import Bento from "../components/Bento.astro";
-import Showcase from "../components/Showcase.astro";
-import Compare from "../components/Compare.astro";
-import Architecture from "../components/Architecture.astro";
-import Quickstart from "../components/Quickstart.astro";
-import Faq from "../components/Faq.astro";
-import Finale from "../components/Finale.astro";
-
-// The star count, read once at build time (no request from visitors' browsers). If GitHub
-// can't be reached, the button just says "Star".
-let stars: number | null = null;
-try {
-  const res = await fetch("https://api.github.com/repos/waddington/job-application-tracker", {
-    headers: { Accept: "application/vnd.github+json" },
-    signal: AbortSignal.timeout(4000),
-  });
-  if (res.ok) stars = (await res.json()).stargazers_count ?? null;
-} catch {
-  stars = null;
-}
+// The website's one page (docs/rfc/website-redesign.md, concept 1i). It links to the guide on GitHub. Its anchors
+// (#privacy, #features, #problem, #how, #languages, #quickstart, #faq) keep the old page's links working.
+import Base from "../layouts/Base.astro";
+import Nav from "../components/site/Nav.astro";
+import Footer from "../components/site/Footer.astro";
+import Hero from "../components/site/Hero.astro";
+import Statement from "../components/site/Statement.astro";
+import Features from "../components/site/Features.astro";
+import Centre from "../components/site/Centre.astro";
+import Story from "../components/site/Story.astro";
+import Languages from "../components/site/Languages.astro";
+import Quickstart from "../components/site/Quickstart.astro";
+import Faq from "../components/site/Faq.astro";
 ---
 
-<Landing>
-  <Nav stars={stars} />
-  <main>
+<Base>
+  <Nav />
+  <main id="main" tabindex="-1">
     <Hero />
-    <Marquee />
-    <Manifesto />
-    <Bento />
-    <Showcase />
-    <Compare />
-    <Architecture />
+
+    <Statement />
+    <Features />
+    <Centre />
+
+    <Story />
+
+    <Languages />
     <Quickstart />
     <Faq />
   </main>
-  <Finale />
-</Landing>
+  <Footer />
+</Base>

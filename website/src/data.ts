@@ -13,8 +13,6 @@ export const TITLE = "Free Job Application Tracker: private, no sign-up, open so
 export const DESCRIPTION =
   "A free, private job application tracker. Track applications, recruiters, interviews, follow-ups and offers on your own computer. No cloud, no account, no tracking.";
 
-export const ROTATING = ["application", "recruiter", "interview round", "follow-up", "offer", "ghosting"];
-
 export const MARQUEE = [
   [
     "Kanban board",
@@ -76,14 +74,12 @@ export const FOOTER_NOTE =
 // The quick start's steps. The install and demo commands match the README and the install guide (which gives
 // the two pnpm steps a line each). "Use it for real" follows the README; the guide splits it between
 // install.md and your-data.md. Keep them in step.
-// `copy: false` leaves a command out of the new page's Copy, which copies only what runs as pasted, in order;
-// `before` is a comment the new page shows above it, and `newNote` the new page's wording of a note (today's
-// page keeps `note` until part 6 replaces it).
+// `copy: false` leaves a command out of Copy, which copies only what runs as pasted, in order; `before` is a
+// comment shown above a command.
 export type QuickLine = {
   cmd?: string;
   out?: string;
   note?: string;
-  newNote?: string;
   copy?: false;
   before?: string;
 };
@@ -120,10 +116,7 @@ export const QUICKSTART: { id: string; label: string; lines: QuickLine[] }[] = [
         before: "# optional, for jat push: put your own private repo's URL in",
       },
       { cmd: "cp .env.example .env" },
-      {
-        note: "# then set JAT_DATA_DIR=~/job-search-data in .env",
-        newNote: "# .env.example already sets JAT_DATA_DIR=~/job-search-data",
-      },
+      { note: "# .env.example already sets JAT_DATA_DIR=~/job-search-data" },
       { cmd: "uv run jat init" },
       { cmd: "uv run jat serve" },
       { out: "→ http://127.0.0.1:8770 (keeps running)" },
@@ -132,16 +125,10 @@ export const QUICKSTART: { id: string; label: string; lines: QuickLine[] }[] = [
     ],
   },
 ];
-// A step's commands, one per line, for its Copy button: every command (today's page), or only those that run
-// as pasted (`pasteable`, the new page).
+// A step's commands, one per line, for its Copy button: only those that run as pasted.
 export const pasteable = (lines: QuickLine[]) =>
   lines
     .filter((l) => l.cmd && l.copy !== false)
-    .map((l) => l.cmd)
-    .join("\n");
-export const quickCommands = (lines: QuickLine[]) =>
-  lines
-    .filter((l) => l.cmd)
     .map((l) => l.cmd)
     .join("\n");
 
@@ -206,19 +193,4 @@ export const FAQ: { q: string; a: string }[] = [
     q: "Is it multi-user?",
     a: "No. It's a personal tool for one job seeker, running on localhost.",
   },
-];
-
-export const STACK = [
-  "Python 3.12",
-  "uv",
-  "FastAPI",
-  "SQLAlchemy",
-  "Alembic",
-  "SQLite",
-  "React 19",
-  "TypeScript",
-  "Mantine",
-  "TanStack",
-  "d3-sankey",
-  "Vite",
 ];

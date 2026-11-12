@@ -1,5 +1,4 @@
 # Copied in from the repo by scripts/sync.mjs: edit the originals, not these.
-src/assets/screenshots/
 public/og.png
 public/favicon.svg
 public/apple-touch-icon.png
