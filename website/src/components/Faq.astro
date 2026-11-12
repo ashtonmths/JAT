@@ -1,5 +1,22 @@
 ---
-import { FAQ, faqHtml as html } from "../data";
+import { FAQ, markZh } from "../data";
+
+// `code` in answers becomes <code>, and [text](https://…) a link. The same answers feed the
+// FAQPage JSON-LD (Landing.astro). Chinese words get lang="zh-CN" in the text and link text
+// only, never inside code or an address.
+const escape = (s: string) =>
+  s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+const html = (a: string) =>
+  a
+    .split(/(`[^`]+`|\[[^\]]+\]\(https:\/\/[^)\s]+\))/)
+    .map((part) => {
+      const code = part.match(/^`([^`]+)`$/);
+      if (code) return `<code>${escape(code[1])}</code>`;
+      const link = part.match(/^\[([^\]]+)\]\((https:\/\/[^)\s]+)\)$/);
+      if (link) return `<a href="${escape(link[2])}">${markZh(escape(link[1]))}</a>`;
+      return markZh(escape(part));
+    })
+    .join("");
 ---
 
 <section class="section" id="faq" aria-labelledby="faq-h">

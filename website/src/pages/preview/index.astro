@@ -5,7 +5,7 @@
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/site/Nav.astro";
 import Footer from "../../components/site/Footer.astro";
-import { FAQ, faqHtml, GUIDE, MARQUEE, NEEDS, QUICKSTART, README_ZH, REPO, STATS } from "../../data";
+import { FAQ, GUIDE, MARQUEE, plain, README_ZH, REPO, STATS } from "../../data";
 
 const steps = [
   {
@@ -166,30 +166,9 @@ const steps = [
           what you need and where to get it. After that it's a web page in your browser. A one-command install
           and a double-click app are on the way.
         </p>
-        <ul class="needs" aria-label="What you need">
-          {NEEDS.map((n) => (
-            <li>
-              <a href={n.href} rel="noopener">
-                <b>{n.name}</b> <span class="soft">{n.why}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
         <p class="soft">
           <b>Mac or Linux.</b> Windows isn't supported yet; it's next on the roadmap.
         </p>
-        {QUICKSTART.map((t) => (
-          <figure class="term">
-            <figcaption>{t.label}</figcaption>
-            <div class="lines">
-              {t.lines.map((l) => (
-                <code class:list={{ out: l.out, note: l.note }}>
-                  {l.cmd ? `$ ${l.cmd}` : (l.out ?? l.note)}
-                </code>
-              ))}
-            </div>
-          </figure>
-        ))}
         <div class="ctas">
           <a class="pill pill-plum" href={`${GUIDE}install.md`}>
             Read the install guide <span class="arrow">→</span>
@@ -213,7 +192,7 @@ const steps = [
           {FAQ.map((f) => (
             <details name="faq">
               <summary>{f.q}</summary>
-              <p set:html={faqHtml(f.a)} />
+              <p>{plain(f.a)}</p>
             </details>
           ))}
         </div>
@@ -360,46 +339,6 @@ const steps = [
     border-radius: 999px;
     font-size: 14px;
   }
-  .needs {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 16px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 24px;
-    font-size: 15px;
-  }
-  .needs a {
-    text-decoration: none;
-  }
-  .term {
-    margin: 24px 0;
-    border-radius: var(--r-card);
-    background: var(--plum);
-    color: var(--on-plum);
-    overflow: hidden;
-  }
-  .term figcaption {
-    padding: 14px 22px;
-    font: 12px/1 var(--mono);
-    color: var(--on-plum-soft);
-    border-bottom: 1px solid rgb(255 255 255 / 0.08);
-  }
-  .lines {
-    padding: 18px 22px 22px;
-    overflow-x: auto;
-    font: 13.5px/1.9 var(--mono);
-  }
-  .lines code {
-    display: block;
-    white-space: pre;
-  }
-  .term .out {
-    color: #b5e3c9;
-  }
-  .term .note {
-    color: var(--on-plum-soft);
-  }
   .faq details {
     border-top: 1px solid var(--ink-faint);
     padding: 18px 0;
@@ -412,9 +351,6 @@ const steps = [
     margin: 12px 0 0;
     font-weight: 300;
     color: var(--ink-soft);
-  }
-  .faq p :global(code) {
-    font: 14px var(--mono);
   }
   @media (max-width: 760px) {
     .two,
@@ -435,9 +371,6 @@ const steps = [
     }
     .stats {
       grid-template-columns: 1fr 1fr;
-    }
-    .lines {
-      font-size: 11.5px;
     }
   }
 </style>
