@@ -407,12 +407,12 @@ const widths = (img: ImageMetadata) => [480, 720, 960, 1440].filter((w) => w <= 
     margin-top: 40px;
     transform: rotateX(8deg) rotateY(-10deg);
     transform-style: preserve-3d;
-    animation: sway 10s ease-in-out infinite alternate;
+    animation: story-sway 10s ease-in-out infinite alternate;
   }
   .paused .frame {
     animation-play-state: paused;
   }
-  @keyframes sway {
+  @keyframes story-sway {
     to {
       transform: rotateX(4deg) rotateY(-4deg) translateY(-8px);
     }
@@ -475,9 +475,9 @@ const widths = (img: ImageMetadata) => [480, 720, 960, 1440].filter((w) => w <= 
   }
   .live .count span {
     display: inline;
-    animation: nudge 2.4s ease-in-out infinite;
+    animation: story-nudge 2.4s ease-in-out infinite;
   }
-  @keyframes nudge {
+  @keyframes story-nudge {
     50% {
       opacity: 0.6;
     }
