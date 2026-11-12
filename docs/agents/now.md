@@ -1,91 +1,88 @@
 # Now: state and live plan
 
-Snapshot 2026-11-12, after #317 (main at `808868a`, v1.24.0). Refresh this file before each compaction. Before
+Snapshot 2026-11-12, after #346 (main at `2598d1a`, v1.24.13). Refresh this file before each compaction. Before
 trusting it, check `gh pr list`, `git worktree list`, `git log --oneline -5` and `docs/ROADMAP.yaml`.
 
 ## State
 
-- Released up to **v1.24.0**. Open PRs: #327 (the PM dashboard fix below) and #328 (this refresh), until they merge.
-  Branches: `main`, plus `worktree-pr-screenshots` on GitHub (shelved work, kept on purpose: see `pr-screenshots`).
-- **Interviews calendar** (#325 helpers, #317 view, 1.24.0): Calendar · List, Month · Year dot views, a summary, a side
-  panel of the chosen day's rounds. Plan in `docs/rfc/interviews-calendar.md`. Kai picked the design from concepts on a
-  dev server (working-with-kai.md *Designs*); #326 (the concepts) is closed.
-- **Chinese** is complete: the app (every key, checked by `frontend/src/i18n/catalog.test.ts`), `README.zh-CN.md` (#319),
-  its screenshots and GIF in `docs/screenshots/zh-CN/` (#318; `make_demo_gif.py --lang zh-CN`), the website (#323),
-  the GitHub description and topics (applied 2026-11-11 with Kai's yes). Keeping it in step is a rule in CLAUDE.md
-  *Languages* and CONTRIBUTING (#324), with `tests/test_readme_parity.py`.
-- **The stale-key family is fixed** (`fix-stale-key-pattern` done: #313 `useDraft` for page forms, #315 `settleSave` for
-  dialog saves, #310 Today keeps edits at midnight). The keying rule is in gotchas.md *Frontend*.
-- **Windows:** five of the plan's nine items done; installs now pick Python 3.12 to 3.14 (`.python-version`, #312), so
-  the VM needs plain `uv sync`. On Windows 17 known failures (`windows-tests-green`). The VM is shut down.
-- **Merging and releasing:** Kai's standing yes after the review-fix cycle (working-with-kai.md).
-- **Kai's tracker** on 8770 needs a restart (Ctrl+C, `uv run jat serve`) for v1.23.12 (search snippets, Python). The
-  frontend in the main checkout is rebuilt to 1.24.0.
-- Tests on main: pytest 1,394, browser 741 (#317's full run).
-- Background jobs of this session: the PM dashboard on 8767 (restart it after #327 merges). No demo or dev servers.
-- The user-level after-compaction hook is still **not** in `~/.claude/settings.json` (the JSON is under *Waiting on Kai*).
+- Released up to **v1.24.13**. Open PRs: only this refresh until it merges. Branches on GitHub: `main` and
+  `worktree-pr-screenshots` (shelved, kept on purpose). Local: `main` and `pr324` (old, left alone).
+- **The website is redesigned and live** (https://waddington.github.io/job-application-tracker/): concept 1i, built in
+  #336–#346 behind a hidden `/preview/` (now a redirect to `/`). Plan and every round of Kai's notes:
+  `docs/rfc/website-redesign.md`. Code: `website/src/components/site/`, `website/src/layouts/Base.astro`,
+  `website/src/styles/site.css`; the hero's app demo is `site/AppDemo.astro` (screenshots on a fixed 1440×900 stage,
+  scaled with one CSS variable; the HTML pieces sit at the screenshot's own pixels). Concepts PR #334 is closed.
+- **Website-only PRs skip the app's checks**: `tools/dev/checks.sh --website` (#341, rule in CLAUDE.md), about a minute.
+  Its guard refuses if anything the app is built from changed; version files may change only their own version line
+  (`tools/dev/version_only.py`).
+- **Loading states**: part 1 shipped (v1.24.4: `QueryState`, skeletons and "Couldn't load this." + Retry in four
+  cards). Parts 2–4 are on the roadmap as `next` (`loading-state-failed-loads`, `-silent-cards`, `-page-skeletons`).
+- Kai's tracker on 8770 needs a restart (Ctrl+C, `uv run jat serve`) for v1.24.1 (Python changed). The main
+  checkout's frontend is rebuilt to 1.24.13.
+- Background jobs of this session: the PM dashboard on 8767. No dev, demo or concept servers.
+- The user-level after-compaction hook is still **not** in `~/.claude/settings.json` (JSON under *Waiting on Kai*).
 
-## Done since the last snapshot (2026-11-11 / 12)
+## Done since the last snapshot (2026-11-12)
 
 | Version | PR | What |
 |---|---|---|
-| 1.23.4 | #312 | uv picks Python 3.12 to 3.14 (`fix-python-315-install`), checked on the Windows VM |
-| 1.23.5 | #313 | `useDraft`: the applied date isn't wiped; About keeps unsaved text after a rename |
-| 1.23.6 | #310 | Today keeps edits at midnight and a Reschedule dialog past a round's start |
-| 1.23.7 | #314 | An agency or company typed but not chosen is kept (also fixed `fix-person-saved-before-new-company`) |
-| 1.23.8 | #311 | A link rename's X cancels and its tick saves once |
-| 1.23.9 | #315 | Reopening Edit right after saving shows what was saved (8 dialogs, notes' conflict check) |
-| 1.23.10 | #322 | The Chinese demo labels contact details in Chinese |
-| 1.23.11 | #321 | A role's pay in its own currency; editing a role keeps its currency |
-| 1.23.12 | #320 | Search snippets without Markdown marks (Markdown fields only, a window around the match) |
-| 1.23.13 | #325 | Calendar date and summary helpers |
-| 1.23.14 | #318 | Chinese screenshots and demo GIF |
-| 1.23.15 | #319 | README in Simplified Chinese |
-| 1.23.16 | #323 | The website says English and 简体中文 |
-| 1.24.0 | #317 | The Interviews calendar |
+| 1.24.1 | #329 | Applications save again after their recruiter moves agency or their agency/recruiter is deleted |
+| 1.24.2 | #330 | Deleting a call asks first ("Delete this call and its notes? Roles added from it stay.") |
+| 1.24.3 | #331 | Emptying the Agency or Company box takes it off (only while the box has focus) |
+| 1.24.4 | #333 | Loading-state part 1: `QueryState`, skeletons and Retry in Roles, Calls, Done recently, Recent activity |
+| 1.24.5 | #338 | One shared head for the website's pages (`SiteHead.astro`; bump.py reads `softwareVersion` there) |
+| 1.24.6 | #336 | The redesigned page's shell at /preview/ |
+| 1.24.7 | #339 | The hero: drifting cards and the 3D browser |
+| 1.24.8 | #340 | The app in use inside the hero window |
+| 1.24.9 | #343 | The middle sections (statement, glass board, Today, Insights, centre line) |
+| 1.24.10 | #342 | The sticky story |
+| 1.24.11 | #344 | Languages, quick start and FAQ (copy now in `data.ts`) |
+| 1.24.12 | #345 | No layout shift in the hero on phones |
+| 1.24.13 | #346 | The redesign becomes the homepage |
 
-Internal: #316 (`interviews-calendar` on the roadmap), #324 (language parity rules and checks), #327 (shelved tasks stay
-in the Backlog), this refresh.
+Internal: #332 (`pytest-parallel`, loading-state parts 2–3 planned), #335 (`hosted-mcp` planned), #337 (redesign plan),
+#341 (`checks.sh --website`), this refresh (`loading-state-page-skeletons`).
 
-## Kai's asks this round (2026-11-11 / 12)
+## Kai's asks this round (2026-11-12)
 
-1. "choose 5 bugs to work on next" → five chosen; "do those 5, use the stale-key pattern fix" → #310–#315; "release and
-   merge after dong the review-fix cycle. if new bugs are discovered report them here and add them to the backlog".
-2. "proably only 1 PR can be checked on the VM at a time … multiple instances would bog the computer" → working-with-kai.md.
-3. Interviews calendar: "toggle to a calendar view … weekly/monthly summary … look goooood" (#316 roadmap) → "work on
-   this after this tranche of bugs" → demo → "fix the today button, then split and ship it" → "create a reskinned
-   version … that has dots … the dev server should have a toggle for 3-5 different designs" → "dot months, clusters …
-   give me a few sub variations … i really like the side panel" → "Months A and Months B and clusters A and clusters B" →
-   "lets do months A AND months B … a toggle to switch" → "interviews looks good, ship it" → v1.24.0.
-4. Chinese: "whats next for chinese language" → "do the screenshots task. dont add them to the current readme" → "then
-   also do the readme task" → "readme and screenshots look good" → "fix those bugs too and update other places where
-   relecant" (#320–#322) → "those 2 open choiuces put them on the roadmap; yes do website and listing, i will review these
-   before merge/action; yes update claude/contruting/etc about keeping language files and readmes up to date" → all done.
-5. "dont pick up anything new (except recording things in backlog) until these are merged" → done; nothing new started.
-6. "this item in roadmap can be back in backlog col" (`pr-screenshots`) → #327.
-7. "pause, i need to put computer to sleep … lmk when its safe" → paused cleanly; "continue" → finished.
-8. "once thats finihsed update the compaction doc" → this refresh.
+1. "choose 5 bugs to pickup" → "tell me what the proposed fix is and whether the same pattern has other bugs" → "do
+   1-4 sequentially, dont do 5 yet" → #329–#331 (bug 5, `fix-double-save-locked`, untouched). Wording for #330:
+   "that wording is fne". New bug found: `fix-app-person-remove-no-confirm` (backlog).
+2. "choose 1 item from the backlog" → "give me 5 options" → asked about `e2e-shared-server` (measured: 2–5%, barely any
+   load saved) → "add the parallel test runner to the roadmap" (`pytest-parallel`) → loading-state pattern: "skeletons,
+   retry wording is fine, keep page spinners" → "plan out each item … put them in up-next" → later "i prefer skeletons
+   to loading spinner" / "yes skeletons instead of page spinners" (part 4 added in this refresh).
+3. Website redesign: "redesign the static page website … liquid glass … 5 concepts … DO NOT MERGE" → rounds (see the
+   RFC) → "1i, ship it" → "keep going with the redesign getting it shipped" → "go, ship it" (#346).
+4. "i only want you to work on the website redesign for now, dont start anything else" — the redesign is done; nothing
+   else has been started since. Treat it as: report, then wait for Kai to pick the next thing.
+5. "whats taking so long" → `checks.sh --website` and a second builder in parallel ("yep do 1 and 2").
+6. "new feature idea for roadmap, hosted version with public MCP … hwo would auth work here?" → `hosted-mcp` (#335).
+7. "cleanup old branches when you're done with them too" → done after each merge (working-with-kai.md).
+8. "kill both old dev servers" → one leftover process; stopped.
+9. "update compact doc" → this refresh.
 
 ## Next
 
-Nothing Kai asked for is unfinished (once #327 and #328 merge). Report and wait. Likely next, when Kai says:
+Nothing Kai asked for is unfinished. Report and wait; Kai picks. Likely candidates:
 
-- **Bugs:** 60 open (none high, 12 medium, 48 low). New this round, all in the backlog: `fix-reschedule-closed-drops-who`
-  (low), `fix-role-form-forces-gbp` (low now: the currency field and labels, needs Kai's wording),
-  `fix-snippet-long-mark-closer`, `fix-calendar-companies-by-name` (both low). Earlier mediums include
-  `fix-duplicate-role`, `fix-emptied-agency-kept`, `fix-double-save-locked`.
-- **Chinese, Kai to decide:** `i18n-zh-cn-offer-word` (Offer or 录用通知), `i18n-zh-cn-brand-name`.
-- **Windows:** `locked-file-retry`, `windows-testing`, `windows-tests-green` (17), `windows-support`; later `windows-snapshots`.
-- **Planned, waiting for Kai's go:** `calendar-page` (a calendar for everything, Kai's idea 2026-11-12), `generalise-agent-tooling`, `google-doc-content`, `docs-no-machine-paths`,
-  `review-merge-script`, `pr-screenshots`, `interview-process-plan`, `fix-loading-state-pattern`, the review-process tasks.
+- **Loading states, parts 2–4** (`next`): Timeline and Weekly activity's failed loads; the cards blank while loading;
+  whole pages as skeletons.
+- **Bugs:** 54 open (9 medium, 45 low). Mediums include `fix-double-save-locked` (bug 5 of the last five: needs a
+  decision on taking the write lock early), `fix-deletes-no-confirm`, `fix-app-person-remove-no-confirm`,
+  `fix-duplicate-role`, `fix-duplicate-company-name`, `fix-duplicate-agency-name`, `fix-hidden-link-blocks-save`,
+  `fix-didnt-happen-notes-hidden`, `fix-timeline-load-error-silent` (= loading-state part 2).
+- **Planned:** `pytest-parallel`, `calendar-page`, `hosted-mcp`, `interview-process-plan`, `recruiter-open-application-mark`
+  and the rest of the backlog.
 
 **How work ran this round** (keep doing it this way unless Kai says otherwise):
-- Builders in parallel, each in its own worktree with `tools/dev/briefs/bug-fix.md` plus a shared brief; one Sonnet reviewer
-  per PR (two, Opus and Sonnet, for a big feature), fixes sent back to the same builder, re-review of the fix commits,
-  then the full checks one PR at a time and merge in order (versions follow merge order).
-- Chinese text: a translator agent, then Sonnet and Opus reviewing each section separately, an Opus judge applying
-  the agreed fixes. UI designs: concepts on a dev server for Kai to pick (working-with-kai.md *Designs*).
-- After `merge_main.sh`, check the roadmap's statuses (gotchas.md): it reverted done tasks on three PRs this round.
+- One builder agent per part, in its own worktree; a second builder in parallel for an independent part when Kai wants
+  speed; PRs merge one at a time in order. Opus reviewers for anything visual or structural (they build in /tmp and
+  drive headless Chrome), Sonnet for small or docs PRs; re-review every fix commit.
+- Website work: design concepts on a dev server with a switcher, rounds of sub-variations, then build behind a hidden
+  route in small PRs, then a switch PR with a before/after table that Kai approves before merging.
+- After each merge: `ship.sh` (pass `keep-agent-worktree` when the builder's worktree is still in use), then delete the
+  branch and worktree.
 
 ## Waiting on Kai (don't start)
 
@@ -94,21 +91,20 @@ Nothing Kai asked for is unfinished (once #327 and #328 merge). Report and wait.
   "hooks": { "SessionStart": [ { "matcher": "compact", "hooks": [ { "type": "command",
     "command": "/home/kai/Documents/Projects/job-application-tracker/tools/dev/after_compact.sh --user", "timeout": 30 } ] } ] },
   ```
-- **Restart the tracker** for v1.23.12 (Python changed).
+- **Restart the tracker** for v1.24.1 (Python changed).
+- **The Dependabot alert** (#33, moderate) on GitHub: not looked at.
+- **Decisions:** `fix-double-save-locked` (how write requests take the database lock); `i18n-zh-cn-offer-word`,
+  `i18n-zh-cn-brand-name`; the MCP decisions in `docs/rfc/mcp.md` §14; `hosted-mcp`'s open questions (in its entry).
 - **The VM's README** (Kai's `windows-vm` project): `virsh shutdown` didn't stop Windows; `ssh winvm 'Stop-Computer -Force'` did.
-- **Repo gaps offered for contributors, no answer:** CONTRIBUTING and the PR template ask contributors to update
-  `CHANGELOG.md`, but Kai asked them to leave it; and PRs get no automatic checks.
-- **The MCP server:** the `mcp-*` tasks wait on the 11 decisions in `docs/rfc/mcp.md` §14.
-- **Backlog to plan with Kai:** as under *Next*, plus `code-cleanup`, `delivery-speed-improvements`,
-  `recruiter-open-application-mark`, `i18n-search`, the P11 test gaps, `tests-reorganise`, Docker, `packaged-install`,
-  `desktop-app`, `hosted-version`, `demo-site`.
+- **Repo gaps offered for contributors, no answer:** CONTRIBUTING asks contributors to update `CHANGELOG.md` though Kai
+  asked them to leave it; PRs get no automatic checks.
 - **Left alone** (Kai, 2026-11-02): `notes-documents-improve`, `timeline-improve`, `people-you-meet`.
-- **Offered, no answer:** done-and-waiting rounds in Today's *Waiting on them*; rebuilding the English `demo.gif` and the
-  older English screenshots (`board`, `role`, `next-actions` predate the current UI).
 
 ## Noticed, not promised
 
-- The website at 800 px scrolls sideways: the hero, marquee and background stick out (seen on #323; check main first).
+- `docs-contributor-prs` is still `building` on the roadmap with no branch: check whether it's done.
+- The redesign's hero demo shows the app at 1.24.7; re-capture its screenshots when the app's look changes
+  (CONTRIBUTING *The website* has the recipe).
 - A CNY role's pay reads "2800 CNY/天" and "500k CNY–700k CNY": `formatMoney` has symbols only for GBP, USD and EUR.
 - Ghost and star marks are missing in the Timeline *About* select and to-do "about" text.
 - `tools/pm/yamlish.py` and `scripts/i18n/translate/pages.json` aren't formatter-clean (neither is in the checks).

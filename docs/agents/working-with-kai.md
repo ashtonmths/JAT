@@ -40,7 +40,9 @@ where things run. Quotes are Kai's words.
   (#92's first version flipped routes and was reworked).
 - **Don't max out Kai's PC:** "you are maxing out my PC". Tests only through `pnpm` or `tools/dev/checks.sh`; never two
   heavy runs at once; skip browser tests when CLAUDE.md allows.
-- **Branches:** "also delete branches on remote that are no longer needed". After each merge only `main` remains.
+- **Branches:** "also delete branches on remote that are no longer needed". After each merge only `main` remains. Kai,
+  2026-11-12: "cleanup old branches when you're done with them too": delete the branch, its worktree and any builder
+  `worktree-agent-*` branch right after each merge, and throwaway branches (concepts, `pr-shots/*`) once their PR closes.
 - **PM dashboard:** "keep the PM dashboard up to date, or even backfill items if they were not added". Every task gets a
   roadmap entry (P7, or P8 for i18n; id = branch minus `worktree-`), `building` while its PR is open, `done` just before
   merging. Pull main after every merge, roadmap-only ones too, or the dashboard goes stale.
@@ -50,6 +52,8 @@ where things run. Quotes are Kai's words.
   want to see the new gif(s) before you apply them".
 - **Visibility:** after each merge, fast-forward main, rebuild the frontend there, and say in a line what's live and
   whether Kai must restart the tracker (any backend change: Ctrl+C, `uv run jat serve`).
+- **"whats taking so long":** give the time per step and offer concrete speed-ups (Kai took a website-only check mode
+  and a second parallel builder, 2026-11-12). Cap long measurement loops in builders; ask for interim results.
 - **Explain plainly:** "you didnt explain it to me, file changes got in the way". Say what changed in plain words before
   file details. Answer a mid-turn "sitrep" briefly and honestly, then carry on. When Kai asks for links or status, give
   them in a clean final message (mid-turn text doesn't always reach Kai).
@@ -71,6 +75,8 @@ where things run. Quotes are Kai's words.
   seeded demo API, screenshots of each, a draft PR marked do-not-merge; Kai narrows it in rounds ("give me a few sub
   variations"), then the pick goes into the real PR and the concepts PR is closed. The Interviews calendar (#317) went
   five concepts, then eight variations, then two kept as Month and Year.
+  The website redesign (2026-11-12) went 5 concepts → sub-variations → crosses → speed variants, then was built
+  behind a hidden route in small PRs and swapped in with a before/after table Kai approved ("go, ship it").
 - **New bugs found along the way:** "if new bugs are discovered report them here and add them to the backlog" (2026-11-11).
   Fixing them waits for Kai unless it's the PR's own data safety. When many PRs are open, Kai may freeze new work:
   "dont pick up anything new (except recording things in backlog) until these are merged".

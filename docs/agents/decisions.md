@@ -89,6 +89,18 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
   one string file per PR, smallest first, in context (code and screenshots), reviewed per screen area. Chinese specifics
   are in [now.md](now.md).
 
+## Website
+
+- The 2026 redesign is concept 1i (`docs/rfc/website-redesign.md`): pastels and plum, the app shown in light mode, a
+  3D browser whose app demo plays at twice the concept's speed. No dot or halftone textures (too close to the
+  reference site, Kai: "too close to a straight rip off"); no long scroll-jacked stretches; the old site's anchors
+  stay. The website is English only.
+
+## Loading states
+
+- Skeletons, not spinners, for cards and whole pages (Kai, 2026-11-12: "yes skeletons instead of page spinners");
+  a failed load says "Couldn't load this." with Retry; the empty text only for a successful empty result.
+
 ## Windows
 
 - Basic support first (`docs/rfc/windows.md`): the Windows-unsafe parts behind one is-Windows check and off there;
