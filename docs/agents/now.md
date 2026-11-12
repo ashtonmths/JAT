@@ -69,7 +69,7 @@ Nothing Kai asked for is unfinished. Report and wait; Kai picks. Likely candidat
 - **App redesign** (phase P12, ten `next` tasks heading Up next; Kai, 2026-11-12, after the star count shipped as
   v1.24.14, #348): the app in the website's look, starting with concepts on a dev server. Content stays, the look
   changes. Part 4 (components) waits for the loading-state parts. The shelved before-and-after screenshot tool
-  (`pr-screenshots`, branch gone from GitHub, commit `a283908` via PR #291) would serve its PRs.
+  (`pr-screenshots`, branch gone from GitHub, commit `a283908` on PR #291, closed unmerged) would serve its PRs.
 - **Loading states, parts 2–4** (`next`): Timeline and Weekly activity's failed loads; the cards blank while loading;
   whole pages as skeletons.
 - **Bugs:** 54 open (9 medium, 45 low). Mediums include `fix-double-save-locked` (bug 5 of the last five: needs a
