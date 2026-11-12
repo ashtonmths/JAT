@@ -1,0 +1,432 @@
+---
+// The hero (docs/rfc/website-redesign.md §11, part 2): the words over drifting pastel cards, and a browser window
+// with the app in it. The window floats at an angle, turns to face you as you scroll, then swings open like a door
+// onto a second window behind it: the same app in 简体中文. It drifts gently all the time. The pin is short and a
+// progress line shows how far through it you are; under reduced motion it's one still pose with no pin.
+// Part 3 puts the app in use inside the front window; for now it shows Today.
+import { Picture } from "astro:assets";
+import HeroCards from "./HeroCards.astro";
+import today from "../../assets/hero/today-light.png";
+import todayZh from "../../assets/hero/today-zh-light.png";
+
+const picture: { formats: ("avif" | "webp")[]; widths: number[]; sizes: string } = {
+  formats: ["avif", "webp"],
+  widths: [480, 720, 1020, 1440],
+  sizes: "(max-width: 760px) 92vw, 1020px",
+};
+---
+
+<section class="hero" data-tint="lilac" data-hero aria-labelledby="hero-h">
+  <div class="pin">
+    <HeroCards />
+
+    <div class="copy" data-copy>
+      <p class="eyebrow">Job application tracker · local-first</p>
+      <h1 class="display" id="hero-h">
+        Your job search,
+        <br />
+        kept on your machine.
+      </h1>
+      <p class="sub soft">
+        Every application, recruiter, interview and offer in one place, and a clear list of who to chase
+        today. No account, no cloud, no AI, nobody watching.
+      </p>
+      <div class="ctas">
+        <a class="pill pill-plum" href="#quickstart">
+          Get started, it's free{" "}
+          <span class="arrow" aria-hidden="true">
+            →
+          </span>
+        </a>
+        <a class="pill glass" href="#how">
+          See it in action{" "}
+          <span class="arrow" aria-hidden="true">
+            ↓
+          </span>
+        </a>
+      </div>
+      <p class="fine soft">Free · open source (Apache-2.0) · Mac and Linux</p>
+    </div>
+
+    <p class="caption" data-caption="1" aria-hidden="true">
+      <span class="eyebrow">The real app</span>
+      Your whole search on one page, here with made-up data.
+    </p>
+    <p class="caption" data-caption="2" aria-hidden="true">
+      <span class="eyebrow">
+        English or <span lang="zh-CN">简体中文</span>
+      </span>
+      The whole app in both, from buttons to dates.
+    </p>
+
+    <div class="scene">
+      <div class="window back" data-back aria-hidden="true">
+        <div class="bar">
+          <i></i>
+          <i></i>
+          <i></i>
+          <span class="url">
+            127.0.0.1 · <span lang="zh-CN">今日</span>
+          </span>
+        </div>
+        <Picture src={todayZh} {...picture} alt="" loading="eager" decoding="async" />
+      </div>
+      <div class="window front" data-front>
+        <div class="bar" aria-hidden="true">
+          <i></i>
+          <i></i>
+          <i></i>
+          <span class="url">127.0.0.1/</span>
+        </div>
+        <Picture
+          src={today}
+          {...picture}
+          alt="The app's Today page with made-up data: replies to read, offers to answer, what's coming up and who you're waiting on"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+    </div>
+
+    <div class="progress" aria-hidden="true">
+      <i data-progress></i>
+    </div>
+  </div>
+</section>
+
+<script>
+  // A pose: x and y in vw and vh, z in px, rotations in degrees, scale, opacity.
+  type Pose = [x: number, y: number, z: number, rx: number, ry: number, rz: number, s: number, o: number];
+  type Keys = [at: number, pose: Pose][];
+
+  // The front window turns to face you by 0.38 of the pin, holds, then swings open about its left edge by 0.92,
+  // as the back window comes forward into its place.
+  const poses: Record<"wide" | "narrow", { front: Keys; back: Keys; still: [Pose, Pose] }> = {
+    wide: {
+      front: [
+        [0, [23, 9, 0, 12, -30, -2, 0.8, 1]],
+        [0.38, [0, 2, 0, 2, 0, 0, 1, 1]],
+        [0.56, [0, 2, 0, 2, 0, 0, 1, 1]],
+        [0.92, [-30, 2, 140, 2, -78, 0, 1, 0]],
+      ],
+      back: [
+        [0, [32, -3, -360, 12, -30, -2, 0.78, 0.35]],
+        [0.56, [10, -5, -420, 4, -10, 0, 0.92, 0.55]],
+        [0.92, [0, 2, 0, 2, 0, 0, 1, 1]],
+      ],
+      still: [
+        [21, 8, 0, 8, -20, -1, 0.78, 1],
+        [28, 1, -300, 8, -20, -1, 0.76, 0.6],
+      ],
+    },
+    narrow: {
+      front: [
+        [0, [4, 17, 0, 16, -18, -2, 0.9, 1]],
+        [0.38, [0, 4, 0, 4, 0, 0, 1, 1]],
+        [0.56, [0, 4, 0, 4, 0, 0, 1, 1]],
+        [0.92, [-40, 4, 120, 4, -80, 0, 1, 0]],
+      ],
+      back: [
+        [0, [8, 10, -300, 16, -18, -2, 0.85, 0.4]],
+        [0.56, [6, -2, -360, 6, -8, 0, 0.92, 0.5]],
+        [0.92, [0, 4, 0, 4, 0, 0, 1, 1]],
+      ],
+      still: [
+        [0, 14, 0, 8, -10, 0, 0.94, 1],
+        [6, 8, -260, 8, -10, 0, 0.9, 0.5],
+      ],
+    },
+  };
+
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
+  const ease = (t: number) => t * t * (3 - 2 * t);
+  function at(keys: Keys, p: number): Pose {
+    if (p <= keys[0][0]) return keys[0][1];
+    for (let i = 1; i < keys.length; i++) {
+      const [p1, b] = keys[i];
+      const [p0, a] = keys[i - 1];
+      if (p <= p1) {
+        const t = ease((p - p0) / (p1 - p0));
+        return a.map((v, k) => v + (b[k] - v) * t) as Pose;
+      }
+    }
+    return keys[keys.length - 1][1];
+  }
+  function place(el: HTMLElement, [x, y, z, rx, ry, rz, s, o]: Pose, [dx, dy, dz]: number[]) {
+    el.style.transform =
+      `translate(-50%, -50%) translate3d(${x}vw, calc(${y}vh + ${dy}px), ${z}px) ` +
+      `rotateX(${rx + dx}deg) rotateY(${ry + dz}deg) rotateZ(${rz}deg) scale(${s})`;
+    el.style.opacity = String(o);
+  }
+
+  const hero = document.querySelector<HTMLElement>("[data-hero]");
+  if (hero) {
+    const front = hero.querySelector<HTMLElement>("[data-front]")!;
+    const back = hero.querySelector<HTMLElement>("[data-back]")!;
+    const copy = hero.querySelector<HTMLElement>("[data-copy]")!;
+    const bar = hero.querySelector<HTMLElement>("[data-progress]")!;
+    const [cap1, cap2] = hero.querySelectorAll<HTMLElement>("[data-caption]");
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+    const narrow = matchMedia("(max-width: 760px)");
+    let progress = 0;
+    let visible = true;
+    let running = false;
+
+    const measure = () => {
+      const r = hero.getBoundingClientRect();
+      const span = r.height - innerHeight;
+      progress = span > 0 ? clamp(-r.top / span) : 0;
+    };
+    const show = (el: HTMLElement, v: number) => {
+      el.style.opacity = String(v);
+      el.style.transform = `translateY(${(1 - v) * 16}px)`;
+    };
+
+    function frame(t: number) {
+      const set = poses[narrow.matches ? "narrow" : "wide"];
+      if (reduce.matches) {
+        place(front, set.still[0], [0, 0, 0]);
+        place(back, set.still[1], [0, 0, 0]);
+        running = false;
+        return;
+      }
+      const p = progress;
+      const drift = [Math.sin(t / 2600) * 1.6, Math.sin(t / 2100) * 7, Math.sin(t / 3300) * 2.4];
+      place(front, at(set.front, p), drift);
+      place(back, at(set.back, p), [drift[0] * 0.6, -drift[1] * 0.6, drift[2] * 0.6]);
+      front.style.transformOrigin = p > 0.56 ? "0% 50%" : "50% 50%";
+      copy.style.opacity = String(1 - clamp(p / 0.2));
+      copy.style.transform = `translateY(${-60 * clamp(p / 0.3)}px)`;
+      copy.style.visibility = p > 0.22 ? "hidden" : "visible";
+      show(cap1, clamp((p - 0.36) / 0.06) * (1 - clamp((p - 0.6) / 0.06)));
+      // The second caption fades again as the hero scrolls away, so it doesn't slide under the nav.
+      const leaving = clamp(
+        (hero!.getBoundingClientRect().bottom - innerHeight * 0.94) / (innerHeight * 0.06),
+      );
+      show(cap2, clamp((p - 0.86) / 0.06) * leaving);
+      bar.style.transform = `scaleX(${p})`;
+      running = visible;
+      if (running) requestAnimationFrame(frame);
+    }
+    const start = () => {
+      if (!running) {
+        running = true;
+        requestAnimationFrame(frame);
+      }
+    };
+
+    addEventListener("scroll", measure, { passive: true });
+    addEventListener("resize", () => {
+      measure();
+      start();
+    });
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      if (visible) start();
+    }).observe(hero);
+    reduce.addEventListener("change", start);
+    measure();
+    start();
+  }
+</script>
+
+<style>
+  /* The section is the length of the pin; the pin holds the stage while you scroll through it. */
+  .hero {
+    position: relative;
+    height: 220vh;
+  }
+  .pin {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+    perspective: 1800px;
+    perspective-origin: 50% 40%;
+  }
+  .copy {
+    position: absolute;
+    z-index: 5;
+    left: max(6vw, 24px);
+    top: 50%;
+    margin-top: -170px;
+    width: min(580px, 42vw);
+  }
+  .copy .display {
+    font-size: clamp(40px, 4.4vw, 64px);
+  }
+  .sub {
+    margin: 22px 0 30px;
+    font-size: 18px;
+    font-weight: 300;
+  }
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .fine {
+    margin: 22px 0 0;
+    font-size: 13.5px;
+  }
+  .caption {
+    position: absolute;
+    z-index: 5;
+    left: max(6vw, 24px);
+    top: 96px;
+    max-width: 420px;
+    margin: 0;
+    opacity: 0;
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.45;
+  }
+  .caption .eyebrow {
+    display: flex;
+    margin-bottom: 10px;
+  }
+  .scene {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+  .window {
+    position: absolute;
+    left: 50%;
+    top: 57%;
+    width: min(1020px, 82vw, calc((100svh - 260px) * 1.52));
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow:
+      0 0 0 1px rgb(var(--shadow-rgb) / 0.08),
+      0 50px 110px -34px rgb(var(--shadow-rgb) / 0.38),
+      0 24px 50px -30px rgb(var(--glow-rgb) / 0.45);
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+  .window :global(img) {
+    width: 100%;
+    height: auto;
+  }
+  .bar {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 14px;
+    background: linear-gradient(#f6f4fb, #ece8f6);
+    border-bottom: 1px solid rgb(var(--shadow-rgb) / 0.08);
+  }
+  .bar i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: rgb(var(--shadow-rgb) / 0.14);
+  }
+  .bar i:first-child {
+    background: #b9a8ec;
+  }
+  .url {
+    margin: 0 auto;
+    padding: 4px 16px;
+    min-width: 40%;
+    border-radius: 999px;
+    text-align: center;
+    font: 12px/1.3 var(--mono);
+    color: var(--ink-soft);
+    background: rgb(var(--shadow-rgb) / 0.06);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .progress {
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    bottom: 28px;
+    width: 120px;
+    height: 3px;
+    margin-left: -60px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--ink-faint);
+  }
+  .progress i {
+    position: absolute;
+    inset: 0;
+    background: var(--plum-2);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  @media (max-width: 760px) {
+    .hero {
+      height: 200vh;
+    }
+    .copy {
+      left: 20px;
+      right: 20px;
+      top: 92px;
+      margin: 0;
+      width: auto;
+    }
+    .copy .display {
+      font-size: 36px;
+    }
+    .sub {
+      margin: 14px 0 18px;
+      font-size: 15.5px;
+    }
+    .fine {
+      display: none;
+    }
+    .copy .pill {
+      padding: 11px 18px;
+      font-size: 14px;
+    }
+    .window {
+      top: 64%;
+      width: 92vw;
+      border-radius: 12px;
+    }
+    .bar {
+      height: 26px;
+      padding: 0 10px;
+      gap: 5px;
+    }
+    .bar i {
+      width: 7px;
+      height: 7px;
+    }
+    .url {
+      font-size: 9.5px;
+      padding: 2px 10px;
+    }
+    .caption {
+      left: 20px;
+      right: 20px;
+      top: 96px;
+      font-size: 15px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero {
+      height: auto;
+    }
+    .pin {
+      position: relative;
+      min-height: 760px;
+    }
+    .progress {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) and (max-width: 760px) {
+    .pin {
+      min-height: 820px;
+    }
+  }
+</style>

@@ -1,0 +1,98 @@
+---
+// The hero's texture: columns of small application cards in the pastel stage colours, drifting slowly up behind
+// the browser window, faded out towards the words. Transform only; still under reduced motion.
+const tones = ["--pastel-lilac", "--pastel-sky", "--pastel-butter", "--pastel-pink", "--pastel-mint"];
+// A fixed pseudo-random sequence, so every build is the same.
+const rnd = (i: number) => (((Math.sin(i * 12.9898) * 43758.5453) % 1) + 1) % 1;
+const columns = Array.from({ length: 8 }, (_, c) =>
+  Array.from({ length: 9 }, (_, k) => ({
+    tone: tones[Math.floor(rnd(c * 31 + k) * tones.length)],
+    width: 60 + Math.round(rnd(c * 7 + k * 3) * 35),
+  })),
+);
+---
+
+<div class="cards" aria-hidden="true">
+  {columns.map((column, c) => (
+    <div class="column" style={`--duration:${38 + (c % 3) * 9}s;--delay:${-c * 4.3}s`}>
+      {[0, 1].map(() => (
+        <div class="stack">
+          {column.map((card) => (
+            <span class="card" style={`--tone:var(${card.tone});--width:${card.width}%`} />
+          ))}
+        </div>
+      ))}
+    </div>
+  ))}
+</div>
+
+<style>
+  .cards {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 14px;
+    padding: 0 14px;
+    overflow: hidden;
+    opacity: 0.85;
+    mask-image: linear-gradient(90deg, transparent 0%, transparent 38%, #000 78%);
+  }
+  /* Each column is two identical stacks, so moving it up by half loops without a seam. */
+  .column {
+    animation: rise var(--duration) linear infinite;
+    animation-delay: var(--delay);
+  }
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 14px;
+  }
+  .card {
+    position: relative;
+    display: block;
+    width: var(--width);
+    height: 46px;
+    border-radius: 10px;
+    background: var(--tone);
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--shadow-rgb) / 0.06),
+      0 8px 20px -12px rgb(var(--shadow-rgb) / 0.25);
+  }
+  /* A title line, like the app's cards. */
+  .card::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 14px;
+    width: 46%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgb(var(--shadow-rgb) / 0.18);
+  }
+  @keyframes rise {
+    to {
+      transform: translateY(-50%);
+    }
+  }
+  @media (max-width: 760px) {
+    .cards {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      mask-image: linear-gradient(180deg, transparent 0%, transparent 48%, #000 85%);
+    }
+    .column:nth-child(n + 6) {
+      display: none;
+    }
+    .card {
+      height: 30px;
+      border-radius: 7px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .column {
+      animation: none;
+    }
+  }
+</style>

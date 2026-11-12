@@ -1,10 +1,12 @@
 ---
 // The redesigned homepage (docs/rfc/website-redesign.md, concept 1i), built here at a hidden /preview/ (noindex,
-// out of the sitemap) until it replaces the homepage in part 6. Part 1: the shell, with each section as a plain
-// placeholder holding today's copy; parts 2 to 5 swap them for the real sections. The anchors match today's page.
+// out of the sitemap) until it replaces the homepage in part 6. Part 1 built the shell with each section as a plain
+// placeholder holding today's copy; parts 2 to 5 swap them for the real sections (part 2: the hero). The anchors
+// match today's page.
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/site/Nav.astro";
 import Footer from "../../components/site/Footer.astro";
+import Hero from "../../components/site/Hero.astro";
 import { FAQ, GUIDE, MARQUEE, plain, README_ZH, REPO, STATS } from "../../data";
 
 const steps = [
@@ -29,36 +31,8 @@ const steps = [
 
 <Base noindex>
   <Nav />
-  <main id="main">
-    <section class="hero" data-tint="lilac" aria-labelledby="hero-h">
-      <div class="wrap">
-        <p class="eyebrow">Job application tracker · local-first</p>
-        <h1 class="display" id="hero-h">
-          Your job search,
-          <br />
-          kept on your machine.
-        </h1>
-        <p class="sub soft">
-          Every application, recruiter, interview and offer in one place, and a clear list of who to chase
-          today. No account, no cloud, no AI, nobody watching.
-        </p>
-        <div class="ctas">
-          <a class="pill pill-plum" href="#quickstart">
-            Get started, it's free{" "}
-            <span class="arrow" aria-hidden="true">
-              →
-            </span>
-          </a>
-          <a class="pill glass" href="#how">
-            See it in action{" "}
-            <span class="arrow" aria-hidden="true">
-              ↓
-            </span>
-          </a>
-        </div>
-        <p class="fine soft">Free · open source (Apache-2.0) · Mac and Linux</p>
-      </div>
-    </section>
+  <main id="main" tabindex="-1">
+    <Hero />
 
     <section class="block" id="privacy" data-tint="butter" aria-labelledby="privacy-h">
       <div class="wrap two">
@@ -230,13 +204,6 @@ const steps = [
   .two > .eyebrow {
     margin-top: 0.9em;
   }
-  .hero {
-    min-height: 100vh;
-    min-height: 100svh;
-    display: flex;
-    align-items: center;
-    padding: 120px 0 80px;
-  }
   .sub {
     max-width: 36em;
     margin: 22px 0 30px;
@@ -247,10 +214,6 @@ const steps = [
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-  }
-  .fine {
-    margin: 22px 0 0;
-    font-size: 13.5px;
   }
   .block {
     padding: 140px 0;
