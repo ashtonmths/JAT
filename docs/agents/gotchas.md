@@ -43,6 +43,8 @@ Each of these cost time once. Add a line when something new does.
 - **Builder agents have no Workflow tool** (2026-11-08): brief them to stop at each workflow step with an args file; the
   lead runs the workflow and copies `.result` from the task output file into the builder's `var/`. Agents were also
   refused `source tools/dev/env.sh`; they put Node on PATH with `export PATH=…` instead.
+- **In a worktree-isolated session** a Bash line that mixes git with other commands (or `cd`s first) is refused:
+  split it, or put the steps in a script file under the job folder and run `bash <file>`.
 - **A subagent's report can arrive as a message, not a notification**, and a second report in the same run is refused:
   when an agent says it reported again, SendMessage it to ask for what's new.
 
@@ -163,6 +165,21 @@ Each of these cost time once. Add a line when something new does.
   ("openapi-typescript: not found").
 - **Screenshot pixel diffs prove English didn't change**: `screenshots.py <url> <lang> layout en` before and after,
   then compare the PNGs with Pillow (`ImageChops.difference(...).getbbox()`); same size and no box means identical.
+
+## Website (Astro)
+
+- **Astro doesn't scope `@keyframes`**: two components' `drift` collide and one silently replaces the other. Prefix
+  every keyframe with its component (`hero-drift`, `story-nudge`).
+- **Layout shift from fonts:** preload the font used above the fold and give it a metric-matched fallback
+  (`size-adjust`, ascent/descent overrides). Playwright's bundled headless shell has different fallback fonts from
+  system Chrome: measure CLS in both, with the font delayed.
+- **`astro dev`/`astro preview` detach** as daemons: stop them with `npx astro dev stop` / `npx astro preview stop`
+  from the same `website/`, or they hold ports for days.
+- **Screenshots from the demo app:** restart it after a release, or the app shows a red version-mismatch warning in
+  every capture.
+- **Sites behind Cloudflare** refuse headless browsers; ask Kai for screenshots or let Kai pass the check in a
+  visible window. Never try to get round the check.
+- **`ship.sh … keep-agent-worktree`** releases without removing a builder's worktree that's still in use.
 
 ## Other
 
