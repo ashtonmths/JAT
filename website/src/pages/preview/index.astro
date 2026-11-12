@@ -1,0 +1,388 @@
+---
+// The redesigned homepage (docs/rfc/website-redesign.md, concept 1i), built here at a hidden /preview/ (noindex,
+// out of the sitemap) until it replaces the homepage in part 6. Part 1: the shell, with each section as a plain
+// placeholder holding today's copy; parts 2 to 5 swap them for the real sections. The anchors match today's page.
+import Base from "../../layouts/Base.astro";
+import Nav from "../../components/site/Nav.astro";
+import Footer from "../../components/site/Footer.astro";
+import { FAQ, GUIDE, MARQUEE, plain, README_ZH, REPO, STATS } from "../../data";
+
+const steps = [
+  {
+    title: "One recruiter, five roles, zero chaos.",
+    body: "Calls with an agenda, the roles they pitched, apply or pass on each, and how quickly they usually reply.",
+  },
+  {
+    title: "Every round, on a calendar.",
+    body: "Rounds, take-home tasks and calls by date, what's coming up, and what needs a new time.",
+  },
+  {
+    title: "Compare offers properly.",
+    body: "Salary, bonus, equity and pension, or a contractor's day rate, side by side with what each is worth a year.",
+  },
+  {
+    title: "Notes and files, where they belong.",
+    body: "Markdown notes, CV versions, PDFs and exported emails, kept with each role in your own data folder.",
+  },
+];
+---
+
+<Base noindex>
+  <Nav />
+  <main id="main">
+    <section class="hero" data-tint="lilac" aria-labelledby="hero-h">
+      <div class="wrap">
+        <p class="eyebrow">Job application tracker · local-first</p>
+        <h1 class="display" id="hero-h">
+          Your job search,
+          <br />
+          kept on your machine.
+        </h1>
+        <p class="sub soft">
+          Every application, recruiter, interview and offer in one place, and a clear list of who to chase
+          today. No account, no cloud, no AI, nobody watching.
+        </p>
+        <div class="ctas">
+          <a class="pill pill-plum" href="#quickstart">
+            Get started, it's free{" "}
+            <span class="arrow" aria-hidden="true">
+              →
+            </span>
+          </a>
+          <a class="pill glass" href="#how">
+            See it in action{" "}
+            <span class="arrow" aria-hidden="true">
+              ↓
+            </span>
+          </a>
+        </div>
+        <p class="fine soft">Free · open source (Apache-2.0) · Mac and Linux</p>
+      </div>
+    </section>
+
+    <section class="block" id="privacy" data-tint="butter" aria-labelledby="privacy-h">
+      <div class="wrap two">
+        <p class="eyebrow">Private by design</p>
+        <div>
+          <h2 class="lead" id="privacy-h">
+            No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job
+            search lives in one folder on your own computer: a SQLite database, a readable export, your
+            Markdown notes and your files.
+          </h2>
+          <dl class="stats">
+            {STATS.map((s) => (
+              <div>
+                <dt>
+                  {s.value}
+                  {s.suffix}
+                </dt>
+                <dd>{s.label}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="features" data-tint="butter" aria-label="The board, Today and Insights">
+      <div class="cards">
+        <article class="card plum">
+          <h3>The board</h3>
+          <p>
+            Every application, one drag away. See the interview round on each card, and who's gone quiet in
+            red.
+          </p>
+        </article>
+        <article class="card lavender">
+          <h3>Today</h3>
+          <p>
+            Know exactly who to chase. Your move, what's coming up, and who you're waiting on, red once it's
+            been too long.
+          </p>
+        </article>
+        <article class="card latte wide">
+          <p class="eyebrow">Insights</p>
+          <h3>See where it all leaks.</h3>
+          <p>Every role's path, from who brought it to an offer, or to ghosted, and what's still waiting.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="centre" id="problem" data-tint="mint">
+      <p class="display">
+        One folder on your computer.
+        <br />
+        <span class="soft">Nothing leaves it.</span>
+      </p>
+    </section>
+
+    <section class="block" id="how" data-tint="mint" aria-labelledby="how-h">
+      <div class="wrap two">
+        <div>
+          <p class="eyebrow">Everything in one place</p>
+          <h2 class="h2" id="how-h">
+            The whole search,
+            <br />
+            not just the board.
+          </h2>
+        </div>
+        <ol class="steps">
+          {steps.map((s) => (
+            <li>
+              <b>{s.title}</b>
+              <span class="soft">{s.body}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <section class="block" id="languages" data-tint="apricot" aria-labelledby="lang-h">
+      <div class="wrap two">
+        <p class="eyebrow">
+          English and <span lang="zh-CN">简体中文</span>
+        </p>
+        <div>
+          <h2 class="lead" id="lang-h">
+            The whole app in English and <span lang="zh-CN">简体中文</span>, from buttons to dates. It follows
+            your browser, and you can switch in the header. The README is{" "}
+            <a href={README_ZH}>
+              in <span lang="zh-CN">简体中文</span>
+            </a>{" "}
+            too.
+          </h2>
+          <ul class="chips" aria-label="Also in the box">
+            {MARQUEE.flat().map((c) => (
+              <li class="glass">{c}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="block get" id="quickstart" data-tint="apricot" aria-labelledby="qs-h">
+      <div class="wrap">
+        <p class="eyebrow">Quick start · open source, Apache-2.0</p>
+        <h2 class="display" id="qs-h">
+          Set up in about ten minutes.
+        </h2>
+        <p class="sub soft">
+          For now there's no installer. With uv and Node.js on your computer, you copy and paste a few
+          commands into the Terminal app, once; the <a href={`${GUIDE}install.md`}>install guide</a> lists
+          what you need and where to get it. After that it's a web page in your browser. A one-command install
+          and a double-click app are on the way.
+        </p>
+        <p class="soft">
+          <b>Mac or Linux.</b> Windows isn't supported yet; it's next on the roadmap.
+        </p>
+        <div class="ctas">
+          <a class="pill pill-plum" href={`${GUIDE}install.md`}>
+            Read the install guide{" "}
+            <span class="arrow" aria-hidden="true">
+              →
+            </span>
+          </a>
+          <a class="pill glass" href={REPO}>
+            View on GitHub{" "}
+            <span class="arrow" aria-hidden="true">
+              ↗
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="faq" data-tint="apricot" aria-labelledby="faq-h">
+      <div class="wrap two">
+        <div>
+          <p class="eyebrow">FAQ</p>
+          <h2 class="h2" id="faq-h">
+            Questions, answered.
+          </h2>
+        </div>
+        <div class="faq">
+          {FAQ.map((f) => (
+            <details name="faq">
+              <summary>{f.q}</summary>
+              <p>{plain(f.a)}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  /* Placeholders: plain, readable layouts that parts 2 to 5 replace with the designed sections. */
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 max(5vw, 20px);
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 2.2fr;
+    align-items: start;
+    gap: 40px;
+  }
+  .two > .eyebrow {
+    margin-top: 0.9em;
+  }
+  .hero {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    padding: 120px 0 80px;
+  }
+  .sub {
+    max-width: 36em;
+    margin: 22px 0 30px;
+    font-size: 18px;
+    font-weight: 300;
+  }
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .fine {
+    margin: 22px 0 0;
+    font-size: 13.5px;
+  }
+  .block {
+    padding: 140px 0;
+  }
+  .stats {
+    margin: 64px 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .stats div {
+    border-top: 1px solid var(--ink-faint);
+    padding-top: 16px;
+  }
+  .stats dt {
+    font-weight: 300;
+    font-size: clamp(40px, 4vw, 60px);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .stats dd {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gutter);
+    padding: 0 var(--gutter);
+  }
+  .card {
+    min-height: 360px;
+    border-radius: var(--r-panel);
+    padding: 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .card h3 {
+    margin: 0 0 6px;
+    font-weight: 400;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+  }
+  .card p {
+    margin: 0;
+    max-width: 30em;
+    font-weight: 300;
+  }
+  .card.wide {
+    grid-column: 1 / -1;
+  }
+  .plum {
+    background: linear-gradient(160deg, #45375f, var(--plum));
+    color: var(--on-plum);
+  }
+  .lavender {
+    background: linear-gradient(160deg, #a99ad8, #5e4d8a);
+    color: var(--on-plum);
+  }
+  .latte {
+    background: linear-gradient(150deg, var(--pastel-butter), var(--pastel-apricot));
+  }
+  .centre {
+    padding: 30vh 20px;
+    text-align: center;
+  }
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 32px;
+  }
+  .steps b {
+    display: block;
+    font-weight: 300;
+    font-size: clamp(24px, 2.2vw, 32px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .steps span {
+    display: block;
+    margin-top: 8px;
+    font-weight: 300;
+  }
+  .chips {
+    list-style: none;
+    padding: 0;
+    margin: 48px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chips li {
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+  }
+  .faq details {
+    border-top: 1px solid var(--ink-faint);
+    padding: 18px 0;
+  }
+  .faq summary {
+    cursor: pointer;
+    font-size: 19px;
+  }
+  .faq p {
+    margin: 12px 0 0;
+    font-weight: 300;
+    color: var(--ink-soft);
+  }
+  @media (max-width: 760px) {
+    .two,
+    .cards {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .cards {
+      gap: var(--gutter);
+    }
+    .card {
+      min-height: 260px;
+      border-radius: 26px;
+      padding: 26px;
+    }
+    .block {
+      padding: 96px 0;
+    }
+    .stats {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

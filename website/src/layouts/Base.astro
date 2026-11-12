@@ -1,0 +1,44 @@
+---
+// The redesigned site's shell (docs/rfc/website-redesign.md §11): the shared head, the fonts and tokens, the
+// background, and the script that sets the page's tint from the section in the middle of the screen.
+// At /preview/ until it replaces the homepage, so it passes noindex.
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
+import "../styles/site.css";
+import SiteHead from "../components/SiteHead.astro";
+import Backdrop from "../components/site/Backdrop.astro";
+
+interface Props {
+  noindex?: boolean;
+}
+const { noindex = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="site" data-tint="lilac">
+  <head>
+    <meta charset="utf-8" />
+    <SiteHead noindex={noindex} canonical={!noindex} themeColor="#f4f1fb" />
+  </head>
+  <body>
+    <a class="skip" href="#main">
+      Skip to content
+    </a>
+    <Backdrop />
+    <slot />
+    <script>
+      // Each section names its tint (data-tint="lilac" and so on); whichever holds the middle of the screen
+      // sets the page's, and the background fades to it.
+      const root = document.documentElement;
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) root.dataset.tint = (e.target as HTMLElement).dataset.tint;
+          }
+        },
+        { rootMargin: "-50% 0px -50% 0px" },
+      );
+      document.querySelectorAll<HTMLElement>("body [data-tint]").forEach((s) => io.observe(s));
+    </script>
+  </body>
+</html>
