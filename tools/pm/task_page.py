@@ -39,6 +39,11 @@ def stage_why(task: Task) -> str:
         return "Recorded as a bug in <code>docs/ROADMAP.yaml</code>. No fix has started."
     if task.status_source == "roadmap":
         said = PILL_WORDS.get(task.status, task.status)
+        if task.pr and task.pr.state == "CLOSED":
+            return (
+                f"<code>docs/ROADMAP.yaml</code> says {escape(said)}. PR #{task.pr.number} was closed without "
+                "merging, so its branch's commits are shelved."
+            )
         return f"<code>docs/ROADMAP.yaml</code> says {escape(said)}, and no open PR says otherwise."
     return f"{escape(task.status_source)}."
 
