@@ -1,0 +1,617 @@
+---
+// The sticky story (docs/rfc/website-redesign.md §11, part 5): four steps scroll past as ordinary text, so it's
+// plain you're still going down the page, while a plum panel beside them shows the part of the app each one is
+// about. A rail fills as you go, the panel counts "2 / 4", and the pin is only as long as the four steps, with
+// the next section peeking in under it. On a phone the panel sticks at the top and the steps scroll under it.
+// The pin, the dimmed steps and the rail only happen once the script adds `.live` (motion allowed). Without
+// JavaScript it's the words beside a still panel showing the first screen; under reduced motion the glass tabs
+// switch the screen and nothing is pinned.
+import type { ImageMetadata } from "astro";
+import { Picture } from "astro:assets";
+import recruiters from "../../assets/story/recruiters-light.png";
+import interviews from "../../assets/story/interviews-light.png";
+import offers from "../../assets/story/offers-light.png";
+import notes from "../../assets/story/notes-light.png";
+
+const steps: { tab: string; title: string; body: string; img: ImageMetadata; alt: string }[] = [
+  {
+    tab: "Recruiters",
+    title: "One recruiter, five roles, zero chaos.",
+    body: "Calls with an agenda, the roles they pitched, apply or pass on each, and how quickly they usually reply.",
+    img: recruiters,
+    alt: "The Recruiters page: three recruiters with their agencies, roles in progress and how quickly they usually reply",
+  },
+  {
+    tab: "Interviews",
+    title: "Every round, on a calendar.",
+    body: "Rounds, take-home tasks and calls by date, what's coming up, and what needs a new time.",
+    img: interviews,
+    alt: "The Interviews calendar for November, with rounds held and one coming up on Saturday",
+  },
+  {
+    tab: "Offers",
+    title: "Compare offers properly.",
+    body: "Salary, bonus, equity and pension, or a contractor's day rate, side by side with what each is worth a year.",
+    img: offers,
+    alt: "Two offers side by side: a day rate and a salary package, each with what it's worth a year",
+  },
+  {
+    tab: "Notes",
+    title: "Notes and files, where they belong.",
+    body: "Markdown notes, CV versions, PDFs and exported emails, kept with each role in your own data folder.",
+    img: notes,
+    alt: "The Notes page with a call's notes open: the role, the day rate and a short to-do list, in Markdown",
+  },
+];
+const widths = (img: ImageMetadata) => [480, 720, 960, 1440].filter((w) => w <= img.width);
+---
+
+<section class="story" id="how" data-tint="mint" data-story aria-labelledby="story-h">
+  <div class="grid">
+    <div class="copy">
+      <div class="head">
+        <p class="eyebrow">Everything in one place</p>
+        <h2 class="h2" id="story-h">
+          The whole search,
+          <br />
+          not just the board.
+        </h2>
+      </div>
+      <div class="stepwrap">
+        <div class="rail" aria-hidden="true">
+          <i data-fill></i>
+        </div>
+        <ol class="steps">
+          {steps.map((s, i) => (
+            <li class:list={{ on: i === 0 }} data-step>
+              <span class="n" aria-hidden="true">
+                0{i + 1}
+              </span>
+              <b>{s.title}</b>
+              <span class="body">{s.body}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+
+    <div class="media" data-media>
+      <div class="panel">
+        <div class="tabs" role="group" aria-label="Show a part of the app" data-tabs hidden>
+          <span class="thumb" data-thumb aria-hidden="true"></span>
+          {steps.map((s, i) => (
+            <button type="button" aria-current={i === 0 ? "true" : undefined} data-tab>
+              {s.tab}
+            </button>
+          ))}
+        </div>
+        <div class="frame">
+          {steps.map((s, i) => (
+            <div class:list={["shot", { on: i === 0 }]} aria-hidden={i === 0 ? undefined : "true"} data-shot>
+              <Picture
+                src={s.img}
+                formats={["avif", "webp"]}
+                fallbackFormat="webp"
+                widths={widths(s.img)}
+                sizes="(max-width: 760px) 80vw, 680px"
+                alt={s.alt}
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          ))}
+        </div>
+        <p class="count" aria-hidden="true" data-counter hidden>
+          <b data-count>1</b> / {steps.length}
+          <span>Keep scrolling ↓</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const story = document.querySelector<HTMLElement>("[data-story]");
+  if (story) {
+    const tabs = [...story.querySelectorAll<HTMLButtonElement>("[data-tab]")];
+    const shots = [...story.querySelectorAll<HTMLElement>("[data-shot]")];
+    const steps = [...story.querySelectorAll<HTMLElement>("[data-step]")];
+    const thumb = story.querySelector<HTMLElement>("[data-thumb]")!;
+    const fill = story.querySelector<HTMLElement>("[data-fill]")!;
+    const count = story.querySelector<HTMLElement>("[data-count]")!;
+    const media = story.querySelector<HTMLElement>("[data-media]")!;
+    // Pinned and scroll-linked only with motion allowed; under reduced motion the tabs just switch the screen.
+    const motion = matchMedia("(prefers-reduced-motion: no-preference)");
+    const narrow = matchMedia("(max-width: 760px)");
+    // On a phone the panel sticks this far down (the CSS's `top`), and "the middle" is the middle of the space
+    // under it.
+    const PHONE_TOP = 70;
+    let live = false;
+    let shown = -1;
+    let target = 0;
+    let progress = 0;
+    let tabsDirty = true;
+    let thumbAt: [left: number, width: number][] = [];
+    let queued = false;
+    let stuck = false;
+
+    const clamp = (v: number) => Math.min(1, Math.max(0, v));
+    const middle = () =>
+      narrow.matches ? (PHONE_TOP + media.offsetHeight + innerHeight) / 2 : innerHeight / 2;
+
+    // Reads layout (on scroll and resize only); frame() then only writes.
+    function measure() {
+      if (!live) return;
+      const mid = middle();
+      // On a phone, whether the panel has reached its sticky place (its strip then reaches the screen's top).
+      stuck = narrow.matches && media.getBoundingClientRect().top <= PHONE_TOP + 0.5;
+      const mids = steps.map((s) => {
+        const r = s.getBoundingClientRect();
+        return r.top + r.height / 2;
+      });
+      let best = 0;
+      mids.forEach((m, k) => {
+        if (Math.abs(m - mid) < Math.abs(mids[best] - mid)) best = k;
+      });
+      target = best;
+      const first = mids[0];
+      const last = mids[mids.length - 1];
+      progress = clamp((mid - first) / (last - first));
+    }
+    function frame() {
+      queued = false;
+      // The tabs' sizes are read first, before this frame writes anything.
+      if (tabsDirty) {
+        thumbAt = tabs.map((t) => [t.offsetLeft, t.offsetWidth]);
+        tabsDirty = false;
+        shown = -1;
+      }
+      if (target !== shown) {
+        shown = target;
+        tabs.forEach((t, k) =>
+          k === shown ? t.setAttribute("aria-current", "true") : t.removeAttribute("aria-current"),
+        );
+        shots.forEach((s, k) => {
+          s.classList.toggle("on", k === shown);
+          if (k === shown) s.removeAttribute("aria-hidden");
+          else s.setAttribute("aria-hidden", "true");
+        });
+        steps.forEach((s, k) => s.classList.toggle("on", k === shown));
+        count.textContent = String(shown + 1);
+        const [left, width] = thumbAt[shown];
+        thumb.style.transform = `translateX(${left}px) scaleX(${width / 90})`;
+      }
+      if (live) fill.style.transform = `scaleY(${progress})`;
+      story!.classList.toggle("stuck", live && stuck);
+    }
+    function queue() {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(frame);
+      }
+    }
+    function update() {
+      measure();
+      queue();
+    }
+    // Live or still: still drops the pin and the rail's inline style, and keeps the screen that was showing.
+    // Live is much taller, so a switch mid-page keeps the reader in place. (One read after the write, once per
+    // change of preference.)
+    function mode(e?: MediaQueryListEvent) {
+      const before = story!.getBoundingClientRect();
+      live = motion.matches;
+      story!.classList.toggle("live", live);
+      if (!live) fill.removeAttribute("style");
+      if (e) {
+        const after = story!.getBoundingClientRect();
+        // The story's end on screen (or above it): the next section stays where it was. Otherwise, in the
+        // pinned part: back to the story's top.
+        if (before.bottom <= innerHeight)
+          scrollBy({ top: after.bottom - before.bottom, behavior: "instant" });
+        else if (before.top < 0) scrollBy({ top: after.top - 90, behavior: "instant" });
+      }
+      tabsDirty = true;
+      update();
+    }
+
+    tabs.forEach((t, i) =>
+      t.addEventListener("click", () => {
+        if (live) {
+          // Scroll the step to the middle; the screen follows from the scroll.
+          const r = steps[i].getBoundingClientRect();
+          scrollTo({ top: scrollY + r.top + r.height / 2 - middle() });
+        } else {
+          target = i;
+          queue();
+        }
+      }),
+    );
+    story.querySelector<HTMLElement>("[data-tabs]")!.hidden = false;
+    story.querySelector<HTMLElement>("[data-counter]")!.hidden = false;
+    addEventListener("scroll", update, { passive: true });
+    addEventListener("resize", () => {
+      tabsDirty = true;
+      update();
+    });
+    motion.addEventListener("change", mode);
+    narrow.addEventListener("change", update);
+    // The tabs change width when Inter arrives.
+    document.fonts?.ready.then(() => {
+      tabsDirty = true;
+      queue();
+    });
+    // Off screen, the panel's drift pauses.
+    new IntersectionObserver(([e]) => story.classList.toggle("paused", !e.isIntersecting)).observe(story);
+    mode();
+  }
+</script>
+
+<style>
+  .story {
+    position: relative;
+    padding: 140px 0 120px;
+  }
+  .live {
+    padding-bottom: 40px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.8fr) 1.5fr;
+    gap: clamp(32px, 5vw, 80px);
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 max(5vw, 24px);
+  }
+  .head {
+    padding-bottom: 48px;
+  }
+  .live .head {
+    padding-bottom: 8vh;
+  }
+  .stepwrap {
+    position: relative;
+  }
+  .steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 40px;
+  }
+  .steps li {
+    display: flex;
+    flex-direction: column;
+  }
+  /* Live: each step is a stretch of ordinary text, so the page visibly moves, and the one in the middle is lit. */
+  .live .steps {
+    padding-left: 28px;
+    gap: 0;
+  }
+  .live .steps li {
+    min-height: 44vh;
+    justify-content: center;
+    /* Dimmed, but readable: in full ink at this opacity every line stays above 4.5:1 on the tints. */
+    opacity: 0.68;
+    transition: opacity 0.5s;
+  }
+  .live .steps li:last-child {
+    min-height: 34vh;
+  }
+  .live .steps li.on {
+    opacity: 1;
+  }
+  .live .n,
+  .live .body {
+    color: var(--ink);
+  }
+  .n {
+    font: 500 12px/1 var(--mono);
+    letter-spacing: 0.14em;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+  .steps b {
+    font-weight: 300;
+    font-size: clamp(24px, 2.2vw, 32px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .body {
+    font-weight: 300;
+    margin-top: 12px;
+    max-width: 26em;
+    color: var(--ink-soft);
+  }
+  .rail {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--ink-faint);
+  }
+  .live .rail {
+    display: block;
+  }
+  .rail i {
+    position: absolute;
+    inset: 0;
+    background: var(--plum);
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+
+  .media {
+    position: relative;
+  }
+  .panel {
+    --focus: var(--focus-on-dark);
+    position: relative;
+    height: min(76vh, 700px);
+    min-height: 420px;
+    border-radius: var(--r-panel);
+    background:
+      radial-gradient(120% 90% at 80% 0%, var(--plum-2), transparent 60%),
+      linear-gradient(160deg, #34284d, var(--plum));
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    perspective: 1600px;
+  }
+  .live .panel {
+    position: sticky;
+    top: 12vh;
+  }
+  /* Glass to look at, without a backdrop blur: the panel moves as the page scrolls. */
+  .tabs {
+    position: absolute;
+    z-index: 3;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    padding: 5px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.06));
+    border: 1px solid rgb(255 255 255 / 0.22);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18);
+  }
+  .tabs[hidden] {
+    display: none;
+  }
+  .tabs button {
+    position: relative;
+    z-index: 1;
+    appearance: none;
+    border: 0;
+    background: none;
+    color: var(--on-plum);
+    font: 500 14px/1 var(--sans);
+    padding: 10px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    opacity: 0.75;
+    transition: opacity 0.3s;
+  }
+  .tabs button:hover,
+  .tabs button[aria-current="true"] {
+    opacity: 1;
+  }
+  .thumb {
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    /* A fixed width, stretched to the tab with scaleX, so only the transform animates. */
+    width: 90px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.32), rgb(255 255 255 / 0.12));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    transition: transform 0.5s var(--ease);
+  }
+  .paused .frame,
+  .live.paused .count span {
+    animation-play-state: paused;
+  }
+  .frame {
+    position: relative;
+    width: 86%;
+    aspect-ratio: 1440 / 900;
+    margin-top: 40px;
+    transform: rotateX(8deg) rotateY(-10deg);
+    transform-style: preserve-3d;
+    animation: story-sway 10s ease-in-out infinite alternate;
+  }
+  @keyframes story-sway {
+    to {
+      transform: rotateX(4deg) rotateY(-4deg) translateY(-8px);
+    }
+  }
+  .shot {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.1),
+      0 40px 80px -20px rgb(0 0 0 / 0.6);
+    opacity: 0;
+    transform: translateZ(-60px) translateY(24px);
+    transition:
+      opacity 0.6s var(--ease),
+      transform 0.8s var(--ease);
+  }
+  .shot.on {
+    opacity: 1;
+    transform: none;
+  }
+  .shot :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: left top;
+  }
+  .count {
+    position: absolute;
+    z-index: 3;
+    left: 24px;
+    bottom: 20px;
+    margin: 0;
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgb(42 30 63 / 0.82);
+    font: 500 12px/1 var(--mono);
+    letter-spacing: 0.1em;
+    color: var(--on-plum-soft);
+  }
+  .count[hidden] {
+    display: none;
+  }
+  .count b {
+    color: var(--on-plum);
+    font-weight: 500;
+  }
+  .count span {
+    display: none;
+    margin-left: 8px;
+    text-transform: uppercase;
+  }
+  .count span::before {
+    content: "· ";
+  }
+  .live .count span {
+    display: inline;
+    animation: story-nudge 2.4s ease-in-out infinite;
+  }
+  @keyframes story-nudge {
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .story {
+      padding: 96px 0 72px;
+    }
+    .live {
+      padding-bottom: 24px;
+    }
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 0;
+      padding: 0 16px;
+    }
+    .copy,
+    .stepwrap {
+      display: contents;
+    }
+    .head,
+    .live .head {
+      order: 1;
+      padding-bottom: 24px;
+    }
+    .media {
+      order: 2;
+      margin-bottom: 32px;
+    }
+    .live .media {
+      position: sticky;
+      top: 70px; /* PHONE_TOP in the script */
+      z-index: 2;
+      margin-bottom: 0;
+    }
+    /* Page colour round the panel, fading out at its foot, so the steps scroll out of sight behind it (and,
+       once it's stuck, never show behind the nav). */
+    .live .media::before {
+      content: "";
+      position: absolute;
+      inset: -12px -16px -28px;
+      background: linear-gradient(var(--tint-mint) calc(100% - 28px), rgb(242 249 245 / 0));
+      z-index: -1;
+      pointer-events: none;
+    }
+    /* Above it, up to the top of the screen: shown only once the panel is stuck (earlier it would cover the
+       heading). Its box never changes; only its opacity does. */
+    .live .media::after {
+      content: "";
+      position: absolute;
+      top: -70px;
+      left: -16px;
+      right: -16px;
+      height: 58px;
+      background: var(--tint-mint);
+      z-index: -1;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .stuck .media::after {
+      opacity: 1;
+    }
+    .panel,
+    .live .panel {
+      position: relative;
+      top: 0;
+      height: auto;
+      min-height: 0;
+      aspect-ratio: 1.05;
+      border-radius: 26px;
+    }
+    .steps {
+      order: 3;
+      padding: 0 4px;
+    }
+    .live .steps {
+      padding: 0 4px;
+    }
+    .live .rail {
+      display: none;
+    }
+    .live .steps li {
+      min-height: 30vh;
+      padding: 24px 0;
+    }
+    .live .steps li:last-child {
+      min-height: 22vh;
+    }
+    .tabs {
+      top: 12px;
+      max-width: calc(100% - 20px);
+    }
+    .tabs button {
+      padding: 8px 10px;
+      font-size: 12.5px;
+    }
+    .frame {
+      width: 88%;
+      aspect-ratio: 1;
+      margin-top: 44px;
+    }
+    .shot :global(img) {
+      object-position: 30% top;
+    }
+    .count {
+      left: 14px;
+      bottom: 12px;
+    }
+    .live .count span {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .frame {
+      animation: none;
+    }
+    .shot,
+    .thumb,
+    .tabs button {
+      transition: none;
+    }
+  }
+</style>

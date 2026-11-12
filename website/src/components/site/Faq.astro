@@ -1,0 +1,147 @@
+---
+// The FAQ (docs/rfc/website-redesign.md §11, part 5): the heading on the left, the questions as rounded cards
+// that open in place on the right. The answers' `code` and links render through faqHtml (data.ts), as on the
+// current homepage; the same answers feed the FAQPage structured data (SiteHead.astro).
+import { FAQ, faqHtml, REPO } from "../../data";
+---
+
+<section class="faq" id="faq" data-tint="apricot" aria-labelledby="faq-h">
+  <div class="two">
+    <div class="side">
+      <p class="eyebrow">FAQ</p>
+      <h2 class="h2" id="faq-h">
+        Questions, answered.
+      </h2>
+      <p class="soft ask">
+        Anything else? <a href={`${REPO}/issues`}>Ask in an issue</a>: there are no silly questions about job
+        hunting.
+      </p>
+    </div>
+    <div class="list">
+      {FAQ.map((f) => (
+        <details name="faq">
+          <summary>
+            <span>{f.q}</span>
+            <span class="plus" aria-hidden="true" />
+          </summary>
+          <p set:html={faqHtml(f.a)} />
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq {
+    padding: 120px 0 160px;
+  }
+  .two {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    align-items: start;
+    gap: clamp(32px, 5vw, 80px);
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 max(5vw, 20px);
+  }
+  .side {
+    position: sticky;
+    top: 110px;
+  }
+  .ask {
+    margin: 22px 0 0;
+    max-width: 22em;
+    font-weight: 300;
+  }
+  .list {
+    display: grid;
+    gap: 8px;
+  }
+  details {
+    border-radius: var(--r-card);
+    background: rgb(255 255 255 / 0.55);
+    border: 1px solid rgb(255 255 255 / 0.8);
+    box-shadow: 0 10px 30px -18px rgb(var(--shadow-rgb) / 0.25);
+  }
+  details[open] {
+    background: rgb(255 255 255 / 0.8);
+  }
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    border-radius: var(--r-card);
+    cursor: pointer;
+    list-style: none;
+    font-size: 17px;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  .plus {
+    position: relative;
+    flex: none;
+    width: 14px;
+    height: 14px;
+  }
+  .plus::before,
+  .plus::after {
+    content: "";
+    position: absolute;
+    inset: 6px 0 auto;
+    height: 1.5px;
+    border-radius: 2px;
+    background: var(--ink);
+    transition: transform 0.4s var(--ease);
+  }
+  .plus::after {
+    transform: rotate(90deg);
+  }
+  details[open] .plus::after {
+    transform: rotate(0deg);
+  }
+  details p {
+    margin: 0;
+    padding: 0 24px 22px;
+    font-weight: 300;
+    color: var(--ink-soft);
+  }
+  details p :global(a) {
+    color: var(--ink);
+    text-underline-offset: 3px;
+  }
+  details p :global(code) {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--pastel-lilac);
+    color: var(--ink);
+  }
+  @media (max-width: 760px) {
+    .faq {
+      padding: 80px 0 120px;
+    }
+    .two {
+      grid-template-columns: 1fr;
+    }
+    .side {
+      position: static;
+    }
+    summary {
+      padding: 18px 20px;
+      font-size: 16px;
+    }
+    details p {
+      padding: 0 20px 20px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .plus::before,
+    .plus::after {
+      transition: none;
+    }
+  }
+</style>
