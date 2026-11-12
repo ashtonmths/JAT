@@ -1137,29 +1137,24 @@ test.describe("deleting an agency", () => {
     await expect(page.getByText("Lone Route Role").first()).toBeVisible();
   });
 
-  // KNOWN BUG (fix-agency-delete-blocks-application-save on the roadmap): expected to fail until it is fixed.
-  test.fail(
-    "an application with only the agency can still be saved afterwards",
-    async ({ page, request, problems }) => {
-      problems.allow(/422.*\/api\/v1\/applications/);
-      const here = await agency(request, "Doomed Save Agency");
-      const made = await apply(request, {
-        company_name: "Save After Client",
-        role_title: "Save After Role",
-        route: "agency",
-        agency_id: here.id,
-      });
-      await openAgency(page, here.id, "Doomed Save Agency");
-      await deleteAnswering(page, true);
-      await expect(heading(page, "Recruiters")).toBeVisible();
-      await page.goto(`/applications/${made.id}`);
-      await page.getByLabel("Tags", { exact: true }).first().fill("still-mine");
-      await page.keyboard.press("Enter");
-      const saved = answered(page, "PATCH", /\/applications\//);
-      await page.getByRole("button", { name: "Save details" }).click();
-      expect((await saved).status()).toBe(200);
-    },
-  );
+  test("an application with only the agency can still be saved afterwards", async ({ page, request }) => {
+    const here = await agency(request, "Doomed Save Agency");
+    const made = await apply(request, {
+      company_name: "Save After Client",
+      role_title: "Save After Role",
+      route: "agency",
+      agency_id: here.id,
+    });
+    await openAgency(page, here.id, "Doomed Save Agency");
+    await deleteAnswering(page, true);
+    await expect(heading(page, "Recruiters")).toBeVisible();
+    await page.goto(`/applications/${made.id}`);
+    await page.getByLabel("Tags", { exact: true }).first().fill("still-mine");
+    await page.keyboard.press("Enter");
+    const saved = answered(page, "PATCH", /\/applications\//);
+    await page.getByRole("button", { name: "Save details" }).click();
+    expect((await saved).status()).toBe(200);
+  });
 
   test("it's no longer offered in the person dialog", async ({ page, request }) => {
     const here = await agency(request, "Unoffered Agency");
