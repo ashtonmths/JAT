@@ -1,7 +1,7 @@
 ---
 // Everything search engines and link previews read: title, description, canonical, icons, the social
-// card and the structured data (JSON-LD). Shared by the live page and the redesign at /preview/, which
-// passes noindex until it replaces the homepage (docs/rfc/website-redesign.md §11).
+// card and the structured data (JSON-LD), in one place for every page of the site. A page that shouldn't
+// be in search results yet (the redesign at /preview/, docs/rfc/website-redesign.md §11) passes noindex.
 import { DESCRIPTION, FAQ, plain, REPO, SITE_URL, TITLE } from "../data";
 
 interface Props {
@@ -36,7 +36,7 @@ const jsonLd = {
       applicationSubCategory: "Job search tracker",
       operatingSystem: "Linux, macOS",
       inLanguage: ["en", "zh-CN"],
-      softwareVersion: "1.24.4",
+      softwareVersion: "1.24.5",
       license: "https://www.apache.org/licenses/LICENSE-2.0",
       isAccessibleForFree: true,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },

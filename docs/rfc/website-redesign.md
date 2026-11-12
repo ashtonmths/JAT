@@ -1,10 +1,12 @@
-# Website redesign: design language and five concepts
+# Website redesign: design language, concepts and the pick
 
-Status: Kai picked 1i (§10); being built in six PRs (§11). The concept pages themselves stay on their branch (draft PR, not merged). Kai, 2026-11-12: "redesign the
-static page website … liquid glass things, clean, big graphics, movement, 3d, rounded edges … give me a new website
+Status: Kai picked 1i (§10, §11); it's being built in seven PRs (§11). The concept pages stay on their branch (a
+draft PR, not merged).
+
+Kai, 2026-11-12: "redesign the static page website … liquid glass things, clean, big graphics, movement, 3d, rounded edges … give me a new website
 mockup locally (DO NOT MERGE IT) … a toggle/selector to choose from 5 concepts and we'll refine from there", and "i
 quite like the 3d motion graphic of the phone with their app on it, perhaps we can do something similar with a web
-browser". The reference Kai named is a fintech company's UK landing page and its blog.
+browser". The reference Kai named is another company's landing page and blog, called "the reference" here.
 
 We borrow a **way of designing**, not a brand: no logo, wording, photography, fonts, colours-as-a-set or illustrations
 of theirs. Everything below is restated as our own rules, applied to our product (a private, local-first job tracker).
@@ -48,8 +50,9 @@ Read from screenshots of the landing page (desktop, top to bottom) and a blog po
    insights), long pages scroll inside the window, and where it's cheap a small piece is rebuilt in HTML so it can
    move for real (a card dragged across board columns, a to-do ticked, a stage badge changing). It plays on a loop
    while in view and pauses when out of view.
-6. **A signature texture.** Theirs is a halftone of plus-dots that forms shapes. Ours must be our own: a dot/grid field
-   that can draw *our* shapes (a board's columns, a funnel, a calendar), animated subtly.
+6. **A signature texture of our own.** The reference's texture is a halftone of dots; ours must not be a dot or
+   halftone field at all (round 2). It comes from the app instead: stage-coloured cards drifting behind the hero,
+   frosted glass board cards, grain and soft light (the pick, 1i).
 7. **The page changes colour as you scroll.** Sections don't sit on a fixed background: the page's base tint moves
    (dark → light → warm → dark) as each section takes the screen, so the fixed glass chrome re-tints too.
 8. **Sticky storytelling.** Copy pinned on one side while media on the other side advances through states (tabs or
@@ -64,8 +67,8 @@ Read from screenshots of the landing page (desktop, top to bottom) and a blog po
 The concepts keep the current site's message and facts (`website/src/data.ts`, the README): a self-hosted job
 application tracker for software engineers; private (no AI, no cloud, no account, no tracking; data stays on your
 computer); the board, Today, recruiters and agencies, interviews and the calendar, offers, insights and Sankey,
-notes and files; English and 简体中文; open source (Apache-2.0); install with a few commands. English only in the
-concepts; the chosen one gets its zh-CN text when it's built for real (CLAUDE.md *Languages*).
+notes and files; English and 简体中文; open source (Apache-2.0); install with a few commands. The website is in
+English, as today.
 
 ## 4. The five concepts
 
@@ -90,10 +93,9 @@ Mood, palette and how the browser moves:
 | 4 | **Night shift** | Dark and cool: ink blue, teal glow, white type. | A browser over a glowing floor, rotating slowly; its screen cycles board → Today → insights. | Dot particles flowing left to right through the stages, like the Sankey; deep navy → teal → violet → black. |
 | 5 | **Bubbles** | Playful: each section a different pastel block with speech-bubble corners; bold yet light type. | A tilted browser that pops and wobbles slightly as you scroll; smaller UI chips (a stage badge, a to-do, a round) orbit it in 3D. | Chunky dots; each section's pastel takes over the page tint as it arrives. |
 
-## 5. After Kai picks
+## 5. After Kai picks (superseded by §11)
 
-Narrow down in rounds (sub-variations of the favourites), then plan the real change: tokens in `landing.css`, the
-components reworked, zh-CN parity, performance and accessibility checks, screenshots before and after. If the live
+Narrow down in rounds (sub-variations of the favourites), then plan the real change (§11). If the live
 3D browser is too heavy on phones, HyperFrames (Apache-2.0, HTML to MP4) could render the same animation to a video
 for small screens; that would be a build-time tool, not a site dependency.
 
@@ -101,8 +103,7 @@ for small screens; that would be a build-time tool, not a site dependency.
 
 Kai's notes on round 1:
 
-- **Espresso** leads ("colours are nice"), but its dot texture is "way too similar to cleo, its too close to a straight
-  rip off", and the sticky "whole search" section has "too much scroll jacking that it feels like youve reached the
+- **Espresso** leads ("colours are nice"), but its dot texture is "way too similar" to the reference, and the sticky "whole search" section has "too much scroll jacking that it feels like youve reached the
   end of the page, need more obvious that youre still scrolling down the page".
 - **Liquid**: "cool colour scheme … it feels good but the graphics/motion just arent as good".
 - **Paper**: "too similar to what we have now". Dropped.
@@ -110,7 +111,7 @@ Kai's notes on round 1:
   opposite of what this project is … feels too dark, the motion of the app views not enough". Dropped.
 - **Bubbles**: "interesting".
 
-So the signature texture can't be a dot or halftone field at all (rule 6 now reads: no dots). Round 2's variations,
+So the signature texture can't be a dot or halftone field at all (rule 6 says so now). Round 2's variations,
 with round 1's 1, 2 and 5 kept in the switcher to compare:
 
 | Page | What changes |
@@ -163,12 +164,13 @@ see different screens sooner". 1g, 1h and 1i are 1f with the hero's app sequence
 ## 11. Building it (Kai, 2026-11-12: "1i, ship it")
 
 1i becomes the real site: 1f's pastels and plum, the app in light mode, the hero's demo at twice the speed. It's built
-at a hidden `/preview/` (`noindex`, left out of the sitemap) in six PRs, each working on its own, so the live page is
-never half-converted:
+at a hidden `/preview/` (`noindex`, left out of the sitemap) in seven PRs, each working on its own, so the live page
+is never half-converted:
 
 | # | Task | What lands |
 |---|---|---|
-| 1 | website-redesign-base | The shell at `/preview/`: the same head as today's page (meta, social card, structured data) with `noindex`, the tokens, fonts, glass nav and button, the grain and light background with section tints, the footer panel, and every section as a plain placeholder with today's copy. |
+| 0 | website-redesign-head | One shared head component (meta, social card, structured data) that both pages use; the built homepage stays the same. |
+| 1 | website-redesign-base | The shell at `/preview/`: the shared head with `noindex`, the tokens, fonts, glass nav and button, the grain and light background with section tints, the footer panel, and every section as a plain placeholder with today's copy. |
 | 2 | website-redesign-hero | The hero: copy, the drifting cards, the 3D browser that turns and opens onto the 简体中文 window, optimised light-mode screenshots. |
 | 3 | website-redesign-demo | The app in use inside the window at 1i's speed, paused off screen, a still pose for reduced motion. |
 | 4 | website-redesign-sections | The statement, the glass board and Today cards, the Insights panel, the centre line. |
