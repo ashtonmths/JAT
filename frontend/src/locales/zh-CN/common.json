@@ -97,6 +97,10 @@
     "deleteNamed": "删除：{{name}}",
     "undo": "撤销"
   },
+  "load": {
+    "failed": "无法加载这部分内容。",
+    "retry": "重试"
+  },
   "editName": {
     "name": "名称",
     "website": "网站",
