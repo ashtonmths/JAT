@@ -4,14 +4,22 @@ import { describe, expect, it, vi } from "vitest";
 
 import { QueryState } from "./QueryState";
 
-type Query = { data: string[] | undefined; isError: boolean; refetch: () => Promise<never> };
+type Query = {
+  data: string[] | undefined;
+  isError: boolean;
+  isFetching: boolean;
+  fetchStatus: "fetching" | "paused" | "idle";
+  refetch: () => Promise<never>;
+};
 
 function renderState(query: Query, select?: (d: string[]) => string[]) {
   return render(
     <MantineProvider>
-      <QueryState query={query} select={select} empty="Nothing here yet." rows={4}>
-        {(list) => list.map((x) => <p key={x}>{x}</p>)}
-      </QueryState>
+      <div data-testid="where">
+        <QueryState query={query} select={select} empty="Nothing here yet." rows={4}>
+          {(list) => list.map((x) => <p key={x}>{x}</p>)}
+        </QueryState>
+      </div>
     </MantineProvider>,
   );
 }
@@ -19,6 +27,8 @@ function renderState(query: Query, select?: (d: string[]) => string[]) {
 const query = (q: Partial<Query>): Query => ({
   data: undefined,
   isError: false,
+  isFetching: true,
+  fetchStatus: "fetching",
   refetch: vi.fn(),
   ...q,
 });
@@ -32,13 +42,26 @@ describe("QueryState", () => {
     expect(screen.queryByText("Nothing here yet.")).toBeNull();
   });
 
+  it("shows nothing for a query that never started (disabled)", () => {
+    renderState(query({ isFetching: false, fetchStatus: "idle" }));
+    expect(screen.getByTestId("where")).toBeEmptyDOMElement();
+  });
+
   it("says a failed load failed, and Retry refetches", () => {
-    const q = query({ isError: true });
+    const q = query({ isError: true, isFetching: false, fetchStatus: "idle" });
     renderState(q);
-    expect(screen.getByText("Couldn't load this.")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Couldn't load this.");
     expect(screen.queryByText("Nothing here yet.")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    const retry = screen.getByRole("button", { name: "Retry" });
+    expect(retry).not.toHaveAttribute("data-loading");
+    fireEvent.click(retry);
     expect(q.refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows Retry loading while it refetches after a failure", () => {
+    renderState(query({ isError: true, isFetching: true, fetchStatus: "fetching" }));
+    expect(screen.getByText("Couldn't load this.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry" })).toHaveAttribute("data-loading", "true");
   });
 
   it("shows the empty text only for a list that loaded empty", () => {

@@ -4,13 +4,14 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 /** What QueryState reads from a TanStack Query result. */
-type QueryLike<T> = Pick<UseQueryResult<T>, "data" | "isError" | "refetch">;
+type QueryLike<T> = Pick<UseQueryResult<T>, "data" | "isError" | "isFetching" | "fetchStatus" | "refetch">;
 
 /**
  * A card's or list's loading, failed and empty states, so a query that hasn't answered (or has
  * failed) never shows the "nothing here" text. While it loads: skeleton lines sized like the rows
- * they stand for. On a failed load: a dimmed line with Retry. The empty text only for a list that
- * loaded empty; otherwise the children, with the list. Whole-page loads keep their Loader.
+ * they stand for. On a failed load: a dimmed line with Retry (spinning while it tries again). The
+ * empty text only for a list that loaded empty; otherwise the children, with the list. A query that
+ * has never started (`enabled: false`) shows nothing. Whole-page loads keep their Loader.
  *
  * `select` turns the query's data into the list to show (a filtered one, say); it defaults to the
  * data itself.
@@ -35,15 +36,21 @@ export function QueryState<T, L extends readonly unknown[] = Extract<T, readonly
   if (query.data === undefined) {
     if (query.isError)
       return (
-        <Group gap="xs">
+        <Group gap="xs" role="status">
           <Text size="sm" c="dimmed">
             {t("load.failed")}
           </Text>
-          <Button size="compact-xs" variant="subtle" onClick={() => void query.refetch()}>
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            loading={query.isFetching}
+            onClick={() => void query.refetch()}
+          >
             {t("load.retry")}
           </Button>
         </Group>
       );
+    if (query.fetchStatus === "idle") return null; // never started: a disabled query
     return (
       <Stack gap="xs" aria-busy="true" data-testid="query-loading">
         {Array.from({ length: rows }, (_, i) => (
