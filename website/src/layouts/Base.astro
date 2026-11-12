@@ -18,9 +18,12 @@ const { noindex = false } = Astro.props;
 <html lang="en" class="site" data-tint="lilac">
   <head>
     <meta charset="utf-8" />
-    <SiteHead noindex={noindex} themeColor="#f4f1fb" />
+    <SiteHead noindex={noindex} canonical={!noindex} themeColor="#f4f1fb" />
   </head>
   <body>
+    <a class="skip" href="#main">
+      Skip to content
+    </a>
     <Backdrop />
     <slot />
     <script>

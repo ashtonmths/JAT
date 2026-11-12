@@ -8,5 +8,7 @@ export default defineConfig({
   site: "https://waddington.github.io",
   base: "/job-application-tracker",
   trailingSlash: "always",
-  integrations: [sitemap({ filter: (page) => !page.includes("/preview/") })],
+  integrations: [
+    sitemap({ filter: (page) => new URL(page).pathname !== "/job-application-tracker/preview/" }),
+  ],
 });

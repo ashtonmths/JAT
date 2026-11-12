@@ -5,13 +5,16 @@
 html.site {
   /* Ink and accents: Bubbles 5a's plum, with a lavender for light and focus. */
   --ink: #2a1e3f;
-  --ink-soft: rgb(42 30 63 / 0.64);
+  --ink-soft: rgb(42 30 63 / 0.7); /* at least 4.6:1 on every tint and pastel */
   --ink-faint: rgb(42 30 63 / 0.16);
   --plum: #2a1e3f;
   --plum-2: #4a3a68;
   --lavender: #c9b8f0;
   --on-plum: #f7f5fc;
   --on-plum-soft: rgb(247 245 252 / 0.66);
+  /* The focus ring: plum on the light page; dark panels set it to --focus-on-dark (both 3:1 or more). */
+  --focus: var(--plum-2);
+  --focus-on-dark: var(--pastel-lilac);
   /* Section tints, light on light. */
   --tint-lilac: #f4f1fb;
   --tint-butter: #fcf9ee;
@@ -41,6 +44,7 @@ html.site {
   --on-brand: #fff;
 
   scroll-behavior: smooth;
+  scroll-padding-top: 90px;
   -webkit-text-size-adjust: 100%;
   background: var(--tint-lilac);
   color-scheme: light;
@@ -71,7 +75,7 @@ html.site *::after {
   color: inherit;
 }
 .site :focus-visible {
-  outline: 2px solid var(--plum-2);
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 .site .sr-only {
@@ -81,6 +85,21 @@ html.site *::after {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* Skip to content: hidden until it has focus. */
+.site .skip {
+  position: fixed;
+  z-index: 100;
+  left: 12px;
+  top: -80px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--plum);
+  color: #fff;
+}
+.site .skip:focus {
+  top: 12px;
 }
 
 /* The eyebrow: a small square, then mono capitals. */

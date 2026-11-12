@@ -29,7 +29,7 @@ const steps = [
 
 <Base noindex>
   <Nav />
-  <main id="top">
+  <main id="main">
     <section class="hero" data-tint="lilac" aria-labelledby="hero-h">
       <div class="wrap">
         <p class="eyebrow">Job application tracker · local-first</p>
@@ -44,10 +44,16 @@ const steps = [
         </p>
         <div class="ctas">
           <a class="pill pill-plum" href="#quickstart">
-            Get started, it's free <span class="arrow">→</span>
+            Get started, it's free{" "}
+            <span class="arrow" aria-hidden="true">
+              →
+            </span>
           </a>
           <a class="pill glass" href="#how">
-            See it in action <span class="arrow">↓</span>
+            See it in action{" "}
+            <span class="arrow" aria-hidden="true">
+              ↓
+            </span>
           </a>
         </div>
         <p class="fine soft">Free · open source (Apache-2.0) · Mac and Linux</p>
@@ -171,10 +177,16 @@ const steps = [
         </p>
         <div class="ctas">
           <a class="pill pill-plum" href={`${GUIDE}install.md`}>
-            Read the install guide <span class="arrow">→</span>
+            Read the install guide{" "}
+            <span class="arrow" aria-hidden="true">
+              →
+            </span>
           </a>
           <a class="pill glass" href={REPO}>
-            View on GitHub <span class="arrow">↗</span>
+            View on GitHub{" "}
+            <span class="arrow" aria-hidden="true">
+              ↗
+            </span>
           </a>
         </div>
       </div>

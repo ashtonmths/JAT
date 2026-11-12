@@ -40,7 +40,7 @@ const columns = [
   <div class="panel">
     <div class="big">
       <p class="eyebrow">
-        <Logo size={18} /> Job Application Tracker
+        <Logo size={18} id="logo-foot" /> Job Application Tracker
       </p>
       <p class="line">Your search, on your machine.</p>
       <a class="pill get" href={`${GUIDE}install.md`}>
@@ -80,6 +80,7 @@ const columns = [
     border-radius: var(--r-panel);
     background: var(--plum);
     color: var(--on-plum);
+    --focus: var(--focus-on-dark);
     padding: clamp(36px, 5vw, 72px);
     padding-bottom: 96px;
     display: grid;

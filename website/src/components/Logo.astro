@@ -2,8 +2,10 @@
 // The app's logo (frontend/public/favicon.svg), inline so it can glow.
 interface Props {
   size?: number;
+  // The gradient's id, unique per logo on a page.
+  id?: string;
 }
-const { size = 28 } = Astro.props;
+const { size = 28, id = "logo-g" } = Astro.props;
 ---
 
 <svg
@@ -15,12 +17,12 @@ const { size = 28 } = Astro.props;
   aria-hidden="true"
 >
   <defs>
-    <linearGradient id="logo-g" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" style="stop-color: var(--brand)"></stop>
       <stop offset="1" style="stop-color: var(--violet)"></stop>
     </linearGradient>
   </defs>
-  <rect width="24" height="24" rx="6" fill="url(#logo-g)"></rect>
+  <rect width="24" height="24" rx="6" fill={`url(#${id})`}></rect>
   <g
     fill="none"
     style="stroke: var(--on-brand)"
