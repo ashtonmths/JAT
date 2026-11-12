@@ -1,0 +1,354 @@
+---
+// The board card's picture: a board in frosted glass on plum, over soft drifting light. The cards are drawn like the
+// app's own (company, role, a reply to read, a round, an offer, one gone quiet in red), with made-up data. One lit
+// card moves on through the stages, its last line changing with each column. Transform and opacity only; the glass
+// is gradients rather than a backdrop blur, so the light moving behind it costs nothing.
+type Card = { co: string; ro: string; chip?: [string, string]; when?: string; late?: boolean };
+const stages: { label: string; tone: string; cards: Card[] }[] = [
+  {
+    label: "Interested",
+    tone: "interested",
+    cards: [{ co: "Northwind Traders", ro: "Lead Engineer", when: "2 days ago" }],
+  },
+  {
+    label: "Applied",
+    tone: "applied",
+    cards: [
+      { co: "Fabrikam", ro: "Staff Platform Engineer", chip: ["reply", "Reply to read"] },
+      { co: "Coho Winery", ro: "Senior Full-stack Engineer", when: "2 weeks ago", late: true },
+    ],
+  },
+  {
+    label: "Interviewing",
+    tone: "interviewing",
+    cards: [{ co: "Contoso", ro: "Senior Backend Engineer", chip: ["round", "Round 3 · Sat 14 Nov"] }],
+  },
+  {
+    label: "Offer",
+    tone: "offer",
+    cards: [{ co: "Litware", ro: "Senior Software Engineer", chip: ["offer", "Offer · £95,000"] }],
+  },
+];
+const moverLines = ["Added today", "Applied · today", "Round 2 · Thu 19 Nov", "Offer to answer"];
+---
+
+<div
+  class="board"
+  role="img"
+  aria-label="The board: Interested, Applied, Interviewing and Offer, with a card for each application, one moving on through the stages"
+>
+  <i class="pool p1" aria-hidden="true"></i>
+  <i class="pool p2" aria-hidden="true"></i>
+  <div class="cols" aria-hidden="true">
+    {stages.map((s) => (
+      <div class="col">
+        <span class:list={["label", s.tone]}>{s.label}</span>
+        {s.cards.map((c) => (
+          <span class:list={["card", { late: c.late }]}>
+            <b class="co">{c.co}</b>
+            <span class="ro">{c.ro}</span>
+            <span class="foot">
+              {c.chip && <i class:list={["chip", c.chip[0]]}>{c.chip[1]}</i>}
+              {c.when && <span class:list={{ red: c.late }}>{c.when}</span>}
+            </span>
+          </span>
+        ))}
+      </div>
+    ))}
+    <span class="card mover">
+      <b class="co">Adventure Works</b>
+      <span class="ro">Backend Engineer (Go)</span>
+      <span class="foot lines">
+        {moverLines.map((l, i) => (
+          <span class={`l l${i}`}>{l}</span>
+        ))}
+      </span>
+    </span>
+  </div>
+</div>
+
+<style>
+  /* Sizes in container units, so the board scales as one picture. */
+  .board {
+    --col: 21.7cqw;
+    --cgap: 2.4cqw;
+    --pad: 1.2cqw;
+    --top: 5.4cqw;
+    --card: 12.6cqw;
+    --gap: 1.4cqw;
+    --step: calc(var(--card) + var(--gap));
+    position: relative;
+    width: 100%;
+    aspect-ratio: 644 / 420;
+    container-type: inline-size;
+    color: var(--on-plum);
+  }
+  .pool {
+    position: absolute;
+    border-radius: 50%;
+  }
+  .p1 {
+    left: 2%;
+    top: 10%;
+    width: 60%;
+    height: 90%;
+    background: radial-gradient(
+      closest-side,
+      rgb(var(--glow-hi-rgb) / 0.75),
+      rgb(var(--glow-rgb) / 0.25) 60%,
+      transparent
+    );
+    animation: board-drift-one 12s ease-in-out infinite alternate;
+  }
+  .p2 {
+    right: -6%;
+    top: -10%;
+    width: 50%;
+    height: 80%;
+    background: radial-gradient(closest-side, rgb(247 245 252 / 0.35), transparent);
+    animation: board-drift-two 15s ease-in-out infinite alternate;
+  }
+  @keyframes board-drift-one {
+    to {
+      transform: translate(45%, -8%) scale(0.9);
+    }
+  }
+  @keyframes board-drift-two {
+    to {
+      transform: translate(10%, 12%) scale(0.9);
+    }
+  }
+  .cols {
+    position: absolute;
+    inset: 4cqw 3cqw;
+    display: grid;
+    grid-template-columns: repeat(4, var(--col));
+    gap: var(--cgap);
+  }
+  .col {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    padding: var(--top) var(--pad) var(--pad);
+    border-radius: 1.8cqw;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.05));
+    border: 1px solid rgb(255 255 255 / 0.16);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
+  }
+  /* Column heads like the app's stage badges. */
+  .label {
+    position: absolute;
+    left: var(--pad);
+    top: 1.4cqw;
+    padding: 0.45cqw 0.9cqw;
+    border-radius: 0.5cqw;
+    font: 700 max(6px, 1.25cqw) / 1 var(--sans);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .applied {
+    background: rgb(70 120 190 / 0.6);
+  }
+  .interested {
+    background: rgb(120 120 140 / 0.6);
+  }
+  .interviewing {
+    background: rgb(90 100 200 / 0.65);
+  }
+  .offer {
+    background: rgb(60 150 100 / 0.65);
+  }
+  .card {
+    position: relative;
+    height: var(--card);
+    flex: none;
+    overflow: hidden;
+    border-radius: 1cqw;
+    padding: 1.1cqw 1.2cqw;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35cqw;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.22), rgb(255 255 255 / 0.08));
+    border: 1px solid rgb(255 255 255 / 0.24);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.35),
+      0 10px 24px -12px rgb(0 0 0 / 0.5);
+  }
+  .card.late {
+    border-left: 0.45cqw solid #ff6b5e;
+  }
+  .co {
+    font: 600 max(7px, 1.75cqw) / 1.15 var(--sans);
+  }
+  .ro,
+  .foot {
+    font: 400 max(6px, 1.35cqw) / 1.2 var(--sans);
+  }
+  .co,
+  .ro,
+  .foot {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ro {
+    opacity: 0.75;
+  }
+  .foot {
+    position: relative;
+    margin-top: auto;
+    opacity: 0.88;
+  }
+  .red {
+    color: #ff9a90;
+    font-weight: 600;
+  }
+  .chip {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0.3cqw 0.8cqw;
+    border-radius: 2cqw;
+    font-style: normal;
+    font-weight: 700;
+    font-size: max(5.5px, 1.15cqw);
+  }
+  .chip.reply {
+    background: rgb(160 60 20 / 0.7);
+    color: #ffd9c7;
+    text-transform: uppercase;
+  }
+  .chip.round {
+    background: rgb(80 60 190 / 0.7);
+    color: #e5dbff;
+  }
+  .chip.offer {
+    background: rgb(40 130 80 / 0.7);
+    color: #d3f7e2;
+  }
+  /* The lit card: Interested's second place, then on through Applied (third), Interviewing and Offer (second). */
+  .mover {
+    position: absolute;
+    left: var(--pad);
+    top: calc(var(--top) + var(--step));
+    width: calc(var(--col) - 2 * var(--pad));
+    background: linear-gradient(180deg, rgb(var(--glow-hi-rgb) / 0.6), rgb(var(--glow-rgb) / 0.3));
+    border-color: rgb(255 255 255 / 0.5);
+    animation: board-move 14s cubic-bezier(0.6, 0, 0.25, 1) infinite;
+  }
+  .lines .l {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    opacity: 0;
+    animation: 14s linear infinite;
+  }
+  .lines .l0 {
+    position: relative;
+    animation-name: board-l0;
+  }
+  .lines .l1 {
+    animation-name: board-l1;
+  }
+  .lines .l2 {
+    animation-name: board-l2;
+  }
+  .lines .l3 {
+    animation-name: board-l3;
+  }
+  @keyframes board-move {
+    0%,
+    14% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+    24%,
+    38% {
+      transform: translate(calc(var(--col) + var(--cgap)), var(--step));
+    }
+    48%,
+    62% {
+      transform: translate(calc(2 * (var(--col) + var(--cgap))), 0);
+    }
+    72%,
+    88% {
+      transform: translate(calc(3 * (var(--col) + var(--cgap))), 0);
+      opacity: 1;
+    }
+    94% {
+      transform: translate(calc(3 * (var(--col) + var(--cgap))), 0);
+      opacity: 0;
+    }
+    96% {
+      transform: translate(0, 0);
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes board-l0 {
+    0%,
+    18%,
+    98%,
+    100% {
+      opacity: 1;
+    }
+    20%,
+    96% {
+      opacity: 0;
+    }
+  }
+  @keyframes board-l1 {
+    0%,
+    20%,
+    44%,
+    100% {
+      opacity: 0;
+    }
+    23%,
+    42% {
+      opacity: 1;
+    }
+  }
+  @keyframes board-l2 {
+    0%,
+    44%,
+    68%,
+    100% {
+      opacity: 0;
+    }
+    47%,
+    66% {
+      opacity: 1;
+    }
+  }
+  @keyframes board-l3 {
+    0%,
+    68%,
+    94%,
+    100% {
+      opacity: 0;
+    }
+    71%,
+    92% {
+      opacity: 1;
+    }
+  }
+  :global(.paused) .board * {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pool,
+    .mover,
+    .lines .l {
+      animation: none;
+    }
+    .lines .l0 {
+      opacity: 1;
+    }
+  }
+</style>

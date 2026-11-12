@@ -324,10 +324,10 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
     transform-style: preserve-3d;
   }
   .live .scene {
-    animation: drift 9s ease-in-out infinite alternate;
+    animation: hero-drift 9s ease-in-out infinite alternate;
   }
   /* Starts from rest, so adding .live doesn't move anything. */
-  @keyframes drift {
+  @keyframes hero-drift {
     to {
       transform: translateY(8px) rotateX(1.5deg) rotateY(2deg);
     }

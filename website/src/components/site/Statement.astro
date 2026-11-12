@@ -1,0 +1,64 @@
+---
+// Private by design: one long statement in light display type, then today's four numbers.
+import { STATS } from "../../data";
+---
+
+<section class="statement" id="privacy" data-tint="butter" aria-labelledby="privacy-h">
+  <div class="wrap two">
+    <p class="eyebrow">Private by design</p>
+    <div>
+      <h2 class="lead" id="privacy-h">
+        No AI reads your notes. No cloud keeps your CVs. No account, no tracking, no ads. Your whole job
+        search lives in one folder on your own computer: a SQLite database, a readable export, your Markdown
+        notes and your files.
+      </h2>
+      <dl class="stats">
+        {STATS.map((s) => (
+          <div>
+            <dt>
+              {s.value}
+              {s.suffix}
+            </dt>
+            <dd>{s.label}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  .statement {
+    padding: 200px 0 140px;
+  }
+  .stats {
+    margin: 72px 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .stats div {
+    border-top: 1px solid var(--ink-faint);
+    padding-top: 16px;
+  }
+  .stats dt {
+    font-weight: 300;
+    font-size: clamp(40px, 4vw, 60px);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .stats dd {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  @media (max-width: 760px) {
+    .statement {
+      padding: 120px 0 80px;
+    }
+    .stats {
+      grid-template-columns: 1fr 1fr;
+      margin-top: 48px;
+    }
+  }
+</style>
