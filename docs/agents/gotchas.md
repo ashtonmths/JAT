@@ -173,7 +173,7 @@ Each of these cost time once. Add a line when something new does.
 - **Layout shift from fonts:** preload the font used above the fold and give it a metric-matched fallback
   (`size-adjust`, ascent/descent overrides). Playwright's bundled headless shell has different fallback fonts from
   system Chrome: measure CLS in both, with the font delayed.
-- **`astro dev`/`astro preview` detach** as daemons: stop them with `npx astro dev stop` / `npx astro preview stop`
+- **`astro dev`/`astro preview` can detach** as daemons (they did here, from `pnpm dev`): stop them with `npx astro dev stop` / `npx astro preview stop`
   from the same `website/`, or they hold ports for days.
 - **Screenshots from the demo app:** restart it after a release, or the app shows a red version-mismatch warning in
   every capture.
