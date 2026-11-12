@@ -1,71 +1,11 @@
 ---
-// The landing page's shell: everything search engines and link previews read, the fonts,
-// the background, and the motion script.
+// The landing page's shell: the head (SiteHead: what search engines and link previews read), the
+// fonts, the background, and the motion script.
 import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
 import "@fontsource/instrument-serif/400-italic.css";
 import "../styles/landing.css";
-import { DESCRIPTION, FAQ, plain, REPO, SITE_URL, TITLE } from "../data";
-
-const base = import.meta.env.BASE_URL;
-const og = new URL("og.png", SITE_URL).href;
-
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_URL}#website`,
-      url: SITE_URL,
-      name: "Job Application Tracker",
-      description: DESCRIPTION,
-      inLanguage: "en",
-    },
-    {
-      "@type": "SoftwareApplication",
-      name: "Job Application Tracker",
-      alternateName: "jat",
-      description: DESCRIPTION,
-      url: SITE_URL,
-      image: og,
-      screenshot: new URL("screenshot.png", SITE_URL).href,
-      applicationCategory: "BusinessApplication",
-      applicationSubCategory: "Job search tracker",
-      operatingSystem: "Linux, macOS",
-      inLanguage: ["en", "zh-CN"],
-      softwareVersion: "1.24.4",
-      license: "https://www.apache.org/licenses/LICENSE-2.0",
-      isAccessibleForFree: true,
-      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-      author: { "@type": "Person", name: "Kai Waddington", url: "https://github.com/waddington" },
-      featureList: [
-        "Kanban board of job applications",
-        "Recruiter and agency CRM",
-        "Interview rounds and coding tasks",
-        "Follow-up reminders and a Today page of what to do next",
-        "Offer comparison",
-        "Sankey diagram of the job search funnel",
-        "Markdown notes, files and exported emails",
-        "Interface in English and Simplified Chinese (简体中文)",
-        "Private: no AI, no cloud, no account, no tracking; data stays on your computer",
-      ],
-    },
-    {
-      "@type": "SoftwareSourceCode",
-      name: "job-application-tracker",
-      codeRepository: REPO,
-      license: "https://www.apache.org/licenses/LICENSE-2.0",
-    },
-    {
-      "@type": "FAQPage",
-      mainEntity: FAQ.map(({ q, a }) => ({
-        "@type": "Question",
-        name: q,
-        acceptedAnswer: { "@type": "Answer", text: plain(a) },
-      })),
-    },
-  ],
-};
+import SiteHead from "../components/SiteHead.astro";
 ---
 
 <!doctype html>
@@ -83,33 +23,7 @@ const jsonLd = {
         if (palette) document.documentElement.dataset.palette = palette;
       </script>
     }
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{TITLE}</title>
-    <meta name="description" content={DESCRIPTION} />
-    <link rel="canonical" href={SITE_URL} />
-    <meta name="theme-color" content="#f6f1e7" />
-    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
-    <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
-    <link rel="sitemap" href={`${base}sitemap-index.xml`} />
-
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Job Application Tracker" />
-    <meta property="og:title" content={TITLE} />
-    <meta property="og:description" content={DESCRIPTION} />
-    <meta property="og:url" content={SITE_URL} />
-    <meta property="og:image" content={og} />
-    <meta property="og:image:width" content="1280" />
-    <meta property="og:image:height" content="640" />
-    <meta
-      property="og:image:alt"
-      content="Job Application Tracker. No AI. No cloud. No account. No tracking."
-    />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={TITLE} />
-    <meta name="twitter:description" content={DESCRIPTION} />
-    <meta name="twitter:image" content={og} />
-
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <SiteHead />
   </head>
   <body>
     <div class="progress" aria-hidden="true"></div>
