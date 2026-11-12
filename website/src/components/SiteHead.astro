@@ -1,16 +1,7 @@
 ---
 // Everything search engines and link previews read: title, description, canonical, icons, the social
-// card and the structured data (JSON-LD), in one place for every page of the site. A page that shouldn't
-// be in search results yet (the redesign at /preview/, docs/rfc/website-redesign.md §11) passes noindex.
+// card and the structured data (JSON-LD).
 import { DESCRIPTION, FAQ, plain, REPO, SITE_URL, TITLE } from "../data";
-
-interface Props {
-  noindex?: boolean;
-  // Off for a noindex page: it isn't the canonical anything (og:url stays the site's address).
-  canonical?: boolean;
-  themeColor?: string;
-}
-const { noindex = false, canonical = true, themeColor = "#f6f1e7" } = Astro.props;
 
 const base = import.meta.env.BASE_URL;
 const og = new URL("og.png", SITE_URL).href;
@@ -38,7 +29,7 @@ const jsonLd = {
       applicationSubCategory: "Job search tracker",
       operatingSystem: "Linux, macOS",
       inLanguage: ["en", "zh-CN"],
-      softwareVersion: "1.24.12",
+      softwareVersion: "1.24.13",
       license: "https://www.apache.org/licenses/LICENSE-2.0",
       isAccessibleForFree: true,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
@@ -75,10 +66,9 @@ const jsonLd = {
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{TITLE}</title>
-{noindex && <meta name="robots" content="noindex" />}
 <meta name="description" content={DESCRIPTION} />
-{canonical && <link rel="canonical" href={SITE_URL} />}
-<meta name="theme-color" content={themeColor} />
+<link rel="canonical" href={SITE_URL} />
+<meta name="theme-color" content="#f4f1fb" />
 <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
 <link rel="apple-touch-icon" href={`${base}apple-touch-icon.png`} />
 <link rel="sitemap" href={`${base}sitemap-index.xml`} />

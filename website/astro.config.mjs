@@ -1,6 +1,6 @@
 // The project's website: one landing page (src/pages/index.astro), served by GitHub Pages.
-// The docs stay on GitHub (docs/guide); the page links to them. The redesign is built at /preview/
-// (docs/rfc/website-redesign.md §11): noindex, and left out of the sitemap until it replaces the homepage.
+// The docs stay on GitHub (docs/guide); the page links to them. /preview/ (where the redesign was built) only
+// redirects to the page, so it's left out of the sitemap.
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 

@@ -1,7 +1,6 @@
 ---
-// The redesigned site's shell (docs/rfc/website-redesign.md §11): the shared head, the fonts and tokens, the
-// background, and the script that sets the page's tint from the section in the middle of the screen.
-// At /preview/ until it replaces the homepage, so it passes noindex.
+// The site's shell (docs/rfc/website-redesign.md): the shared head, the fonts and tokens, the background, and
+// the script that sets the page's tint from the section in the middle of the screen.
 import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
 import "../styles/site.css";
@@ -9,11 +8,6 @@ import SiteHead from "../components/SiteHead.astro";
 import Backdrop from "../components/site/Backdrop.astro";
 // The same file the font CSS points at (Vite gives both one URL), preloaded so the first words show in Inter.
 import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
-
-interface Props {
-  noindex?: boolean;
-}
-const { noindex = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -21,7 +15,7 @@ const { noindex = false } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
-    <SiteHead noindex={noindex} canonical={!noindex} themeColor="#f4f1fb" />
+    <SiteHead />
   </head>
   <body>
     <a class="skip" href="#main">

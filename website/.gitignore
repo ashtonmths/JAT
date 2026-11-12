@@ -1,4 +1,5 @@
 # Copied in from the repo by scripts/sync.mjs: edit the originals, not these.
+# src/assets/screenshots/ is no longer synced; kept ignored so older checkouts' copies don't get committed.
 src/assets/screenshots/
 public/og.png
 public/favicon.svg
