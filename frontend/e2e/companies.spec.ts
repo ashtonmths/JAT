@@ -1137,11 +1137,9 @@ test.describe("deleting an agency", () => {
     await expect(page.getByText("Lone Route Role").first()).toBeVisible();
   });
 
-  // KNOWN BUG (fix-agency-delete-blocks-application-save on the roadmap): expected to fail until it is fixed.
-  test.fail(
+  test(
     "an application with only the agency can still be saved afterwards",
-    async ({ page, request, problems }) => {
-      problems.allow(/422.*\/api\/v1\/applications/);
+    async ({ page, request }) => {
       const here = await agency(request, "Doomed Save Agency");
       const made = await apply(request, {
         company_name: "Save After Client",

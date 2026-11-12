@@ -833,7 +833,10 @@ def update_app(app_id: str, body: S.ApplicationPatch, session: SessionDep, workf
     data = values(body, partial=True)
     _check_refs(session, data)
     current = {"route": app.route, "agency_id": app.agency_id, "recruiter_id": app.recruiter_id}
-    data.update(_check_route(session, {**current, **data}))
+    # Check the route only when this save sets it: a later person move or delete can leave the stored
+    # values failing the rules, and that mustn't stop saving tags, dates or the archive switch.
+    if data.keys() & current.keys():
+        data.update(_check_route(session, {**current, **data}))
     if "recruiter_id" in data and data["recruiter_id"] != current["recruiter_id"]:
         summary, what, params = _recruiter_change(session, current["recruiter_id"], data["recruiter_id"])
         key = _PLAIN.get(what)

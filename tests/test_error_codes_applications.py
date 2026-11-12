@@ -133,6 +133,68 @@ def test_a_routes_rules_carry_codes(client, seeded):
     )
 
 
+_UNRELATED_SAVES = [
+    {"tags": ["kept"]},
+    {"archived": True},
+    {"follow_up_on": "2026-12-01"},
+    {"awaiting_reply_since": "2026-11-10"},
+]
+
+
+def _saves_still_work(client, app_id):
+    for fields in _UNRELATED_SAVES:
+        response = client.patch(f"/api/v1/applications/{app_id}", json=fields)
+        assert response.status_code == 200, (fields, response.json())
+
+
+def test_a_recruiter_moving_agency_doesnt_block_saving_their_application(client, seeded):
+    app = _application(client, seeded, route="agency", recruiter_id=seeded["recruiter"]["id"])
+    other = post(client, "/api/v1/agencies", {"name": "Fabrikam Talent"})["id"]
+    client.patch(f"/api/v1/contacts/{seeded['recruiter']['id']}", json={"agency_id": other}).raise_for_status()
+    _saves_still_work(client, app["id"])
+    # The application keeps the agency it was made through.
+    assert client.get(f"/api/v1/applications/{app['id']}").json()["agency_id"] == seeded["agency"]["id"]
+
+
+def test_an_in_house_person_joining_an_agency_doesnt_block_saving(client, seeded):
+    person = post(client, "/api/v1/contacts", {"name": "Jamie Inhouse", "company_id": seeded["company"]["id"]})
+    app = _application(client, seeded, recruiter_id=person["id"])
+    client.patch(f"/api/v1/contacts/{person['id']}", json={"agency_id": seeded["agency"]["id"]}).raise_for_status()
+    _saves_still_work(client, app["id"])
+
+
+def test_deleting_the_agency_or_recruiter_doesnt_block_saving(client, seeded):
+    agency = post(client, "/api/v1/agencies", {"name": "Fabrikam Talent"})["id"]
+    through_agency = _application(client, seeded, route="agency", agency_id=agency)
+    client.delete(f"/api/v1/agencies/{agency}").raise_for_status()
+    _saves_still_work(client, through_agency["id"])
+
+    person = post(client, "/api/v1/contacts", {"name": "Robin Freelance"})["id"]
+    through_person = _application(client, seeded, route="agency", recruiter_id=person)
+    client.delete(f"/api/v1/contacts/{person}").raise_for_status()
+    _saves_still_work(client, through_person["id"])
+
+
+def test_a_save_that_changes_the_route_is_still_checked(client, seeded):
+    recruiter, agency = seeded["recruiter"]["id"], seeded["agency"]["id"]
+    other = post(client, "/api/v1/agencies", {"name": "Fabrikam Talent"})["id"]
+    app = _application(client, seeded, route="agency", recruiter_id=recruiter)
+    url = f"/api/v1/applications/{app['id']}"
+    for fields, code in [
+        ({"agency_id": other, "tags": ["x"]}, "recruiter_other_agency"),
+        ({"route": "direct"}, "direct_has_agency"),
+        ({"route": "direct", "agency_id": None}, "direct_recruiter_has_agency"),
+        ({"recruiter_id": None, "agency_id": None}, "agency_route_needs_agency"),
+    ]:
+        response = client.patch(url, json=fields)
+        assert (response.status_code, response.json()["code"]) == (422, code), fields
+    assert client.get(url).json()["agency_id"] == agency
+
+    in_house = _application(client, seeded)
+    response = client.patch(f"/api/v1/applications/{in_house['id']}", json={"recruiter_id": recruiter})
+    assert (response.status_code, response.json()["code"]) == (422, "direct_recruiter_has_agency")
+
+
 def test_a_taken_detail_names_who_has_it(client, seeded):
     body = {"name": "Sam Example", "details": [{"kind": "email", "value": "ALEX@northwind.example.com"}]}
     _coded(

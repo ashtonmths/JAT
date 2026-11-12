@@ -1293,8 +1293,7 @@ test.describe("a person moving, and the applications they're on", () => {
   const patchTags = (request: APIRequestContext, id: string) =>
     request.patch(`/api/v1/applications/${id}`, { data: { tags: ["still-editable"] } });
 
-  // KNOWN BUG (fix-person-move-blocks-application on the roadmap): expected to fail until it is fixed.
-  test.fail("a recruiter moved to another agency leaves their application editable", async ({ request }) => {
+  test("a recruiter moved to another agency leaves their application editable", async ({ request }) => {
     const first = await create(request, "agencies", { name: "Shift From Agency" });
     const second = await create(request, "agencies", { name: "Shift To Agency" });
     const who = await create(request, "contacts", { name: "Moving Recruiter", agency_id: first.id });
@@ -1312,8 +1311,7 @@ test.describe("a person moving, and the applications they're on", () => {
     expect((await patchTags(request, app.id)).status()).toBe(200);
   });
 
-  // KNOWN BUG (fix-person-move-blocks-application on the roadmap): expected to fail until it is fixed.
-  test.fail(
+  test(
     "an in-house recruiter who joins an agency leaves their direct application editable",
     async ({ request }) => {
       const firm = await create(request, "agencies", { name: "Joined Agency" });
