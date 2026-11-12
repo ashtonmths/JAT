@@ -10,26 +10,8 @@ import Hero from "../../components/site/Hero.astro";
 import Statement from "../../components/site/Statement.astro";
 import Features from "../../components/site/Features.astro";
 import Centre from "../../components/site/Centre.astro";
+import Story from "../../components/site/Story.astro";
 import { FAQ, GUIDE, MARQUEE, plain, README_ZH, REPO } from "../../data";
-
-const steps = [
-  {
-    title: "One recruiter, five roles, zero chaos.",
-    body: "Calls with an agenda, the roles they pitched, apply or pass on each, and how quickly they usually reply.",
-  },
-  {
-    title: "Every round, on a calendar.",
-    body: "Rounds, take-home tasks and calls by date, what's coming up, and what needs a new time.",
-  },
-  {
-    title: "Compare offers properly.",
-    body: "Salary, bonus, equity and pension, or a contractor's day rate, side by side with what each is worth a year.",
-  },
-  {
-    title: "Notes and files, where they belong.",
-    body: "Markdown notes, CV versions, PDFs and exported emails, kept with each role in your own data folder.",
-  },
-];
 ---
 
 <Base noindex>
@@ -41,26 +23,7 @@ const steps = [
     <Features />
     <Centre />
 
-    <section class="block" id="how" data-tint="mint" aria-labelledby="how-h">
-      <div class="wrap two">
-        <div>
-          <p class="eyebrow">Everything in one place</p>
-          <h2 class="h2" id="how-h">
-            The whole search,
-            <br />
-            not just the board.
-          </h2>
-        </div>
-        <ol class="steps">
-          {steps.map((s) => (
-            <li>
-              <b>{s.title}</b>
-              <span class="soft">{s.body}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
+    <Story />
 
     <section class="block" id="languages" data-tint="apricot" aria-labelledby="lang-h">
       <div class="wrap two">
@@ -154,25 +117,6 @@ const steps = [
   }
   .block {
     padding: 140px 0;
-  }
-  .steps {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 32px;
-  }
-  .steps b {
-    display: block;
-    font-weight: 300;
-    font-size: clamp(24px, 2.2vw, 32px);
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-  }
-  .steps span {
-    display: block;
-    margin-top: 8px;
-    font-weight: 300;
   }
   .chips {
     list-style: none;
