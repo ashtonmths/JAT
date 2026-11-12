@@ -124,6 +124,11 @@ export default {
     deleteNamed: "Delete {{name}}",
     undo: "Undo",
   },
+  // A card or list whose data didn't load (components/QueryState.tsx), and its button to try again.
+  load: {
+    failed: "Couldn't load this.",
+    retry: "Retry",
+  },
   // Rename a company or agency (EditNameModal).
   editName: {
     name: "Name",

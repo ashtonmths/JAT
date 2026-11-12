@@ -103,6 +103,8 @@ Each of these cost time once. Add a line when something new does.
 - Key an editor by its record's id, never by `updated_at`, a version, the date, a list index or the section its row is
   in. A form on a page holds its fields in `useDraft` (`src/utils/useDraft.ts`): it follows saved changes, keeps
   unsaved edits, and Save sends only `draft.changes`.
+- Never default query data to `[]` before deciding it's empty: loading and failed then read as "nothing here". Cards
+  and lists use `QueryState` (`src/components/QueryState.tsx`; CONTRIBUTING, *Where things are*); page loads keep `Loader`.
 - Prove a test catches a bug by breaking the code and watching it fail.
 - TanStack Router: routes built from `NAV` aren't typed for `navigate({ to })`; navigate to `"."`.
 - **An edit saved from a dialog ends with `settleSave`** (`src/api/hooks.ts`): it merges the reply by id into the

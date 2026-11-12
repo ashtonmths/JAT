@@ -60,6 +60,12 @@ pnpm --dir frontend dev                             # UI on http://127.0.0.1:517
 | `scripts/` | Demo data (`seed_demo.py`), the README's demo GIF and the social preview card |
 | `docs/prd/`, `docs/rfc/`, `docs/ROADMAP.yaml` | The product plan, design decisions and roadmap |
 
+**Cards and lists that load their own data** go through `QueryState`
+(`frontend/src/components/QueryState.tsx`): skeleton lines while the query loads, "Couldn't load
+this." with Retry when it fails, and the empty text only for a list that loaded empty. Never default
+query data to `[]` (`data ?? []`) before deciding it's empty: a list still loading, or one that
+failed, would say there's nothing there. Whole-page loads keep their `Loader`.
+
 **Project dashboard.** `python3 -m tools.pm` (→ http://127.0.0.1:8767) shows the roadmap,
 progress and live PR status of the build itself. It needs nothing but Python; the
 [`gh` CLI](https://cli.github.com/) adds PR status.

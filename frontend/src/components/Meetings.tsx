@@ -37,6 +37,7 @@ import { CallRescheduleButton } from "./CallReschedule";
 import { Markdown } from "./Markdown";
 import { MeetingDidntHappen } from "./OutcomeNotes";
 import { NeedsNewTimeBadge, RescheduledBadge, wasText } from "./Reschedule";
+import { QueryState } from "./QueryState";
 import { RoleFormModal, RoleLine } from "./Roles";
 import { TodoLine } from "./Todos";
 import { useTodos, type Todo } from "../api/todoHooks";
@@ -410,7 +411,7 @@ export function useRebookTodoIds(contactId: string): string[] {
 /** A person's calls and meetings: booked ones first, then what happened, with notes. */
 export function MeetingsCard({ contactId, name }: { contactId: string; name: string }) {
   const { t } = useTranslation("calls");
-  const { data: meetings } = useMeetings({ contact_id: contactId });
+  const meetings = useMeetings({ contact_id: contactId });
   // A waiting call's to-do to book it, shown with it: on this person, or on the call's application,
   // which this page otherwise wouldn't show. The To-dos card leaves it out (rebookTodoIds).
   const { data: openTodos } = useTodos({ status: "open" });
@@ -420,13 +421,6 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
   const [addingRoles, setAddingRoles] = useState<string | null>(null); // the call they came up in
   const { data: roles } = useRoleSummaries({ contact_id: contactId });
   const [now] = useState(() => Date.now()); // when the page opened: good enough to split ahead from past
-  const all = meetings ?? [];
-  // Waiting for a new time first: its old time isn't happening, so it's neither ahead nor to close.
-  const booked = all.filter((m) => m.status === "scheduled" && !m.needs_new_time_since);
-  const waiting = all.filter((m) => m.status === "scheduled" && m.needs_new_time_since);
-  const ahead = booked.filter((m) => new Date(m.starts_at).getTime() >= now);
-  const toClose = booked.filter((m) => new Date(m.starts_at).getTime() < now);
-  const past = all.filter((m) => m.status !== "scheduled").reverse(); // newest first
 
   return (
     <Card withBorder>
@@ -441,83 +435,98 @@ export function MeetingsCard({ contactId, name }: { contactId: string; name: str
           {t("card.book")}
         </Button>
       </Group>
-      {all.length === 0 ? (
-        <Text size="sm" c="dimmed">
-          {t("card.empty", { name })}
-        </Text>
-      ) : (
-        <Stack gap="sm">
-          {[...waiting, ...ahead, ...toClose].map((m) => (
-            <Stack key={m.id} gap={4}>
-              <MeetingLine
-                meeting={m}
-                showWho={false}
-                todo={rebook(m)}
-                action={
-                  <Group gap={4} wrap="nowrap">
-                    {toClose.includes(m) && <MeetingOutcome meeting={m} />}
-                    <CallRescheduleButton meeting={m} />
-                    <MeetingMenu meeting={m} onEdit={() => setEditing(m)} />
-                  </Group>
-                }
-              />
-              {m.agenda && (
-                <Text size="sm" component="div" c="dimmed">
-                  <Markdown>{m.agenda}</Markdown>
-                </Text>
-              )}
-              {(roles ?? [])
-                .filter((r) => r.meeting_id === m.id)
-                .map((r) => (
-                  <RoleLine key={r.id} role={r} showSource={false} />
-                ))}
-            </Stack>
-          ))}
-          {past.map((m) => (
-            <Stack key={m.id} gap={4}>
-              <MeetingLine
-                meeting={m}
-                showWho={false}
-                action={
-                  <Group gap={4} wrap="nowrap">
-                    <Badge size="xs" variant="light" color={statusBadge(m.status).color}>
-                      {statusBadge(m.status).label}
-                    </Badge>
-                    <MeetingMenu meeting={m} onEdit={() => setEditing(m)} />
-                  </Group>
-                }
-              />
-              {m.notes && (
-                <Text size="sm" component="div" c="dimmed">
-                  <Markdown>{m.notes}</Markdown>
-                </Text>
-              )}
-              {m.status === "done" && (
-                <Stack
-                  gap={4}
-                  pl="sm"
-                  style={{ borderLeft: "2px solid var(--mantine-color-default-border)" }}
-                >
+      <QueryState
+        query={meetings}
+        rows={2}
+        rowHeight={38}
+        empty={
+          <Text size="sm" c="dimmed">
+            {t("card.empty", { name })}
+          </Text>
+        }
+      >
+        {(all) => {
+          // Waiting for a new time first: its old time isn't happening, so it's neither ahead nor to close.
+          const booked = all.filter((m) => m.status === "scheduled" && !m.needs_new_time_since);
+          const waiting = all.filter((m) => m.status === "scheduled" && m.needs_new_time_since);
+          const ahead = booked.filter((m) => new Date(m.starts_at).getTime() >= now);
+          const toClose = booked.filter((m) => new Date(m.starts_at).getTime() < now);
+          const past = all.filter((m) => m.status !== "scheduled").reverse(); // newest first
+          return (
+            <Stack gap="sm">
+              {[...waiting, ...ahead, ...toClose].map((m) => (
+                <Stack key={m.id} gap={4}>
+                  <MeetingLine
+                    meeting={m}
+                    showWho={false}
+                    todo={rebook(m)}
+                    action={
+                      <Group gap={4} wrap="nowrap">
+                        {toClose.includes(m) && <MeetingOutcome meeting={m} />}
+                        <CallRescheduleButton meeting={m} />
+                        <MeetingMenu meeting={m} onEdit={() => setEditing(m)} />
+                      </Group>
+                    }
+                  />
+                  {m.agenda && (
+                    <Text size="sm" component="div" c="dimmed">
+                      <Markdown>{m.agenda}</Markdown>
+                    </Text>
+                  )}
                   {(roles ?? [])
                     .filter((r) => r.meeting_id === m.id)
                     .map((r) => (
                       <RoleLine key={r.id} role={r} showSource={false} />
                     ))}
-                  <Button
-                    size="compact-xs"
-                    variant="subtle"
-                    leftSection={<IconPlus size={12} />}
-                    onClick={() => setAddingRoles(m.id)}
-                    style={{ alignSelf: "flex-start" }}
-                  >
-                    {t("card.addRoles")}
-                  </Button>
                 </Stack>
-              )}
+              ))}
+              {past.map((m) => (
+                <Stack key={m.id} gap={4}>
+                  <MeetingLine
+                    meeting={m}
+                    showWho={false}
+                    action={
+                      <Group gap={4} wrap="nowrap">
+                        <Badge size="xs" variant="light" color={statusBadge(m.status).color}>
+                          {statusBadge(m.status).label}
+                        </Badge>
+                        <MeetingMenu meeting={m} onEdit={() => setEditing(m)} />
+                      </Group>
+                    }
+                  />
+                  {m.notes && (
+                    <Text size="sm" component="div" c="dimmed">
+                      <Markdown>{m.notes}</Markdown>
+                    </Text>
+                  )}
+                  {m.status === "done" && (
+                    <Stack
+                      gap={4}
+                      pl="sm"
+                      style={{ borderLeft: "2px solid var(--mantine-color-default-border)" }}
+                    >
+                      {(roles ?? [])
+                        .filter((r) => r.meeting_id === m.id)
+                        .map((r) => (
+                          <RoleLine key={r.id} role={r} showSource={false} />
+                        ))}
+                      <Button
+                        size="compact-xs"
+                        variant="subtle"
+                        leftSection={<IconPlus size={12} />}
+                        onClick={() => setAddingRoles(m.id)}
+                        style={{ alignSelf: "flex-start" }}
+                      >
+                        {t("card.addRoles")}
+                      </Button>
+                    </Stack>
+                  )}
+                </Stack>
+              ))}
             </Stack>
-          ))}
-        </Stack>
-      )}
+          );
+        }}
+      </QueryState>
       {addingRoles && (
         <RoleFormModal
           opened

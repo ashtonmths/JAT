@@ -62,6 +62,7 @@ import { ChaseActions } from "../components/ChaseActions";
 import { NewApplicationButton } from "../components/HeaderButtons";
 import { HowItWorks } from "../components/HowItWorks";
 import { PersonChase, waitingOrChased } from "../components/PersonChase";
+import { QueryState } from "../components/QueryState";
 import { StageBadge } from "../components/StageBadge";
 import { i18n } from "../i18n";
 import text from "../text.module.css";
@@ -400,7 +401,7 @@ function PersonWaitingLine({ person }: { person: Contact }) {
 function TodosSection({ todos }: { todos: Todo[] }) {
   const { t } = useTranslation("today");
   const [showDone, setShowDone] = useState(false);
-  const { data: done } = useTodos({ status: "done" }, showDone);
+  const done = useTodos({ status: "done" }, showDone);
   return (
     <Stack gap="xs" role="group" aria-label={t("sections.todos")}>
       <SectionLabel title={t("sections.todos")} count={todos.length} hint={t("sections.todosHint")} />
@@ -422,18 +423,26 @@ function TodosSection({ todos }: { todos: Todo[] }) {
       >
         {showDone ? t("todos.hideDone") : t("todos.doneRecently")}
       </Anchor>
-      {showDone &&
-        (done?.length ? (
-          <div className={classes.rows}>
-            {done.slice(0, 10).map((todo) => (
-              <TodoLine key={todo.id} todo={todo} />
-            ))}
-          </div>
-        ) : (
-          <Text size="xs" c="dimmed">
-            {t("todos.noneDone")}
-          </Text>
-        ))}
+      {showDone && (
+        <QueryState
+          query={done}
+          rows={2}
+          rowHeight={32}
+          empty={
+            <Text size="xs" c="dimmed">
+              {t("todos.noneDone")}
+            </Text>
+          }
+        >
+          {(list) => (
+            <div className={classes.rows}>
+              {list.slice(0, 10).map((todo) => (
+                <TodoLine key={todo.id} todo={todo} />
+              ))}
+            </div>
+          )}
+        </QueryState>
+      )}
     </Stack>
   );
 }
@@ -542,7 +551,8 @@ export function TodayPage() {
   const { data: contacts, isPending: contactsPending, isError: contactsFailed } = useContacts();
   const today = useToday();
   const since = useMemo(() => dayjs(today).subtract(14, "day").format(), [today]);
-  const { data: recent, isPending: recentPending, isError: recentFailed } = useTimeline({ since });
+  const recentQuery = useTimeline({ since });
+  const { data: recent, isPending: recentPending, isError: recentFailed } = recentQuery;
 
   const offers = data?.offer_deadlines ?? [];
   const waiting = data?.waiting ?? [];
@@ -654,9 +664,8 @@ export function TodayPage() {
   const fresh = rows !== undefined && rows.length === 0;
   // What happened, not what was set up: a burst of new companies would crowd it out. Before
   // the first application, though, setting things up is most of what's happened.
-  const past = (recent?.items ?? [])
-    .filter((i) => (fresh || i.category !== "added") && new Date(i.at) <= new Date(recent!.now))
-    .slice(0, 8);
+  const pastOf = (r: NonNullable<typeof recent>) =>
+    r.items.filter((i) => (fresh || i.category !== "added") && new Date(i.at) <= new Date(r.now)).slice(0, 8);
   // Nothing at all yet: just the getting-started steps. Wait for everything before deciding, so
   // the card doesn't flash up and go; if something fails, show the usual page instead.
   const settling = fresh && (contactsPending || recentPending || isLoading);
@@ -668,7 +677,7 @@ export function TodayPage() {
     !contacts?.length &&
     !rolesToDecide.length &&
     !meetings.length &&
-    !past.length &&
+    !(recent && pastOf(recent).length) &&
     !todos.length;
   const sofar = [
     rolesToDecide.length ? t("noApplications.rolesToDecide", { count: rolesToDecide.length }) : null,
@@ -1002,13 +1011,19 @@ export function TodayPage() {
             <Accordion.Item value="recent">
               <Accordion.Control>{t("recent.title")}</Accordion.Control>
               <Accordion.Panel>
-                {past.length === 0 ? (
-                  <Text size="sm" c="dimmed">
-                    {t("recent.none")}
-                  </Text>
-                ) : (
-                  past.map((item) => <TimelineRow key={item.id} item={item} showDate />)
-                )}
+                <QueryState
+                  query={recentQuery}
+                  select={pastOf}
+                  rows={4}
+                  rowHeight={24}
+                  empty={
+                    <Text size="sm" c="dimmed">
+                      {t("recent.none")}
+                    </Text>
+                  }
+                >
+                  {(past) => past.map((item) => <TimelineRow key={item.id} item={item} showDate />)}
+                </QueryState>
                 <Anchor component={Link} to="/timeline" size="sm" mt="xs" display="inline-block">
                   {t("recent.timeline")}
                 </Anchor>

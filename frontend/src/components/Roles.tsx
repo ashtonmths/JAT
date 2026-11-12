@@ -47,6 +47,7 @@ import { stageName } from "../utils/stageName";
 import { useFavourite, useGhosted } from "./GhostMark";
 import { CreatableSelect } from "./CreatableSelect";
 import { DeleteButton } from "./DeleteButton";
+import { QueryState } from "./QueryState";
 import { AddTodo, TodoLine } from "./Todos";
 
 type WorkMode = NonNullable<Schemas["RoleIn"]["work_mode"]>;
@@ -737,7 +738,7 @@ export function RolesCard({
   showSource?: boolean;
 }) {
   const { t } = useTranslation("roles");
-  const { data: roles } = useRoleSummaries(filters);
+  const roles = useRoleSummaries(filters);
   const [adding, setAdding] = useState(false);
   return (
     <Card withBorder>
@@ -752,17 +753,24 @@ export function RolesCard({
           {t("add")}
         </Button>
       </Group>
-      {!roles?.length ? (
-        <Text size="sm" c="dimmed">
-          {empty}
-        </Text>
-      ) : (
-        <Stack gap="sm">
-          {roles.map((r) => (
-            <RoleLine key={r.id} role={r} showSource={showSource} />
-          ))}
-        </Stack>
-      )}
+      <QueryState
+        query={roles}
+        rows={2}
+        rowHeight={38}
+        empty={
+          <Text size="sm" c="dimmed">
+            {empty}
+          </Text>
+        }
+      >
+        {(list) => (
+          <Stack gap="sm">
+            {list.map((r) => (
+              <RoleLine key={r.id} role={r} showSource={showSource} />
+            ))}
+          </Stack>
+        )}
+      </QueryState>
       {adding && <RoleFormModal opened onClose={() => setAdding(false)} {...start} />}
     </Card>
   );
