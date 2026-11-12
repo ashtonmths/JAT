@@ -2,6 +2,7 @@
 // The quick start (docs/rfc/website-redesign.md §11, part 5): the words and the two buttons, then a tilted
 // terminal with a glass segmented control over it for the three steps in data.ts. Without JavaScript the three
 // steps show one under another, each with its name; the script turns them into tabs and adds the Copy buttons.
+import Stars from "./Stars.astro";
 import { GUIDE, pasteable, QUICKSTART, REPO } from "../../data";
 
 const steps = QUICKSTART.map((s) => {
@@ -28,7 +29,7 @@ const steps = QUICKSTART.map((s) => {
       </span>
     </a>
     <a class="pill glass" href={REPO}>
-      View on GitHub{" "}
+      View on GitHub <Stars />{" "}
       <span class="arrow" aria-hidden="true">
         ↗
       </span>

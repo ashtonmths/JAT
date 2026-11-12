@@ -46,6 +46,9 @@ jobs:
           cache-dependency-path: website/pnpm-lock.yaml
       - run: pnpm --dir website install --frozen-lockfile
       - run: pnpm --dir website build
+        env:
+          # The star count by the GitHub links (website/src/stars.ts); the token avoids the runners' shared rate limit.
+          GITHUB_TOKEN: ${{ github.token }}
       - if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5
         with:

@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.14 (2026-11-12)
+
+- The website's GitHub links show the repo's star count, kept live (#348).
+
 ## 1.24.13 (2026-11-12)
 
 - The website is redesigned: soft pastels, a 3D browser window showing the app in use, a frosted glass board and a sticky tour of the features (#346).
