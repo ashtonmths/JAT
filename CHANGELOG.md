@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.12 (2026-11-12)
+
+- The redesigned hero doesn't jump on phones while its font loads (#345).
+
 ## 1.24.11 (2026-11-12)
 
 - The redesigned page's languages, quick start and FAQ at /preview/; the quick start, FAQ and footer note now have one source (#344).

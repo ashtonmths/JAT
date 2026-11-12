@@ -448,9 +448,13 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
     .copy .display {
       font-size: min(36px, 8.6vw);
     }
+    /* As many lines held open as the intro takes at this width, in Inter or in the fallback before Inter loads
+       (measured: 4 lines below about 400 px, 3 below about 580, then 2), so nothing below it moves on the swap. */
     .sub {
       margin: 14px 0 18px;
       font-size: 15.5px;
+      line-height: 1.55;
+      min-height: calc(4 * 1.55em);
     }
     .fine {
       display: none;
@@ -458,6 +462,12 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
     .copy .pill {
       padding: 11px 18px;
       font-size: 14px;
+    }
+    /* The two buttons always stacked on a phone: side by side, whether they fit on one row depended on the font,
+       so the row could break in two when Inter swapped in and push the window down. */
+    .ctas {
+      flex-direction: column;
+      align-items: flex-start;
     }
     .scene {
       position: relative;
@@ -505,6 +515,24 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
     }
     .progress {
       bottom: 14px;
+    }
+  }
+  @media (min-width: 412px) and (max-width: 760px) {
+    .sub {
+      min-height: calc(3 * 1.55em);
+    }
+  }
+  @media (min-width: 600px) and (max-width: 760px) {
+    .sub {
+      min-height: calc(2 * 1.55em);
+    }
+  }
+  /* The laptop layout centres the words on the window, so a line more or less would move them too: four lines
+     held open where the intro takes four (or three in Inter but four in the fallback). */
+  @media (min-width: 761px) and (max-width: 995px) {
+    .sub {
+      line-height: 1.55;
+      min-height: calc(4 * 1.55em);
     }
   }
 </style>
