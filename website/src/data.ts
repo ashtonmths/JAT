@@ -7,11 +7,12 @@ export const SITE_URL = "https://waddington.github.io/job-application-tracker/";
 export const GUIDE = `${REPO}/blob/main/docs/guide/`;
 // The README in Simplified Chinese, for Chinese readers.
 export const README_ZH = `${REPO}/blob/main/README.zh-CN.md`;
-// The <title> and meta description: the words people search for first ("free", "private",
-// "job application tracker"), then what sets it apart. Keep the description near 160 characters.
+// The <title> and meta description: the words people search for first ("free", "private", "job application
+// tracker" in the title and the h1, "job search tracker" in the description), then what sets it apart. Keep the
+// description near 160 characters.
 export const TITLE = "Free Job Application Tracker: private, no sign-up, open source";
 export const DESCRIPTION =
-  "A free, private job application tracker. Track applications, recruiters, interviews, follow-ups and offers on your own computer. No cloud, no account, no tracking.";
+  "A free, private job search tracker. Track applications, recruiters, interviews, follow-ups and offers on your own computer. No cloud, no account, no tracking.";
 
 export const MARQUEE = [
   [

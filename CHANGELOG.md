@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.16 (2026-11-12)
+
+- The website's main heading says it's a job application tracker, and its search snippet says job search tracker (#352).
+
 ## 1.24.15 (2026-11-12)
 
 - The website is verified in Google Search Console, which adds no script or cookie (#350).
