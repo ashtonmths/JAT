@@ -69,8 +69,10 @@ Product decisions Kai has made or accepted. Don't re-litigate them; change one o
 - "No AI. No cloud. No account. No tracking." in that order (Kai, 2026-11-03). Not "no external dependencies"; "plain
   files" only with the SQLite caveat; git backups are optional. The app never calls out to the web. No coined phrase.
   Keep the repo name `job-application-tracker`.
-- Scope cuts: no job searching or scraping, no quick-add from URLs, no `.ics` export, no Search Console or Google
-  Analytics, no CI test workflow. The MCP server is planned (`docs/rfc/mcp.md`).
+- Scope cuts: no job searching or scraping, no quick-add from URLs, no `.ics` export, no Google Analytics, no CI
+  test workflow. Search Console is in (Kai, 2026-11-12: "can i add search console to the webste"): verified by a meta
+  tag in `SiteHead.astro`, which adds no script or cookie, so the footer's "no cookies, analytics or trackers" stays
+  true. The MCP server is planned (`docs/rfc/mcp.md`).
 - The website: one landing page, the paper palette, docs on GitHub, no analytics; it speaks to non-developers, the README
   to developers. Docker is for self-hosters (shelved, `docs/rfc/docker.md`); the lay-person path is a one-command
   install, then Windows support, then a desktop app.
