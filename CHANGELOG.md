@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.10 (2026-11-12)
+
+- The redesigned page's sticky story at /preview/: recruiters, interviews, offers and notes, with a progress rail (#342).
+
 ## 1.24.9 (2026-11-12)
 
 - The redesigned page's middle sections at /preview/: the statement, a frosted glass board, the Today card, the Insights panel and the centre line (#343).
