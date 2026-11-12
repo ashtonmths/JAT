@@ -66,6 +66,14 @@ where things run. Quotes are Kai's words.
   demo URL on seeded data with the case on screen, then build the test and ship on "ship it". For a layout PR Kai
   asked for a before-and-after table of screenshots in the PR description ("| Item | Before | After |"), and to merge it
   himself ("this one dont automerge"): images on a throwaway `pr-shots/<task>` branch, demo data only.
+- **Designs: several concepts on a dev server, with a switch** (2026-11-11: "the dev server should have a toggle for 3-5
+  different designs/concepts"). A dev-only switch (`import.meta.env.DEV`, plus `?design=N`) on a Vite dev server over a
+  seeded demo API, screenshots of each, a draft PR marked do-not-merge; Kai narrows it in rounds ("give me a few sub
+  variations"), then the pick goes into the real PR and the concepts PR is closed. The Interviews calendar (#317) went
+  five concepts, then eight variations, then two kept as Month and Year.
+- **New bugs found along the way:** "if new bugs are discovered report them here and add them to the backlog" (2026-11-11).
+  Fixing them waits for Kai unless it's the PR's own data safety. When many PRs are open, Kai may freeze new work:
+  "dont pick up anything new (except recording things in backlog) until these are merged".
 - **English text and layout are Kai's call in translation work:** a fix that changes English waits for Kai's yes, and
   language-specific CSS stays as small as possible (`docs/rfc/zh-cn.md`, *Layout*).
 - **The Windows VM runs one PR at a time** (2026-11-11: "proably only 1 PR can be checked on the VM at a time",
