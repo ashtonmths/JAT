@@ -80,3 +80,12 @@ def test_version_only_refuses_unknown_files_and_a_missing_or_doubled_line():
     doubled = 'version = "1.0.0"\nversion = "1.0.0"\n'
     assert version_only.expected("pyproject.toml", doubled, "1.0.0", "1.0.1") is None
     assert version_only.expected("frontend/src/api/schema.d.ts", "types", "1.0.0", "1.0.1") == "types"
+
+
+def test_version_only_refuses_anything_but_a_plain_version():
+    from tools.dev import version_only
+
+    init = '__version__ = "1.24.7"\n'
+    sneaky = '1.24.8"; import os; x = "'
+    assert version_only.expected("src/jat/__init__.py", init, "1.24.7", sneaky) is None
+    assert version_only.expected("src/jat/__init__.py", init, "1.24", "1.24.8") is None

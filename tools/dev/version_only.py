@@ -20,8 +20,11 @@ LINES = {
 }
 
 
+SEMVER = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
+
+
 def expected(path: str, base: str, old: str, new: str) -> str | None:
-    if path not in LINES:
+    if path not in LINES or not SEMVER.fullmatch(old) or not SEMVER.fullmatch(new):
         return None
     if old == new or LINES[path] is None:
         return base

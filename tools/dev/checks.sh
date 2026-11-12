@@ -21,7 +21,9 @@ if [ "$1" = "--website" ]; then
   ver() { sed -n 's/^__version__ = "\(.*\)"$/\1/p'; }
   old=$(git show "$base:src/jat/__init__.py" | ver)
   new=$(ver < src/jat/__init__.py)
-  [ -n "$old" ] && [ -n "$new" ] || { echo "--website: can't read the version" >&2; exit 2; }
+  semver='^[0-9]+\.[0-9]+\.[0-9]+$'
+  [[ "$old" =~ $semver && "$new" =~ $semver ]] || { echo "--website: can't read the version" >&2; exit 2; }
+  # Out of scope: gitignored files (e.g. a local .env), which no PR can carry anyway.
   bump='^(pyproject\.toml|uv\.lock|src/jat/__init__\.py|frontend/package\.json|frontend/openapi\.json|frontend/src/api/schema\.d\.ts)$'
   ok='^(website/|docs/|CHANGELOG\.md$|CLAUDE\.md$|tools/dev/|tests/dev/|tools/pm/|tests/pm/)'
   names=$(mktemp)
