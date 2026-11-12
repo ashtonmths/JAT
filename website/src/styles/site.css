@@ -2,6 +2,17 @@
    (eyebrow, display type, liquid glass, pill buttons). Only layouts/Base.astro loads it, so it can't reach the
    current homepage; components keep their own styles scoped. */
 
+/* While Inter loads, a local sans sized to Inter's metrics, so the words take the same space and nothing moves
+   when Inter swaps in. (Base.astro also preloads Inter's Latin file.) */
+@font-face {
+  font-family: "Inter fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Helvetica"), local("Liberation Sans");
+  size-adjust: 107.06%;
+  ascent-override: 90.49%;
+  descent-override: 22.56%;
+  line-gap-override: 0%;
+}
+
 html.site {
   /* Ink and accents: Bubbles 5a's plum, with a lavender for light and focus. */
   --ink: #2a1e3f;
@@ -36,7 +47,7 @@ html.site {
   --r-card: 22px;
   --gutter: 8px;
   --ease: cubic-bezier(0.22, 0.61, 0.24, 1);
-  --sans: "Inter Variable", system-ui, sans-serif;
+  --sans: "Inter Variable", "Inter fallback", system-ui, sans-serif;
   --mono: "JetBrains Mono Variable", ui-monospace, monospace;
   /* The logo (components/Logo.astro) reads these. */
   --brand: #4a3a68;

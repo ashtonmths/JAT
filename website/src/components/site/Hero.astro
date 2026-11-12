@@ -102,30 +102,31 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
   type Keys = [at: number, pose: Pose][];
 
   // The front window turns to face you by 0.38 of the pin, holds, then swings open about its left edge by 0.92,
-  // as the back window comes forward into its place. (The still pose is in the CSS.)
+  // as the back window comes forward into its place. Each pose at 0 is the CSS still pose, so nothing jumps when
+  // `.live` is added.
   const poses: Record<"wide" | "narrow", { front: Keys; back: Keys }> = {
     wide: {
       front: [
-        [0, [24, 6, 0, 12, -30, -2, 0.7, 1]],
+        [0, [21, 6, 0, 8, -20, -1, 0.62, 1]],
         [0.38, [0, 6, 0, 2, 0, 0, 0.9, 1]],
         [0.56, [0, 6, 0, 2, 0, 0, 0.9, 1]],
         [0.92, [-30, 6, 140, 2, -78, 0, 0.9, 0]],
       ],
       back: [
-        [0, [33, -4, -360, 12, -30, -2, 0.72, 0.35]],
+        [0, [27, -2, -300, 8, -20, -1, 0.6, 0.6]],
         [0.56, [10, -5, -420, 4, -10, 0, 0.92, 0.55]],
         [0.92, [0, 6, 0, 2, 0, 0, 0.9, 1]],
       ],
     },
     narrow: {
       front: [
-        [0, [4, 1, 0, 16, -18, -2, 0.9, 1]],
+        [0, [0, 1, 0, 8, -10, 0, 0.94, 1]],
         [0.38, [0, 0, 0, 4, 0, 0, 1, 1]],
         [0.56, [0, 0, 0, 4, 0, 0, 1, 1]],
         [0.92, [-40, 0, 120, 4, -80, 0, 1, 0]],
       ],
       back: [
-        [0, [8, -4, -300, 16, -18, -2, 0.85, 0.4]],
+        [0, [6, -3, -260, 8, -10, 0, 0.9, 0.5]],
         [0.56, [6, -6, -360, 6, -8, 0, 0.92, 0.5]],
         [0.92, [0, 0, 0, 4, 0, 0, 1, 1]],
       ],
@@ -311,12 +312,10 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
   .live .scene {
     animation: drift 9s ease-in-out infinite alternate;
   }
+  /* Starts from rest, so adding .live doesn't move anything. */
   @keyframes drift {
-    from {
-      transform: translateY(-6px) rotateX(-1.2deg) rotateY(-1.5deg);
-    }
     to {
-      transform: translateY(6px) rotateX(1.2deg) rotateY(1.5deg);
+      transform: translateY(8px) rotateX(1.5deg) rotateY(2deg);
     }
   }
   .window {
@@ -338,12 +337,12 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
   }
   /* The still pose, to the right of the words. */
   .front {
-    transform: translate(-50%, -50%) translate3d(24vw, 6vh, 0) rotateX(8deg) rotateY(-20deg) rotateZ(-1deg)
-      scale(0.66);
+    transform: translate(-50%, -50%) translate3d(21vw, 6vh, 0) rotateX(8deg) rotateY(-20deg) rotateZ(-1deg)
+      scale(0.62);
   }
   .back {
-    transform: translate(-50%, -50%) translate3d(30vw, -2vh, -300px) rotateX(8deg) rotateY(-20deg)
-      rotateZ(-1deg) scale(0.64);
+    transform: translate(-50%, -50%) translate3d(27vw, -2vh, -300px) rotateX(8deg) rotateY(-20deg)
+      rotateZ(-1deg) scale(0.6);
     opacity: 0.6;
   }
   .window :global(img) {
@@ -429,8 +428,11 @@ const picture: { formats: ("avif" | "webp")[]; fallbackFormat: "webp"; widths: n
       width: auto;
       margin: 0 20px;
     }
+    /* Two lines, always: sized to the width so it never wraps, in Inter or in the fallback while Inter
+       loads (a wrap that comes and goes would push everything below it). */
     .copy .display {
-      font-size: 36px;
+      font-size: min(36px, 8.6vw);
+      white-space: nowrap;
     }
     .sub {
       margin: 14px 0 18px;

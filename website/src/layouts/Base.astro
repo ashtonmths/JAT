@@ -7,6 +7,8 @@ import "@fontsource-variable/jetbrains-mono";
 import "../styles/site.css";
 import SiteHead from "../components/SiteHead.astro";
 import Backdrop from "../components/site/Backdrop.astro";
+// The same file the font CSS points at (Vite gives both one URL), preloaded so the first words show in Inter.
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 
 interface Props {
   noindex?: boolean;
@@ -18,6 +20,7 @@ const { noindex = false } = Astro.props;
 <html lang="en" class="site" data-tint="lilac">
   <head>
     <meta charset="utf-8" />
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
     <SiteHead noindex={noindex} canonical={!noindex} themeColor="#f4f1fb" />
   </head>
   <body>
