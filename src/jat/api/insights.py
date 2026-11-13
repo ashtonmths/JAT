@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 from typing import Annotated, Literal
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import APIRouter, Query
 from pydantic import AwareDatetime, BaseModel
@@ -17,8 +16,7 @@ from ..domain import reschedule_stats as resched_svc
 from ..domain import scorecard as score_svc
 from ..domain import stats as stats_svc
 from . import schemas as S
-from .deps import SessionDep, WorkflowDep
-from .errors import CodedError
+from .deps import SessionDep, WorkflowDep, time_zone
 
 router = APIRouter(prefix="/insights", tags=["insights"])
 
@@ -332,13 +330,7 @@ def weekly_activity(
     and `start`, the Monday your first week begins, so weeks are your weeks, clock changes
     included. `start` defaults to the Monday that makes the last week this one.
     """
-    try:
-        zone = ZoneInfo(tz)
-    # OSError: with tzdata installed, a folder in the database such as "Europe" raises IsADirectoryError
-    # (PermissionError on Windows) instead of ZoneInfoNotFoundError.
-    except (ZoneInfoNotFoundError, ValueError, OSError) as exc:
-        detail = f"unknown time zone {tz!r}"
-        raise CodedError(422, detail, "time_zone_unknown", {"tz": tz, "quoted_tz": repr(tz)}) from exc
+    zone = time_zone(tz)
     if start is None:
         today = datetime.now(zone).date()
         start = today - timedelta(days=today.weekday(), weeks=weeks - 1)

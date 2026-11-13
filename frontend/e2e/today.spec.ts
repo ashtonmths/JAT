@@ -355,8 +355,9 @@ test.describe("How did it go?", () => {
     const appId = await idOf(
       request.post("/api/v1/applications", { data: { role_id, stage: "interviewing" } }),
     );
+    const happened = yesterday();
     const made = await request.post(`/api/v1/applications/${appId}/interviews`, {
-      data: { title: "Wait round", starts_at: yesterday() },
+      data: { title: "Wait round", starts_at: happened },
     });
     expect(made.ok()).toBe(true);
     await page.reload();
@@ -370,7 +371,9 @@ test.describe("How did it go?", () => {
     await page.getByRole("dialog").getByRole("button", { name: "Mark as done" }).click();
     await expect(done).toBeHidden();
     await expect(heardBack).toBeVisible();
-    expect((await get<App>(request, `applications/${appId}`)).awaiting_reply_since).toBe(today());
+    // Waiting since the day the round happened, in the browser's time zone (London).
+    const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(new Date(happened));
+    expect((await get<App>(request, `applications/${appId}`)).awaiting_reply_since).toBe(day);
   });
 
   test("a round's Didn't happen is kept on the record", async ({ page, request }) => {

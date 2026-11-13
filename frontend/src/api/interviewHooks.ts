@@ -7,6 +7,9 @@ import { invalidateApplicationViews, settleSave } from "./hooks";
 import { notifyError } from "./notifyError";
 
 export type Interview = Schemas["InterviewOut"];
+
+/** Your IANA time zone (as Insights sends it), or none if the browser doesn't say. */
+const localZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
 export type InterviewKind = Schemas["InterviewIn"]["kind"];
 
 export const KIND_OPTIONS = [
@@ -66,8 +69,12 @@ export function useSaveInterview() {
       "id" in args
         ? unwrap(
             await api.PATCH("/api/v1/interviews/{interview_id}", {
-              // Your day: marking a round done can start waiting to hear back from it.
-              params: { path: { interview_id: args.id }, query: { today: dayjs().format("YYYY-MM-DD") } },
+              // Your day and time zone: marking a round done can start waiting to hear back, from
+              // the day it happened.
+              params: {
+                path: { interview_id: args.id },
+                query: { today: dayjs().format("YYYY-MM-DD"), tz: localZone() },
+              },
               body: args.body,
             }),
           )

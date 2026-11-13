@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Query, Response
 from pydantic import AwareDatetime
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session, aliased
@@ -17,7 +17,7 @@ from ..domain import interviews as svc
 from ..domain import replies as reply_svc
 from . import schemas as S
 from .crud import values
-from .deps import SessionDep, WorkflowDep, get_or_404
+from .deps import SessionDep, WorkflowDep, get_or_404, time_zone
 from .errors import CodedError
 
 router = APIRouter(tags=["interviews"])
@@ -144,9 +144,11 @@ def interview_titles(session: SessionDep):
 
 @router.post("/applications/{app_id}/interviews", response_model=S.InterviewOut, status_code=201)
 def create_interview(app_id: str, body: S.InterviewIn, session: SessionDep, today: date | None = None):
-    """Booking the next round means they got back to you: a wait to hear back that an earlier round's
-    Done started (and that still stands as it set it) ends as heard back, from your `today`
-    (YYYY-MM-DD; the server's if not given). A wait you set yourself is left alone."""
+    """Adding a round that's still to come (scheduled, and undated or ahead) means they got back to
+    you: a wait to hear back that an earlier round's Done started (and that still stands as it set
+    it) ends as heard back, on your `today` (YYYY-MM-DD; the server's if not given). A wait you set
+    yourself is left alone, and so is one when the round is filled in afterwards (done, cancelled,
+    or scheduled at a time already past)."""
     app = get_or_404(session, Application, app_id)
     data = values(body, partial=False)
     interviewer_ids = data.pop("interviewer_ids")
@@ -159,7 +161,7 @@ def create_interview(app_id: str, body: S.InterviewIn, session: SessionDep, toda
     svc.record(
         session, app, interview, {"scheduled": "scheduled", "done": "added", "cancelled": "cancelled"}[interview.status]
     )
-    if interview.status == "scheduled" and svc.wait_set_by_done(session, app) is not None:
+    if svc.still_to_come(interview, utcnow()) and svc.wait_set_by_done(session, app) is not None:
         _heard_back(session, app, today or date.today())
     return _out(session, interview.id)
 
@@ -246,16 +248,23 @@ def _saved_time(value: Any) -> datetime | None:
 
 @router.patch("/interviews/{interview_id}", response_model=S.InterviewOut)
 def update_interview(
-    interview_id: str, body: S.InterviewPatch, session: SessionDep, workflow: WorkflowDep, today: date | None = None
+    interview_id: str,
+    body: S.InterviewPatch,
+    session: SessionDep,
+    workflow: WorkflowDep,
+    today: date | None = None,
+    tz: Annotated[str | None, Query(max_length=64)] = None,
 ):
     """A new start for a round that needs one is the move it was waiting for: from its old time,
     with the who and why it was marked with (unless new ones are sent), and its to-do is ticked off.
     Cancelling such a round, or marking it done, ticks the to-do off too.
 
-    Marking a round done starts waiting to hear back on its application, from your `today`
-    (YYYY-MM-DD; the server's if not given), when nothing is left to come and nothing has been
-    decided since (`wait_after_done` in domain/interviews.py has the rule). Taking the done back
+    Marking a round done starts waiting to hear back on its application, from the day the round
+    happened in your time zone `tz` (IANA, e.g. Europe/London; the server's if not given), or your
+    `today` (YYYY-MM-DD; the server's if not given) if that's earlier, when nothing is left to come
+    and nothing has been decided since (`wait_after_done` in domain/interviews.py has the rule). Taking the done back
     (Coming up or Cancelled) ends that wait again, if it still stands as the done set it."""
+    zone = time_zone(tz) if tz is not None else None
     interview = get_or_404(session, Interview, interview_id)
     data = values(body, partial=True)
     interviewer_ids = data.pop("interviewer_ids", None)
@@ -275,7 +284,8 @@ def update_interview(
             _settle(session, interview, "done")
         extra: dict[str, Any] = {}
         if interview.status == "done":
-            if (since := svc.wait_after_done(session, workflow, app, today or date.today())) is not None:
+            since = svc.wait_after_done(session, workflow, app, interview, today or date.today(), zone)
+            if since is not None:
                 extra[svc.WAITING_SINCE] = since.isoformat()
         elif before[0] == "done" and svc.wait_set_by_done(session, app) == interview.id:
             app.awaiting_reply_since = None  # taken back, not a reply: no reply time, no Heard back

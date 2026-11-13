@@ -7,6 +7,7 @@ import threading
 from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Annotated
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy.exc import IntegrityError
@@ -145,3 +146,14 @@ def require(session: Session, model, obj_id: str | None, field: str) -> None:
     if obj_id is not None and session.get(model, obj_id) is None:
         detail = f"{field}: {model.__name__} {obj_id} not found"
         raise CodedError(422, detail, REQUIRED_NOT_FOUND[(model.__name__, field)], {"id": obj_id})
+
+
+def time_zone(tz: str) -> ZoneInfo:
+    """An IANA time zone (e.g. Europe/London), or a 422 naming the one that isn't."""
+    try:
+        return ZoneInfo(tz)
+    # OSError: with tzdata installed, a folder in the database such as "Europe" raises IsADirectoryError
+    # (PermissionError on Windows) instead of ZoneInfoNotFoundError.
+    except (ZoneInfoNotFoundError, ValueError, OSError) as exc:
+        detail = f"unknown time zone {tz!r}"
+        raise CodedError(422, detail, "time_zone_unknown", {"tz": tz, "quoted_tz": repr(tz)}) from exc

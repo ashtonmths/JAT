@@ -53,7 +53,9 @@ describe("how did it go", () => {
     );
     // Your own day, so a wait to hear back that Done starts begins on it (not the server's).
     expect(calls.find((c) => c.method === "PATCH")?.path).toBe(
-      `/api/v1/interviews/i1?today=${dayjs().format("YYYY-MM-DD")}`,
+      `/api/v1/interviews/i1?today=${dayjs().format("YYYY-MM-DD")}&tz=${encodeURIComponent(
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
+      )}`,
     );
   });
 

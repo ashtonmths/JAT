@@ -252,9 +252,11 @@ export interface paths {
         put?: never;
         /**
          * Create Interview
-         * @description Booking the next round means they got back to you: a wait to hear back that an earlier round's
-         *     Done started (and that still stands as it set it) ends as heard back, from your `today`
-         *     (YYYY-MM-DD; the server's if not given). A wait you set yourself is left alone.
+         * @description Adding a round that's still to come (scheduled, and undated or ahead) means they got back to
+         *     you: a wait to hear back that an earlier round's Done started (and that still stands as it set
+         *     it) ends as heard back, on your `today` (YYYY-MM-DD; the server's if not given). A wait you set
+         *     yourself is left alone, and so is one when the round is filled in afterwards (done, cancelled,
+         *     or scheduled at a time already past).
          */
         post: operations["create_interview_api_v1_applications__app_id__interviews_post"];
         delete?: never;
@@ -1003,9 +1005,10 @@ export interface paths {
          *     with the who and why it was marked with (unless new ones are sent), and its to-do is ticked off.
          *     Cancelling such a round, or marking it done, ticks the to-do off too.
          *
-         *     Marking a round done starts waiting to hear back on its application, from your `today`
-         *     (YYYY-MM-DD; the server's if not given), when nothing is left to come and nothing has been
-         *     decided since (`wait_after_done` in domain/interviews.py has the rule). Taking the done back
+         *     Marking a round done starts waiting to hear back on its application, from the day the round
+         *     happened in your time zone `tz` (IANA, e.g. Europe/London; the server's if not given), or your
+         *     `today` (YYYY-MM-DD; the server's if not given) if that's earlier, when nothing is left to come
+         *     and nothing has been decided since (`wait_after_done` in domain/interviews.py has the rule). Taking the done back
          *     (Coming up or Cancelled) ends that wait again, if it still stands as the done set it.
          */
         patch: operations["update_interview_api_v1_interviews__interview_id__patch"];
@@ -7476,6 +7479,7 @@ export interface operations {
         parameters: {
             query?: {
                 today?: string | null;
+                tz?: string | null;
             };
             header?: never;
             path: {
