@@ -117,7 +117,9 @@ wide screen *Your move* is on the left and the other two sit beside it:
   call: *Happened*) or *Didn't happen*. Each asks first: a round's *Done* for its debrief and
   the questions asked, *Didn't happen* for what happened (saved on the round, or in the call's
   notes). Nothing changes until you save; the notes can stay empty. A round's *Done* and *Didn't
-  happen* are also on the application's page and the [Interviews](#interviews) page.
+  happen* are also on the application's page and the [Interviews](#interviews) page. Marking a
+  round done moves its application to *Waiting to hear back* (below) when nothing else is left to
+  come (see [Waiting to hear back](#waiting-to-hear-back)).
 - **Needs a new time**: rounds and calls that can't go ahead at their time, with no new time agreed yet
   (see [Interviews](#interviews) and [Calls and meetings](#calls-and-meetings)), longest waiting first, each with its old time, who needed the
   change, its to-do to book the new time (listed here rather than under To-dos) and **Set new time**.
@@ -140,8 +142,8 @@ row shows just "Contoso · Backend Engineer".
 
 **Waiting on them**: who you're waiting for.
 
-- **Waiting to hear back**: applications and people you've replied to (see
-  [Waiting to hear back](#waiting-to-hear-back)), longest first. It turns red once you've
+- **Waiting to hear back**: applications and people you've replied to, and applications whose
+  latest round you've marked done (see [Waiting to hear back](#waiting-to-hear-back)), longest first. It turns red once you've
   waited as long as the stage allows; **Heard back** clears it, and **They've replied** moves
   it to *Replies to read*.
 - **Gone quiet**: active applications with no activity for as long as their stage allows
@@ -351,6 +353,20 @@ waiting** (on the application page, or on a person's page for conversations that
 one application). It goes on the timeline, the application shows how long you've been
 waiting, and it appears under *Waiting to hear back* on Today instead of *Gone quiet*.
 Press **Heard back** when they reply; moving the application to another stage clears it too.
+
+**After a round.** Marking an interview round **Done** (on Today under *How did it go?*, on the
+application's page, on the [Interviews](#interviews) page, or by setting its status to *Done* in the
+round's form) starts the same wait, from today, so the application moves to *Waiting to hear back*
+on Today. It does that only when the application is open (in an active stage and not archived), no
+other round is still to come (booked, not booked yet, or waiting for a new time), nothing has been
+heard since (as for the round's *Waiting to hear back* badge, see [Applications: list and board](#applications-list-and-board)), and you
+aren't already waiting on them or holding a reply to read: a wait or reply that's already there is
+never changed. **Heard back**, **They've replied** and a stage move then work on it as on any
+wait. Adding the next round counts as hearing back: the wait ends, *Heard back* goes on the
+timeline and the reply counts towards the recruiter's reply time. Changing your mind about the
+round (setting it back to *Coming up*, or to *Cancelled*) ends the wait again, without counting a
+reply, as long as nothing about it has changed since. A wait you set yourself is left alone in
+both cases.
 
 When they've replied but you haven't read it properly yet (it came in on your phone, or it's
 long), press **They've replied** instead, whether or not you were waiting. It goes to the top
