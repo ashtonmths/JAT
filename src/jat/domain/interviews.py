@@ -6,7 +6,7 @@ the next one still to happen, or, once they have all happened, the latest one.
 """
 
 from collections.abc import Iterable
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from sqlalchemy import func, select
@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session, load_only
 from jat.db.models import Application, Event, Interview, Offer
 
 from . import applications as svc
+from .workflow import Workflow
 
 KIND_NAMES = {
     "screen": "Screen",
@@ -188,6 +189,50 @@ def _stage_at(moves: list[Event], at: datetime) -> str | None:
     if added:
         return added[-1].to_stage
     return moves[0].from_stage if moves else None
+
+
+# A round marked done that started the application's wait to hear back saves the day it did in
+# its timeline entry, so a later change can tell that wait from one you set yourself.
+WAITING_SINCE = "waiting_since"
+
+
+def wait_after_done(session: Session, workflow: Workflow, app: Application, today: date) -> date | None:
+    """Marking a round done starts waiting to hear back, from `today`, when the application is
+    open (an active stage, not archived), isn't already waiting or holding a reply to read, and
+    `waiting_to_hear_back` agrees: no round is still to come (booked, undated or waiting for a new
+    time) and nothing has been decided since. Never touches a wait or reply already there.
+    Returns the day it set, or None if it set nothing."""
+    if app.archived or app.awaiting_reply_since is not None or app.reply_to_read_since is not None:
+        return None
+    if not (workflow.has(app.stage) and workflow.stage(app.stage).is_active):
+        return None
+    if app.id not in waiting_to_hear_back(session, current_rounds(session, [app.id]), {app.id: app.stage}):
+        return None
+    app.awaiting_reply_since = today
+    return today
+
+
+def wait_set_by_done(session: Session, app: Application) -> str | None:
+    """The round whose being marked done started the application's wait, if that wait still stands
+    just as it was set: the same day, no reply to read, and since then no waiting change of yours
+    (I've replied, Heard back, They've replied, Read it) and no stage move. Else None."""
+    if app.awaiting_reply_since is None or app.reply_to_read_since is not None:
+        return None
+    found = session.scalars(
+        select(Event)
+        .options(load_only(Event.kind, Event.data))
+        .where(Event.application_id == app.id, Event.kind.in_(("interview", "manual", svc.STAGE_CHANGE)))
+        .order_by(Event.seq.desc())
+    )
+    for event in found:
+        data = event.data or {}
+        if event.kind == "interview" and WAITING_SINCE in data:
+            set_on, round_id = data.get(WAITING_SINCE), data.get("interview_id")
+            same = set_on == app.awaiting_reply_since.isoformat() and isinstance(round_id, str)
+            return round_id if same else None
+        if event.kind == svc.STAGE_CHANGE or "awaiting_reply" in data or "reply_to_read" in data:
+            return None
+    return None
 
 
 _MESSAGES: dict[str, svc.EventMsgKey] = {

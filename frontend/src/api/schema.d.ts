@@ -250,7 +250,12 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create Interview */
+        /**
+         * Create Interview
+         * @description Booking the next round means they got back to you: a wait to hear back that an earlier round's
+         *     Done started (and that still stands as it set it) ends as heard back, from your `today`
+         *     (YYYY-MM-DD; the server's if not given). A wait you set yourself is left alone.
+         */
         post: operations["create_interview_api_v1_applications__app_id__interviews_post"];
         delete?: never;
         options?: never;
@@ -997,6 +1002,11 @@ export interface paths {
          * @description A new start for a round that needs one is the move it was waiting for: from its old time,
          *     with the who and why it was marked with (unless new ones are sent), and its to-do is ticked off.
          *     Cancelling such a round, or marking it done, ticks the to-do off too.
+         *
+         *     Marking a round done starts waiting to hear back on its application, from your `today`
+         *     (YYYY-MM-DD; the server's if not given), when nothing is left to come and nothing has been
+         *     decided since (`wait_after_done` in domain/interviews.py has the rule). Taking the done back
+         *     (Coming up or Cancelled) ends that wait again, if it still stands as the done set it.
          */
         patch: operations["update_interview_api_v1_interviews__interview_id__patch"];
         trace?: never;
@@ -5796,7 +5806,9 @@ export interface operations {
     };
     create_interview_api_v1_applications__app_id__interviews_post: {
         parameters: {
-            query?: never;
+            query?: {
+                today?: string | null;
+            };
             header?: never;
             path: {
                 app_id: string;
@@ -7462,7 +7474,9 @@ export interface operations {
     };
     update_interview_api_v1_interviews__interview_id__patch: {
         parameters: {
-            query?: never;
+            query?: {
+                today?: string | null;
+            };
             header?: never;
             path: {
                 interview_id: string;

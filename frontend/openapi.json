@@ -13978,6 +13978,7 @@
     },
     "/api/v1/applications/{app_id}/interviews": {
       "post": {
+        "description": "Booking the next round means they got back to you: a wait to hear back that an earlier round's\nDone started (and that still stands as it set it) ends as heard back, from your `today`\n(YYYY-MM-DD; the server's if not given). A wait you set yourself is left alone.",
         "operationId": "create_interview_api_v1_applications__app_id__interviews_post",
         "parameters": [
           {
@@ -13987,6 +13988,23 @@
             "schema": {
               "title": "App Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "today",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Today"
             }
           }
         ],
@@ -16641,7 +16659,7 @@
         ]
       },
       "patch": {
-        "description": "A new start for a round that needs one is the move it was waiting for: from its old time,\nwith the who and why it was marked with (unless new ones are sent), and its to-do is ticked off.\nCancelling such a round, or marking it done, ticks the to-do off too.",
+        "description": "A new start for a round that needs one is the move it was waiting for: from its old time,\nwith the who and why it was marked with (unless new ones are sent), and its to-do is ticked off.\nCancelling such a round, or marking it done, ticks the to-do off too.\n\nMarking a round done starts waiting to hear back on its application, from your `today`\n(YYYY-MM-DD; the server's if not given), when nothing is left to come and nothing has been\ndecided since (`wait_after_done` in domain/interviews.py has the rule). Taking the done back\n(Coming up or Cancelled) ends that wait again, if it still stands as the done set it.",
         "operationId": "update_interview_api_v1_interviews__interview_id__patch",
         "parameters": [
           {
@@ -16651,6 +16669,23 @@
             "schema": {
               "title": "Interview Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "today",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Today"
             }
           }
         ],

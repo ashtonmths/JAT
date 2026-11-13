@@ -12,7 +12,9 @@ from sqlalchemy.orm import Session, aliased
 
 from ..db.models import Application, Company, Contact, Event, Interview, InterviewContact, Role, Todo
 from ..db.types import utcnow
+from ..domain import applications as app_svc
 from ..domain import interviews as svc
+from ..domain import replies as reply_svc
 from . import schemas as S
 from .crud import values
 from .deps import SessionDep, WorkflowDep, get_or_404
@@ -141,7 +143,10 @@ def interview_titles(session: SessionDep):
 
 
 @router.post("/applications/{app_id}/interviews", response_model=S.InterviewOut, status_code=201)
-def create_interview(app_id: str, body: S.InterviewIn, session: SessionDep):
+def create_interview(app_id: str, body: S.InterviewIn, session: SessionDep, today: date | None = None):
+    """Booking the next round means they got back to you: a wait to hear back that an earlier round's
+    Done started (and that still stands as it set it) ends as heard back, from your `today`
+    (YYYY-MM-DD; the server's if not given). A wait you set yourself is left alone."""
     app = get_or_404(session, Application, app_id)
     data = values(body, partial=False)
     interviewer_ids = data.pop("interviewer_ids")
@@ -154,7 +159,22 @@ def create_interview(app_id: str, body: S.InterviewIn, session: SessionDep):
     svc.record(
         session, app, interview, {"scheduled": "scheduled", "done": "added", "cancelled": "cancelled"}[interview.status]
     )
+    if interview.status == "scheduled" and svc.wait_set_by_done(session, app) is not None:
+        _heard_back(session, app, today or date.today())
     return _out(session, interview.id)
+
+
+def _heard_back(session: Session, app: Application, today: date) -> None:
+    """The same as pressing Heard back: the reply counts towards the recruiter's reply times."""
+    waited_since = app.awaiting_reply_since
+    app.awaiting_reply_since = None
+    if waited_since is not None:
+        reply_svc.record(
+            session, contact_id=app.recruiter_id, application_id=app.id, waited_since=waited_since, replied_on=today
+        )
+    app_svc.log_message(
+        session, app, "manual", key="event.heardBack", params={}, summary="Heard back", data={"awaiting_reply": False}
+    )
 
 
 @router.get("/interviews/{interview_id}", response_model=S.InterviewOut)
@@ -225,10 +245,17 @@ def _saved_time(value: Any) -> datetime | None:
 
 
 @router.patch("/interviews/{interview_id}", response_model=S.InterviewOut)
-def update_interview(interview_id: str, body: S.InterviewPatch, session: SessionDep):
+def update_interview(
+    interview_id: str, body: S.InterviewPatch, session: SessionDep, workflow: WorkflowDep, today: date | None = None
+):
     """A new start for a round that needs one is the move it was waiting for: from its old time,
     with the who and why it was marked with (unless new ones are sent), and its to-do is ticked off.
-    Cancelling such a round, or marking it done, ticks the to-do off too."""
+    Cancelling such a round, or marking it done, ticks the to-do off too.
+
+    Marking a round done starts waiting to hear back on its application, from your `today`
+    (YYYY-MM-DD; the server's if not given), when nothing is left to come and nothing has been
+    decided since (`wait_after_done` in domain/interviews.py has the rule). Taking the done back
+    (Coming up or Cancelled) ends that wait again, if it still stands as the done set it."""
     interview = get_or_404(session, Interview, interview_id)
     data = values(body, partial=True)
     interviewer_ids = data.pop("interviewer_ids", None)
@@ -246,11 +273,18 @@ def update_interview(interview_id: str, body: S.InterviewPatch, session: Session
     if interview.status != before[0]:
         if pending:
             _settle(session, interview, "done")
+        extra: dict[str, Any] = {}
+        if interview.status == "done":
+            if (since := svc.wait_after_done(session, workflow, app, today or date.today())) is not None:
+                extra[svc.WAITING_SINCE] = since.isoformat()
+        elif before[0] == "done" and svc.wait_set_by_done(session, app) == interview.id:
+            app.awaiting_reply_since = None  # taken back, not a reply: no reply time, no Heard back
         svc.record(
             session,
             app,
             interview,
             {"scheduled": "back on", "done": "done", "cancelled": "cancelled"}[interview.status],
+            extra=extra,
         )
     elif pending and interview.starts_at is not None and interview.starts_at != before[1]:
         saved = _pending_record(session, interview)
