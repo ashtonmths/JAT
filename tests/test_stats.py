@@ -151,9 +151,9 @@ def test_weekly_activity_gives_a_422_when_the_zone_lookup_fails_with_an_os_error
     def locked(key):
         raise PermissionError(key)
 
-    monkeypatch.setattr("jat.api.insights.ZoneInfo", is_a_folder)
+    monkeypatch.setattr("jat.api.deps.ZoneInfo", is_a_folder)
     assert client.get("/api/v1/insights/activity", params={"tz": "Europe"}).status_code == 422
-    monkeypatch.setattr("jat.api.insights.ZoneInfo", locked)
+    monkeypatch.setattr("jat.api.deps.ZoneInfo", locked)
     assert client.get("/api/v1/insights/activity", params={"tz": "Europe"}).status_code == 422
 
 
