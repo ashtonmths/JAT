@@ -330,7 +330,7 @@ test.describe("adding a round", () => {
 
   test("a double click on a slow save adds one", async ({ page, request }) => {
     const app = await application(request, "Double Round Co");
-    await slow(page, `**${API}/applications/${app.id}/interviews`, "POST");
+    await slow(page, `**${API}/applications/${app.id}/interviews?*`, "POST");
     await openApplication(page, app.id);
     const dialog = await newRound(page);
     const writes = watchWrites(page);
@@ -518,7 +518,7 @@ test.describe("editing a round", () => {
   test("a double click on a slow save closes it, with no error", async ({ page, request }) => {
     const app = await application(request, "Double Edit Co");
     const made = await addRound(request, app.id, { title: "Twice" });
-    await slow(page, `**${API}/interviews/${made.id}`, "PATCH");
+    await slow(page, `**${API}/interviews/${made.id}?*`, "PATCH");
     await openApplication(page, app.id);
     const dialog = await editRound(page, "Round 1 · Twice");
     await dialog.getByLabel("What is it?").fill("Once");
@@ -757,7 +757,7 @@ test.describe("rescheduling", () => {
     problems.allow(/422.*\/api\/v1\/interviews/);
     const app = await application(request, "Stuck Move Co");
     const made = await addRound(request, app.id, { title: "Stuck", starts_at: inDays(6) });
-    await page.route(`**${API}/interviews/${made.id}`, async (route) => {
+    await page.route(`**${API}/interviews/${made.id}?*`, async (route) => {
       if (route.request().method() !== "PATCH") return route.continue();
       await pause(800);
       return route.fulfill({ status: 422, json: { detail: "Refused for the test" } });

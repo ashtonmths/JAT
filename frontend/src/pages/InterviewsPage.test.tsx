@@ -143,7 +143,9 @@ describe("interviews", () => {
     });
     fireEvent.click(within(dialog).getByRole("button", { name: "Add round" }));
     await waitFor(() => {
-      const post = calls.find((c) => c.method === "POST" && c.path === "/api/v1/applications/a1/interviews");
+      const post = calls.find(
+        (c) => c.method === "POST" && c.path.startsWith("/api/v1/applications/a1/interviews?"),
+      );
       expect(post?.body).toMatchObject({
         round: 3,
         title: "System design test",

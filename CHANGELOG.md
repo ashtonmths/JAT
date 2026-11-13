@@ -5,6 +5,10 @@ changes, a minor version for new features, a major version for anything that bre
 use it. Each version has a [GitHub release](https://github.com/waddington/job-application-tracker/releases).
 Numbers in brackets are pull requests.
 
+## 1.24.17 (2026-11-13)
+
+- Marking a round done moves its application to Waiting to hear back, from the day the round happened (#355).
+
 ## 1.24.16 (2026-11-12)
 
 - The website's main heading says it's a job application tracker, and its search snippet says job search tracker (#352).
