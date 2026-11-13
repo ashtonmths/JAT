@@ -85,12 +85,16 @@ test("a done round with nothing since says it's waiting to hear back", async ({ 
 
   // Marking it done started the application's own wait, so At a glance says that, once.
   await page.goto(`/applications/${appId}`);
-  await expect(page.getByText("Waiting to hear back", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText(`${name}: waiting to hear back`)).toHaveCount(0);
-  // Heard back ends that wait; with nothing decided since, the round still says it's waiting.
+  const glance = page.locator(".mantine-Card-root", {
+    has: page.getByRole("heading", { name: "At a glance" }),
+  });
+  await expect(glance.getByText("Waiting to hear back", { exact: true })).toBeVisible();
+  await expect(glance.getByText(`${name}: waiting to hear back`)).toHaveCount(0);
+  // Heard back ends that wait; with nothing decided since, the round still says it's waiting
+  // (fix-round-waiting-after-heard-back on the roadmap: it shouldn't).
   await patch(request, `applications/${appId}`, { awaiting_reply_since: null });
   await page.reload();
-  await expect(page.getByText(`${name}: waiting to hear back`)).toBeVisible();
+  await expect(glance.getByText(`${name}: waiting to hear back`)).toBeVisible();
 
   // Moved on a stage since: they've decided, so it's just the round, with nothing beside it.
   await post(request, `applications/${appId}/move`, { to_stage: "applied" });

@@ -143,8 +143,8 @@ row shows just "Contoso · Backend Engineer".
 **Waiting on them**: who you're waiting for.
 
 - **Waiting to hear back**: applications and people you've replied to, and applications whose
-  latest round you've marked done (see [Waiting to hear back](#waiting-to-hear-back)), longest first. It turns red once you've
-  waited as long as the stage allows; **Heard back** clears it, and **They've replied** moves
+  latest round you've marked done (see [Waiting to hear back](#waiting-to-hear-back)), longest
+  first. It turns red once you've waited as long as the stage allows; **Heard back** clears it, and **They've replied** moves
   it to *Replies to read*.
 - **Gone quiet**: active applications with no activity for as long as their stage allows
   or more (7 days in Applied, 5 in Screen and Interviewing, and so on; see
@@ -356,17 +356,22 @@ Press **Heard back** when they reply; moving the application to another stage cl
 
 **After a round.** Marking an interview round **Done** (on Today under *How did it go?*, on the
 application's page, on the [Interviews](#interviews) page, or by setting its status to *Done* in the
-round's form) starts the same wait, from today, so the application moves to *Waiting to hear back*
-on Today. It does that only when the application is open (in an active stage and not archived), no
-other round is still to come (booked, not booked yet, or waiting for a new time), nothing has been
-heard since (as for the round's *Waiting to hear back* badge, see [Applications: list and board](#applications-list-and-board)), and you
-aren't already waiting on them or holding a reply to read: a wait or reply that's already there is
-never changed. **Heard back**, **They've replied** and a stage move then work on it as on any
-wait. Adding the next round counts as hearing back: the wait ends, *Heard back* goes on the
-timeline and the reply counts towards the recruiter's reply time. Changing your mind about the
-round (setting it back to *Coming up*, or to *Cancelled*) ends the wait again, without counting a
-reply, as long as nothing about it has changed since. A wait you set yourself is left alone in
-both cases.
+round's form) starts the same wait, so the application moves to *Waiting to hear back* on Today.
+The wait starts on the day the round happened, in your time zone, so a round you mark done a few
+days late has already been waiting those days (a take-home handed in before its deadline waits from
+the day you mark it). It does that only when the application is open (in an active stage and not
+archived), no other round is still to come (booked, not booked yet, or waiting for a new time),
+nothing has been heard since (as for the round's *Waiting to hear back* badge, see
+[Applications: list and board](#applications-list-and-board)), and you aren't already waiting on
+them or holding a reply to read: a wait or reply that's already there is never changed.
+**Heard back**, **They've replied** and a stage move then work on it as on any wait. Adding a
+round that's still to come (booked ahead, or not booked yet) counts as hearing back: the wait
+ends, *Heard back* goes on the timeline and the reply counts towards the recruiter's reply time.
+Adding a round you're filling in afterwards (done, cancelled, or at a time already past) doesn't.
+Changing your mind about the round (setting it back to *Coming up*, or to *Cancelled*) ends the
+wait again, without counting a reply, as long as nothing has happened since (no reply, follow-up
+or stage move). Deleting the round leaves the wait. A wait you set yourself is left alone in all
+these cases.
 
 When they've replied but you haven't read it properly yet (it came in on your phone, or it's
 long), press **They've replied** instead, whether or not you were waiting. It goes to the top
