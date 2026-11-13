@@ -1,4 +1,4 @@
-import type { APIRequestContext, Page } from "@playwright/test";
+import type { APIRequestContext, APIResponse, Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures";
 
@@ -343,6 +343,34 @@ test.describe("How did it go?", () => {
       debrief: "Went well",
       questions: "Why this company?",
     });
+  });
+
+  test("a round's Done moves its application to Waiting to hear back", async ({ page, request }) => {
+    // Its own application, with no other round to come: the seeded ones have some.
+    const idOf = async (made: Promise<APIResponse>) => ((await (await made).json()) as { id: string }).id;
+    const company_id = await idOf(request.post("/api/v1/companies", { data: { name: "Wingtip Toys" } }));
+    const role_id = await idOf(
+      request.post("/api/v1/roles", { data: { company_id, title: "Waiting Round Engineer" } }),
+    );
+    const appId = await idOf(
+      request.post("/api/v1/applications", { data: { role_id, stage: "interviewing" } }),
+    );
+    const made = await request.post(`/api/v1/applications/${appId}/interviews`, {
+      data: { title: "Wait round", starts_at: yesterday() },
+    });
+    expect(made.ok()).toBe(true);
+    await page.reload();
+    const done = page.getByRole("button", { name: /^Done: Round \d+ · Wait round/ });
+    const heardBack = section(page, "Waiting to hear back").getByRole("button", {
+      name: "Heard back from Wingtip Toys",
+    });
+    await expect(done).toBeVisible();
+    await expect(heardBack).toBeHidden();
+    await done.click();
+    await page.getByRole("dialog").getByRole("button", { name: "Mark as done" }).click();
+    await expect(done).toBeHidden();
+    await expect(heardBack).toBeVisible();
+    expect((await get<App>(request, `applications/${appId}`)).awaiting_reply_since).toBe(today());
   });
 
   test("a round's Didn't happen is kept on the record", async ({ page, request }) => {

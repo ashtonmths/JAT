@@ -1,6 +1,7 @@
 import { MantineProvider } from "@mantine/core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import dayjs from "dayjs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { Interview } from "../api/interviewHooks";
@@ -49,6 +50,10 @@ describe("how did it go", () => {
         debrief: null,
         questions: "How would you shard it?",
       }),
+    );
+    // Your own day, so a wait to hear back that Done starts begins on it (not the server's).
+    expect(calls.find((c) => c.method === "PATCH")?.path).toBe(
+      `/api/v1/interviews/i1?today=${dayjs().format("YYYY-MM-DD")}`,
     );
   });
 

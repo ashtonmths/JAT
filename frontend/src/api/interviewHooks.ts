@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import dayjs from "dayjs";
 
 import { i18n } from "../i18n";
 import { api, unwrap, type Schemas } from "./client";
@@ -65,13 +66,18 @@ export function useSaveInterview() {
       "id" in args
         ? unwrap(
             await api.PATCH("/api/v1/interviews/{interview_id}", {
-              params: { path: { interview_id: args.id } },
+              // Your day: marking a round done can start waiting to hear back from it.
+              params: { path: { interview_id: args.id }, query: { today: dayjs().format("YYYY-MM-DD") } },
               body: args.body,
             }),
           )
         : unwrap(
             await api.POST("/api/v1/applications/{app_id}/interviews", {
-              params: { path: { app_id: args.applicationId } },
+              // Your day: booking the next round can end that wait as heard back.
+              params: {
+                path: { app_id: args.applicationId },
+                query: { today: dayjs().format("YYYY-MM-DD") },
+              },
               body: args.body,
             }),
           ),
