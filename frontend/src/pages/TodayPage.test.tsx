@@ -118,10 +118,10 @@ describe("today: what to do", () => {
     fireEvent.change(await screen.findByLabelText("Debrief"), {
       target: { value: "  Went well, met the team " },
     });
-    expect(calls.some((c) => c.method === "PATCH" && c.path.split("?")[0].endsWith("/i0"))).toBe(false);
+    expect(calls.some((c) => c.method === "PATCH" && /\/interviews\/i0(\?|$)/.test(c.path))).toBe(false);
     fireEvent.click(screen.getByRole("button", { name: "Mark as done" }));
     await waitFor(() =>
-      expect(calls.find((c) => c.method === "PATCH" && c.path.split("?")[0].endsWith("/i0"))?.body).toEqual({
+      expect(calls.find((c) => c.method === "PATCH" && /\/interviews\/i0(\?|$)/.test(c.path))?.body).toEqual({
         status: "done",
         debrief: "Went well, met the team",
         questions: null,
